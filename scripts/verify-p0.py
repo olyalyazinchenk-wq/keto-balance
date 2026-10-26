@@ -36,9 +36,12 @@ MANDATORY_BACKEND_TESTS = [
 
 MANDATORY_FRONTEND_TESTS = [
     "harness.test.cjs",
-    "menu-safety.test.cjs",
-    "emergency.test.cjs",
-    "honest-features.test.cjs",
+    "catalog.test.cjs",
+    "eligibility.test.cjs",
+    "menu.test.cjs",
+    "replacement.test.cjs",
+    "honesty.test.cjs",
+    "safety.test.cjs",
 ]
 
 MANDATORY_E2E_SPECS = [
