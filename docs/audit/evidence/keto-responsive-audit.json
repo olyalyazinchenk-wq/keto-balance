@@ -1,0 +1,162 @@
+[
+  {
+    "innerWidth": 348,
+    "clientWidth": 320,
+    "scrollWidth": 348,
+    "overflow": true,
+    "route": "#/home",
+    "heading": "Привет, Аудит Тест! 👋",
+    "onboarded": true,
+    "requestedWidth": 320
+  },
+  {
+    "innerWidth": 320,
+    "clientWidth": 320,
+    "scrollWidth": 320,
+    "overflow": false,
+    "route": "#/recipes",
+    "heading": "Рецепты",
+    "onboarded": true,
+    "requestedWidth": 320
+  },
+  {
+    "innerWidth": 320,
+    "clientWidth": 320,
+    "scrollWidth": 320,
+    "overflow": false,
+    "route": "#/diary",
+    "heading": "Дневник самочувствия 📔",
+    "onboarded": true,
+    "requestedWidth": 320
+  },
+  {
+    "innerWidth": 320,
+    "clientWidth": 320,
+    "scrollWidth": 320,
+    "overflow": false,
+    "route": "#/premium",
+    "heading": "Не очередной список рецептов, а готовая система питания под вашу жизнь",
+    "onboarded": true,
+    "requestedWidth": 320
+  },
+  {
+    "innerWidth": 375,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "overflow": false,
+    "route": "#/home",
+    "heading": "Привет, Аудит Тест! 👋",
+    "onboarded": true,
+    "requestedWidth": 375
+  },
+  {
+    "innerWidth": 375,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "overflow": false,
+    "route": "#/recipes",
+    "heading": "Рецепты",
+    "onboarded": true,
+    "requestedWidth": 375
+  },
+  {
+    "innerWidth": 375,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "overflow": false,
+    "route": "#/diary",
+    "heading": "Дневник самочувствия 📔",
+    "onboarded": true,
+    "requestedWidth": 375
+  },
+  {
+    "innerWidth": 375,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "overflow": false,
+    "route": "#/premium",
+    "heading": "Не очередной список рецептов, а готовая система питания под вашу жизнь",
+    "onboarded": true,
+    "requestedWidth": 375
+  },
+  {
+    "innerWidth": 430,
+    "clientWidth": 430,
+    "scrollWidth": 430,
+    "overflow": false,
+    "route": "#/home",
+    "heading": "Привет, Аудит Тест! 👋",
+    "onboarded": true,
+    "requestedWidth": 430
+  },
+  {
+    "innerWidth": 430,
+    "clientWidth": 430,
+    "scrollWidth": 430,
+    "overflow": false,
+    "route": "#/recipes",
+    "heading": "Рецепты",
+    "onboarded": true,
+    "requestedWidth": 430
+  },
+  {
+    "innerWidth": 430,
+    "clientWidth": 430,
+    "scrollWidth": 430,
+    "overflow": false,
+    "route": "#/diary",
+    "heading": "Дневник самочувствия 📔",
+    "onboarded": true,
+    "requestedWidth": 430
+  },
+  {
+    "innerWidth": 430,
+    "clientWidth": 430,
+    "scrollWidth": 430,
+    "overflow": false,
+    "route": "#/premium",
+    "heading": "Не очередной список рецептов, а готовая система питания под вашу жизнь",
+    "onboarded": true,
+    "requestedWidth": 430
+  },
+  {
+    "innerWidth": 1440,
+    "clientWidth": 1425,
+    "scrollWidth": 1425,
+    "overflow": false,
+    "route": "#/home",
+    "heading": "Привет, Аудит Тест! 👋",
+    "onboarded": true,
+    "requestedWidth": 1440
+  },
+  {
+    "innerWidth": 1440,
+    "clientWidth": 1425,
+    "scrollWidth": 1425,
+    "overflow": false,
+    "route": "#/recipes",
+    "heading": "Рецепты",
+    "onboarded": true,
+    "requestedWidth": 1440
+  },
+  {
+    "innerWidth": 1440,
+    "clientWidth": 1425,
+    "scrollWidth": 1425,
+    "overflow": false,
+    "route": "#/diary",
+    "heading": "Дневник самочувствия 📔",
+    "onboarded": true,
+    "requestedWidth": 1440
+  },
+  {
+    "innerWidth": 1440,
+    "clientWidth": 1425,
+    "scrollWidth": 1425,
+    "overflow": false,
+    "route": "#/premium",
+    "heading": "Не очередной список рецептов, а готовая система питания под вашу жизнь",
+    "onboarded": true,
+    "requestedWidth": 1440
+  }
+]

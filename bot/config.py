@@ -8,8 +8,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = BASE_DIR / ".env"
 
-# Загрузка переменных из .env при наличии
-if ENV_PATH.exists():
+# Загрузка переменных из .env при наличии (если разрешено)
+if os.getenv("KETO_LOAD_DOTENV", "1") == "1" and ENV_PATH.exists():
     try:
         with open(ENV_PATH, "r", encoding="utf-8") as f:
             for line in f:
@@ -31,8 +31,10 @@ WEBAPP_URL = os.getenv("WEBAPP_URL", "http://localhost:5173")
 # Токен провайдера оплат Telegram Payments (ЮKassa / Сбербанк / etc через @BotFather)
 PAYMENT_PROVIDER_TOKEN = os.getenv("PAYMENT_PROVIDER_TOKEN", "")
 
-# Режим работы оплат: 'demo' (тестовый симулятор без реальных списаний) или 'live'
-PAYMENT_MODE = os.getenv("PAYMENT_MODE", "demo")
+# Режим работы оплат: 'disabled' (покупки отключены в P0)
+PAYMENT_MODE = os.getenv("PAYMENT_MODE", "disabled")
+if PAYMENT_MODE != "disabled":
+    PAYMENT_MODE = "disabled"
 
 # Контакты и каналы
 NUTRITIONIST_USERNAME = os.getenv("NUTRITIONIST_USERNAME", "olga_nutri_med")

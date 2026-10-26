@@ -1,0 +1,39 @@
+{
+  "scope": "In-process HTTP probes using create_app and synthetic files only",
+  "cases": [
+    {
+      "url": "/api/unknown",
+      "expected": 404,
+      "actual": 404,
+      "returns_index": false
+    },
+    {
+      "url": "/api",
+      "expected": 404,
+      "actual": 200,
+      "returns_index": true
+    },
+    {
+      "url": "/assets/missing",
+      "expected": 404,
+      "actual": 200,
+      "returns_index": true
+    },
+    {
+      "url": "/missing.js",
+      "expected": 404,
+      "actual": 404,
+      "returns_index": false
+    },
+    {
+      "url": "/some/client/route",
+      "expected": 200,
+      "actual": 200,
+      "returns_index": true
+    }
+  ],
+  "absent_dist": {
+    "health": 200,
+    "ui": 503
+  }
+}

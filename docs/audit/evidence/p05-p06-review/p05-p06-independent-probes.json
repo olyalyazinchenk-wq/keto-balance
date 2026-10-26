@@ -1,0 +1,78 @@
+{
+  "scope": "Independent isolated probes of actual source; no browser or production data",
+  "premiumCases": [
+    {
+      "id": "free",
+      "before": false,
+      "after": false,
+      "unchanged": true
+    },
+    {
+      "id": "m",
+      "before": false,
+      "after": false,
+      "unchanged": true
+    },
+    {
+      "id": "y",
+      "before": false,
+      "after": false,
+      "unchanged": true
+    },
+    {
+      "id": "care",
+      "before": false,
+      "after": false,
+      "unchanged": true
+    },
+    {
+      "id": "free",
+      "before": true,
+      "after": true,
+      "unchanged": true
+    },
+    {
+      "id": "m",
+      "before": true,
+      "after": true,
+      "unchanged": true
+    },
+    {
+      "id": "y",
+      "before": true,
+      "after": true,
+      "unchanged": true
+    },
+    {
+      "id": "care",
+      "before": true,
+      "after": true,
+      "unchanged": true
+    }
+  ],
+  "menuContract": {
+    "slotValueType": "object",
+    "legacyIdLookupFound": false,
+    "createdType": "string",
+    "created": "2026-10-26T02:48:40.299Z"
+  },
+  "replacement": {
+    "current": "k2",
+    "profileMode": "keto",
+    "candidateModes": [
+      "keto",
+      "carnivore"
+    ],
+    "foreignModeCount": 16
+  },
+  "eligibility": {
+    "eggRecipeWithValidArray": false,
+    "eggRecipeWithMalformedString": true,
+    "unknownIngredientWithEggAllergy": true
+  },
+  "integration": {
+    "appStillDefinesRecipes": true,
+    "appImportsDomainMenu": false,
+    "appImportsNewCatalog": false
+  }
+}

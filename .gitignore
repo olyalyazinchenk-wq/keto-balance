@@ -8,3 +8,8 @@ dist
 __pycache__/
 *.pyc
 
+.venv-p0/
+test-results/
+playwright-report/
+*.tsbuildinfo
+

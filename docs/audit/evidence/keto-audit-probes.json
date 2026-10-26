@@ -1,0 +1,115 @@
+{
+  "scope": "Isolated source probes; no network or production data",
+  "recipeCount": 37,
+  "eggAllergy": {
+    "allergies": [
+      "Яйца"
+    ],
+    "eggRecipes": [
+      "k3",
+      "k4",
+      "k2",
+      "k9",
+      "k5",
+      "k8",
+      "k1",
+      "k19",
+      "k18",
+      "k20"
+    ]
+  },
+  "timeConstraint": {
+    "maximum": 15,
+    "recipesOverLimit": [
+      {
+        "id": "k3",
+        "minutes": 35
+      },
+      {
+        "id": "k10",
+        "minutes": 45
+      },
+      {
+        "id": "k17",
+        "minutes": 55
+      },
+      {
+        "id": "k11",
+        "minutes": 25
+      },
+      {
+        "id": "k12",
+        "minutes": 30
+      },
+      {
+        "id": "k9",
+        "minutes": 35
+      },
+      {
+        "id": "k13",
+        "minutes": 30
+      },
+      {
+        "id": "k5",
+        "minutes": 30
+      },
+      {
+        "id": "k16",
+        "minutes": 50
+      },
+      {
+        "id": "k6",
+        "minutes": 40
+      },
+      {
+        "id": "k15",
+        "minutes": 50
+      },
+      {
+        "id": "k7",
+        "minutes": 30
+      },
+      {
+        "id": "k14",
+        "minutes": 60
+      },
+      {
+        "id": "k18",
+        "minutes": 25
+      },
+      {
+        "id": "k20",
+        "minutes": 40
+      }
+    ]
+  },
+  "portions": {
+    "recipe": "k1",
+    "recipeServings": 2,
+    "requestedServings": 1,
+    "shoppingEggs": {
+      "name": "Яйца",
+      "qty": 4,
+      "unit": "шт",
+      "cost": 52
+    }
+  },
+  "negativeCarbDisplays": [],
+  "carnivoreMealCount": [
+    3,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1
+  ],
+  "chatEmergency": {
+    "input": "У меня сильная боль в груди и тяжело дышать, что есть на кето?",
+    "reply": "Вы в режиме кето 🥑 Загляните в «Кето»: правила, продукты, меню. При заболеваниях — сначала к врачу."
+  },
+  "localDayProbe": {
+    "date": "2026-10-26T00:30:00+03:00",
+    "actual": "2026-10-25"
+  }
+}

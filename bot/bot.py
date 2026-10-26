@@ -196,9 +196,7 @@ def get_sos_text() -> str:
     )
 
 def get_plateau_keyboard() -> InlineKeyboardMarkup:
-    p = PRODUCTS["plateau_guide"]
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(f"💳 Получить протокол ({p['price']} ₽)", callback_data="buy_plateau_guide")],
         [InlineKeyboardButton("📱 Открыть приложение", web_app=WebAppInfo(url=WEBAPP_URL))],
         [InlineKeyboardButton("« Назад в меню", callback_data="to_main")],
     ])
@@ -466,56 +464,24 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"💰 Стоимость: <b>{PRODUCTS['sub_month']['price']} ₽ / мес</b>\n\n"
             f"3️⃣ <b>{PRODUCTS['vip_care']['title']}</b>\n"
             f"{PRODUCTS['vip_care']['description']}\n"
-            f"💰 Стоимость: <b>{PRODUCTS['vip_care']['price']} ₽ / мес</b>\n"
+            f"💰 Стоимость: <b>{PRODUCTS['vip_care']['price']} ₽ / мес</b>\n\n"
+            "ℹ️ <i>Покупки временно недоступны. Оформление новых заказов приостановлено.</i>"
         )
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("⚡ Купить Гайд Плато (490 ₽)", callback_data="buy_plateau_guide")],
-            [InlineKeyboardButton("👑 Подписка Premium (1 900 ₽)", callback_data="buy_sub_month")],
-            [InlineKeyboardButton("💎 VIP-сопровождение (15 000 ₽)", callback_data="buy_vip_care")],
-            [InlineKeyboardButton("« Назад", callback_data="to_main")],
+            [InlineKeyboardButton("📱 Открыть приложение", web_app=WebAppInfo(url=WEBAPP_URL))],
+            [InlineKeyboardButton("« Назад в меню", callback_data="to_main")],
         ])
         await query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
         
-    elif data.startswith("buy_"):
-        prod_id = data.replace("buy_", "")
-        purchase = init_purchase(user_id, prod_id)
-        prod = PRODUCTS[prod_id]
-        mode_str = "Тестовый (демо)" if purchase["mode"] == "demo" else "Боевой (ЮKassa)"
-        
-        order_text = (
-            f"🧾 <b>Оформление заказа: {prod['title']}</b>\n\n"
-            f"Сумма к оплате: <b>{prod['price']} ₽</b>\n\n"
-            f"Режим оплаты: <b>{mode_str}</b>\n"
-            f"Номер заказа: <code>{purchase['order_id']}</code>\n\n"
-            f"Нажмите кнопку ниже для завершения платежа:"
+    elif data.startswith("buy_") or data.startswith("confirm_demo_"):
+        await query.edit_message_text(
+            "⚠️ <b>Покупки временно недоступны</b>\n\n"
+            "В рамках технического обновления оформление заказов и прием платежей отключены. "
+            "Деньги не списываются, новые заказы не создаются.\n\n"
+            "Все доступные разделы и расчеты продолжают работать в штатном режиме.",
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("« В главное меню", callback_data="to_main")]])
         )
-        
-        kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton(f"💳 Оплатить {prod['price']} ₽ (Тест)", callback_data=f"confirm_demo_{purchase['order_id']}")],
-            [InlineKeyboardButton("« Отмена", callback_data="tariffs")],
-        ])
-        await query.edit_message_text(order_text, parse_mode="HTML", reply_markup=kb)
-        
-    elif data.startswith("confirm_demo_"):
-        order_id = data.replace("confirm_demo_", "")
-        order = complete_demo_payment(order_id)
-        if not order:
-            await query.edit_message_text("❌ Заказ не найден или уже оплачен.", reply_markup=get_main_keyboard())
-            return
-            
-        prod_id = order["product_id"]
-        if prod_id == "plateau_guide":
-            await query.edit_message_text(
-                get_plateau_full_guide(),
-                parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📱 Открыть приложение", web_app=WebAppInfo(url=WEBAPP_URL))]]),
-            )
-        else:
-            await query.edit_message_text(
-                f"🎉 <b>Оплата успешно завершена!</b>\n\nВаш тариф <b>{PRODUCTS[prod_id]['title']}</b> активирован. Приятного пользования! ✨",
-                parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📱 Запустить приложение", web_app=WebAppInfo(url=WEBAPP_URL))]]),
-            )
             
     # Пошаговый калькулятор
     elif data == "calc_mode":
@@ -635,6 +601,9 @@ def main():
         print("[ERROR] Токен Telegram-бота не задан. Укажите KETO_BOT_TOKEN в .env файле.", file=sys.stderr)
         sys.exit(1)
         
+    from bot.database import init_db
+    init_db()
+
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
     
     app.add_handler(CommandHandler("start", start_cmd))

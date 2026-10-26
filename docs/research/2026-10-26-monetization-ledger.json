@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://core.telegram.org/bots/payments-stars",
+      "title": "Bot Payments API for Digital Goods and Services",
+      "accessed": "2026-10-26",
+      "quotes": [
+        {
+          "text": "all transactions must be carried out in Telegram Stars",
+          "added": "2026-10-26"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "url": "https://core.telegram.org/api/subscriptions",
+      "title": "Star subscriptions",
+      "accessed": "2026-10-26",
+      "quotes": [
+        {
+          "text": "currently the only allowed subscription period is 30*24*60*60",
+          "added": "2026-10-26"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "url": "https://www.eatthismuch.com/pricing",
+      "title": "Pricing - Eat This Much",
+      "accessed": "2026-10-26",
+      "quotes": [
+        {
+          "text": "Plan a week of meals at a time\nAutomatic grocery list",
+          "added": "2026-10-26"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "url": "https://cronometer.com/gold",
+      "title": "Cronometer Gold | Premium Nutrition Tracker Subscription",
+      "accessed": "2026-10-26",
+      "quotes": [
+        {
+          "text": "Don't just plan your meals—automate them.",
+          "added": "2026-10-26"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "url": "https://www.revenuecat.com/blog/growth/average-subscription-renewal-rates-by-app-category",
+      "title": "Average Subscription Renewal Rates by App Category (2026 Benchmarks) | RevenueCat",
+      "accessed": "2026-10-26",
+      "quotes": [
+        {
+          "text": "Renewal rate is also impacted by subscription duration and pricing",
+          "added": "2026-10-26"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "url": "https://telegram.org/tos/bot-developers",
+      "title": "Telegram Bot Platform Developer Terms of Service",
+      "accessed": "2026-10-26",
+      "quotes": [
+        {
+          "text": "Developers can receive an equivalent of 0.013 USD worth of rewards for each Telegram Star.",
+          "added": "2026-10-26"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "url": "https://core.telegram.org/bots/api",
+      "title": "Telegram Bot API",
+      "accessed": "2026-10-26",
+      "quotes": [
+        {
+          "text": "Currently, it must always be 2592000 (30 days) if specified.",
+          "added": "2026-10-26"
+        }
+      ]
+    }
+  ]
+}

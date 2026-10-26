@@ -2,16 +2,26 @@
 Keto Balance — База данных пользователей, заказов и расчетов (SQLite).
 """
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any
 
 DB_PATH = Path(__file__).resolve().parent / "keto_balance.db"
 
+@contextmanager
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        yield conn
+    except Exception:
+        conn.rollback()
+        raise
+    else:
+        conn.commit()
+    finally:
+        conn.close()
 
 def init_db():
     with get_db() as conn:
@@ -164,6 +174,3 @@ def reset_today_water(user_id: int):
         cursor = conn.cursor()
         cursor.execute("DELETE FROM water_logs WHERE user_id = ? AND date = ?", (user_id, today))
         conn.commit()
-
-# Инициализация таблиц при импорте
-init_db()

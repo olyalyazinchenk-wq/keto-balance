@@ -1,57 +1,88 @@
 """
 Кето Баланс — FastAPI сервер для статики Mini App и API вебхуков.
 """
+import os
+import urllib.parse
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
 import uvicorn
 
-from bot.database import mark_order_paid
 from bot.config import PRODUCTS
 
-app = FastAPI(title="Кето Баланс API & Mini App Server")
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-DIST_DIR = BASE_DIR / "dist"
+DEFAULT_DIST_DIR = Path(os.getenv("KETO_DIST_DIR", str(BASE_DIR / "dist"))).resolve()
 
-class WebhookPayload(BaseModel):
-    order_id: str
-    status: str
-    secret: str = ""
+def resolve_safe_path(dist_dir: Path, requested_path: str) -> Path:
+    """Безопасное разрешение пути файла внутри dist_dir с защитой от traversal."""
+    decoded = urllib.parse.unquote(requested_path)
+    if ".." in decoded or "\\" in decoded or "\0" in decoded:
+        raise HTTPException(status_code=403, detail="Access denied")
 
-@app.get("/api/health")
-def health_check():
-    return {"status": "ok", "app": "Кето Баланс", "version": "0.1.0"}
+    rel_path = decoded.strip("/")
+    try:
+        resolved = (dist_dir / rel_path).resolve()
+    except Exception:
+        raise HTTPException(status_code=403, detail="Invalid path")
 
-@app.get("/api/products")
-def get_products():
-    return PRODUCTS
+    try:
+        if not resolved.is_relative_to(dist_dir):
+            raise HTTPException(status_code=403, detail="Access denied")
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=403, detail="Access denied")
 
-@app.post("/api/payments/webhook")
-def payment_webhook(payload: WebhookPayload):
-    if payload.status.lower() in ("paid", "succeeded", "success"):
-        order = mark_order_paid(payload.order_id)
-        if not order:
-            raise HTTPException(status_code=404, detail="Order not found")
-        return {"status": "success", "order": order}
-    return {"status": "ignored"}
+    return resolved
 
-# Раздача собранного Mini App (dist/)
-if DIST_DIR.exists():
-    app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="assets")
+def create_app(dist_dir: Path | str | None = None) -> FastAPI:
+    app = FastAPI(title="Кето Баланс API & Mini App Server")
+    resolved_dist = Path(dist_dir).resolve() if dist_dir is not None else DEFAULT_DIST_DIR
+
+    @app.get("/api/health")
+    def health_check():
+        return {"status": "ok", "app": "Кето Баланс", "version": "0.1.0"}
+
+    @app.get("/api/products")
+    def get_products():
+        return PRODUCTS
+
+    @app.post("/api/payments/webhook")
+    def payment_webhook():
+        raise HTTPException(status_code=503, detail="Payments are disabled in P0")
+
+    @app.api_route("/api", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"])
+    @app.api_route("/api/{api_path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"])
+    def unknown_api(api_path: str = ""):
+        path_str = f"/api/{api_path}".rstrip("/") if api_path else "/api"
+        raise HTTPException(status_code=404, detail=f"Unknown API endpoint: {path_str}")
 
     @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
-        file_path = DIST_DIR / full_path
-        if file_path.is_file():
-            return FileResponse(file_path)
-        return FileResponse(DIST_DIR / "index.html")
+    async def serve_spa_or_asset(full_path: str):
+        rel_path = urllib.parse.unquote(full_path).strip("/")
+        if rel_path == "api" or rel_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="API endpoint not found")
+
+        resolved = resolve_safe_path(resolved_dist, full_path)
+
+        if resolved.is_file():
+            return FileResponse(resolved)
+
+        target_name = Path(rel_path).name
+        if rel_path == "assets" or rel_path.startswith("assets/") or Path(rel_path).suffix or (target_name and target_name.startswith(".")):
+            raise HTTPException(status_code=404, detail="Asset not found")
+
+        safe_index = resolve_safe_path(resolved_dist, "index.html")
+        if resolved_dist.is_dir() and safe_index.is_file():
+            return FileResponse(safe_index)
+
+        raise HTTPException(status_code=503, detail="Build missing: dist directory or index.html not found")
+
+    return app
+
+app = create_app()
 
 def main():
-    print(f"[INFO] Запуск веб-сервера Кето Баланс на http://0.0.0.0:8000")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    print("[INFO] Запуск веб-сервера Кето Баланс на http://127.0.0.1:8000")
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 
 if __name__ == "__main__":
     main()

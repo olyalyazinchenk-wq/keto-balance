@@ -1,0 +1,6 @@
+{
+  "scope": "Isolated execution of the actual onClick expression, not a browser E2E",
+  "before": true,
+  "after": false,
+  "changed": true
+}

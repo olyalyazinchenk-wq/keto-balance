@@ -1,0 +1,7 @@
+﻿price_stars,reward_equivalent_usd,modeled_realization_and_refund_reserve_rate,modeled_receipt_usd,variable_cost_usd,contribution_per_subscriber_usd,paying_subscribers,fixed_cost_usd,operating_result_before_tax_acquisition_and_initial_development_usd,break_even_subscribers_before_acquisition_and_tax
+199,2.587,0.10,2.32830,0.55,1.77830,100,300,-122.17000,169
+199,2.587,0.10,2.32830,0.55,1.77830,300,300,233.49000,169
+199,2.587,0.10,2.32830,0.55,1.77830,1000,300,1478.30000,169
+299,3.887,0.10,3.49830,0.55,2.94830,100,300,-5.17000,102
+299,3.887,0.10,3.49830,0.55,2.94830,300,300,584.49000,102
+299,3.887,0.10,3.49830,0.55,2.94830,1000,300,2648.30000,102

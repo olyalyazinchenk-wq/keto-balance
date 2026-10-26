@@ -1,0 +1,135 @@
+{
+  "status": "illustrative assumptions; not forecast, approved tariff or verified net payout",
+  "reward_reference": "Telegram Bot Platform Developer Terms of Service, section 6.2.4, retrieved 2026-10-26",
+  "assumptions": {
+    "reward_usd_per_star": "0.013",
+    "deduction_reserve_not_verified_fee_or_tax": "0.10",
+    "variable_cost_usd_per_paid_period": "0.55",
+    "fixed_cost_usd_per_30_day_period": "300",
+    "excluded": [
+      "customer acquisition",
+      "taxes",
+      "initial development",
+      "unmodeled actual payout or FX costs"
+    ],
+    "no_exchange_rate_to_RUB_assumed": true
+  },
+  "subscription_scenarios": [
+    {
+      "price_stars": 199,
+      "reward_equivalent_usd": "2.587",
+      "modeled_realization_and_refund_reserve_rate": "0.10",
+      "modeled_receipt_usd": "2.32830",
+      "variable_cost_usd": "0.55",
+      "contribution_per_subscriber_usd": "1.77830",
+      "paying_subscribers": 100,
+      "fixed_cost_usd": "300",
+      "operating_result_before_tax_acquisition_and_initial_development_usd": "-122.17000",
+      "break_even_subscribers_before_acquisition_and_tax": 169
+    },
+    {
+      "price_stars": 199,
+      "reward_equivalent_usd": "2.587",
+      "modeled_realization_and_refund_reserve_rate": "0.10",
+      "modeled_receipt_usd": "2.32830",
+      "variable_cost_usd": "0.55",
+      "contribution_per_subscriber_usd": "1.77830",
+      "paying_subscribers": 300,
+      "fixed_cost_usd": "300",
+      "operating_result_before_tax_acquisition_and_initial_development_usd": "233.49000",
+      "break_even_subscribers_before_acquisition_and_tax": 169
+    },
+    {
+      "price_stars": 199,
+      "reward_equivalent_usd": "2.587",
+      "modeled_realization_and_refund_reserve_rate": "0.10",
+      "modeled_receipt_usd": "2.32830",
+      "variable_cost_usd": "0.55",
+      "contribution_per_subscriber_usd": "1.77830",
+      "paying_subscribers": 1000,
+      "fixed_cost_usd": "300",
+      "operating_result_before_tax_acquisition_and_initial_development_usd": "1478.30000",
+      "break_even_subscribers_before_acquisition_and_tax": 169
+    },
+    {
+      "price_stars": 299,
+      "reward_equivalent_usd": "3.887",
+      "modeled_realization_and_refund_reserve_rate": "0.10",
+      "modeled_receipt_usd": "3.49830",
+      "variable_cost_usd": "0.55",
+      "contribution_per_subscriber_usd": "2.94830",
+      "paying_subscribers": 100,
+      "fixed_cost_usd": "300",
+      "operating_result_before_tax_acquisition_and_initial_development_usd": "-5.17000",
+      "break_even_subscribers_before_acquisition_and_tax": 102
+    },
+    {
+      "price_stars": 299,
+      "reward_equivalent_usd": "3.887",
+      "modeled_realization_and_refund_reserve_rate": "0.10",
+      "modeled_receipt_usd": "3.49830",
+      "variable_cost_usd": "0.55",
+      "contribution_per_subscriber_usd": "2.94830",
+      "paying_subscribers": 300,
+      "fixed_cost_usd": "300",
+      "operating_result_before_tax_acquisition_and_initial_development_usd": "584.49000",
+      "break_even_subscribers_before_acquisition_and_tax": 102
+    },
+    {
+      "price_stars": 299,
+      "reward_equivalent_usd": "3.887",
+      "modeled_realization_and_refund_reserve_rate": "0.10",
+      "modeled_receipt_usd": "3.49830",
+      "variable_cost_usd": "0.55",
+      "contribution_per_subscriber_usd": "2.94830",
+      "paying_subscribers": 1000,
+      "fixed_cost_usd": "300",
+      "operating_result_before_tax_acquisition_and_initial_development_usd": "2648.30000",
+      "break_even_subscribers_before_acquisition_and_tax": 102
+    }
+  ],
+  "retention_scenarios": [
+    {
+      "first_renewal_rate": "0.40",
+      "second_renewal_rate": ".75",
+      "m1_payers": 100,
+      "m2_payers": 40,
+      "m3_payers": 30,
+      "total_payment_periods": 170,
+      "90_day_contribution_before_CAC_fixed_tax_usd": "501.211000000",
+      "90_day_contribution_per_initial_payer_usd": "5.012110000"
+    },
+    {
+      "first_renewal_rate": "0.60",
+      "second_renewal_rate": ".75",
+      "m1_payers": 100,
+      "m2_payers": 60,
+      "m3_payers": 45,
+      "total_payment_periods": 205,
+      "90_day_contribution_before_CAC_fixed_tax_usd": "604.401500000",
+      "90_day_contribution_per_initial_payer_usd": "6.044015000"
+    },
+    {
+      "first_renewal_rate": "0.80",
+      "second_renewal_rate": ".75",
+      "m1_payers": 100,
+      "m2_payers": 80,
+      "m3_payers": 60,
+      "total_payment_periods": 240,
+      "90_day_contribution_before_CAC_fixed_tax_usd": "707.592000000",
+      "90_day_contribution_per_initial_payer_usd": "7.075920000"
+    }
+  ],
+  "curator_capacity_scenario": {
+    "available_hours_per_4_week_program": 20,
+    "group_session_hours": 4,
+    "admin_hours": 2,
+    "individual_minutes_per_person_per_week": 20,
+    "weeks": 4,
+    "max_people_under_assumptions": 10
+  },
+  "single_purchase_reward_equivalents_before_deductions_usd": {
+    "49": "0.637",
+    "99": "1.287"
+  }
+}

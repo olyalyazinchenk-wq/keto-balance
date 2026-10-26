@@ -1,0 +1,54 @@
+{
+  "scope": "Independent in-process requests against synthetic temporary files only",
+  "has_create_app": false,
+  "cases": [
+    {
+      "url": "/api/unknown",
+      "expected": 404,
+      "actual": 200,
+      "index_returned": true,
+      "private_returned": false
+    },
+    {
+      "url": "/assets/missing",
+      "expected": 404,
+      "actual": 200,
+      "index_returned": true,
+      "private_returned": false
+    },
+    {
+      "url": "/missing.js",
+      "expected": 404,
+      "actual": 404,
+      "index_returned": false,
+      "private_returned": false
+    },
+    {
+      "url": "/some/client/route",
+      "expected": 200,
+      "actual": 200,
+      "index_returned": true,
+      "private_returned": false
+    },
+    {
+      "url": "/%2e%2e%2fprivate.txt",
+      "expected": 403,
+      "actual": 403,
+      "index_returned": false,
+      "private_returned": false
+    }
+  ],
+  "symlink_probe": {
+    "executed": false,
+    "reason": "OSError",
+    "winerror": 1314
+  },
+  "absent_dist": {
+    "health": 200,
+    "ui": 404,
+    "expected_ui": 503
+  },
+  "configured_hosts": [
+    "0.0.0.0"
+  ]
+}
