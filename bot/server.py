@@ -1,5 +1,5 @@
 """
-Keto Balance — FastAPI сервер для статики Mini App и API вебхуков.
+Кето Баланс — FastAPI сервер для статики Mini App и API вебхуков.
 """
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
@@ -11,7 +11,7 @@ import uvicorn
 from bot.database import mark_order_paid
 from bot.config import PRODUCTS
 
-app = FastAPI(title="Keto Balance API & Mini App Server")
+app = FastAPI(title="Кето Баланс API & Mini App Server")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DIST_DIR = BASE_DIR / "dist"
@@ -23,7 +23,7 @@ class WebhookPayload(BaseModel):
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "app": "Keto Balance", "version": "0.1.0"}
+    return {"status": "ok", "app": "Кето Баланс", "version": "0.1.0"}
 
 @app.get("/api/products")
 def get_products():
@@ -50,7 +50,7 @@ if DIST_DIR.exists():
         return FileResponse(DIST_DIR / "index.html")
 
 def main():
-    print(f"[INFO] Запуск веб-сервера Keto Balance на http://0.0.0.0:8000")
+    print(f"[INFO] Запуск веб-сервера Кето Баланс на http://0.0.0.0:8000")
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":

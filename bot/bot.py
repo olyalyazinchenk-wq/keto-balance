@@ -1,5 +1,5 @@
 """
-Keto Balance — Главный Telegram-бот (автоворонка, база рецептов, трекер воды, расчеты, Mini App и монетизация).
+Кето Баланс — Главный Telegram-бот (автоворонка, база рецептов, трекер воды, расчеты, Mini App и монетизация).
 """
 import logging
 import sys
@@ -13,6 +13,8 @@ from telegram import (
     InlineKeyboardMarkup,
     WebAppInfo,
     BotCommand,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
 )
 from telegram.constants import ParseMode
 from telegram.ext import (
@@ -85,12 +87,24 @@ CATEGORY_NAMES = {
     "carnivore": "🥩 Карнивор-рацион",
 }
 
+
+def get_reply_keyboard() -> ReplyKeyboardMarkup:
+    """Постоянная нижняя русскоязычная клавиатура меню."""
+    keyboard = [
+        [KeyboardButton("🌿 Главное меню"), KeyboardButton("🎲 Идея блюда")],
+        [KeyboardButton("📖 Рецепты"), KeyboardButton("💧 Трекер воды")],
+        [KeyboardButton("⚖️ Калькулятор БЖУ"), KeyboardButton("💡 Совет дня")],
+        [KeyboardButton("🆘 Антисрыв"), KeyboardButton("👑 Тарифы")],
+        [KeyboardButton("❓ Справка и помощь")],
+    ]
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
 def get_main_keyboard() -> InlineKeyboardMarkup:
     """Главное интерактивное меню бота."""
     keyboard = [
         [
             InlineKeyboardButton(
-                "📱 Открыть приложение Keto Balance",
+                "📱 Открыть приложение Кето Баланс",
                 web_app=WebAppInfo(url=WEBAPP_URL),
             )
         ],
@@ -212,7 +226,7 @@ async def menu_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
     await update.message.reply_html(
-        "🌿 <b>Главное меню Keto Balance</b>\n\nВыберите нужный раздел или откройте Web App:",
+        "🌿 <b>Главное меню Кето Баланс</b>\n\nВыберите нужный раздел или откройте Web App:",
         reply_markup=get_main_keyboard(),
     )
 
@@ -244,7 +258,7 @@ async def recipes_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("« В меню", callback_data="to_main")],
     ])
     await update.message.reply_html(
-        "📖 <b>Каталог проверенных рецептов Keto Balance</b>\n\nВыберите категорию блюд или запустите случайный подбор:",
+        "📖 <b>Каталог проверенных рецептов Кето Баланс</b>\n\nВыберите категорию блюд или запустите случайный подбор:",
         reply_markup=kb,
     )
 
@@ -301,7 +315,7 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
     text = (
-        "🥑 <b>Команды бота Keto Balance</b>\n\n"
+        "🥑 <b>Команды бота Кето Баланс</b>\n\n"
         "• /start — Главное меню и приветствие\n"
         "• /idea — Случайная идея рецепта на сегодня\n"
         "• /recipes — Каталог рецептов по категориям\n"
@@ -327,7 +341,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if data == "to_main":
         await query.edit_message_text(
-            "🌿 <b>Главное меню Keto Balance</b>\n\nВыберите нужный раздел или запустите Web App:",
+            "🌿 <b>Главное меню Кето Баланс</b>\n\nВыберите нужный раздел или запустите Web App:",
             parse_mode="HTML",
             reply_markup=get_main_keyboard(),
         )
@@ -354,7 +368,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("« Назад", callback_data="to_main")],
         ])
         await query.edit_message_text(
-            "📖 <b>Категории рецептов Keto Balance</b>\n\nВыберите интересующий раздел:",
+            "📖 <b>Категории рецептов Кето Баланс</b>\n\nВыберите интересующий раздел:",
             parse_mode="HTML",
             reply_markup=kb,
         )
@@ -443,7 +457,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     elif data == "tariffs":
         text = (
-            "👑 <b>Тарифы и продукты Keto Balance</b>\n\n"
+            "👑 <b>Тарифы и продукты Кето Баланс</b>\n\n"
             f"1️⃣ <b>{PRODUCTS['plateau_guide']['title']}</b>\n"
             f"{PRODUCTS['plateau_guide']['description']}\n"
             f"💰 Стоимость: <b>{PRODUCTS['plateau_guide']['price']} ₽</b>\n\n"
@@ -593,7 +607,7 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         await sos_cmd(update, context)
     else:
         await msg.reply_html(
-            "Я вас поняла! Воспользуйтесь кнопками ниже или откройте приложение Keto Balance прямо сейчас:",
+            "Я вас поняла! Воспользуйтесь кнопками ниже или откройте приложение Кето Баланс прямо сейчас:",
             reply_markup=get_main_keyboard(),
         )
 
@@ -635,7 +649,7 @@ def main():
     app.add_handler(CallbackQueryHandler(callback_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_message_handler))
     
-    print(f"[INFO] Keto Balance Bot запущен. WebApp: {WEBAPP_URL}")
+    print(f"[INFO] Кето Баланс Bot запущен. WebApp: {WEBAPP_URL}")
     app.run_polling()
 
 if __name__ == "__main__":
