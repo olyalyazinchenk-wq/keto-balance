@@ -99,14 +99,18 @@ def get_reply_keyboard() -> ReplyKeyboardMarkup:
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
+def webapp_button(text: str, url: str = WEBAPP_URL) -> InlineKeyboardButton:
+    clean_url = (url or "").strip()
+    if clean_url.startswith("https://"):
+        return InlineKeyboardButton(text, web_app=WebAppInfo(url=clean_url))
+    return InlineKeyboardButton(text, url=clean_url if clean_url else "http://localhost:3000")
+
+
 def get_main_keyboard() -> InlineKeyboardMarkup:
     """Главное интерактивное меню бота."""
     keyboard = [
         [
-            InlineKeyboardButton(
-                "📱 Открыть приложение Кето Баланс",
-                web_app=WebAppInfo(url=WEBAPP_URL),
-            )
+            webapp_button("📱 Открыть приложение Кето Баланс")
         ],
         [
             InlineKeyboardButton("🎲 Идея блюда", callback_data="idea"),
@@ -197,7 +201,7 @@ def get_sos_text() -> str:
 
 def get_plateau_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("📱 Открыть приложение", web_app=WebAppInfo(url=WEBAPP_URL))],
+        [webapp_button("📱 Открыть приложение")],
         [InlineKeyboardButton("« Назад в меню", callback_data="to_main")],
     ])
 
@@ -238,7 +242,7 @@ async def idea_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     r = random.choice(RECIPES)
     kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("🎲 Другая идея", callback_data="idea")],
-        [InlineKeyboardButton("📱 Открыть в приложении", web_app=WebAppInfo(url=WEBAPP_URL))],
+        [webapp_button("📱 Открыть в приложении")],
         [InlineKeyboardButton("« В меню", callback_data="to_main")],
     ])
     await update.message.reply_html(format_recipe_card(r), reply_markup=kb)
@@ -252,7 +256,7 @@ async def recipes_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🍲 Супы", callback_data="cat_soup"), InlineKeyboardButton("🥗 Салаты", callback_data="cat_salad")],
         [InlineKeyboardButton("🧀 Перекусы", callback_data="cat_snack"), InlineKeyboardButton("🥩 Карнивор", callback_data="cat_carnivore")],
         [InlineKeyboardButton("🎲 Случайное блюдо", callback_data="idea")],
-        [InlineKeyboardButton("📱 Все 37+ рецептов в Web App", web_app=WebAppInfo(url=WEBAPP_URL))],
+        [webapp_button("📱 Все 37+ рецептов в Web App")],
         [InlineKeyboardButton("« В меню", callback_data="to_main")],
     ])
     await update.message.reply_html(
@@ -352,7 +356,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("🎲 Другая идея", callback_data="idea")],
             [InlineKeyboardButton("📖 Каталог всех блюд", callback_data="recipes_cat")],
-            [InlineKeyboardButton("📱 Открыть в Web App", web_app=WebAppInfo(url=WEBAPP_URL))],
+            [webapp_button("📱 Открыть в Web App")],
             [InlineKeyboardButton("« В меню", callback_data="to_main")],
         ])
         await query.edit_message_text(format_recipe_card(r), parse_mode="HTML", reply_markup=kb)
@@ -468,7 +472,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "ℹ️ <i>Покупки временно недоступны. Оформление новых заказов приостановлено.</i>"
         )
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("📱 Открыть приложение", web_app=WebAppInfo(url=WEBAPP_URL))],
+            [webapp_button("📱 Открыть приложение")],
             [InlineKeyboardButton("« Назад в меню", callback_data="to_main")],
         ])
         await query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
@@ -519,7 +523,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         res_text = format_calc_result(calc)
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("📱 Открыть меню под этот расчёт", web_app=WebAppInfo(url=WEBAPP_URL))],
+            [webapp_button("📱 Открыть меню под этот расчёт")],
             [InlineKeyboardButton("⚡ Если вес стоит — Протокол «Плато»", callback_data="plateau_info")],
             [InlineKeyboardButton("« В меню", callback_data="to_main")],
         ])
@@ -545,7 +549,7 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
             save_calculation(user_id, num, mode, calc["water"], calc["kcal"], calc["protein"], calc["fat"], calc["carbs"])
             res_text = format_calc_result(calc)
             kb = InlineKeyboardMarkup([
-                [InlineKeyboardButton("📱 Открыть меню под этот расчёт", web_app=WebAppInfo(url=WEBAPP_URL))],
+                [webapp_button("📱 Открыть меню под этот расчёт")],
                 [InlineKeyboardButton("⚡ Протокол «Выход из плато»", callback_data="plateau_info")],
                 [InlineKeyboardButton("« В меню", callback_data="to_main")],
             ])
