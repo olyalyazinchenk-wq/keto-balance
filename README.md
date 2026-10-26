@@ -2,7 +2,7 @@
 
 Приложение и Telegram-бот для сопровождения кето-марафона: персональное меню, каталог рецептов, трекер воды, дневник и поддержка куратора.
 
-Репозиторий: https://github.com/olyalyazinchenk-wq/keto-balance (private)
+Репозиторий: https://github.com/olyalyazinchenk-wq/keto-balance (public)
 Хаб проекта в Notion: [KETO BALANCE — хаб проекта](https://app.notion.com/p/KETO-BALANCE-4058a9de1d41812a95a8da4b47ca7175)
 
 > Расчёты калорий, БЖУ, чистых углеводов и электролитов должны выполняться только через `src/core/keto-engine/` по утверждённой спецификации. Значения в каталоге рецептов — исходные данные, а не результат ядра.
