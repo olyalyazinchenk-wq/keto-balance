@@ -25,6 +25,7 @@
 ## 2. Что изменилось с предыдущего обновления (26.10)
 
 - Каталог рецептов вырос: **37 → 42** (добавлены `k22–k26`), синхронно обновлён `bot_data.json`.
+  Notion-база «Каталог рецептов» синхронизирована 27.10: 37 записей + 5 новых (`k22–k26`) = **42**.
 - Появились модули: `bot/transport.py`, `bot/private_support.py`, `src/pages/PrivateSupportPage.tsx`, `src/pages/TechnicalNotice.tsx`.
 - Появились скрипты релиза и проверки: `scripts/verify-release.py`, `scripts/stamp-release.mjs`, `scripts/run_backend_tests.py`, `scripts/verification.py`.
 - Документы: `docs/product-brief-2026-10-26.md`, `docs/product-interview-2026-10-26.md`, `docs/audit/2026-10-27-project-state-audit.md`, `docs/release/{status.md,baseline.md,evidence/}`.
@@ -36,6 +37,12 @@
 2. **Кнопки поддержки ведут не туда**: `bot/config.py` задаёт одинаковый fallback `https://t.me/olga_nutri_med` для `CHANNEL_URL`, `SUPPORT_CHAT` и `NUTRITIONIST_USERNAME`; `bot/bot.py` вешает этот адрес и на «Канал», и на «Задать вопрос». Личные вопросы должны идти только в личный чат Ольги, не в канал.
 3. **Имитация поддержки в интерфейсе**: экран нутрициолога раньше создавал шаблонный ответ через `setTimeout`. Проверять фактическое поведение перед релизом; «отправлено» нельзя показывать до подтверждённой доставки.
 4. **Расчётов БЖУ нет в проверяемом ядре**: `src/core/keto-engine/` отсутствует, числа каталога — исходные данные, не расчёт.
+
+### Отслеживается в GitHub Issues
+
+- #13 — 8 падающих frontend-тестов (контракты каталога и honesty-проверок)
+- #14 — публичный вход: cloudflared 530 / Cloudflare 1033
+- #15 — вопросы уходят в канал вместо личного чата Ольги
 
 ## 4. Что нельзя считать готовым
 
