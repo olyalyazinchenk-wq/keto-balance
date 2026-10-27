@@ -37,9 +37,10 @@ if PAYMENT_MODE != "disabled":
     PAYMENT_MODE = "disabled"
 
 # Контакты и каналы
-NUTRITIONIST_USERNAME = os.getenv("NUTRITIONIST_USERNAME", "olga_nutri_med")
+ADMIN_ID = int(os.getenv("ADMIN_ID", "1084557944"))
+NUTRITIONIST_USERNAME = os.getenv("NUTRITIONIST_USERNAME", "Olgazinchenko1186")
 CHANNEL_URL = os.getenv("CHANNEL_URL", "https://t.me/olga_nutri_med")
-SUPPORT_CHAT = os.getenv("SUPPORT_CHAT", "https://t.me/olga_nutri_med")
+SUPPORT_CHAT = os.getenv("SUPPORT_CHAT", "https://t.me/Olgazinchenko1186")
 
 # Продуктовая линейка и тарифы (в рублях)
 PRODUCTS = {

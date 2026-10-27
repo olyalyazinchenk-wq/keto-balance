@@ -5,6 +5,8 @@
 Репозиторий: https://github.com/olyalyazinchenk-wq/keto-balance (public)
 Хаб проекта в Notion: [KETO BALANCE — хаб проекта](https://app.notion.com/p/KETO-BALANCE-4058a9de1d41812a95a8da4b47ca7175)
 
+> **Актуальное состояние, проверки и открытые блокеры: [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md)** — читать первым, если вы агент или новый разработчик.
+
 ## Ресурсы проекта (для любой модели и любого разработчика)
 
 | Ресурс | Где | Что внутри |

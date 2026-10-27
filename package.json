@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/stamp-release.mjs",
     "preview": "vite preview",
-    "test:unit": "node --test tests/frontend/*.test.cjs",
+    "test:unit": "node --test --test-reporter=tap tests/frontend/*.test.cjs",
     "typecheck": "tsc --noEmit --incremental false --pretty false"
   },
   "dependencies": {

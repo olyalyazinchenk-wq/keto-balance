@@ -3,9 +3,10 @@
 """
 import os
 import urllib.parse
+import json
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 import uvicorn
 
 from bot.config import PRODUCTS
@@ -41,6 +42,29 @@ def create_app(dist_dir: Path | str | None = None) -> FastAPI:
     def health_check():
         return {"status": "ok", "app": "Кето Баланс", "version": "0.1.0"}
 
+    @app.get("/api/version")
+    def get_version():
+        release_path = resolved_dist / "release.json"
+        if not release_path.is_file():
+            raise HTTPException(
+                status_code=503,
+                detail="Release version unavailable: release.json missing",
+                headers={"Cache-Control": "no-store, no-cache, must-revalidate"}
+            )
+        try:
+            with open(release_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return JSONResponse(
+                content=data,
+                headers={"Cache-Control": "no-store, no-cache, must-revalidate"}
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=503,
+                detail="Release version unavailable: release.json unreadable",
+                headers={"Cache-Control": "no-store, no-cache, must-revalidate"}
+            )
+
     @app.get("/api/products")
     def get_products():
         return PRODUCTS
@@ -64,7 +88,12 @@ def create_app(dist_dir: Path | str | None = None) -> FastAPI:
         resolved = resolve_safe_path(resolved_dist, full_path)
 
         if resolved.is_file():
-            return FileResponse(resolved)
+            headers = {}
+            if rel_path.startswith("assets/"):
+                headers["Cache-Control"] = "public, max-age=31536000, immutable"
+            elif rel_path == "index.html" or rel_path == "":
+                headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+            return FileResponse(resolved, headers=headers)
 
         target_name = Path(rel_path).name
         if rel_path == "assets" or rel_path.startswith("assets/") or Path(rel_path).suffix or (target_name and target_name.startswith(".")):
@@ -72,7 +101,7 @@ def create_app(dist_dir: Path | str | None = None) -> FastAPI:
 
         safe_index = resolve_safe_path(resolved_dist, "index.html")
         if resolved_dist.is_dir() and safe_index.is_file():
-            return FileResponse(safe_index)
+            return FileResponse(safe_index, headers={"Cache-Control": "no-store, no-cache, must-revalidate"})
 
         raise HTTPException(status_code=503, detail="Build missing: dist directory or index.html not found")
 

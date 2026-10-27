@@ -3,6 +3,7 @@
 """
 import logging
 import sys
+import os
 import json
 import random
 from pathlib import Path
@@ -17,6 +18,7 @@ from telegram import (
     KeyboardButton,
 )
 from telegram.constants import ParseMode
+from telegram.request import HTTPXRequest
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -34,6 +36,8 @@ from bot.config import (
     CHANNEL_URL,
     SUPPORT_CHAT,
     PAYMENT_MODE,
+    ADMIN_ID,
+    NUTRITIONIST_USERNAME,
 )
 from bot.database import (
     get_or_create_user,
@@ -51,6 +55,8 @@ from bot.funnel import (
     get_plateau_full_guide,
 )
 from bot.payments import init_purchase, complete_demo_payment
+from bot.private_support import begin_question, cancel_question, deliver_pending_question, reply_to_question, reject_pending_attachment
+from bot.transport import configure_transport
 
 # Настройка логирования
 logging.basicConfig(
@@ -58,6 +64,8 @@ logging.basicConfig(
     level=logging.INFO,
 )
 logger = logging.getLogger("KetoBalanceBot")
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # Загрузка рецептов и советов из bot_data.json
 DATA_PATH = Path(__file__).resolve().parent.parent / "bot_data.json"
@@ -95,7 +103,7 @@ def get_reply_keyboard() -> ReplyKeyboardMarkup:
         [KeyboardButton("📖 Рецепты"), KeyboardButton("💧 Трекер воды")],
         [KeyboardButton("⚖️ Калькулятор БЖУ"), KeyboardButton("💡 Совет дня")],
         [KeyboardButton("🆘 Антисрыв"), KeyboardButton("👑 Тарифы")],
-        [KeyboardButton("❓ Справка и помощь")],
+        [KeyboardButton("👩⚕️ Задать вопрос"), KeyboardButton("❓ Справка")],
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -103,7 +111,8 @@ def webapp_button(text: str, url: str = WEBAPP_URL) -> InlineKeyboardButton:
     clean_url = (url or "").strip()
     if clean_url.startswith("https://"):
         return InlineKeyboardButton(text, web_app=WebAppInfo(url=clean_url))
-    return InlineKeyboardButton(text, url=clean_url if clean_url else "http://localhost:3000")
+    # Telegram запрещает localhost и non-https в InlineKeyboardButton URL
+    return InlineKeyboardButton(text, callback_data="open_app_local")
 
 
 def get_main_keyboard() -> InlineKeyboardMarkup:
@@ -114,7 +123,7 @@ def get_main_keyboard() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("🎲 Идея блюда", callback_data="idea"),
-            InlineKeyboardButton("📖 Рецепты (37+)", callback_data="recipes_cat"),
+            InlineKeyboardButton("📖 Каталог рецептов", callback_data="recipes_cat"),
         ],
         [
             InlineKeyboardButton("💧 Трекер воды", callback_data="water_tracker"),
@@ -130,7 +139,7 @@ def get_main_keyboard() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("📢 Канал Ольги", url=CHANNEL_URL),
-            InlineKeyboardButton("👩⚕️ Задать вопрос", url=SUPPORT_CHAT),
+            InlineKeyboardButton("👩⚕️ Задать вопрос", callback_data="ask_menu"),
         ],
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -211,6 +220,10 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start."""
     if not update.message or not update.effective_user:
         return
+    cancel_question(context)
+    if context.args == ['question']:
+        await ask_cmd(update, context)
+        return
     user = update.effective_user
     get_or_create_user(user.id, user.username, user.first_name)
     welcome_text = get_welcome_text(user.first_name or "друг")
@@ -221,14 +234,16 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_html(get_plateau_promo_text(), reply_markup=get_plateau_keyboard())
             return
             
+    await update.message.reply_html("🌿 Загружаю меню...", reply_markup=get_reply_keyboard())
     await update.message.reply_html(welcome_text, reply_markup=get_main_keyboard())
 
 async def menu_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /menu."""
+    cancel_question(context)
     if not update.message:
         return
     await update.message.reply_html(
-        "🌿 <b>Главное меню Кето Баланс</b>\n\nВыберите нужный раздел или откройте Web App:",
+        "🌿 <b>Главное меню Кето Баланс</b>\n\nВыберите нужный раздел кнопками ниже:",
         reply_markup=get_main_keyboard(),
     )
 
@@ -288,7 +303,7 @@ async def sos_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("⚡ Протокол «Плато»", callback_data="plateau_info")],
-        [InlineKeyboardButton("👩⚕️ Написать нутрициологу", url=SUPPORT_CHAT)],
+        [InlineKeyboardButton("👩⚕️ Написать Ольге", callback_data="ask_menu")],
         [InlineKeyboardButton("« В меню", callback_data="to_main")],
     ])
     await update.message.reply_html(get_sos_text(), reply_markup=kb)
@@ -311,6 +326,57 @@ async def calc_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_html(text, reply_markup=kb)
     elif update.callback_query:
         await update.callback_query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
+
+async def ask_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Описание личной связи до согласия на отправку."""
+    cancel_question(context)
+    text = ("Написать Ольге\n\nСледующее сообщение будет передано Ольге в личный чат только после нажатия кнопки ниже. "
+            "Не отправляйте анализы и документы. Срочные обращения этот чат не заменяет.")
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("✍️ Написать вопрос", callback_data="ask_start")],
+        [InlineKeyboardButton("« В главное меню", callback_data="to_main")],
+    ])
+    if update.message:
+        await update.message.reply_text(text, reply_markup=kb)
+    elif update.callback_query:
+        await update.callback_query.edit_message_text(text, reply_markup=kb)
+
+async def reply_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await reply_to_question(update, context, ADMIN_ID)
+
+async def cancel_on_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    cancel_question(context)
+
+async def cancel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    cancel_question(context)
+    if update.message:
+        await update.message.reply_text('Отправка отменена.')
+
+async def tariffs_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик команды /tariffs и раздела Тарифы."""
+    from bot.config import PRODUCTS
+    text = (
+        "👑 <b>Тарифы и продукты Кето Баланс</b>\n\n"
+        f"1️⃣ <b>{PRODUCTS['plateau_guide']['title']}</b>\n"
+        f"{PRODUCTS['plateau_guide']['description']}\n"
+        f"💰 Стоимость: <b>{PRODUCTS['plateau_guide']['price']} ₽</b>\n\n"
+        f"2️⃣ <b>{PRODUCTS['sub_month']['title']}</b>\n"
+        f"{PRODUCTS['sub_month']['description']}\n"
+        f"💰 Стоимость: <b>{PRODUCTS['sub_month']['price']} ₽ / мес</b>\n\n"
+        f"3️⃣ <b>{PRODUCTS['vip_care']['title']}</b>\n"
+        f"{PRODUCTS['vip_care']['description']}\n"
+        f"💰 Стоимость: <b>{PRODUCTS['vip_care']['price']} ₽ / мес</b>\n\n"
+        "ℹ️ <i>Покупки временно недоступны. Оформление новых заказов приостановлено.</i>"
+    )
+    kb = InlineKeyboardMarkup([
+        [webapp_button("📱 Открыть приложение")],
+        [InlineKeyboardButton("« В главное меню", callback_data="to_main")],
+    ])
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
+    elif update.message:
+        await update.message.reply_html(text, reply_markup=kb)
+
 
 async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /help."""
@@ -339,9 +405,19 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await query.answer()
     data = query.data
+    if data != "ask_start":
+        cancel_question(context)
     user_id = query.from_user.id
     
-    if data == "to_main":
+    if data == "open_app_local":
+        await query.answer(
+            f"📱 Веб-приложение запущено локально ({WEBAPP_URL}).\nДля открытия прямо в Telegram требуется публичный HTTPS адрес (ngrok/Vercel/etc).",
+            show_alert=True
+        )
+        return
+        
+    elif data == "to_main":
+        cancel_question(context)
         await query.edit_message_text(
             "🌿 <b>Главное меню Кето Баланс</b>\n\nВыберите нужный раздел или запустите Web App:",
             parse_mode="HTML",
@@ -381,16 +457,41 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         if cat_key == "carnivore":
             filtered = [r for r in RECIPES if r.get("mode") == "carnivore"]
+        elif cat_key == "soup":
+            filtered = [
+                r for r in RECIPES 
+                if r.get("cat") == "soup" 
+                or "суп" in r.get("title", "").lower() 
+                or "бульон" in r.get("title", "").lower()
+            ]
+        elif cat_key == "salad":
+            filtered = [
+                r for r in RECIPES 
+                if r.get("cat") == "salad" 
+                or "салат" in r.get("title", "").lower()
+            ]
         elif cat_key == "lunch":
-            filtered = [r for r in RECIPES if r.get("cat") in ("lunch", "dinner", "main")]
+            filtered = [
+                r for r in RECIPES 
+                if r.get("cat") in ("lunch", "dinner", "main")
+                and r.get("cat") not in ("soup", "salad")
+                and "суп" not in r.get("title", "").lower()
+                and "бульон" not in r.get("title", "").lower()
+                and "салат" not in r.get("title", "").lower()
+            ]
         else:
             filtered = [r for r in RECIPES if r.get("cat") == cat_key]
             
         if not filtered:
-            filtered = RECIPES[:5]
+            await query.edit_message_text(
+                f"<b>{cat_title}</b>\n\nВ этой категории пока нет рецептов.",
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("« К категориям", callback_data="recipes_cat")]])
+            )
+            return
             
         rows = []
-        for r in filtered[:8]:
+        for r in filtered:
             rows.append([InlineKeyboardButton(f"{r.get('emoji', '🍳')} {r.get('title')}", callback_data=f"rec_{r.get('id')}")])
             
         rows.append([InlineKeyboardButton("« К категориям", callback_data="recipes_cat")])
@@ -445,7 +546,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "sos_info":
         kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("⚡ Протокол «Плато»", callback_data="plateau_info")],
-            [InlineKeyboardButton("👩⚕️ Написать нутрициологу", url=SUPPORT_CHAT)],
+            [InlineKeyboardButton("👩⚕️ Написать Ольге", callback_data="ask_menu")],
             [InlineKeyboardButton("« В меню", callback_data="to_main")],
         ])
         await query.edit_message_text(get_sos_text(), parse_mode="HTML", reply_markup=kb)
@@ -457,25 +558,21 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=get_plateau_keyboard(),
         )
         
-    elif data == "tariffs":
-        text = (
-            "👑 <b>Тарифы и продукты Кето Баланс</b>\n\n"
-            f"1️⃣ <b>{PRODUCTS['plateau_guide']['title']}</b>\n"
-            f"{PRODUCTS['plateau_guide']['description']}\n"
-            f"💰 Стоимость: <b>{PRODUCTS['plateau_guide']['price']} ₽</b>\n\n"
-            f"2️⃣ <b>{PRODUCTS['sub_month']['title']}</b>\n"
-            f"{PRODUCTS['sub_month']['description']}\n"
-            f"💰 Стоимость: <b>{PRODUCTS['sub_month']['price']} ₽ / мес</b>\n\n"
-            f"3️⃣ <b>{PRODUCTS['vip_care']['title']}</b>\n"
-            f"{PRODUCTS['vip_care']['description']}\n"
-            f"💰 Стоимость: <b>{PRODUCTS['vip_care']['price']} ₽ / мес</b>\n\n"
-            "ℹ️ <i>Покупки временно недоступны. Оформление новых заказов приостановлено.</i>"
+    elif data == "ask_menu":
+        await ask_cmd(update, context)
+        
+    elif data == "ask_start":
+        if not begin_question(update, context):
+            await query.edit_message_text("Вопрос можно отправить только в личном чате с ботом.")
+            return
+        await query.edit_message_text(
+            "Следующее текстовое сообщение будет передано Ольге в личный чат. Не отправляй анализы и документы. Для отмены нажми «Отмена» или отправь /cancel.",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("« Отмена", callback_data="to_main")]])
         )
-        kb = InlineKeyboardMarkup([
-            [webapp_button("📱 Открыть приложение")],
-            [InlineKeyboardButton("« Назад в меню", callback_data="to_main")],
-        ])
-        await query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
+        return
+
+    elif data == "tariffs":
+        await tariffs_cmd(update, context)
         
     elif data.startswith("buy_") or data.startswith("confirm_demo_"):
         await query.edit_message_text(
@@ -537,6 +634,11 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     if not msg or not msg.text:
         return
         
+    keyboard_texts = {button.text for row in get_reply_keyboard().keyboard for button in row}
+    if msg.text in keyboard_texts:
+        cancel_question(context)
+    elif await deliver_pending_question(update, context, ADMIN_ID):
+        return
     text = msg.text.strip().lower()
     user_id = update.effective_user.id
     
@@ -557,27 +659,41 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
             return
     except ValueError:
         pass
+
+
         
-    # Триггерные слова из Reels / рекламы
-    if "баланс" in text or "balance" in text:
+    # Обработка кнопок нижней клавиатуры и текстовых команд
+    if "вопрос" in text or "спросить" in text or "нутрициолог" in text or "связь" in text:
+        await ask_cmd(update, context)
+    elif "тариф" in text:
+        await tariffs_cmd(update, context)
+    elif "иде" in text or "блюд" in text:
+        await idea_cmd(update, context)
+    elif "рецепт" in text or "каталог" in text:
+        await recipes_cmd(update, context)
+    elif "вод" in text or "трекер" in text or "гидрат" in text:
+        await water_cmd(update, context)
+    elif "кальк" in text or "бжу" in text or "расчет" in text or "норма" in text:
+        await calc_cmd(update, context)
+    elif "совет" in text:
+        await tip_cmd(update, context)
+    elif "срыв" in text or "тяг" in text or "sos" in text or "антисрыв" in text:
+        await sos_cmd(update, context)
+    elif "плато" in text or "вес стоит" in text:
+        await msg.reply_html(get_plateau_promo_text(), reply_markup=get_plateau_keyboard())
+    elif "меню" in text or "старт" in text or "главное" in text:
+        await menu_cmd(update, context)
+    elif "помощ" in text or "справк" in text or "help" in text:
+        await help_cmd(update, context)
+    elif "баланс" in text or "balance" in text:
         await msg.reply_html(
             "🌿 <b>Добро пожаловать по кодовому слову БАЛАНС!</b>\n\n"
             "Вам доступен экспресс-расчёт нормы воды и БЖУ, а также персональный помощник питания:",
             reply_markup=get_main_keyboard(),
         )
-    elif "плато" in text or "вес стоит" in text:
-        await msg.reply_html(get_plateau_promo_text(), reply_markup=get_plateau_keyboard())
-    elif "рецепт" in text or "меню" in text:
-        await recipes_cmd(update, context)
-    elif "вода" in text:
-        await water_cmd(update, context)
-    elif "совет" in text:
-        await tip_cmd(update, context)
-    elif "срыв" in text or "тяга" in text or "sos" in text:
-        await sos_cmd(update, context)
     else:
         await msg.reply_html(
-            "Я вас поняла! Воспользуйтесь кнопками ниже или откройте приложение Кето Баланс прямо сейчас:",
+            "🌿 <b>Кето Баланс</b>\n\nВыберите нужный раздел кнопками ниже:",
             reply_markup=get_main_keyboard(),
         )
 
@@ -585,20 +701,26 @@ async def post_init(application: Application):
     """Установка списка команд в меню Telegram бота."""
     commands = [
         BotCommand("start", "🌿 Главное меню"),
+        BotCommand("ask", "👩⚕️ Задать вопрос нутрициологу (в ЛС)"),
         BotCommand("idea", "🎲 Идея блюда на сегодня"),
         BotCommand("recipes", "📖 Каталог рецептов (37+)"),
         BotCommand("water", "💧 Трекер воды"),
         BotCommand("calc", "⚖️ Калькулятор воды и БЖУ"),
         BotCommand("tip", "💡 Совет нутрициолога"),
         BotCommand("sos", "🆘 Протокол при тяге и срыве"),
+        BotCommand("tariffs", "👑 Тарифы и продукты"),
         BotCommand("menu", "🌿 Меню бота"),
         BotCommand("help", "❓ Справка по боту"),
     ]
     try:
         await application.bot.set_my_commands(commands)
         logger.info("Команды бота успешно зарегистрированы в Telegram!")
-    except Exception as e:
-        logger.warning(f"Не удалось зарегистрировать команды: {e}")
+    except Exception:
+        logger.warning("Не удалось зарегистрировать команды Telegram")
+
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    logger.error("Ошибка обработки обновления (подробности скрыты)")
+
 
 def main():
     if not BOT_TOKEN:
@@ -608,10 +730,16 @@ def main():
     from bot.database import init_db
     init_db()
 
-    app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
+    proxy = os.getenv("KETO_BOT_PROXY") or None
+    app = configure_transport(ApplicationBuilder().token(BOT_TOKEN), proxy).post_init(post_init).build()
     
+    app.add_handler(MessageHandler(filters.COMMAND, cancel_on_command), group=-1)
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(CommandHandler("menu", menu_cmd))
+    app.add_handler(CommandHandler("tariffs", tariffs_cmd))
+    app.add_handler(CommandHandler("ask", ask_cmd))
+    app.add_handler(CommandHandler("reply", reply_cmd))
+    app.add_handler(CommandHandler("cancel", cancel_cmd))
     app.add_handler(CommandHandler("idea", idea_cmd))
     app.add_handler(CommandHandler("recipes", recipes_cmd))
     app.add_handler(CommandHandler("water", water_cmd))
@@ -621,8 +749,10 @@ def main():
     app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(CallbackQueryHandler(callback_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_message_handler))
+    app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.ATTACHMENT, reject_pending_attachment))
     
     print(f"[INFO] Кето Баланс Bot запущен. WebApp: {WEBAPP_URL}")
+    app.add_error_handler(error_handler)
     app.run_polling()
 
 if __name__ == "__main__":

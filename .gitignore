@@ -15,3 +15,9 @@ playwright-report/
 
 
 *.log
+
+# артефакты и бинарники — не публикуем в репозиторий
+media/
+tools/
+test_audio.mp3
+test_steak.jpg
