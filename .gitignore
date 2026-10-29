@@ -21,3 +21,4 @@ media/
 tools/
 test_audio.mp3
 test_steak.jpg
+.cache/
