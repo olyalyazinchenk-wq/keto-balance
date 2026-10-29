@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  /* Основное направление A — «Спокойная кухня» */
+  --kb-bg: #F7F2E9;
+  --kb-surface: #FFFFFF;
+  --kb-ink: #2B2620;
+  --kb-primary: #5F7161;
+  --kb-primary-hover: #4E5E50;
+  --kb-on-primary: #FFFFFF;
+  --kb-muted: #625C54;
+  --kb-sage: #EDF1E6;
+  --kb-border: #E2DBD0;
+  --kb-warn-bg: #FBF4E4;
+  --kb-warn-ink: #5C4316;
+  --kb-warn-border: #E6D2A8;
+  --kb-danger-bg: #FBECE9;
+  --kb-danger-ink: #6E251C;
+
+  /* Telegram & System Safe Area CSS Variables (separate sources, max-resolved) */
+  --tg-safe-top: 0px;
+  --tg-safe-bottom: 0px;
+  --tg-content-safe-top: 0px;
+  --tg-viewport-stable-height: 100dvh;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--kb-ink);
+  background-color: var(--kb-bg);
+}
+
+[data-kb-theme="dark"] {
+  /* Читаемый резервный тёмный набор для тёмной темы Telegram */
+  --kb-bg: #1D1B18;
+  --kb-surface: #272420;
+  --kb-ink: #F4EFE6;
+  --kb-primary: #6D836F;
+  --kb-primary-hover: #7D9580;
+  --kb-on-primary: #FFFFFF;
+  --kb-muted: #BEB6AA;
+  --kb-sage: #2D342E;
+  --kb-border: #3B3630;
+  --kb-warn-bg: #332A1A;
+  --kb-warn-ink: #F2DFB6;
+  --kb-warn-border: #57472B;
+  --kb-danger-bg: #36201D;
+  --kb-danger-ink: #F5C6C0;
+}
+
+body {
+  margin: 0;
+  background-color: var(--kb-bg);
+  color: var(--kb-ink);
+  font-size: 1rem;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.kb-safe-top {
+  padding-top: max(env(safe-area-inset-top, 0px), var(--tg-safe-top, 0px), var(--tg-content-safe-top, 0px));
+}
+
+.kb-safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-bottom, 0px));
+}
+
+.kb-focus-ring:focus-visible {
+  outline: 2px solid var(--kb-primary);
+  outline-offset: 2px;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
