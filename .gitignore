@@ -15,6 +15,9 @@ playwright-report/
 
 
 *.log
+*.lock
+run_tunnel.lock
+.tunnel_cache.json
 
 # артефакты и бинарники — не публикуем в репозиторий
 media/
