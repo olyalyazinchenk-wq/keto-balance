@@ -95,11 +95,37 @@ def run_tunnel():
                 env=env,
             )
 
+            import threading
+            stop_watchdog = threading.Event()
+            def watchdog():
+                time.sleep(15)
+                zero_count = 0
+                while not stop_watchdog.is_set() and proc.poll() is None:
+                    try:
+                        with urllib.request.urlopen("http://127.0.0.1:20241/ready", timeout=3) as r:
+                            status_data = json.loads(r.read().decode())
+                            if status_data.get("readyConnections", 0) == 0:
+                                zero_count += 1
+                            else:
+                                zero_count = 0
+                    except Exception:
+                        zero_count += 1
+
+                    if zero_count >= 2:
+                        print("[TUNNEL WATCHDOG] Соединение потеряно. Перезапуск нового туннеля...", flush=True)
+                        proc.terminate()
+                        break
+                    time.sleep(5)
+
+            t = threading.Thread(target=watchdog, daemon=True)
+            t.start()
+
             for line in iter(proc.stdout.readline, ""):
                 line_str = line.strip()
                 if line_str:
                     print(f"[CLOUDFLARED] {line_str}", flush=True)
 
+            stop_watchdog.set()
             proc.wait()
             print("[TUNNEL] Процесс cloudflared завершился. Перезапуск через 3 сек...", flush=True)
         except Exception as e:
