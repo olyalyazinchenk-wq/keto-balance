@@ -1,0 +1,29 @@
+{
+  "url": "http://127.0.0.1:4319/?screen=today&theme=light&chosen=1",
+  "revision": "food-first-01",
+  "headings": [
+    "Сегодня",
+    "Яичница с авокадо",
+    "Ещё на сегодня"
+  ],
+  "widths": {
+    "scroll": 375,
+    "client": 375
+  },
+  "images": [
+    {
+      "src": "/media/food-first/hero.webp",
+      "loaded": true,
+      "alt": "Фотоиллюстрация: Яичница с авокадо"
+    }
+  ],
+  "actionBottom": 587.875,
+  "errors": [],
+  "nav": [
+    "Сегодня",
+    "Меню",
+    "Покупки",
+    "Дневник",
+    "Ещё"
+  ]
+}

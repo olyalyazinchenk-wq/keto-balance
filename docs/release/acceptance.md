@@ -1,0 +1,12 @@
+# Приёмка рубежей (Acceptance)
+
+| Рубеж | Статус | Доказательство | Ограничения и остаточные блокеры | Следующий шаг |
+|---|---|---|---|---|
+| **K0** (Локальный checkpoint) | **PASS** | 1. TDD `selectedDay`: 5/5 тестов зелёные (RED/GREEN доказано).<br>2. Донорский suite: 28/28 tests PASS, TypeScript exit 0.<br>3. Браузерная проверка `browser_exec`: День 2 сохраняется в `localStorage['kb_proto_selected_day_v1']`, переживает reload; при `999` честный fallback на День 1 без сброса меню. | Относится только к локальному прототипу `design/argon-food-first-work/`. Не доказывает готовность основного приложения или Telegram-входа. | Завершён. |
+| **I01–I05** (Изоляция сборки и .env) | **PASS** | 1. `catalog-build-safety.test.cjs`: 7/7 tests PASS (синтетический перехват чтения runtime bot data и изоляция Vite `envDir: './src/core/env'`).<br>2. `test_strict_import_safety_in_fresh_process`: subprocess аудит исключает чтение `.env`, SQLite connection и network sockets при `KETO_LOAD_DOTENV=0`.<br>3. `test_run_step_strips_inherited_pythonpath`: очистка унаследованного `PYTHONPATH`.<br>4. Полный lifecycle build в scratch-каталоге: 0 env reads. | Сборка основного приложения полностью изолирована от runtime bot_data.json и секретов. | Переход к I06–I27. |
+| **V01–V06** (Technical policy manifests) | **PASS** | 1. `test_product_gate_policy.py`: 7/7 tests PASS (RED/GREEN).<br>2. Manifests `k1-local`, `k2-pilot`, `k3-pilot` зарегистрированы в `scripts/verification.py`.<br>3. Guard checks подтверждены: missing suite, zero tests, skipped tests, child process error блокируют соответствующий stage. | Никаких фиктивных тестов-пустышек не создано. Stage `k1-local` ожидает реализации продуктовых сьютов (I06–I27). | Переход к I06–I27 (Data bridge + Food-First). |
+| **K1** (Показ Keto в Telegram) | **NOT_RUN / BLOCKED** | — | Требует завершения доменных адаптеров и переноса 4 экранов (I06–I27), показа C01–C15 и согласования статического размещения (S-PUBLISH). | Задачи I06–I27 в основном приложении. |
+| **K2** (Полезный закрытый сценарий) | **NOT_RUN / BLOCKED** | — | Требует завершения K1, проверки канонического каталога, нормализации покупок и staging-среды. | После K1. |
+| **K3** (Платный пилот) | **NOT_RUN / BLOCKED** | — | Требует K2, утверждения оффера, Telegram Stars и юридических условий. | После K2. |
+
+**Вердикт независимого ревьюера:** Gate K0 полностью подтверждён фактическими командами и браузерным прогоном. Продуктовый код основного приложения не затронут, секреты не читались, внешняя сеть не использовалась.

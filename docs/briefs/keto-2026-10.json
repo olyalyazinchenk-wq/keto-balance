@@ -1,0 +1,22 @@
+{
+  "slug": "keto-protein",
+  "kicker": "кето · тарелка",
+  "cta": "разбор в канале",
+  "out": "media/hooks/variants",
+  "platforms": ["tiktok", "reels", "shorts", "telegram_square", "ig_feed"],
+  "variants": [
+    { "name": "hook",   "scenes": 1 },
+    { "name": "teaser", "scenes": 2 },
+    { "name": "full",   "scenes": 4 }
+  ],
+  "scenes": [
+    { "clip": "media/flow/salmon_plate_01.mp4", "t": 1.0, "dur": 3.0,
+      "l1": "СНАЧАЛА БЕЛОК", "l2": "ПОТОМ ВСЁ ОСТАЛЬНОЕ", "kicker": "кето · тарелка" },
+    { "clip": "media/flow/hands_slice_ripe_avocado_01.mp4", "t": 0.6, "dur": 3.0,
+      "l1": "АВОКАДО", "l2": "2 Г УГЛЕВОДОВ", "kicker": "кето · жиры" },
+    { "clip": "media/flow/label_closeup_01.mp4", "t": 1.2, "dur": 3.0,
+      "l1": "ЧИТАЙ ЭТИКЕТКУ", "l2": "А НЕ СЛОВО КЕТО", "kicker": "кето · проверка" },
+    { "clip": "media/flow/scales_avocado_01.mp4", "t": 1.0, "dur": 3.0,
+      "l1": "ВЕСЫ РЕШАЮТ", "l2": "НЕ ГЛАЗОМЕР", "kicker": "кето · граммовка" }
+  ]
+}

@@ -1,0 +1,122 @@
+[
+  {
+    "screen": "today",
+    "width": 320,
+    "scroll": 320,
+    "client": 320
+  },
+  {
+    "screen": "today",
+    "width": 375,
+    "scroll": 375,
+    "client": 375
+  },
+  {
+    "screen": "today",
+    "width": 390,
+    "scroll": 390,
+    "client": 390
+  },
+  {
+    "screen": "today",
+    "width": 768,
+    "scroll": 768,
+    "client": 768
+  },
+  {
+    "screen": "today",
+    "width": 1280,
+    "scroll": 1280,
+    "client": 1280
+  },
+  {
+    "screen": "menu",
+    "width": 320,
+    "scroll": 320,
+    "client": 320
+  },
+  {
+    "screen": "menu",
+    "width": 375,
+    "scroll": 375,
+    "client": 375
+  },
+  {
+    "screen": "menu",
+    "width": 390,
+    "scroll": 390,
+    "client": 390
+  },
+  {
+    "screen": "menu",
+    "width": 768,
+    "scroll": 768,
+    "client": 768
+  },
+  {
+    "screen": "menu",
+    "width": 1280,
+    "scroll": 1280,
+    "client": 1280
+  },
+  {
+    "screen": "recipe",
+    "width": 320,
+    "scroll": 320,
+    "client": 320
+  },
+  {
+    "screen": "recipe",
+    "width": 375,
+    "scroll": 375,
+    "client": 375
+  },
+  {
+    "screen": "recipe",
+    "width": 390,
+    "scroll": 390,
+    "client": 390
+  },
+  {
+    "screen": "recipe",
+    "width": 768,
+    "scroll": 768,
+    "client": 768
+  },
+  {
+    "screen": "recipe",
+    "width": 1280,
+    "scroll": 1280,
+    "client": 1280
+  },
+  {
+    "screen": "shopping",
+    "width": 320,
+    "scroll": 320,
+    "client": 320
+  },
+  {
+    "screen": "shopping",
+    "width": 375,
+    "scroll": 375,
+    "client": 375
+  },
+  {
+    "screen": "shopping",
+    "width": 390,
+    "scroll": 390,
+    "client": 390
+  },
+  {
+    "screen": "shopping",
+    "width": 768,
+    "scroll": 768,
+    "client": 768
+  },
+  {
+    "screen": "shopping",
+    "width": 1280,
+    "scroll": 1280,
+    "client": 1280
+  }
+]

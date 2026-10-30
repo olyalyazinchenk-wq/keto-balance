@@ -1,0 +1,26 @@
+{
+  "photo": {
+    "title": "Нежный творожный скрэмбл со сливочным маслом и зелёным луком",
+    "missingPlaceholder": true,
+    "wrongPhotoPresent": false
+  },
+  "shopping": {
+    "changed": true,
+    "curdVisible": true,
+    "stale": "false",
+    "separateSourceRows": 33
+  },
+  "clipboard": [
+    {
+      "errorText": "Не удалось скопировать список. Попробуйте ещё раз.",
+      "showsSuccess": false,
+      "mode": "reject"
+    },
+    {
+      "errorText": "Не удалось скопировать список. Попробуйте ещё раз.",
+      "showsSuccess": false,
+      "mode": "missing"
+    }
+  ],
+  "uncaughtErrors": []
+}

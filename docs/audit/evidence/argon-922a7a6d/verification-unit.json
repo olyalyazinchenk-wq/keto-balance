@@ -1,0 +1,16 @@
+{
+  "name": "unit",
+  "exit": 0,
+  "seconds": 0.8,
+  "stdout": "TAP version 13\n# Subtest: navigation stack pushes and pops without emptying root\nok 1 - navigation stack pushes and pops without emptying root\n  ---\n  duration_ms: 3.264\n  type: 'test'\n  ...\n# Subtest: extractStepTimerMinutes parses ranges and single minute values\nok 2 - extractStepTimerMinutes parses ranges and single minute values\n  ---\n  duration_ms: 0.648\n  type: 'test'\n  ...\n# Subtest: calculateShoppingProgress computes accurate counts and percentage\nok 3 - calculateShoppingProgress computes accurate counts and percentage\n  ---\n  duration_ms: 0.3336\n  type: 'test'\n  ...\n# Subtest: createCustomShoppingItem validates empty names and defaults amount\nok 4 - createCustomShoppingItem validates empty names and defaults amount\n  ---\n  duration_ms: 0.3157\n  type: 'test'\n  ...\n# Subtest: filterRecipesBySettings respects restrictions and prep time\nok 5 - filterRecipesBySettings respects restrictions and prep time\n  ---\n  duration_ms: 0.3272\n  type: 'test'\n  ...\n# Subtest: calculateSilhouetteForecast scales waist contour and energy across stages\nok 6 - calculateSilhouetteForecast scales waist contour and energy across stages\n  ---\n  duration_ms: 0.3559\n  type: 'test'\n  ...\n# Subtest: calculateDopamineMomentum rewards completed habits and cooked meals\nok 7 - calculateDopamineMomentum rewards completed habits and cooked meals\n  ---\n  duration_ms: 0.2805\n  type: 'test'\n  ...\n# Subtest: keeps the exact source ID, title and explicit metadata\nok 8 - keeps the exact source ID, title and explicit metadata\n  ---\n  duration_ms: 1.4701\n  type: 'test'\n  ...\n# Subtest: missing photo is null, not a fake plate image\nok 9 - missing photo is null, not a fake plate image\n  ---\n  duration_ms: 0.2512\n  type: 'test'\n  ...\n# Subtest: unknown metadata is not invented\nok 10 - unknown metadata is not invented\n  ---\n  duration_ms: 0.1966\n  type: 'test'\n  ...\n# Subtest: requires an explicit local photo path when provided\nok 11 - requires an explicit local photo path when provided\n  ---\n  duration_ms: 0.4034\n  type: 'test'\n  ...\n# Subtest: does not mutate inputs or invent nutrition\nok 12 - does not mutate inputs or invent nutrition\n  ---\n  duration_ms: 0.2459\n  type: 'test'\n  ...\n1..12\n# tests 12\n# suites 0\n# pass 12\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 680.6973\n",
+  "stderr": "",
+  "command": [
+    "node",
+    "--import",
+    "tsx",
+    "--test",
+    "--test-reporter=tap",
+    "tests/frontend/food-first-model.test.cjs",
+    "src/utils/ketoBalanceState.test.ts"
+  ]
+}

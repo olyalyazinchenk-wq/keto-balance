@@ -16,14 +16,15 @@ test('Honesty baseline and removal of simulated services (P08)', async (t) => {
     );
   });
 
-  await t.test('NutritionistPage does not contain fake auto-replies, diplomas or booking simulation', () => {
-    assert.ok(!appContent.includes('Мария Ветрова'), 'Must not contain unverified nutritionist persona');
-    assert.ok(!appContent.includes('Диплом нутрициолога-консультанта'), 'Must not contain fake diplomas');
-    assert.ok(!appContent.includes('Мария ответит в течение рабочего дня'), 'Must not contain fake auto-reply promises');
-    assert.ok(
-      appContent.includes('Отправка сообщений и документов из приложения пока не подключена'),
-      'Must contain honest notice about messages and docs'
-    );
+  await t.test('NutritionistPage delegates to honest private support without simulated sending', () => {
+    const page = fs.readFileSync(path.resolve(__dirname, '../../src/pages/PrivateSupportPage.tsx'), 'utf-8');
+    const pageBody = appContent.match(/function NutritionistPage\([^]*?(?=\nfunction |\n\/\*)/);
+    assert.ok(pageBody && pageBody[0].includes('<PrivateSupportPage />'));
+    assert.ok(page.includes('ничего не отправлено'));
+    assert.ok(page.includes('keto_balance_userbot?start=question'));
+    for (const forbidden of ['setTimeout', 'msgs.push', 'type="file"', 'Мария ответит']) {
+      assert.ok(!page.includes(forbidden) && !pageBody[0].includes(forbidden));
+    }
   });
 
   await t.test('AdminPage states that server administration is disconnected and is out of standard navigation', () => {

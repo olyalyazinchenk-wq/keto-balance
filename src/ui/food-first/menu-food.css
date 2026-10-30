@@ -1,0 +1,45 @@
+.fm-menu { --fm-bg:#f5f7f3; --fm-ink:#1c2821; --fm-muted:#526159; --fm-green:#255c48; --fm-line:#dce4dd; background:var(--fm-bg); color:var(--fm-ink); font: 400 15px/1.5 'Golos Text','Segoe UI',Arial,sans-serif; padding:20px; }
+.fm-menu * { box-sizing:border-box; }
+.fm-menu h1,.fm-menu h2,.fm-menu h3,.fm-menu p { margin:0; }
+.fm-heading h1 { overflow-wrap:anywhere; font-size:28px; line-height:1.15; letter-spacing:-.02em; }
+.fm-heading > p { color:var(--fm-muted); font-size:14px; margin-top:8px; }
+.fm-tools { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.fm-menu button { font:600 14px/1.3 'Golos Text','Segoe UI',Arial,sans-serif; cursor:pointer; }
+.fm-menu button:focus-visible { outline:3px solid #80bfa2; outline-offset:3px; }
+.fm-menu button svg,.fm-empty > svg { width:18px; height:18px; flex:none; }
+.fm-primary,.fm-secondary { min-height:44px; border-radius:14px; padding:10px 14px; display:inline-flex; justify-content:center; align-items:center; gap:8px; }
+.fm-primary { background:var(--fm-green); color:#fff; border:1px solid var(--fm-green); }
+.fm-primary:hover { background:#1e4e3b; }
+.fm-secondary { background:#fff; border:1px solid var(--fm-line); color:var(--fm-ink); }
+.fm-secondary:hover { border-color:var(--fm-green); }
+.fm-menu button:disabled { opacity:.6; cursor:default; }
+.fm-days { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; scroll-snap-type:x mandatory; margin:20px 0 24px; padding:3px 3px 6px; }
+.fm-days::-webkit-scrollbar { display:none; }
+.fm-days button { scroll-snap-align:start; flex:1 0 145px; text-align:left; min-height:68px; border:1px solid var(--fm-line); border-radius:16px; background:#fff; color:var(--fm-ink); padding:12px 14px; }
+.fm-days button[aria-selected='true'] { background:#e7eee7; border-color:var(--fm-green); }
+.fm-days strong,.fm-days span { display:block; }
+.fm-days span { color:var(--fm-muted); font-size:12px; font-weight:400; margin-top:3px; }
+.fm-meals > h2 { font-size:19px; margin:0 0 12px; }
+.fm-card,.fm-empty,.fm-shopping { background:#fff; border:1px solid var(--fm-line); border-radius:22px; overflow:hidden; margin-bottom:12px; }
+.fm-card__photo { display:block; width:100%; aspect-ratio:16/11; object-fit:cover; background:#e7eee7; }
+.fm-card__body,.fm-empty,.fm-shopping { padding:20px; }
+.fm-card__label,.fm-card__meta,.fm-card__subtitle,.fm-card__ingredients,.fm-shopping p,.fm-empty p { color:var(--fm-muted); font-size:14px; }
+.fm-card h3 { font-size:23px; line-height:1.25; margin:6px 0; overflow-wrap:anywhere; }
+.fm-card__meta,.fm-card__ingredients { margin-top:8px !important; }
+.fm-card__actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+.fm-card__actions .fm-primary { flex:1; }
+.fm-shopping p,.fm-empty p { margin:8px 0 16px; }
+.fm-shopping .fm-primary { width:100%; }
+.fm-empty h2 { font-size:23px; line-height:1.25; }
+.fm-empty .fm-secondary { margin-top:8px; }
+.fm-overlay { position:fixed; inset:0; z-index:50; background:rgba(18,19,18,.65); display:flex; justify-content:center; align-items:flex-end; }
+.fm-dialog { background:#fff; width:100%; max-width:540px; max-height:85dvh; overflow-y:auto; border-radius:22px 22px 0 0; padding:20px; }
+.fm-dialog__heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.fm-dialog__heading h2 { font-size:23px; line-height:1.25; }
+.fm-dialog__heading p,.fm-dialog__conditions,.fm-candidate p { color:var(--fm-muted); font-size:13px; }
+.fm-dialog__conditions { margin:12px 0 !important; }
+.fm-close { min-width:44px; min-height:44px; border:0; background:transparent; color:var(--fm-ink); }
+.fm-candidate { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0; border-top:1px solid var(--fm-line); }
+.fm-candidate > div { min-width:0; overflow-wrap:anywhere; }
+@media (min-width:768px) { .fm-menu { padding:28px; } .fm-card:has(.fm-card__photo) { display:grid; grid-template-columns:1fr 1fr; } .fm-card__photo { height:100%; min-height:240px; } .fm-dialog { border-radius:22px; } .fm-overlay { align-items:center; padding:20px; } }
+@media (max-width:360px) { .fm-menu { padding:16px; } .fm-card__body { padding:16px; } .fm-card__actions { flex-wrap:wrap; } .fm-card__actions .fm-primary { flex-basis:100%; } }

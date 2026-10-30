@@ -1,0 +1,154 @@
+{
+  "repo": "olyalyazinchenk-wq/Keto-Balance_Argon-4",
+  "ref": "922a7a6d15f65751771956a0c2939d344299a9d8",
+  "files": [
+    {
+      "path": "package.json",
+      "gitBlob": "04e9502aa2dfd0218e190800e29a2d69a25e53b9"
+    },
+    {
+      "path": "DESIGN.md",
+      "gitBlob": "735773fa836c79aa9c25814e78805bdb0d1eaf1b"
+    },
+    {
+      "path": "src/App.tsx",
+      "gitBlob": "eb860e66bb094e41a2f4fee73a2f00e2eae90ddb"
+    },
+    {
+      "path": "src/index.css",
+      "gitBlob": "9c8fc64c0f08c7308a8af95c5d2d78126735da76"
+    },
+    {
+      "path": "docs/design/verification.md",
+      "gitBlob": "8c09eeb757abf8c2b0a80a87d845a5c7898b17c1"
+    },
+    {
+      "path": "vite.config.ts",
+      "gitBlob": "2b112d6d43a4121ac574390c18f774cf1069b407"
+    },
+    {
+      "path": "index.html",
+      "gitBlob": "176313ae95d0d2c0cd451867facae5f84c4a5ad4"
+    },
+    {
+      "path": "PRODUCT.md",
+      "gitBlob": "cecef4c6dea0c784c394a6c2719ae4054cadf2b1"
+    },
+    {
+      "path": "VISUAL_BRIEF.md",
+      "gitBlob": "6b178a9eb7a1758a0b89f672663b9735828244d2"
+    },
+    {
+      "path": "docs/design/food-first-assets.md",
+      "gitBlob": "d124639b114a624d64b865ee7f725bb2c8ead424"
+    },
+    {
+      "path": "docs/design/food-first-evidence/README.md",
+      "gitBlob": "c2db7aad69be4072ec52f372e35bf0954f1c2b4d"
+    },
+    {
+      "path": "docs/design/food-first-probe.md",
+      "gitBlob": "b54561c9100cbe0b1f42f9dc6c2675b344135dd0"
+    },
+    {
+      "path": "docs/design/food-first-source.md",
+      "gitBlob": "fe1271c8d3e9c1c96b3ecd06335d0a659d38bb1b"
+    },
+    {
+      "path": "src/main.tsx",
+      "gitBlob": "c1d9f920661cb84283eeabccd6ac72fe4233460c"
+    },
+    {
+      "path": "src/components/kb/AppShell.tsx",
+      "gitBlob": "9016f0f67f29e4c1dc722e57556055bfde49615f"
+    },
+    {
+      "path": "src/components/kb/TodayAndMenuScreens.tsx",
+      "gitBlob": "e1b0966a5809fa3d59721b41004e003369b8533e"
+    },
+    {
+      "path": "src/components/kb/RecipeAndShoppingScreens.tsx",
+      "gitBlob": "f7e5e685892562ff831ce929c0dd029c976f7091"
+    },
+    {
+      "path": "src/ui/food-first/Today.tsx",
+      "gitBlob": "eccaa3e1664b9790807e6d58d0329c794bcc47eb"
+    },
+    {
+      "path": "src/ui/food-first/model.ts",
+      "gitBlob": "9d5cdd64c461c13080f7d502503057a2818eccf4"
+    },
+    {
+      "path": "src/ui/food-first/proof.tsx",
+      "gitBlob": "3519c50cd66737fb5e3b0231a98aab3a2ca2a0d7"
+    },
+    {
+      "path": "src/ui/food-first/today.css",
+      "gitBlob": "60a2eb876fc358769957b0cf4f8c9fdc88c4d19c"
+    },
+    {
+      "path": "src/utils/ketoBalanceState.ts",
+      "gitBlob": "e1ffe9fb4b54f78feddcd6808e92423d620986b7"
+    },
+    {
+      "path": "src/utils/ketoBalanceState.test.ts",
+      "gitBlob": "2b714debae646ddf8f86e0492b45765bcc470370"
+    },
+    {
+      "path": "tests/frontend/food-first-model.test.cjs",
+      "gitBlob": "06b7f35f6188a56644d8cd4e57c6f03232d758a4"
+    },
+    {
+      "path": "tests/helpers/load-ts.cjs",
+      "gitBlob": "e952254250b63d90114580a529463a7a66c7b6f2"
+    },
+    {
+      "path": "src/data/ketoBalanceFixtures.ts",
+      "gitBlob": "3b1956a8ebf30e427eb4444ba92d10ab8ef0a990"
+    },
+    {
+      "path": "src/domain/types.ts",
+      "gitBlob": "f8289ebf616fa5bffc292730222ab704b3450cb2"
+    },
+    {
+      "path": "tsconfig.json",
+      "gitBlob": "fca23493e5d16909e0185dde78d031c7edc0180f"
+    },
+    {
+      "path": "food-first-proof.html",
+      "gitBlob": "d335d96b463924a58154beed6d8be5648850e8fe"
+    },
+    {
+      "path": "server.ts",
+      "gitBlob": "71815c09f625c5faa66fd7c26c5ccfb0891cf072"
+    },
+    {
+      "path": "src/components/kb/DiarySupportMoreScreens.tsx",
+      "gitBlob": "1ce8488a6716105814917cced018a87e5462a35b"
+    },
+    {
+      "path": "src/components/kb/Icons.tsx",
+      "gitBlob": "8bb3b5b32daa00a29238fc630f6cc9145441728a"
+    },
+    {
+      "path": "src/components/kb/RecipeArtwork.tsx",
+      "gitBlob": "5424d35580e6c0224a0f44a66530169dcb3413ca"
+    },
+    {
+      "path": "src/components/kb/StartAndSettingsScreens.tsx",
+      "gitBlob": "52ccdf4f8cc198b73dcec8c88e0ca9dd824f02e9"
+    },
+    {
+      "path": "src/components/kb/TransformationAndShortsStudio.tsx",
+      "gitBlob": "c3dea11fed29ae4996818792151eb8ec96d72db4"
+    },
+    {
+      "path": "src/types/ketoBalanceContract.ts",
+      "gitBlob": "86ca5e0ace194647b683b275f0a8007ae6c5019f"
+    },
+    {
+      "path": "src/utils/telegramWebApp.ts",
+      "gitBlob": "524a474185c4d9b984f02f023b8cf42c238297fe"
+    }
+  ]
+}

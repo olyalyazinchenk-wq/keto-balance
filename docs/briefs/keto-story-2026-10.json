@@ -1,0 +1,51 @@
+{
+  "slug": "keto-story",
+  "kicker": "кето · история",
+  "cta": "продолжение в канале",
+  "out": "media/hooks/variants",
+  "platforms": [
+    "ig_feed",
+    "telegram_square",
+    "telegram"
+  ],
+  "variants": [
+    {
+      "name": "hook",
+      "scenes": 1
+    },
+    {
+      "name": "teaser",
+      "scenes": 2
+    },
+    {
+      "name": "full",
+      "scenes": 3
+    }
+  ],
+  "scenes": [
+    {
+      "clip": "media/flow/label_closeup_01.mp4",
+      "t": 2.5,
+      "dur": 3.0,
+      "l1": "МОЙ ЗАВТРАК",
+      "l2": "БЫЛ КАШЕЙ",
+      "kicker": "кето · до"
+    },
+    {
+      "clip": "media/flow/salmon_plate_01.mp4",
+      "t": 2.0,
+      "dur": 3.0,
+      "l1": "СТАЛ ТАКИМ",
+      "l2": "БЕЗ ГОЛОДА",
+      "kicker": "кето · после"
+    },
+    {
+      "clip": "media/flow/scales_avocado_01.mp4",
+      "t": 2.0,
+      "dur": 3.0,
+      "l1": "И ВЕС ПОШЁЛ",
+      "l2": "БЕЗ СРЫВОВ",
+      "kicker": "кето · результат"
+    }
+  ]
+}

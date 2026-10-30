@@ -16,6 +16,7 @@ from telegram import (
     BotCommand,
     ReplyKeyboardMarkup,
     KeyboardButton,
+    ReplyKeyboardRemove,
 )
 from telegram.constants import ParseMode
 from telegram.request import HTTPXRequest
@@ -107,8 +108,20 @@ def get_reply_keyboard() -> ReplyKeyboardMarkup:
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-def webapp_button(text: str, url: str = WEBAPP_URL) -> InlineKeyboardButton:
-    clean_url = (url or "").strip()
+def get_current_webapp_url() -> str:
+    """Получение актуального HTTPS адреса Mini App из файла туннеля или .env."""
+    fpath = Path(__file__).resolve().parent.parent / "current_tunnel_url.txt"
+    if fpath.exists():
+        try:
+            val = fpath.read_text(encoding="utf-8").strip()
+            if val.startswith("https://"):
+                return val
+        except Exception:
+            pass
+    return WEBAPP_URL
+
+def webapp_button(text: str, url: Optional[str] = None) -> InlineKeyboardButton:
+    clean_url = (url or get_current_webapp_url()).strip()
     if clean_url.startswith("https://"):
         return InlineKeyboardButton(text, web_app=WebAppInfo(url=clean_url))
     # Telegram запрещает localhost и non-https в InlineKeyboardButton URL
@@ -234,18 +247,85 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_html(get_plateau_promo_text(), reply_markup=get_plateau_keyboard())
             return
             
-    await update.message.reply_html("🌿 Загружаю меню...", reply_markup=get_reply_keyboard())
-    await update.message.reply_html(welcome_text, reply_markup=get_main_keyboard())
+    # Очищаем дублирующую нижнюю клавиатуру, если осталась у пользователя
+    try:
+        rm_msg = await update.message.reply_text("🌿", reply_markup=ReplyKeyboardRemove())
+        await rm_msg.delete()
+    except Exception:
+        pass
+
+    await send_single_menu(update, context, welcome_text)
+
+async def send_single_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, text: Optional[str] = None):
+    """Отправка единого главного меню без дублирования: старое меню удаляется из чата."""
+    menu_text = text or (
+        "🌿 <b>Главное меню Кето Баланс</b>\n\n"
+        "Выберите нужный раздел кнопками ниже:"
+    )
+
+    # Если вызов пришел из inline-кнопки (callback_query) — редактируем сообщение на месте
+    if update.callback_query:
+        try:
+            msg = await update.callback_query.edit_message_text(
+                menu_text,
+                parse_mode=ParseMode.HTML,
+                reply_markup=get_main_keyboard(),
+            )
+            # Удаляем старое меню, если нажатие было в другом сообщении
+            old_menu_id = context.user_data.get("last_menu_msg_id") if hasattr(context, "user_data") and context.user_data else None
+            chat_id = getattr(update.effective_chat, "id", None) if update.effective_chat else None
+            if not chat_id and update.effective_user:
+                chat_id = getattr(update.effective_user, "id", None)
+            if old_menu_id and hasattr(msg, "message_id") and old_menu_id != msg.message_id and chat_id:
+                if hasattr(context, "bot") and hasattr(context.bot, "delete_message"):
+                    try:
+                        await context.bot.delete_message(chat_id=chat_id, message_id=old_menu_id)
+                    except Exception:
+                        pass
+            if hasattr(context, "user_data") and hasattr(msg, "message_id"):
+                context.user_data["last_menu_msg_id"] = msg.message_id
+            return
+        except Exception:
+            pass
+
+    chat_id = getattr(update.effective_chat, "id", None) if update.effective_chat else None
+    if not chat_id and update.effective_user:
+        chat_id = getattr(update.effective_user, "id", None)
+    if not chat_id:
+        return
+
+    # Удаляем предыдущее меню в этом чате, чтобы не возникало дублирования
+    old_menu_id = context.user_data.get("last_menu_msg_id") if hasattr(context, "user_data") and context.user_data else None
+    if old_menu_id and hasattr(context, "bot") and hasattr(context.bot, "delete_message"):
+        try:
+            await context.bot.delete_message(chat_id=chat_id, message_id=old_menu_id)
+        except Exception:
+            pass
+        if hasattr(context, "user_data") and context.user_data:
+            context.user_data["last_menu_msg_id"] = None
+
+    # Отправляем единое актуальное меню
+    if hasattr(context, "bot") and hasattr(context.bot, "send_message"):
+        msg = await context.bot.send_message(
+            chat_id=chat_id,
+            text=menu_text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=get_main_keyboard(),
+        )
+        if hasattr(context, "user_data") and hasattr(msg, "message_id"):
+            context.user_data["last_menu_msg_id"] = msg.message_id
+
+    # Удаляем сообщение-триггер пользователя (команду /menu или текст "меню"), чтобы не засорять чат
+    if update.message and hasattr(update.message, "delete"):
+        try:
+            await update.message.delete()
+        except Exception:
+            pass
 
 async def menu_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /menu."""
+    """Обработчик команды /menu (единое меню без дублей)."""
     cancel_question(context)
-    if not update.message:
-        return
-    await update.message.reply_html(
-        "🌿 <b>Главное меню Кето Баланс</b>\n\nВыберите нужный раздел кнопками ниже:",
-        reply_markup=get_main_keyboard(),
-    )
+    await send_single_menu(update, context)
 
 async def idea_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /idea."""
@@ -394,7 +474,8 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• /menu — Быстрое меню\n\n"
         f"📱 Веб-приложение доступно по ссылке или кнопке: {WEBAPP_URL}"
     )
-    await update.message.reply_html(text, reply_markup=get_main_keyboard())
+    kb = InlineKeyboardMarkup([[InlineKeyboardButton("« В главное меню", callback_data="to_main")]])
+    await update.message.reply_html(text, reply_markup=kb)
 
 # --- ОБРАБОТЧИК CALLBACK КНОПОК ---
 
@@ -418,11 +499,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     elif data == "to_main":
         cancel_question(context)
-        await query.edit_message_text(
-            "🌿 <b>Главное меню Кето Баланс</b>\n\nВыберите нужный раздел или запустите Web App:",
-            parse_mode="HTML",
-            reply_markup=get_main_keyboard(),
-        )
+        await send_single_menu(update, context)
         
     elif data == "idea":
         if not RECIPES:
@@ -637,6 +714,11 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     keyboard_texts = {button.text for row in get_reply_keyboard().keyboard for button in row}
     if msg.text in keyboard_texts:
         cancel_question(context)
+        try:
+            rm = await msg.reply_text("🌿", reply_markup=ReplyKeyboardRemove())
+            await rm.delete()
+        except Exception:
+            pass
     elif await deliver_pending_question(update, context, ADMIN_ID):
         return
     text = msg.text.strip().lower()
@@ -686,15 +768,20 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     elif "помощ" in text or "справк" in text or "help" in text:
         await help_cmd(update, context)
     elif "баланс" in text or "balance" in text:
-        await msg.reply_html(
-            "🌿 <b>Добро пожаловать по кодовому слову БАЛАНС!</b>\n\n"
-            "Вам доступен экспресс-расчёт нормы воды и БЖУ, а также персональный помощник питания:",
-            reply_markup=get_main_keyboard(),
+        cancel_question(context)
+        await send_single_menu(
+            update,
+            context,
+            text=(
+                "🌿 <b>Добро пожаловать по кодовому слову БАЛАНС!</b>\n\n"
+                "Вам доступен экспресс-расчёт нормы воды и БЖУ, а также персональный помощник питания:"
+            ),
         )
     else:
+        kb = InlineKeyboardMarkup([[InlineKeyboardButton("« Открыть главное меню", callback_data="to_main")]])
         await msg.reply_html(
-            "🌿 <b>Кето Баланс</b>\n\nВыберите нужный раздел кнопками ниже:",
-            reply_markup=get_main_keyboard(),
+            "🌿 <b>Кето Баланс</b>\n\nИспользуйте интерактивное меню выше для навигации:",
+            reply_markup=kb,
         )
 
 async def post_init(application: Application):

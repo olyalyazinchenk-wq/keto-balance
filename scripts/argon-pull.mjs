@@ -24,7 +24,12 @@ const noBuild = process.argv.includes('--no-build');
 
 const ghPath = process.env.GH_PATH
   || path.join(process.env.LOCALAPPDATA || '', 'Programs', 'gh', 'gh.exe');
-const gh = (args) => execFileSync(ghPath, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+const PROXY_ENV = {
+  ...process.env,
+  HTTPS_PROXY: process.env.HTTPS_PROXY || 'http://127.0.0.1:10809',
+  HTTP_PROXY: process.env.HTTP_PROXY || 'http://127.0.0.1:10809',
+};
+const gh = (args) => execFileSync(ghPath, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: PROXY_ENV });
 
 const IGNORE = new Set(['node_modules', '.git', '.aistudio', 'dist',
   'package-lock.json', 'postcss.config.js']);
@@ -32,8 +37,12 @@ const IGNORE = new Set(['node_modules', '.git', '.aistudio', 'dist',
 fs.mkdirSync(CACHE, { recursive: true });
 
 const sha = gh(['api', `repos/${REPO_SLUG}/commits/main`, '--jq', '.sha']).trim();
-const meta = JSON.parse(gh(['api', `repos/${REPO_SLUG}/commits/${sha}`,
-  '--jq', '{message: .commit.message, date: .commit.author.date}']));
+let meta = { message: '', date: '' };
+try {
+  meta = JSON.parse(gh(['api', `repos/${REPO_SLUG}/commits?per_page=1`, '--jq', '.[0] | {message: .commit.message, date: .commit.author.date}']));
+} catch (e) {
+  meta = { message: 'syncing HEAD', date: new Date().toISOString() };
+}
 console.log(`\nHEAD: ${sha.slice(0, 8)}  ${meta.date}\n  ${meta.message.split('\n')[0]}`);
 
 const last = fs.existsSync(MARKER) ? fs.readFileSync(MARKER, 'utf8').trim() : '';
@@ -42,12 +51,19 @@ if (last === sha && fs.existsSync(SRC)) {
   console.log('\nновых коммитов нет — синхронизировано');
 } else {
   const tgz = path.join(CACHE, 'argon-head.tgz');
-  fs.rmSync(SRC, { recursive: true, force: true });
   fs.mkdirSync(SRC, { recursive: true });
+  for (const item of fs.readdirSync(SRC)) {
+    if (item === 'node_modules') continue;
+    try {
+      fs.rmSync(path.join(SRC, item), { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    } catch (e) {
+      console.warn(`warning: could not remove ${item}:`, e.message);
+    }
+  }
   const fd = fs.openSync(tgz, 'w');
   try {
     execFileSync(ghPath, ['api', `repos/${REPO_SLUG}/tarball/${sha}`],
-      { stdio: ['ignore', fd, 'inherit'], maxBuffer: 128 * 1024 * 1024 });
+      { stdio: ['ignore', fd, 'inherit'], maxBuffer: 128 * 1024 * 1024, env: PROXY_ENV });
   } finally {
     fs.closeSync(fd);
   }

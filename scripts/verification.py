@@ -64,8 +64,68 @@ PAID_BACK = (
 VIS_E2E = ('layout', 'navigation', 'onboarding', 'visual')
 FREE_E2E = VIS_E2E + ('p0', 'menu-flow', 'shopping', 'diary', 'support', 'persistence', 'admin')
 
+PRODUCT_GATES = ('k1-local', 'k2-pilot', 'k3-pilot')
+K1_BACK = P0_BACK + ('test_product_gate_policy',)
+K1_FRONT = tuple(dict.fromkeys(P0_FRONT + (
+    'routes', 'telegram', 'catalog-build-safety', 'food-view-adapter',
+    'menu-controller', 'food-import-boundary', 'food-shell', 'food-flow',
+    'food-shopping', 'food-clipboard', 'support-onboarding',
+)))
+K2_BACK = K1_BACK + (
+    'test_auth', 'test_app_settings', 'test_app_db', 'test_session_api',
+    'test_app_models', 'test_user_api', 'test_data_rights', 'test_catalog_api',
+    'test_support', 'test_log_redaction', 'test_release_boundaries',
+    'test_safety_routing', 'test_backup_restore',
+)
+K3_BACK = K2_BACK + (
+    'test_products', 'test_billing_orders', 'test_stars_handlers',
+    'test_entitlements', 'test_refunds', 'test_release_gate',
+)
+
+
+def build_product_plan(root: Path, stage: str) -> list[Step]:
+    back = {
+        'k1-local': K1_BACK, 'k2-pilot': K2_BACK, 'k3-pilot': K3_BACK,
+    }[stage]
+    npm = 'npm.cmd' if os.name == 'nt' else 'npm'
+    steps = []
+    for name in dict.fromkeys(back):
+        steps.append(Step(
+            f'Backend:{name}',
+            (sys.executable, '-B', 'scripts/run_backend_tests.py',
+             '--suite', f'tests.backend.{name}'),
+            ('scripts/run_backend_tests.py', f'tests/backend/{name}.py'),
+            'backend',
+        ))
+    for name in K1_FRONT:
+        file = f'tests/frontend/{name}.test.cjs'
+        steps.append(Step(
+            f'Frontend:{name}',
+            ('node', '--test', '--test-reporter=tap', file), (file,), 'tap',
+        ))
+    steps.extend((
+        Step('Typecheck', (npm, 'run', 'typecheck'), ('tsconfig.json',)),
+        Step('Build', (npm, 'run', 'build'), ('scripts/stamp-release.mjs',)),
+    ))
+    if stage != 'k1-local':
+        specs = ('food-flow', 'support', 'persistence')
+        if stage == 'k3-pilot':
+            specs += ('billing',)
+        config = 'playwright.full.config.ts'
+        for name in specs:
+            file = f'tests/e2e/{name}.spec.ts'
+            steps.append(Step(
+                f'E2E:{name}',
+                ('npx.cmd' if os.name == 'nt' else 'npx', '--no-install',
+                 'playwright', 'test', f'--config={config}', file),
+                (config, file), 'playwright',
+            ))
+    return steps
+
 
 def build_plan(root: Path, stage: str) -> list[Step]:
+    if stage in PRODUCT_GATES:
+        return build_product_plan(root, stage)
     if stage not in {'checkpoint', 'p0', 'visual', 'free', 'paid'}:
         raise GateError('Unknown verification stage')
     npm = 'npm.cmd' if os.name == 'nt' else 'npm'
@@ -163,7 +223,12 @@ def assert_report(kind: str, output: str, root: Path) -> None:
 
 def run_step(step: Step, root: Path, env: dict[str, str] | None = None) -> None:
     merged = os.environ.copy()
-    merged.pop('PYTHONPATH', None)
+    merged.pop("PYTHONPATH", None)
+    merged['CI'] = '1'
+    merged['KETO_LOAD_DOTENV'] = '0'
+    merged['PAYMENT_MODE'] = 'disabled'
+    merged['PAYMENTS_ENABLED'] = '0'
+    merged['APP_STAGE'] = 'test'
     if env:
         merged.update(env)
     merged.update(
@@ -194,7 +259,10 @@ def run_step(step: Step, root: Path, env: dict[str, str] | None = None) -> None:
 
 def main(default_stage: str = 'p0') -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--stage', choices=['visual', 'free', 'paid', 'p0'], default=default_stage)
+    parser.add_argument(
+        '--stage', choices=['visual', 'free', 'paid', 'p0', *PRODUCT_GATES],
+        default=default_stage,
+    )
     parser.add_argument('--checkpoint', nargs='?', const='current')
     args = parser.parse_args()
     stage = 'checkpoint' if args.checkpoint is not None else args.stage
@@ -212,3 +280,8 @@ def main(default_stage: str = 'p0') -> int:
     else:
         print(f'[TECHNICAL STAGE PASSED] {stage}; external/business approvals remain separate')
     return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+

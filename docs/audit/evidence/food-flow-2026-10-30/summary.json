@@ -1,0 +1,51 @@
+{
+  "workDirectory": "C:\\Users\\HP\\Keto-balance\\design\\argon-food-first-work",
+  "testFiles": [
+    "src/utils/clipboard.test.ts",
+    "src/utils/ketoBalanceState.test.ts",
+    "src/utils/shoppingFromMenu.test.ts",
+    "tests/frontend/food-first-model.test.cjs",
+    "tests/frontend/food-shell.test.cjs",
+    "tests/frontend/menu-food.test.cjs",
+    "tests/frontend/menu-shopping-wiring.test.cjs",
+    "tests/frontend/recipe-claims.test.cjs",
+    "tests/frontend/recipe-shopping-food.test.cjs"
+  ],
+  "testCounts": {
+    "tests": 23,
+    "pass": 23,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "checks": [
+    {
+      "name": "unit",
+      "exit": 0
+    },
+    {
+      "name": "typecheck",
+      "exit": 0
+    },
+    {
+      "name": "build",
+      "exit": 0
+    }
+  ],
+  "sourceUnchangedDuringReview": true,
+  "previewAssets": [
+    {
+      "asset": "/assets/index-BmYtm6pT.js",
+      "sameBytes": true,
+      "sha256": "822714b53ede32a444114c967ac016b16152e435eb3aa5960de24eb678d74893"
+    },
+    {
+      "asset": "/assets/index-D7bPaZD4.css",
+      "sameBytes": true,
+      "sha256": "b277df191eb5c4d9836384ff13d8f5b083ae067dc5efc0ad7196bc0401710808"
+    }
+  ],
+  "scope": "local synthetic prototype; not main app or Telegram",
+  "wellnessBotReports": "separate project; not executed or source-reviewed"
+}

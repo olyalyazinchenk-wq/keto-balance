@@ -1,0 +1,21 @@
+.food-recipe, .food-shopping { display: grid; gap: 24px; min-width: 0; }
+.food-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.food-grid > * { grid-column: auto; min-width: 0; }
+.food-recipe header .food-grid > :last-child { order: -1; }
+.food-recipe header figure { min-height: 150px; display: flex; flex-direction: column; justify-content: center; background: var(--kb-surface); }
+.food-title { font-family: inherit; font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.12; font-weight: 700; letter-spacing: -.035em; }
+.food-section-heading h2 { font-family: inherit; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; text-transform: none; }
+.food-recipe section, .food-shopping .kb-panel, .food-recipe .kb-panel, .food-recipe [data-testid="recipe-kitchen-timer"] { border-radius: 18px; }
+.food-recipe button, .food-shopping button, .food-shopping input, .food-shopping select, .food-recipe [role="group"] { border-radius: 12px; }
+.food-recipe button, .food-shopping button { letter-spacing: 0; text-transform: none; }
+.food-step-layout { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; }
+.food-step-layout .kb-display { font-family: inherit; font-size: 1.1rem; font-weight: 700; }
+.food-recipe .kb-eyebrow, .food-shopping .kb-eyebrow { letter-spacing: .02em; }
+.food-shopping [data-testid="shopping-progress-label"] { font-size: 1rem; }
+.food-shopping [data-testid="shopping-custom-form"] select { min-width: 0; }
+.food-shopping .kb-strike-draw { display: block; white-space: normal; overflow-wrap: anywhere; }
+@media (min-width: 768px) {
+  .food-recipe header .food-grid { grid-template-columns: minmax(0, 1fr) minmax(250px, .9fr); align-items: center; }
+  .food-recipe header .food-grid > :last-child { order: 0; }
+  .food-recipe > .food-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+}

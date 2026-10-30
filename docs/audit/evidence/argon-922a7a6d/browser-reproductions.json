@@ -1,0 +1,17 @@
+{
+  "replacementRow": "ЗАВТРАК · 12 МИН\nНежный творожный скрэмбл со сливочным маслом и зелёным луком\nМягкий белково-жировой завтрак для тех, кто любит молочные продукты\nПОСТАВИТЬ В ПЛАН",
+  "photoAfterRecipeChanged": {
+    "title": "Нежный творожный скрэмбл со сливочным маслом и зелёным луком",
+    "photo": "/media/food-first/hero.webp",
+    "alt": "Фотоиллюстрация: Нежный творожный скрэмбл со сливочным маслом и зелёным луком",
+    "menu": {
+      "breakfast": "kb-rec-cottage-scramble",
+      "lunch": "kb-rec-baked-fish-herbs",
+      "dinner": "kb-rec-beef-patties-butter"
+    }
+  },
+  "shoppingUnchangedAfterRefresh": true,
+  "staleBefore": "true",
+  "staleAfter": "false",
+  "errors": []
+}

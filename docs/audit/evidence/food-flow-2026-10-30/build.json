@@ -1,0 +1,16 @@
+{
+  "check": "build",
+  "command": [
+    "node",
+    "C:\\Users\\HP\\Keto-balance\\design\\argon-food-first-work\\node_modules\\vite\\bin\\vite.js",
+    "build",
+    "--mode",
+    "production",
+    "--outDir",
+    "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\argon-flow-review-20261030\\dist",
+    "--emptyOutDir"
+  ],
+  "exit": 0,
+  "stdout": "\u001b[36mvite v8.3.5 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n✓ 33 modules transformed.\nrendering chunks...\ncomputing gzip size...\n../../../AppData/Local/hermes/cache/scratch/argon-flow-review-20261030/dist/index.html                   1.64 kB │ gzip:   0.78 kB\n../../../AppData/Local/hermes/cache/scratch/argon-flow-review-20261030/dist/assets/index-D7bPaZD4.css   62.58 kB │ gzip:  11.84 kB\n../../../AppData/Local/hermes/cache/scratch/argon-flow-review-20261030/dist/assets/index-BmYtm6pT.js   358.08 kB │ gzip: 100.65 kB\n\n\u001b[32m✓ built in 1.41s\u001b[39m\n",
+  "stderr": ""
+}

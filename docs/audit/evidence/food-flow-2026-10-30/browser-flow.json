@@ -1,0 +1,59 @@
+{
+  "steps": [
+    {
+      "screen": "today",
+      "rootPresent": true,
+      "heading": "Сегодня",
+      "headingFont": "\"Golos Text\", \"Segoe UI\", Arial, sans-serif",
+      "scrollWidth": 305,
+      "clientWidth": 305,
+      "visibleNavButtons": 5
+    },
+    {
+      "screen": "menu",
+      "rootPresent": true,
+      "heading": "Стартовое меню на 3 дня",
+      "headingFont": "\"Golos Text\", \"Segoe UI\", Arial, sans-serif",
+      "scrollWidth": 305,
+      "clientWidth": 305,
+      "visibleNavButtons": 5
+    },
+    {
+      "screen": "recipe",
+      "rootPresent": true,
+      "heading": "Нежный творожный скрэмбл со сливочным маслом и зелёным луком",
+      "headingFont": "\"Golos Text\", \"Segoe UI\", Arial, sans-serif",
+      "scrollWidth": 305,
+      "clientWidth": 305,
+      "visibleNavButtons": 5
+    },
+    {
+      "screen": "shopping",
+      "rootPresent": true,
+      "heading": "Список покупок",
+      "headingFont": "\"Golos Text\", \"Segoe UI\", Arial, sans-serif",
+      "scrollWidth": 305,
+      "clientWidth": 305,
+      "visibleNavButtons": 5
+    }
+  ],
+  "replacementRecipeId": "kb-rec-cottage-scramble",
+  "photoFallback": {
+    "title": "Нежный творожный скрэмбл со сливочным маслом и зелёным луком",
+    "missing": true,
+    "hasImage": false
+  },
+  "timerStartedAt": "03:00",
+  "copyRejection": {
+    "error": "Не удалось скопировать список. Попробуйте ещё раз.",
+    "success": false
+  },
+  "reloadPersistence": {
+    "menuPreserved": true,
+    "shoppingPreserved": true,
+    "recipeIdAfterReload": "kb-rec-cottage-scramble"
+  },
+  "selectedDayBeforeReload": "День 2 · Простые домашние блюда",
+  "selectedDayAfterReload": "День 1 · Спокойный старт",
+  "uncaughtErrors": []
+}

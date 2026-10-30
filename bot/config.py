@@ -36,11 +36,68 @@ PAYMENT_MODE = os.getenv("PAYMENT_MODE", "disabled")
 if PAYMENT_MODE != "disabled":
     PAYMENT_MODE = "disabled"
 
-# Контакты и каналы
+# ========================================================
+# Контакты, каналы и поддержка (строго изолированные параметры)
+# Категорически запрещён автоматический fallback личных обращений
+# на канал или группу технической поддержки/комьюнити.
+# ========================================================
+
+# 1. Системный ID администратора бота
 ADMIN_ID = int(os.getenv("ADMIN_ID", "1084557944"))
-NUTRITIONIST_USERNAME = os.getenv("NUTRITIONIST_USERNAME", "Olgazinchenko1186")
+
+# 2. Публичный Telegram-канал (новости, рецепты, база знаний)
+# Личные вопросы сюда НЕ направляются.
 CHANNEL_URL = os.getenv("CHANNEL_URL", "https://t.me/olga_nutri_med")
-SUPPORT_CHAT = os.getenv("SUPPORT_CHAT", "https://t.me/Olgazinchenko1186")
+
+# 3. Чат технической поддержки или комьюнити
+# Для общих вопросов и общения (не для личных консультаций нутрициолога).
+SUPPORT_CHAT = os.getenv("SUPPORT_CHAT", "")
+
+# 4. Личный контакт нутрициолога (Ольга) для персональных вопросов
+# Обязательный параметр: username личного аккаунта Telegram без символа @.
+# Если не задан, fallback на CHANNEL_URL или SUPPORT_CHAT категорически ЗАПРЕЩЁН.
+NUTRITIONIST_USERNAME = os.getenv("NUTRITIONIST_USERNAME", "Olgazinchenko1186")
+
+# Числовой Telegram chat ID нутрициолога для доставки личных сообщений ботом
+_raw_nutri_chat_id = os.getenv("NUTRITIONIST_CHAT_ID", os.getenv("ADMIN_ID", "1084557944"))
+try:
+    NUTRITIONIST_CHAT_ID = int(_raw_nutri_chat_id) if _raw_nutri_chat_id else None
+except (ValueError, TypeError):
+    NUTRITIONIST_CHAT_ID = None
+
+
+_UNSET = object()
+
+
+def get_nutritionist_url(username: object = _UNSET) -> str | None:
+    """
+    Возвращает прямую ссылку на личный диалог с нутрициологом (https://t.me/<username>).
+    При отсутствии NUTRITIONIST_USERNAME возвращает None.
+    Автоматический fallback на CHANNEL_URL или SUPPORT_CHAT строго запрещён.
+    """
+    target = NUTRITIONIST_USERNAME if username is _UNSET else username
+    if not target or not str(target).strip():
+        return None
+    clean = str(target).strip().lstrip("@")
+    if not clean:
+        return None
+    if clean.startswith("https://") or clean.startswith("http://"):
+        return clean
+    return f"https://t.me/{clean}"
+
+
+def get_nutritionist_chat_id() -> int | None:
+    """
+    Возвращает числовой ID чата нутрициолога для доставки личных сообщений через бота.
+    Допустимы только положительные ID (личные диалоги пользователей).
+    Fallback на каналы/группы (отрицательные ID) запрещён.
+    """
+    if NUTRITIONIST_CHAT_ID is not None and NUTRITIONIST_CHAT_ID > 0:
+        return NUTRITIONIST_CHAT_ID
+    if ADMIN_ID and ADMIN_ID > 0:
+        return ADMIN_ID
+    return None
+
 
 # Продуктовая линейка и тарифы (в рублях)
 PRODUCTS = {

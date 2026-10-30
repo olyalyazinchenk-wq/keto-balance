@@ -1,0 +1,53 @@
+{
+  "slug": "keto-coffee",
+  "kicker": "кето · бронекофе",
+  "cta": "рецепт бронекофе в канале",
+  "out": "media/hooks/variants",
+  "platforms": [
+    "tiktok",
+    "reels",
+    "shorts",
+    "telegram",
+    "telegram_square"
+  ],
+  "variants": [
+    {
+      "name": "hook",
+      "scenes": 1
+    },
+    {
+      "name": "teaser",
+      "scenes": 2
+    },
+    {
+      "name": "full",
+      "scenes": 3
+    }
+  ],
+  "scenes": [
+    {
+      "clip": "media/flow/hands_slice_ripe_avocado_01.mp4",
+      "t": 1.0,
+      "dur": 3.0,
+      "l1": "ЖИРЫ ДЛЯ ЭНЕРГИИ",
+      "l2": "БРОНЕКОФЕ С УТРА",
+      "kicker": "кето · энергия"
+    },
+    {
+      "clip": "media/flow/label_closeup_01.mp4",
+      "t": 1.5,
+      "dur": 3.0,
+      "l1": "ПРАВИЛЬНЫЕ СЛИВКИ",
+      "l2": "ЖИРНОСТЬ ОТ 30%",
+      "kicker": "кето · состав"
+    },
+    {
+      "clip": "media/flow/scales_avocado_01.mp4",
+      "t": 2.0,
+      "dur": 3.0,
+      "l1": "ПОЛЬЗА В КЕТОЗЕ",
+      "l2": "СЫТОСТЬ НА ПОЛДНЯ",
+      "kicker": "кето · кетоз"
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import PrivateSupportPage from "./pages/PrivateSupportPage";
 import TechnicalNotice from "./pages/TechnicalNotice";
+import { FoodFirstApp } from "./ui/food-first/FoodFirstApp";
 
 /* ================= 1. ТИПЫ И КОНСТАНТЫ ================= */
 type Mode = "keto" | "carnivore" | "explore";
@@ -219,7 +220,7 @@ function Onboarding() { const st = useStore(); const [step, setStep] = useState(
     <div key="s11"><h2 className="text-xl font-bold mb-3">Ваш опыт такого питания</h2><Seg opts={[{ v: "нет", l: "Начинаю с нуля" }, { v: "пробовал", l: "Пробовал(а)" }, { v: "постоянно", l: "Питаюсь так давно" }]} val={p.exp} set={(v: any) => up({ exp: v })} /><Btn cls="w-full mt-4" disabled={!p.exp} onClick={() => setStep(12)}>Дальше</Btn></div>,
     <div key="s12"><h2 className="text-xl font-bold mb-3">Здоровье и лекарства</h2><Field label="Принимаете лекарства на постоянной основе?"><Seg opts={[{ v: true, l: "Да" }, { v: false, l: "Нет" }]} val={p.meds} set={(v: any) => up({ meds: v })} /></Field><Field label="Есть диагностированные заболевания?"><Seg opts={[{ v: true, l: "Да" }, { v: false, l: "Нет" }]} val={p.diseases} set={(v: any) => up({ diseases: v })} /></Field><div className="rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">⚠️ <b>Важно.</b> Людям с заболеваниями, беременным и кормящим, несовершеннолетним, людям с расстройствами пищевого поведения, а также принимающим сахароснижающие, гипотензивные и другие влияющие на обмен веществ препараты необходимо обсудить изменение рациона с врачом до начала.<br /><br />Приложение не ставит диагнозы, не отменяет лекарства и не заменяет медицинскую консультацию.</div><Btn cls="w-full mt-4" onClick={() => setStep(13)}>Дальше</Btn></div>,
     <div key="s13" className="text-center"><div className="text-6xl mb-4">🎉</div><h2 className="text-2xl font-bold mb-2">Всё готово, {p.name}!</h2><p className="text-sm text-stone-500 mb-5">Мы собрали стартовое меню, подобрали рецепты и подготовили первый список покупок.</p><Btn cls="w-full" onClick={() => { const m = p.mode === "carnivore" ? "carnivore" : "keto"; const menu = genMenu(m, 3, p.meals || 3); store.menu = menu; store.shopping = { items: shoppingItems(menu), checked: {} }; store.onboarded = true; checkAch(); emit(); go("#/home"); }}>Открыть моё меню →</Btn></div>];
-  return <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--bg)" }}><div className="w-full max-w-md">{step > 0 && step < 13 && <div className="h-1.5 rounded-full bg-stone-200 dark:bg-white/10 mb-6"><div className="h-full rounded-full transition-all" style={{ width: step / 13 * 100 + "%", background: "var(--acc)" }} /></div>}<Card cls="p-6">{steps[step]}</Card></div></div>;
+  return <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--bg)" }}><div className="w-full max-w-md">{step > 0 && step < 13 && <div className="h-1.5 rounded-full bg-stone-200 dark:bg-white/10 mb-6"><div className="h-full rounded-full transition-all" style={{ width: step / 13 * 100 + "%", background: "var(--acc)" }} /></div>}<Card cls="p-6">{steps[step]}</Card><button type="button" onClick={() => go("#/nutritionist")} className="w-full mt-4 px-4 py-3 rounded-xl border-2 font-semibold" style={{ borderColor: "var(--acc)", color: "var(--acc)" }}>💬 Помощь — написать Ольге</button></div></div>;
 }
 
 /* ================= 6. СТРАНИЦЫ ================= */
@@ -388,21 +389,22 @@ function CafePage() { const [cat, setCat] = useState("restaurant"); const c = CA
     <div className="grid grid-cols-4 gap-2 mb-4">{Object.entries(CAFE).map(([k, v]: any) => <button key={k} onClick={() => setCat(k)} className={`p-2.5 rounded-xl border text-center ${cat === k ? "border-2" : "border-stone-200 dark:border-white/10"}`} style={cat === k ? { borderColor: "var(--acc)", background: "var(--accbg)" } : {}}><div className="text-xl">{v.e}</div><div className="text-[10px] font-semibold mt-1">{v.t}</div></button>)}</div>
     <Card cls="p-5"><h2 className="font-bold mb-3">{c.e} {c.t}</h2>{c.tips.map((t: string) => <div key={t} className="flex gap-2 py-1.5 text-sm border-b border-stone-100 dark:border-white/5 last:border-0"><span style={{ color: "var(--acc)" }}>•</span>{t}</div>)}<div className="mt-4 rounded-xl p-3 text-xs" style={{ background: "var(--accbg)" }}>{MODE() === "carnivore" ? "В карнивор выбор уже: ищите чистое мясо, рыбу, яйца без соусов и гарниров." : "В кето почти любое блюдо адаптируется: гарнир → салат или овощи, соус отдельно."}</div></Card></div>; }
 
-function NavigatorPage() { const [q, setQ] = useState(""); const [res, setRes] = useState<any>(null); const [file, setFile] = useState<any>(null);
-  const scan = () => { if (!file) return; setRes({ loading: true }); setTimeout(() => setRes({ loading: false, name: "Результат по этикетке", carbs: 6.4, sugar: 4.2, starch: true, syrup: false, port: "30 г", notes: ["Углеводы указаны на 100 г — пересчитайте на порцию", "Добавленный сахар на 2-м месте состава", "Есть крахмал как загуститель"] }), 1400); };
-  const search = () => { const t = q.toLowerCase(); let v: any = { name: q };
-    if (/йогурт|творож/.test(t)) v = { ...v, carbs: 6.8, sugar: 5.9, starch: true, port: "125 г", notes: ["Пересчитайте на свою порцию", "Часто есть сахар и крахмал", "Ищите варианты без добавок"] };
-    else if (/кетчуп|соус/.test(t)) v = { ...v, carbs: 24, sugar: 21, starch: true, syrup: true, port: "15 г", notes: ["Сахар и сироп в составе", "~3 г углеводов на столовую ложку", "Легко перебрать незаметно"] };
-    else if (/молоко/.test(t)) v = { ...v, carbs: 4.7, sugar: 4.7, port: "250 мл", notes: ["Лактоза — молочный сахар, ~12 г на стакан"] };
-    else if (/хлеб|батон|мюсли|каша/.test(t)) v = { ...v, carbs: 45, sugar: 3, starch: true, port: "100 г", notes: ["Высокие углеводы", "Мюсли часто содержат сиропы даже с пометкой «фитнес»"] };
-    else if (/колбас|сосис/.test(t)) v = { ...v, carbs: 2.5, sugar: 0.8, starch: true, port: "100 г", notes: ["Часто крахмал, сахар и декстроза", "Читайте состав конкретного производителя"] };
-    else v = { ...v, carbs: null, notes: ["Не нашли в базе. Проверьте этикетку: углеводы на порцию, сахар/сироп/крахмал в составе."] };
-    setRes(v); };
-  return <div className="p-4 max-w-2xl mx-auto"><h1 className="text-2xl font-bold mb-1">Кето-навигатор в магазине 🛍️</h1><p className="text-sm text-stone-500 mb-4">Введите продукт или загрузите фото состава. Не делим продукты на «хорошие» и «плохие».</p>
-    <div className="flex gap-2 mb-4"><Input placeholder="Например: йогурт, кетчуп, молоко…" value={q} onChange={(e: any) => setQ(e.target.value)} onKeyDown={(e: any) => e.key === "Enter" && search()} /><Btn onClick={search}>Проверить</Btn></div>
-    <Card cls="p-4 mb-4"><div className="text-sm font-semibold mb-2">📷 Или фото этикетки</div><input type="file" accept="image/*" onChange={(e: any) => setFile(e.target.files?.[0])} className="text-xs mb-2 w-full" /><Btn variant="soft" onClick={scan} disabled={!file}>Распознать состав</Btn></Card>
-    {res?.loading && <Card cls="p-6 text-center text-stone-400"><div className="animate-pulse text-3xl mb-2">🔍</div>Анализируем состав…</Card>}
-    {res && !res.loading && <Card cls="p-4"><h3 className="font-bold mb-3">{res.name || "Результат"}</h3>{res.carbs != null && <div className="grid grid-cols-3 gap-2 mb-3">{[["Углеводы", res.carbs + " г/100г", res.carbs > 10], ["Сахар", res.sugar + " г", res.sugar > 5], ["Порция", res.port, false]].map(([l, v, warn]: any) => <div key={l} className={`rounded-xl p-3 text-center ${warn ? "bg-amber-50 dark:bg-amber-900/20" : "bg-stone-50 dark:bg-white/5"}`}><div className="text-xs text-stone-400">{l}</div><div className="font-bold text-sm" style={warn ? { color: "#d97706" } : {}}>{v}</div>{warn && <div className="text-[10px] text-amber-600 mt-0.5">многовато</div>}</div>)}</div>}{res.starch && <div className="text-xs">⚠️ В составе есть крахмал</div>}{res.syrup && <div className="text-xs">⚠️ В составе есть сироп</div>}{(res.notes || []).map((n: string) => <div key={n} className="text-xs py-0.5">• {n}</div>)}<div className="text-[11px] text-stone-400 mt-2">Это информация для выбора, а не запрет. Размер порции решает.</div></Card>}</div>; }
+function NavigatorPage() {
+  return <div className="p-4 max-w-2xl mx-auto"><h1 className="text-2xl font-bold mb-1">Кето-навигатор в магазине 🛍️</h1><p className="text-sm text-stone-500 mb-4">Ориентиры по составу продуктов при выборе в магазине. Не делим продукты на «хорошие» и «плохие».</p>
+    <div className="p-4 mb-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+      ⚠️ <b>Обратите внимание:</b> Распознавание этикеток и поиск по проверенной базе пока не подключены. Сверяйте состав непосредственно на упаковке производителя: проверяйте количество углеводов на вашу порцию, а также скрытые сахара, крахмал и патоку в списке ингредиентов.
+    </div>
+    <Card cls="p-5 mb-4">
+      <h3 className="font-bold text-sm mb-3">Памятка покупателя: на что смотреть на этикетке</h3>
+      <div className="space-y-2 text-sm text-stone-600 dark:text-stone-300">
+        <div>• <b>Углеводы на 100 г vs на порцию:</b> всегда пересчитывайте на реальный размер порции.</div>
+        <div>• <b>Добавленный сахар:</b> если сахар, патока, мальтодекстрин или сироп на первых 3–4 местах состава — углеводов будет больше, чем кажется.</div>
+        <div>• <b>Скрытый крахмал:</b> часто добавляется в соусы, колбасные изделия и молочные десерты как загуститель.</div>
+        <div>• <b>Разрешенные сахарозаменители:</b> эритрит и стевия не поднимают сахар крови и не дают усвояемых углеводов.</div>
+      </div>
+    </Card>
+    <div className="text-[11px] text-stone-400">Информация носит справочный характер для осознанного выбора продуктов, а не строгого запрета.</div>
+  </div>; }
 
 function PrepPage() { const items = [["Запечённое мясо", "40 мин", "3–4 дня"], ["Курица целиком", "60 мин", "3 дня"], ["Яйца вкрутую", "12 мин", "7 дней"], ["Котлеты", "35 мин", "3 дня / месяц в морозилке"], ["Рыба запечённая", "25 мин", "1–2 дня"], ["Бульон", "2–4 часа", "4 дня / 3 мес."], ["Нарезанные овощи", "15 мин", "2–3 дня"], ["Домашний соус", "10 мин", "5 дней"]];
   const plan = [["0–10 мин", "Разогрейте духовку до 190°C, поставьте вариться яйца и бульон."], ["10–20 мин", "Подготовьте мясо и курицу: специи, на противень."], ["20–55 мин", "Пока духовка работает — нарежьте овощи, сделайте соус, сформируйте котлеты."], ["55–75 мин", "Запекаем вторую партию, разбираем первую по контейнерам."], ["75–90 мин", "Подпишите контейнеры с датой, уберите в холодильник и морозилку."]];
@@ -422,9 +424,12 @@ function AntisryvPage() { const [step, setStep] = useState(0); const [cause, set
 
 function RemindersPage() { const st = useStore(); const rs = reminderState(); const levels = [["minimal", "Минимум", "Только дневник"], ["standard", "Стандарт", "Главное без лишнего"], ["active", "Активно", "Полное сопровождение"], ["custom", "Свои", "Полная настройка"]];
   return <div className="p-4 max-w-2xl mx-auto"><h1 className="text-2xl font-bold mb-1">Напоминания ⏰</h1><p className="text-sm text-stone-500 mb-4">Без лишних сообщений — выберите комфортный уровень.</p>
+    <div className="p-4 mb-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+      ⚠️ <b>Обратите внимание:</b> Уведомления не отправляются. Приложение работает автономно в браузере без сервера очередей и push-рассылок. Настройки сохраняются на вашем устройстве как личные ориентиры.
+    </div>
     <div className="grid grid-cols-2 gap-2 mb-5">{levels.map(([v, t, dd]) => <button key={v} onClick={() => setSt(s => { s.remSet.level = v; })} className={`p-3 rounded-xl border text-left ${st.remSet.level === v ? "border-2" : "border-stone-200 dark:border-white/10"}`} style={st.remSet.level === v ? { borderColor: "var(--acc)", background: "var(--accbg)" } : {}}><b className="text-sm block">{t}</b><span className="text-[11px] text-stone-500">{dd}</span></button>)}</div>
     {rs.map((r: any) => <Card key={r.id} cls="p-3 mb-2 flex items-center gap-3"><span className="text-xl">{r.ic}</span><span className="flex-1 text-sm font-medium">{r.t}</span>{st.remSet.level === "custom" && <input type="time" defaultValue="20:00" className="text-xs bg-transparent border border-stone-200 dark:border-white/15 rounded-lg px-2 py-1" />}<Toggle on={r.on} set={(v: boolean) => { if (st.remSet.level !== "custom") { setSt(s => { s.remSet.level = "custom"; REMS.forEach(x => { s.remSet.custom[x.id] = x.def; }); s.remSet.custom[r.id] = v; }); } else setSt(s => { s.remSet.custom[r.id] = v; }); }} label="" /></Card>)}
-    <div className="text-[11px] text-stone-400 mt-3">Демо: push подключается отдельно (Firebase / OneSignal / Telegram-бот).</div></div>; }
+    <div className="text-[11px] text-stone-400 mt-3">Уведомления не отправляются: фоновая доставка не предусмотрена прототипом.</div></div>; }
 
 function NutritionistPage() { return <PrivateSupportPage />; }
 function PremiumPage() { const st = useStore(); const [toast, setToast] = useState("");
@@ -454,11 +459,14 @@ function SettingsPage() { const st = useStore();
 
 function AdminPage() { const st = useStore(); const [tab, setTab] = useState("recipes"); const [toast, setToast] = useState(""); const [rf, setRf] = useState({ title: "", emoji: "🍽️", mode: "keto", cat: "dinner" });
   const tabs = [["recipes", "Рецепты"], ["programs", "Программы"], ["notifs", "Уведомления"], ["reports", "Отчёты"], ["texts", "Тексты"], ["promo", "Промокоды"], ["stats", "Статистика"]];
-  return <div className="p-4 max-w-3xl mx-auto"><h1 className="text-2xl font-bold mb-1">Админ-панель 🛠️</h1><p className="text-xs text-stone-400 mb-4">Демо. В проде: роли, авторизация, защита персональных и медицинских данных.</p>
+  return <div className="p-4 max-w-3xl mx-auto"><h1 className="text-2xl font-bold mb-1">Админ-панель 🛠️</h1><p className="text-xs text-stone-400 mb-4">Серверное администрирование не подключено: данные хранятся локально на устройстве.</p>
+    <div className="p-4 mb-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+      ⚠️ <b>Внимание:</b> Серверное администрирование не подключено. Раздел служит исключительно для локального тестирования интерфейса.
+    </div>
     <div className="flex gap-2 overflow-x-auto mb-4">{tabs.map(([v, l]) => <Chip key={v} on={tab === v} onClick={() => setTab(v)}>{l}</Chip>)}</div>
-    {tab === "recipes" && <Card cls="p-4"><h3 className="font-bold text-sm mb-3">Добавить рецепт</h3><div className="grid grid-cols-2 gap-3"><Field label="Название"><Input value={rf.title} onChange={(e: any) => setRf({ ...rf, title: e.target.value })} /></Field><Field label="Эмодзи"><Input value={rf.emoji} onChange={(e: any) => setRf({ ...rf, emoji: e.target.value })} /></Field><Field label="Режим"><Seg opts={[{ v: "keto", l: "Кето" }, { v: "carnivore", l: "Карнивор" }]} val={rf.mode} set={(v: any) => setRf({ ...rf, mode: v })} /></Field><Field label="Категория"><Seg opts={[{ v: "breakfast", l: "Завтр." }, { v: "lunch", l: "Обед" }, { v: "dinner", l: "Ужин" }]} val={rf.cat} set={(v: any) => setRf({ ...rf, cat: v })} /></Field></div><Btn onClick={() => { if (!rf.title.trim()) { alert("Введите название"); return; } setSt(s => { s.admin = { added: [...(s.admin?.added || []), { ...rf }] }; }); setToast("Рецепт сохранён (демо). Загрузка фото — через CDN."); setRf({ ...rf, title: "" }); }}>Опубликовать</Btn>{st.admin?.added?.map((r: any, i: number) => <div key={i} className="text-xs py-1">✅ {r.emoji} {r.title}</div>)}</Card>}
+    {tab === "recipes" && <Card cls="p-4"><h3 className="font-bold text-sm mb-3">Добавить рецепт</h3><div className="grid grid-cols-2 gap-3"><Field label="Название"><Input value={rf.title} onChange={(e: any) => setRf({ ...rf, title: e.target.value })} /></Field><Field label="Эмоджи"><Input value={rf.emoji} onChange={(e: any) => setRf({ ...rf, emoji: e.target.value })} /></Field><Field label="Режим"><Seg opts={[{ v: "keto", l: "Кето" }, { v: "carnivore", l: "Карнивор" }]} val={rf.mode} set={(v: any) => setRf({ ...rf, mode: v })} /></Field><Field label="Категория"><Seg opts={[{ v: "breakfast", l: "Завтр." }, { v: "lunch", l: "Обед" }, { v: "dinner", l: "Ужин" }]} val={rf.cat} set={(v: any) => setRf({ ...rf, cat: v })} /></Field></div><Btn onClick={() => { if (!rf.title.trim()) { alert("Введите название"); return; } setSt(s => { s.admin = { added: [...(s.admin?.added || []), { ...rf }] }; }); setToast("Рецепт сохранён (демо). Загрузка фото — через CDN."); setRf({ ...rf, title: "" }); }}>Опубликовать</Btn>{st.admin?.added?.map((r: any, i: number) => <div key={i} className="text-xs py-1">✅ {r.emoji} {r.title}</div>)}</Card>}
     {tab === "programs" && <Card cls="p-4"><h3 className="font-bold text-sm mb-2">Опубликованные программы</h3>{PROGRAMS.map(p => <div key={p.id} className="flex justify-between py-1.5 text-sm border-b border-stone-100 dark:border-white/5"><span>{p.emoji} {p.title}</span><span className="text-xs text-emerald-600">активна</span></div>)}</Card>}
-    {tab === "notifs" && <Card cls="p-4"><h3 className="font-bold text-sm mb-2">Массовое уведомление</h3><textarea rows={3} className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-white/15 bg-white dark:bg-white/5 text-sm outline-none mb-3" placeholder="Например: новые рецепты уже в приложении 🍳" /><Btn onClick={() => setToast("Отправка push подключается отдельно")}>Отправить всем</Btn></Card>}
+    {tab === "notifs" && <Card cls="p-4"><h3 className="font-bold text-sm mb-2">Массовое уведомление</h3><p className="text-xs text-stone-500 mb-3">Массовые рассылки отключены: серверное администрирование не подключено.</p><Btn disabled variant="soft">Рассылка недоступна</Btn></Card>}
     {tab === "reports" && <Card cls="p-4"><h3 className="font-bold text-sm mb-2">Отчёты пользователей</h3><p className="text-xs text-stone-500 mb-3">Доступны только при согласии пользователя. Данные защищены.</p>{st.msgs.length > 0 ? <div>{st.msgs.slice(-3).map((m0: any) => <div key={m0.id} className="py-1 text-xs bg-stone-50 dark:bg-white/5 rounded-lg px-2 mb-1">{m0.text}</div>)}</div> : <div className="text-xs text-stone-400">Пока нет отчётов.</div>}</Card>}
     {tab === "texts" && <Card cls="p-4"><h3 className="font-bold text-sm mb-2">Текст на главной</h3><Field label="Подзаголовок"><Input value={st.homeTxt.sub} onChange={(e: any) => setSt(s => { s.homeTxt.sub = e.target.value; })} /></Field><Btn onClick={() => setToast("Сохранено ✅")}>Сохранить</Btn></Card>}
     {tab === "promo" && <Card cls="p-4"><h3 className="font-bold text-sm mb-2">Промокоды</h3><div className="flex gap-2 mb-3"><Input placeholder="KETO20" /><Btn onClick={() => setToast("Промокод создан (демо). Активация через биллинг.")}>Создать</Btn></div><div className="text-xs text-stone-500">WELCOME10 — скидка 10% (демо)</div></Card>}
@@ -492,10 +500,37 @@ function Shell({ children, path }: any) { const st = useStore(); const [more, se
   </div>; }
 
 function Router() { const r = useRoute(); const st = useStore();
-  if (!st.onboarded || !st.profile.name) return <Onboarding />;
+  if (!st.onboarded || !st.profile.name) {
+    const supportOpen = r.path === "/nutritionist" && r.parts.length === 1;
+    return <><div hidden={supportOpen}><Onboarding /></div>{supportOpen && <div><button type="button" onClick={() => go("#/home")} className="m-4 px-4 py-2 rounded-xl border border-stone-300">← Вернуться к анкете</button><NutritionistPage /></div>}</>;
+  }
   const map: any = { "/home": <HomePage />, "/recipes": <RecipesPage />, "/recipe": <RecipePage id={r.parts[1]} />, "/builder": <BuilderPage />, "/menu": <MenuPage />, "/shopping": <ShoppingPage />, "/fridge": <FridgePage />, "/diary": <DiaryPage />, "/stats": <StatsPage />, "/report": <ReportPage />, "/keto": <ModePage mode="keto" />, "/carnivore": <ModePage mode="carnivore" />, "/choose": <ChoosePage />, "/quiz": <QuizPage />, "/programs": <ProgramsPage />, "/budget": <BudgetPage />, "/learn": <LearnPage />, "/cafe": <CafePage />, "/navigator": <NavigatorPage />, "/prep": <PrepPage />, "/antisryv": <AntisryvPage />, "/reminders": <RemindersPage />, "/nutritionist": <NutritionistPage />, "/premium": <PremiumPage />, "/profile": <ProfilePage />, "/settings": <SettingsPage />, "/admin": <AdminPage />, "/privacy": <LegalPage k="privacy" />, "/terms": <LegalPage k="terms" />, "/medical": <LegalPage k="medical" /> };
   return <Shell path={r.path}>{map[r.path] || <Empty e="🧭" t="Страница не найдена" btn="На главную" onClick={() => go("#/home")} />}<ChatWidget /></Shell>; }
 
-export default function App() { const st = useStore(); const a = ACCENTS[st.accent] || ACCENTS.sage;
-  const vars: any = { "--acc": a.a, "--acc2": a.a2, "--accbg": st.theme === "dark" ? a.a + "2e" : a.bg, "--bg": st.theme === "dark" ? a.dk : "#F7F2E9", "--card": st.theme === "dark" ? "#26221C" : "#FFFFFF", "--ink": st.theme === "dark" ? "#F1EDE4" : "#2B2620" };
-  return <div className={st.theme === "dark" ? "dark" : ""} style={{ ...vars, background: "var(--bg)", color: "var(--ink)", minHeight: "100vh", fontFamily: "'Manrope',system-ui,sans-serif" }}><TechnicalNotice /><Router /></div>; }
+export default function App() {
+  const [useLegacy] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash.startsWith('#/legacy')) return true;
+    return false;
+  });
+
+  if (useLegacy) {
+    const st = useStore();
+    const a = ACCENTS[st.accent] || ACCENTS.sage;
+    const vars: any = {
+      "--acc": a.a,
+      "--acc2": a.a2,
+      "--accbg": st.theme === "dark" ? a.a + "2e" : a.bg,
+      "--bg": st.theme === "dark" ? a.dk : "#F7F2E9",
+      "--card": st.theme === "dark" ? "#26221C" : "#FFFFFF",
+      "--ink": st.theme === "dark" ? "#F1EDE4" : "#2B2620"
+    };
+    return (
+      <div className={st.theme === "dark" ? "dark" : ""} style={{ ...vars, background: "var(--bg)", color: "var(--ink)", minHeight: "100vh", fontFamily: "'Manrope',system-ui,sans-serif" }}>
+        <TechnicalNotice />
+        <Router />
+      </div>
+    );
+  }
+
+  return <FoodFirstApp />;
+}
