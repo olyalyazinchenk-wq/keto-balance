@@ -86,11 +86,16 @@ export function FoodFirstApp() {
     readJsonStorage<boolean>(STORAGE_KEYS.shoppingStale, false)
   );
 
+  const [shoppingPortions, setShoppingPortions] = useState<1 | 2>(() =>
+    readJsonStorage<1 | 2>('kb_proto_shopping_portions_v1', 1)
+  );
+
   const [shoppingItems, setShoppingItems] = useState<ShoppingFixtureItem[]>(() => {
     const stored = readJsonStorage<ShoppingFixtureItem[] | null>(STORAGE_KEYS.shopping, null);
     if (stored && stored.length > 0) return stored;
     try {
-      return rebuildShoppingFromMenu(menu, UI_RECIPES_BY_ID, []);
+      const initialPortions = readJsonStorage<1 | 2>('kb_proto_shopping_portions_v1', 1);
+      return rebuildShoppingFromMenu(menu, UI_RECIPES_BY_ID, [], initialPortions);
     } catch {
       return [];
     }
@@ -128,6 +133,12 @@ export function FoodFirstApp() {
       window.localStorage.setItem(STORAGE_KEYS.shoppingStale, JSON.stringify(shoppingNeedsRefresh));
     } catch {}
   }, [shoppingNeedsRefresh]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('kb_proto_shopping_portions_v1', JSON.stringify(shoppingPortions));
+    } catch {}
+  }, [shoppingPortions]);
 
   useEffect(() => {
     try {
@@ -195,15 +206,22 @@ export function FoodFirstApp() {
     setShoppingNeedsRefresh(true);
   }, []);
 
+  const handlePortionsMultiplierChange = useCallback((nextMultiplier: 1 | 2) => {
+    setShoppingPortions(nextMultiplier);
+    setShoppingItems((prev) =>
+      rebuildShoppingFromMenu(menu, UI_RECIPES_BY_ID, prev, nextMultiplier)
+    );
+  }, [menu]);
+
   const handleRefreshShopping = useCallback(() => {
     try {
-      const next = rebuildShoppingFromMenu(menu, UI_RECIPES_BY_ID, shoppingItems);
+      const next = rebuildShoppingFromMenu(menu, UI_RECIPES_BY_ID, shoppingItems, shoppingPortions);
       setShoppingItems(next);
       setShoppingNeedsRefresh(false);
     } catch (e) {
       console.warn('Failed to rebuild shopping items', e);
     }
-  }, [menu, shoppingItems]);
+  }, [menu, shoppingItems, shoppingPortions]);
 
   const currentDay = useMemo(
     () => menu.days.find((d) => d.dayIndex === selectedDayIndex) || menu.days[0],
@@ -314,6 +332,8 @@ export function FoodFirstApp() {
           menuTitle={menu.title}
           isStaleAfterMenuEdit={shoppingNeedsRefresh}
           onRefreshShoppingFromMenu={handleRefreshShopping}
+          portionsMultiplier={shoppingPortions}
+          onChangePortionsMultiplier={handlePortionsMultiplierChange}
           onToggleCheckedInStore={(id) =>
             setShoppingItems((prev) =>
               prev.map((it) => (it.id === id ? { ...it, checkedInStore: !it.checkedInStore } : it))

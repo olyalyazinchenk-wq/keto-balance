@@ -1,36 +1,19 @@
 {
-  "timestamp": "2026-10-30T20:32:55.897Z",
+  "timestamp": "2026-10-30T20:50:56.920Z",
   "engine": "src/core/keto-engine",
   "catalogPath": "src/data/recipes.ts",
   "botDataPath": null,
   "summary": {
     "totalRecipes": 42,
-    "passedCount": 41,
-    "warningCount": 1,
+    "passedCount": 42,
+    "warningCount": 0,
     "errorCount": 0,
     "botSyncErrors": 0,
-    "maxCalorieDiscrepancy": 38,
-    "avgCalorieDiscrepancy": 14.1,
+    "maxCalorieDiscrepancy": 26,
+    "avgCalorieDiscrepancy": 13.2,
     "status": "PASSED"
   },
-  "discrepancies": [
-    {
-      "id": "k3",
-      "title": "Ленивые сырники в духовке (кето)",
-      "status": "WARN",
-      "issues": [
-        {
-          "field": "calories",
-          "severity": "warning",
-          "message": "Noticeable calorie discrepancy: declared=380, calculated=342, diff=38.0 kcal (10.0%)",
-          "declared": 380,
-          "calculated": 342,
-          "diff": 38,
-          "pctDiff": 10
-        }
-      ]
-    }
-  ],
+  "discrepancies": [],
   "recipes": [
     {
       "id": "k1",
@@ -98,7 +81,7 @@
       "mode": "keto",
       "cat": "breakfast",
       "declared": {
-        "kcal": 380,
+        "kcal": 342,
         "p": 22,
         "f": 26,
         "nc": 5
@@ -116,21 +99,11 @@
         }
       },
       "discrepancy": {
-        "kcalDiff": 38,
-        "pctDiff": 10
+        "kcalDiff": 0,
+        "pctDiff": 0
       },
-      "status": "WARN",
-      "issues": [
-        {
-          "field": "calories",
-          "severity": "warning",
-          "message": "Noticeable calorie discrepancy: declared=380, calculated=342, diff=38.0 kcal (10.0%)",
-          "declared": 380,
-          "calculated": 342,
-          "diff": 38,
-          "pctDiff": 10
-        }
-      ]
+      "status": "PASS",
+      "issues": []
     },
     {
       "id": "k4",

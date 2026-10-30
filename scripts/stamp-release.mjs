@@ -33,4 +33,5 @@ const release = {
   assets,
 };
 writeFileSync('dist/release.json', `${JSON.stringify(release, null, 2)}\n`);
+writeFileSync('dist/build-meta.json', `${JSON.stringify(release, null, 2)}\n`);
 console.log(`Built release ${release.buildId}`);

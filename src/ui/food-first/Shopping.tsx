@@ -24,6 +24,8 @@ export interface ShoppingScreenProps {
   onToggleCheckedInStore: (id: string) => void;
   onToggleAlreadyHave: (id: string) => void;
   onAddCustomItem?: (item: ShoppingFixtureItem) => void;
+  portionsMultiplier?: 1 | 2;
+  onChangePortionsMultiplier?: (multiplier: 1 | 2) => void;
 }
 
 const DEPARTMENTS: ShoppingFixtureItem['department'][] = [
@@ -41,6 +43,8 @@ export function ShoppingScreen({
   onToggleCheckedInStore,
   onToggleAlreadyHave,
   onAddCustomItem,
+  portionsMultiplier = 1,
+  onChangePortionsMultiplier,
 }: ShoppingScreenProps) {
   const [copiedNotice, setCopiedNotice] = useState(false);
   const [copyError, setCopyError] = useState(false);
@@ -102,6 +106,33 @@ export function ShoppingScreen({
               Список покупок
             </h1>
             <p className="text-sm text-[var(--kb-text-2)]">{menuTitle}</p>
+            {onChangePortionsMultiplier && (
+              <div
+                role="group"
+                aria-label="Выбор числа порций для списка покупок"
+                className="mt-2.5 inline-flex items-center border border-[var(--kb-border)] bg-[var(--kb-surface)] p-0.5 rounded-lg"
+              >
+                {([1, 2] as const).map((p) => {
+                  const active = portionsMultiplier === p;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => onChangePortionsMultiplier(p)}
+                      data-testid={`shopping-portions-${p}x`}
+                      aria-pressed={active}
+                      className={`min-h-[30px] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] tabular-nums rounded-md kb-focus-ring kb-transition-scale ${
+                        active
+                          ? 'bg-[var(--kb-day-active-bg)] text-[var(--kb-text-1)]'
+                          : 'text-[var(--kb-text-3)] hover:text-[var(--kb-text-1)]'
+                      }`}
+                    >
+                      {p}× {p === 1 ? 'порция' : 'порции'}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <button
