@@ -73,3 +73,56 @@ class SafetyCheckResponse(BaseModel):
     blocked: bool
     reason: Optional[str] = None
     contraindications_detected: List[str] = Field(default_factory=list)
+
+# --- MONETIZATION & SUBSCRIPTION WIRE MODELS ---
+
+class SubscriptionReadV1(BaseModel):
+    is_premium: bool
+    tier: Optional[str] = None
+    status: str = "none"
+    expires_at: Optional[str] = None
+    available_products: List[Dict[str, Any]] = Field(default_factory=list)
+    user_id: Optional[int] = None
+
+class PurchaseInitPayloadV1(BaseModel):
+    product_id: str = Field(..., min_length=1, max_length=50)
+    provider: Optional[str] = Field(default="demo", max_length=50)
+
+class PurchaseInitResponseV1(BaseModel):
+    order_id: str
+    status: str = "pending"
+    payment_url: Optional[str] = None
+    demo_mode: bool = True
+
+class PurchaseConfirmPayloadV1(BaseModel):
+    order_id: str = Field(..., min_length=1, max_length=100)
+
+class PurchaseConfirmResponseV1(BaseModel):
+    success: bool = True
+    subscription: SubscriptionReadV1
+    is_premium: Optional[bool] = None
+    tier: Optional[str] = None
+    status: Optional[str] = None
+    expires_at: Optional[str] = None
+
+class ConsentItemModel(BaseModel):
+    consent_type: str = Field(..., min_length=1, max_length=64)
+    version: str = Field(default="v1.0.0-release", max_length=32)
+    granted: bool = True
+    source: Optional[str] = "tma"
+
+class UserConsentsPayload(BaseModel):
+    consents: List[ConsentItemModel]
+
+from bot.pilot_models import (
+    PilotPreferencesV1,
+    PilotProfileV1,
+    PilotStateV1,
+    PilotShoppingItemV1,
+    PilotUserReadV1,
+    PilotUserWriteV1,
+    PilotShoppingReadV1,
+    PilotShoppingWriteV1,
+    PilotSaveResultV1,
+    PilotCatalogV1,
+)

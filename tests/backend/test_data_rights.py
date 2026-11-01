@@ -41,7 +41,7 @@ class TestDataRights(unittest.TestCase):
 
     def test_export_user_data(self):
         headers_a = {"Authorization": f"Bearer {self.token_a}"}
-        self.client.put("/api/user", json={"profile": {"weight": 77.0}}, headers=headers_a)
+        self.client.put("/api/user", json={"expected_revision": 0, "profile": {"weight": 77.0}, "state": None}, headers=headers_a)
 
         export_resp = self.client.get("/api/user/data", headers=headers_a)
         self.assertEqual(export_resp.status_code, 200)
@@ -53,7 +53,7 @@ class TestDataRights(unittest.TestCase):
 
     def test_delete_user_data(self):
         headers_a = {"Authorization": f"Bearer {self.token_a}"}
-        self.client.put("/api/user", json={"profile": {"weight": 77.0}}, headers=headers_a)
+        self.client.put("/api/user", json={"expected_revision": 0, "profile": {"weight": 77.0}, "state": None}, headers=headers_a)
 
         del_resp = self.client.delete("/api/user/data", headers=headers_a)
         self.assertEqual(del_resp.status_code, 200)
@@ -67,3 +67,65 @@ class TestDataRights(unittest.TestCase):
         headers_a = {"Authorization": f"Bearer {self.token_a}"}
         del_cross = self.client.delete("/api/user/data?user_id=2002", headers=headers_a)
         self.assertEqual(del_cross.status_code, 403)
+
+    def test_record_and_get_user_consents(self):
+        headers_a = {"Authorization": f"Bearer {self.token_a}"}
+        payload = {
+            "consents": [
+                {"consent_type": "personal_data", "version": "v1.0.0-release", "granted": True, "source": "tma_start_gate"},
+                {"consent_type": "age_18_plus", "version": "v1.0.0-release", "granted": True, "source": "tma_start_gate"},
+            ]
+        }
+        resp = self.client.post("/api/user/consents", json=payload, headers=headers_a)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.json()["success"])
+        self.assertEqual(resp.json()["recorded"], 2)
+
+        get_resp = self.client.get("/api/user/consents", headers=headers_a)
+        self.assertEqual(get_resp.status_code, 200)
+        consents = get_resp.json()["consents"]
+        self.assertEqual(len(consents), 2)
+        types = [c["consent_type"] for c in consents]
+        self.assertIn("personal_data", types)
+        self.assertIn("age_18_plus", types)
+
+        # Check that consents appear in GDPR export
+        export_resp = self.client.get("/api/user/data", headers=headers_a)
+        self.assertEqual(export_resp.status_code, 200)
+        exp_data = export_resp.json()
+        self.assertIn("consents", exp_data)
+        self.assertEqual(len(exp_data["consents"]), 2)
+
+    def test_order_anonymization_on_user_deletion(self):
+        from bot.app_db import create_order, get_order
+        headers_a = {"Authorization": f"Bearer {self.token_a}"}
+        order_id = create_order(
+            user_id=2001,
+            product_id="sub_month",
+            amount_rub=1900.0,
+            provider="demo",
+            db_path=self.db_path,
+        )
+
+        # Delete user
+        del_resp = self.client.delete("/api/user/data", headers=headers_a)
+        self.assertEqual(del_resp.status_code, 200)
+
+        # Check order still exists but is anonymized to user_id=0
+        saved_order = get_order(self.db_path, order_id)
+        self.assertIsNotNone(saved_order)
+        self.assertEqual(saved_order["user_id"], 0)
+        self.assertEqual(saved_order["product_id"], "sub_month")
+
+    def test_educational_guides_endpoint(self):
+        resp = self.client.get("/api/education/guides")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn("guides", data)
+        self.assertIn("count", data)
+        self.assertGreaterEqual(data["count"], 8)
+        first_guide = data["guides"][0]
+        self.assertIn("id", first_guide)
+        self.assertIn("title", first_guide)
+        self.assertIn("category", first_guide)
+        self.assertIn("disclaimer", first_guide)

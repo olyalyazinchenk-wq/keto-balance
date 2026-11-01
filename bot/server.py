@@ -32,6 +32,8 @@ from bot.app_models import (
     PurchaseInitResponseV1,
     PurchaseConfirmPayloadV1,
     PurchaseConfirmResponseV1,
+    ConsentItemModel,
+    UserConsentsPayload,
 )
 from bot.pilot_models import (
     PilotUserReadV1,
@@ -66,6 +68,8 @@ from bot.app_db import (
     create_order,
     get_order,
     complete_order,
+    record_user_consent,
+    get_user_consents,
 )
 from bot.safety import evaluate_contraindications
 from bot.catalog import CatalogService, CatalogProvider, is_shopping_consistent_with_menu
@@ -662,6 +666,52 @@ def create_app(
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
         deleted = delete_all_user_data(target_uid, db_path=active_db)
         return {"deleted": deleted, "user_id": target_uid}
+
+    # --- USER CONSENTS (DATA GOVERNANCE) API ---
+
+    @app.post("/api/user/consents")
+    def post_user_consents(
+        payload: UserConsentsPayload,
+        authorization: Optional[str] = Header(None),
+        x_user_id: Optional[int] = Header(None),
+        user_id: Optional[int] = Query(None),
+    ):
+        target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+        for item in payload.consents:
+            record_user_consent(
+                user_id=target_uid,
+                consent_type=item.consent_type,
+                version=item.version,
+                granted=item.granted,
+                source=item.source or "tma",
+                db_path=active_db,
+            )
+        all_consents = get_user_consents(target_uid, db_path=active_db)
+        return {"success": True, "recorded": len(payload.consents), "consents": all_consents}
+
+    @app.get("/api/user/consents")
+    def get_user_consents_endpoint(
+        authorization: Optional[str] = Header(None),
+        x_user_id: Optional[int] = Header(None),
+        user_id: Optional[int] = Query(None),
+    ):
+        target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+        all_consents = get_user_consents(target_uid, db_path=active_db)
+        return {"user_id": target_uid, "consents": all_consents}
+
+    # --- EDUCATIONAL GUIDES API ---
+
+    @app.get("/api/education/guides")
+    def get_educational_guides():
+        guides_path = Path(__file__).resolve().parent.parent / "docs" / "content" / "educational-guides.json"
+        if not guides_path.is_file():
+            return {"guides": [], "count": 0}
+        try:
+            with open(guides_path, "r", encoding="utf-8") as f:
+                guides = json.load(f)
+            return {"guides": guides, "count": len(guides)}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to read educational guides: {e}")
 
     # --- CATCH-ALL API ROUTES ---
 
