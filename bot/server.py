@@ -3,12 +3,63 @@
 """
 import hashlib
 import json
+import logging
 import os
 import secrets
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+logger = logging.getLogger("KetoServer")
+
+def answer_pre_checkout_query(
+    bot_token: str,
+    pre_checkout_query_id: str,
+    ok: bool = True,
+    error_message: Optional[str] = None
+) -> bool:
+    if not bot_token or "test" in bot_token.lower() or os.getenv("APP_STAGE") == "test":
+        return True
+    url = f"https://api.telegram.org/bot{bot_token}/answerPreCheckoutQuery"
+    payload: Dict[str, Any] = {"pre_checkout_query_id": pre_checkout_query_id, "ok": ok}
+    if not ok and error_message:
+        payload["error_message"] = error_message
+    try:
+        import httpx
+        resp = httpx.post(url, json=payload, timeout=8.0)
+        return resp.status_code == 200
+    except Exception as e:
+        logger.warning(f"Failed to answer pre_checkout_query: {e}")
+        return False
+
+def create_star_invoice_link(
+    bot_token: str,
+    title: str,
+    description: str,
+    payload: str,
+    stars_amount: int = 1000
+) -> Optional[str]:
+    if not bot_token or "test" in bot_token.lower() or os.getenv("APP_STAGE") == "test":
+        return f"https://t.me/$stars_invoice_mock_{payload}"
+    url = f"https://api.telegram.org/bot{bot_token}/createInvoiceLink"
+    data = {
+        "title": title,
+        "description": description,
+        "payload": payload,
+        "provider_token": "",  # Empty for Telegram Stars (XTR)
+        "currency": "XTR",
+        "prices": [{"label": title, "amount": stars_amount}],
+    }
+    try:
+        import httpx
+        resp = httpx.post(url, json=data, timeout=8.0)
+        if resp.status_code == 200:
+            result = resp.json().get("result")
+            return result
+    except Exception as e:
+        logger.warning(f"Failed to create Stars invoice link: {e}")
+    return None
 
 from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
@@ -182,9 +233,51 @@ def create_app(
     def get_products():
         return PRODUCTS
 
+    # --- TELEGRAM STARS PAYMENTS & WEBHOOK API ---
+
+    @app.post("/api/telegram/webhook")
     @app.post("/api/payments/webhook")
-    def payment_webhook():
-        raise HTTPException(status_code=503, detail="Payments are disabled in P0")
+    async def telegram_payments_webhook(request: Request):
+        from bot.payments import is_payments_enabled
+        if not is_payments_enabled():
+            raise HTTPException(status_code=503, detail="Payments are disabled in P0")
+
+        try:
+            update = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+        bot_token = active_settings.telegram_bot_token or ""
+
+        # 1. Pre-checkout query validation (must answer within 10s)
+        if "pre_checkout_query" in update:
+            pcq = update["pre_checkout_query"]
+            pcq_id = pcq.get("id")
+            order_id = pcq.get("invoice_payload")
+            if order_id:
+                order = get_order(active_db, order_id)
+                if not order:
+                    answer_pre_checkout_query(bot_token, pcq_id, ok=False, error_message="Заказ не найден")
+                    return JSONResponse(status_code=404, content={"ok": False, "error": "Order not found"})
+
+            answer_pre_checkout_query(bot_token=bot_token, pre_checkout_query_id=pcq_id, ok=True)
+            return {"ok": True}
+
+        # 2. Successful payment handling
+        msg = update.get("message") or {}
+        succ = msg.get("successful_payment")
+        if succ:
+            order_id = succ.get("invoice_payload")
+            if not order_id:
+                raise HTTPException(status_code=400, detail="Missing invoice_payload")
+            order = get_order(active_db, order_id)
+            if not order:
+                raise HTTPException(status_code=404, detail="Order not found")
+
+            completed = complete_order(db_path=active_db, order_id=order_id)
+            return {"ok": True, "completed_order_id": order_id, "subscription": completed.get("subscription")}
+
+        return {"ok": True, "ignored": True}
 
     # --- K2 AUTH & SESSION API ---
 
@@ -400,11 +493,24 @@ def create_app(
             amount_rub=float(prod["price"]),
             provider=payload.provider or "demo",
         )
+        demo_mode = (
+            (payload.provider == "demo" or not payload.provider)
+            and not (active_settings.is_production or active_settings.app_stage in ("production", "staging"))
+        )
+        payment_url = None
+        if not demo_mode and active_settings.telegram_bot_token:
+            payment_url = create_star_invoice_link(
+                bot_token=active_settings.telegram_bot_token,
+                title=f"Кето Баланс: {prod['title']}",
+                description=prod.get("description", "Подписка на 1 месяц"),
+                payload=order_id,
+                stars_amount=1000,
+            )
         return PurchaseInitResponseV1(
             order_id=order_id,
             status="pending",
-            payment_url=None,
-            demo_mode=True,
+            payment_url=payment_url,
+            demo_mode=demo_mode,
         )
 
     @app.post("/api/subscription/confirm-demo", response_model=PurchaseConfirmResponseV1)

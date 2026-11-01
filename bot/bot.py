@@ -455,6 +455,25 @@ async def tariffs_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_html(text, reply_markup=kb)
 
 
+async def paysupport_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик команды /paysupport: условия подписки, отмена и возврат через Telegram Stars."""
+    text = (
+        "💳 <b>Поддержка по оплате и подписке Кето Баланс</b>\n\n"
+        "• <b>Тариф:</b> Месячная подписка на полный доступ к сервису.\n"
+        "• <b>Оплата:</b> Оплата производится официально через Telegram Stars (XTR) без скрытых комиссий.\n"
+        "• <b>Автопродление:</b> Только при вашем явном согласии. Вы можете отменить подписку в любой момент в Telegram: <i>Настройки → Мои подписки</i>.\n"
+        "• <b>Возврат средств:</b> При технических сбоях или ошибочном списании возврат производится через команду поддержки или вызов refundStarPayment.\n\n"
+        "Для решения любых вопросов по платежам обратитесь в службу поддержки через Mini App или напишите нашему нутрициологу."
+    )
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("👑 Посмотреть тариф", callback_data="tariffs")],
+        [InlineKeyboardButton("« В главное меню", callback_data="to_main")],
+    ])
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
+    elif update.message:
+        await update.message.reply_html(text, reply_markup=kb)
+
 async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /help."""
     if not update.message:
@@ -793,6 +812,7 @@ async def post_init(application: Application):
         BotCommand("tip", "💡 Совет нутрициолога"),
         BotCommand("sos", "🆘 Протокол при тяге и срыве"),
         BotCommand("tariffs", "👑 Тарифы и продукты"),
+        BotCommand("paysupport", "💳 Поддержка по оплате и подписке"),
         BotCommand("menu", "🌿 Меню бота"),
         BotCommand("help", "❓ Справка по боту"),
     ]
@@ -821,6 +841,7 @@ def main():
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(CommandHandler("menu", menu_cmd))
     app.add_handler(CommandHandler("tariffs", tariffs_cmd))
+    app.add_handler(CommandHandler("paysupport", paysupport_cmd))
     app.add_handler(CommandHandler("ask", ask_cmd))
     app.add_handler(CommandHandler("reply", reply_cmd))
     app.add_handler(CommandHandler("cancel", cancel_cmd))
