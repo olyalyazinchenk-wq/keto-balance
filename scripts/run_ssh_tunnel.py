@@ -11,6 +11,7 @@ import atexit
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import threading
@@ -50,12 +51,31 @@ def get_process_times(pid: int):
             ctypes.windll.kernel32.CloseHandle(h)
     return None
 
+def get_process_executable(pid: int) -> str:
+    if os.name == "nt":
+        import ctypes
+        import ctypes.wintypes
+        h = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
+        if h:
+            try:
+                buf = ctypes.create_unicode_buffer(1024)
+                size = ctypes.wintypes.DWORD(1024)
+                if ctypes.windll.kernel32.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(size)):
+                    return buf.value
+            finally:
+                ctypes.windll.kernel32.CloseHandle(h)
+    which_ssh = shutil.which("ssh.exe") or shutil.which("ssh")
+    if which_ssh:
+        return os.path.abspath(which_ssh)
+    return ""
+
 def record_ssh_state(pid: int, port: int):
     try:
         data = {
             "pid": pid,
             "port": port,
             "create_time": get_process_times(pid),
+            "executable": get_process_executable(pid),
             "started_at": time.time(),
         }
         SSH_STATE_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")

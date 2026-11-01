@@ -129,31 +129,31 @@ def is_matching_executable(current_exe: str, expected_exe: str) -> bool:
     """Matches executable taking into account path normalization and Windows file systems."""
     if not current_exe or not expected_exe:
         return False
+    if not isinstance(current_exe, str) or not isinstance(expected_exe, str):
+        return False
+    if not os.path.isabs(current_exe) or not os.path.isabs(expected_exe):
+        return False
     cur_norm = os.path.normcase(os.path.abspath(current_exe))
     exp_norm = os.path.normcase(os.path.abspath(expected_exe))
-    if cur_norm == exp_norm:
-        return True
-    # If expected_exe is only a file name without directory (e.g. 'ssh.exe'), match by basename
-    if os.path.basename(expected_exe) == expected_exe:
-        return os.path.normcase(os.path.basename(current_exe)) == os.path.normcase(expected_exe)
-    return False
+    return cur_norm == exp_norm
 
 
 def is_process_alive_and_matched(proc_info: Optional[Dict[str, Any]]) -> bool:
     """Verifies that a managed process is actively running and matches stored metadata."""
-    if not proc_info or not proc_info.get("pid"):
+    if not proc_info or not isinstance(proc_info, dict) or not proc_info.get("pid"):
         return False
     pid = proc_info["pid"]
+    expected_ctime = proc_info.get("create_time")
+    expected_exe = proc_info.get("executable")
+    if expected_ctime is None or expected_ctime == "" or not expected_exe or not os.path.isabs(expected_exe):
+        return False
     current = get_process_info(pid)
     if not current:
         return False
-    expected_ctime = proc_info.get("create_time")
-    if expected_ctime is not None and current.get("create_time") != expected_ctime:
+    if current.get("create_time") != expected_ctime:
         return False
-    expected_exe = proc_info.get("executable")
-    if expected_exe and current.get("executable"):
-        if not is_matching_executable(current["executable"], expected_exe):
-            return False
+    if not current.get("executable") or not is_matching_executable(current["executable"], expected_exe):
+        return False
     return True
 
 
@@ -183,24 +183,33 @@ def save_state(state: Dict[str, Any]) -> None:
 
 def safe_terminate_process(proc_info: Dict[str, Any]) -> bool:
     """Safely terminates a process only after verifying PID, create_time, and executable."""
+    if not proc_info or not isinstance(proc_info, dict):
+        return False
     pid = proc_info.get("pid")
     expected_ctime = proc_info.get("create_time")
     expected_exe = proc_info.get("executable")
-    if not pid:
-        return True
+    if not pid or not isinstance(pid, int) or pid <= 0:
+        return False
 
     current = get_process_info(pid)
     if not current:
         return True  # Already terminated
 
-    if expected_ctime is not None and current.get("create_time") != expected_ctime:
+    if expected_ctime is None or expected_ctime == "":
+        print(f"[WARN] PID {pid} has no confirmed create_time in state. Process not killed.", file=sys.stderr)
+        return False
+
+    if current.get("create_time") != expected_ctime:
         print(f"[WARN] PID {pid} create_time mismatch (expected {expected_ctime}, got {current.get('create_time')}). Process not killed.", file=sys.stderr)
         return False
 
-    if expected_exe and current.get("executable"):
-        if not is_matching_executable(current["executable"], expected_exe):
-            print(f"[WARN] PID {pid} executable mismatch (expected {expected_exe}, got {current.get('executable')}). Process not killed.", file=sys.stderr)
-            return False
+    if not expected_exe or not isinstance(expected_exe, str) or not os.path.isabs(expected_exe):
+        print(f"[WARN] PID {pid} has no confirmed full executable path in state. Process not killed.", file=sys.stderr)
+        return False
+
+    if not current.get("executable") or not is_matching_executable(current["executable"], expected_exe):
+        print(f"[WARN] PID {pid} executable mismatch (expected {expected_exe}, got {current.get('executable')}). Process not killed.", file=sys.stderr)
+        return False
 
     try:
         if os.name == "nt":
@@ -221,56 +230,30 @@ def safe_terminate_process(proc_info: Dict[str, Any]) -> bool:
 
 
 def query_orphan_ssh_pids(port: int = STAGING_PORT) -> list:
-    """Finds orphan ssh.exe processes forwarding our specific port to localhost.run on Windows."""
-    if os.name == "nt":
-        try:
-            cmd = [
-                "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
-                f"Get-CimInstance Win32_Process | Where-Object {{ $_.Name -like '*ssh*' -and $_.CommandLine -match ':{port}\\b' -and $_.CommandLine -like '*localhost.run*' }} | Select-Object -ExpandProperty ProcessId"
-            ]
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
-            if res.returncode == 0 and res.stdout.strip():
-                pids = []
-                for line in res.stdout.strip().splitlines():
-                    try:
-                        pids.append(int(line.strip()))
-                    except ValueError:
-                        pass
-                return pids
-        except Exception:
-            pass
+    """Termination of orphan SSH processes by address/port is disabled to avoid killing foreign processes."""
     return []
 
 
 def cleanup_tunnel_ssh(port: int = STAGING_PORT) -> None:
     """Safely terminates only our tunnel's child SSH process without affecting other SSH sessions."""
-    # 1. Check tracked SSH state file
+    # Check tracked SSH state file with confirmed PID, create_time, and executable
     if SSH_STATE_FILE.is_file():
         try:
             ssh_data = json.loads(SSH_STATE_FILE.read_text(encoding="utf-8"))
             ssh_pid = ssh_data.get("pid")
             ssh_port = ssh_data.get("port")
+            ssh_ctime = ssh_data.get("create_time")
+            ssh_exe = ssh_data.get("executable")
             if ssh_pid and ssh_port == port:
-                proc = get_process_info(ssh_pid)
-                if proc and "ssh" in proc.get("executable", "").lower():
-                    safe_terminate_process({
-                        "pid": ssh_pid,
-                        "create_time": ssh_data.get("create_time"),
-                        "executable": proc.get("executable"),
-                    })
+                safe_terminate_process({
+                    "pid": ssh_pid,
+                    "create_time": ssh_ctime,
+                    "executable": ssh_exe,
+                })
         except Exception:
             pass
         finally:
             SSH_STATE_FILE.unlink(missing_ok=True)
-
-    # 2. Targeted fallback on Windows: check specifically for ssh.exe forwarding our port to localhost.run
-    for orphan_pid in query_orphan_ssh_pids(port):
-        try:
-            info = get_process_info(orphan_pid)
-            if info and "ssh" in info.get("executable", "").lower():
-                safe_terminate_process(info)
-        except Exception:
-            pass
 
 
 def resolve_and_validate_receipt(receipt_path_str: Optional[str] = None) -> Path:
@@ -692,6 +675,7 @@ def start(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> int:
         server_env["KETO_BOT_TOKEN"] = bot_token
 
         print(f"[HOME_PILOT] Starting Staging Server on port {STAGING_PORT} (--persistent, receipt={pinned_receipt.name})...", flush=True)
+        spawn_flags = (subprocess.CREATE_NO_WINDOW | getattr(subprocess, "DETACHED_PROCESS", 0x00000008)) if os.name == "nt" else 0
         try:
             server_proc = subprocess.Popen(
                 server_cmd,
@@ -699,7 +683,7 @@ def start(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> int:
                 stdout=server_stdout,
                 stderr=server_stderr,
                 env=server_env,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+                creationflags=spawn_flags,
             )
         except Exception as e:
             print(f"[HOME_PILOT ERROR] Failed to spawn staging server: {e}", file=sys.stderr)
@@ -762,6 +746,7 @@ def start(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> int:
                 tunnel_env["KETO_BOT_TOKEN"] = bot_token
 
             print(f"[HOME_PILOT] Starting SSH Tunnel to port {STAGING_PORT} (chat_id={OLGA_CHAT_ID})...", flush=True)
+            spawn_flags = (subprocess.CREATE_NO_WINDOW | getattr(subprocess, "DETACHED_PROCESS", 0x00000008)) if os.name == "nt" else 0
             try:
                 tunnel_proc = subprocess.Popen(
                     tunnel_cmd,
@@ -769,7 +754,7 @@ def start(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> int:
                     stdout=tunnel_stdout,
                     stderr=tunnel_stderr,
                     env=tunnel_env,
-                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+                    creationflags=spawn_flags,
                 )
             except Exception as e:
                 print(f"[HOME_PILOT ERROR] Failed to spawn SSH tunnel: {e}", file=sys.stderr)

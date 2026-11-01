@@ -2,7 +2,7 @@
 
 > **Единая точка оперативной правды для всех агентов и разработчиков.**
 > Читать первым при входе в сессию. Обновлять при завершении этапа.
-> **Последнее обновление**: 2026-11-01 23:15 MSK · Antigravity (Harden process tree recovery, path matching, 46 tests passed).
+> **Последнее обновление**: 2026-11-02 04:45 MSK · Antigravity (Strict safe termination by PID, create_time and full absolute executable path; removed port-only termination; eliminated active-process path fallback; 57 tests passed: 45 ops + 12 backend).
 
 ---
 
@@ -30,7 +30,7 @@
 
 | Компонент / Проверка | Команда | Результат | Статус |
 |---|---|---|:---:|
-| **Home Pilot Ops Suite** | `unittest discover -s tests/ops -p test_home_pilot.py` | **34 passed, 0 failed** (безопасность токена, независимое восстановление, путь процесса, 8 негативных тестов, бэкофф) | **PASS** |
+| **Home Pilot Ops Suite** | `unittest discover -s tests/ops -p test_home_pilot.py` | **45 passed, 0 failed** (безопасность токена, независимое восстановление, полный абсолютный путь процесса, 8 негативных тестов, защита от остановки чужих процессов, 11 тестов отсутствующего/неполного/устаревшего состояния, бэкофф) | **PASS** |
 | **Home Staging & Webhook Security** | `unittest test_home_staging test_payment_webhook_security` | **12 passed, 0 failed** (авторизация Ольги 1084557944, persistent DB, receipt alignment, безопасные платежи) | **PASS** |
 | **Recovery Drill (Live)** | `ops/status-keto-balance.ps1` | Сервер PID 18932 сохранён при падении туннеля, туннель восстановлен (PID 23424), кнопка Ольги обновлена | **PASS** |
 | **Backend Test Suite** | `python scripts/run_backend_tests.py` | **168 passed, 0 failed, 0 errors, 0 skipped** across all backend modules | **PASS** |

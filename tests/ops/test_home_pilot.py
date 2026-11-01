@@ -26,9 +26,12 @@ class TestHomePilot(unittest.TestCase):
         self.orig_state_file = home_pilot.STATE_FILE
         self.orig_logs_dir = home_pilot.LOGS_DIR
         self.orig_tunnel_file = getattr(home_pilot, "TUNNEL_URL_FILE", home_pilot.ROOT / "current_tunnel_url.txt")
+        self.orig_ssh_state_file = home_pilot.SSH_STATE_FILE
+        self.ssh_state_file = self.tmp_path / ".test_tunnel_ssh_state.json"
         home_pilot.STATE_FILE = self.state_file
         home_pilot.LOGS_DIR = self.logs_dir
         home_pilot.TUNNEL_URL_FILE = self.tunnel_url_file
+        home_pilot.SSH_STATE_FILE = self.ssh_state_file
 
         # Current process metadata for realistic process checks
         self.valid_proc_info = home_pilot.get_process_info(os.getpid())
@@ -57,6 +60,7 @@ class TestHomePilot(unittest.TestCase):
         home_pilot.STATE_FILE = self.orig_state_file
         home_pilot.LOGS_DIR = self.orig_logs_dir
         home_pilot.TUNNEL_URL_FILE = self.orig_tunnel_file
+        home_pilot.SSH_STATE_FILE = self.orig_ssh_state_file
         try:
             self.tmp_dir.cleanup()
         except Exception:
@@ -313,6 +317,7 @@ class TestHomePilot(unittest.TestCase):
             "pid": self.valid_proc_info["pid"],
             "port": 18081,
             "create_time": self.valid_proc_info["create_time"],
+            "executable": "C:\\Windows\\System32\\OpenSSH\\ssh.exe",
         }
         home_pilot.SSH_STATE_FILE.write_text(json.dumps(ssh_state), encoding="utf-8")
 
@@ -862,6 +867,174 @@ class TestHomePilot(unittest.TestCase):
         finally:
             run_ssh_tunnel.URL_FILE = orig_url_file
             run_ssh_tunnel.ENV_FILE = orig_env_file
+
+    # =========================================================================
+    # TASK 4: Tests for Missing and Stale State Files (Safe Termination Protection)
+    # =========================================================================
+
+    def test_stop_when_state_file_missing_leaves_processes_untouched(self):
+        """When state file does not exist, stop() must not terminate any processes."""
+        if self.state_file.exists():
+            self.state_file.unlink()
+        if self.ssh_state_file.exists():
+            self.ssh_state_file.unlink()
+
+        with patch("scripts.home_pilot.safe_terminate_process") as mock_term, \
+             patch("subprocess.run") as mock_run:
+            code = home_pilot.stop()
+            self.assertEqual(code, 0)
+            mock_term.assert_not_called()
+            mock_run.assert_not_called()
+
+    def test_cleanup_tunnel_ssh_when_state_missing_does_not_terminate_foreign_process(self):
+        """When SSH state file is missing, cleanup_tunnel_ssh must not terminate any process (no port fallback)."""
+        if self.ssh_state_file.exists():
+            self.ssh_state_file.unlink()
+
+        with patch("scripts.home_pilot.safe_terminate_process") as mock_term, \
+             patch("subprocess.run") as mock_run:
+            home_pilot.cleanup_tunnel_ssh(port=18081)
+            mock_term.assert_not_called()
+            mock_run.assert_not_called()
+
+    def test_safe_terminate_refuses_when_create_time_missing(self):
+        """safe_terminate_process must refuse to terminate if create_time is missing in state."""
+        proc_missing_ctime = {
+            "pid": os.getpid(),
+            "executable": self.valid_proc_info["executable"],
+            # create_time omitted
+        }
+        with patch("subprocess.run") as mock_run:
+            result = home_pilot.safe_terminate_process(proc_missing_ctime)
+            self.assertFalse(result, "Must return False when create_time is missing")
+            mock_run.assert_not_called()
+
+    def test_safe_terminate_refuses_when_executable_missing(self):
+        """safe_terminate_process must refuse to terminate if executable path is missing in state."""
+        proc_missing_exe = {
+            "pid": os.getpid(),
+            "create_time": self.valid_proc_info["create_time"],
+            # executable omitted
+        }
+        with patch("subprocess.run") as mock_run:
+            result = home_pilot.safe_terminate_process(proc_missing_exe)
+            self.assertFalse(result, "Must return False when executable is missing")
+            mock_run.assert_not_called()
+
+    def test_stop_with_stale_state_recycled_pid_leaves_process_untouched(self):
+        """When state contains a recycled PID (mismatched create_time), stop() must not kill it."""
+        stale_state = {
+            "server": {
+                "pid": os.getpid(),
+                "create_time": self.valid_proc_info["create_time"] + 88888,
+                "executable": self.valid_proc_info["executable"],
+            },
+            "tunnel": {
+                "pid": os.getpid(),
+                "create_time": self.valid_proc_info["create_time"] + 99999,
+                "executable": self.valid_proc_info["executable"],
+            }
+        }
+        home_pilot.save_state(stale_state)
+
+        with patch("subprocess.run") as mock_run:
+            code = home_pilot.stop()
+            self.assertEqual(code, 0)
+            mock_run.assert_not_called()
+
+    def test_stop_with_stale_state_mismatched_executable_leaves_process_untouched(self):
+        """When state contains a different executable path, stop() must not kill it."""
+        stale_state = {
+            "server": {
+                "pid": os.getpid(),
+                "create_time": self.valid_proc_info["create_time"],
+                "executable": "C:\\Foreign\\App\\other.exe",
+            }
+        }
+        home_pilot.save_state(stale_state)
+
+        with patch("subprocess.run") as mock_run:
+            code = home_pilot.stop()
+            self.assertEqual(code, 0)
+            mock_run.assert_not_called()
+
+    def test_cleanup_tunnel_ssh_with_stale_ssh_state_leaves_process_untouched(self):
+        """When .tunnel_ssh_state.json has stale create_time or mismatched executable, cleanup_tunnel_ssh must not kill."""
+        stale_ssh = {
+            "pid": os.getpid(),
+            "port": 18081,
+            "create_time": self.valid_proc_info["create_time"] + 77777,
+            "executable": self.valid_proc_info["executable"],
+        }
+        home_pilot.SSH_STATE_FILE.write_text(json.dumps(stale_ssh), encoding="utf-8")
+
+        with patch("subprocess.run") as mock_run:
+            home_pilot.cleanup_tunnel_ssh(port=18081)
+            mock_run.assert_not_called()
+            self.assertFalse(home_pilot.SSH_STATE_FILE.exists(), "Stale state file should be unlinked")
+
+    def test_safe_terminate_refuses_when_executable_not_absolute(self):
+        """safe_terminate_process must refuse to terminate if executable is not an absolute path."""
+        proc_relative_exe = {
+            "pid": os.getpid(),
+            "create_time": self.valid_proc_info["create_time"],
+            "executable": "python.exe",
+        }
+        with patch("subprocess.run") as mock_run:
+            result = home_pilot.safe_terminate_process(proc_relative_exe)
+            self.assertFalse(result, "Must return False when executable is a relative path/basename")
+            mock_run.assert_not_called()
+
+    def test_cleanup_tunnel_ssh_when_state_missing_executable_leaves_process_untouched(self):
+        """cleanup_tunnel_ssh must refuse to terminate process if executable is missing from ssh state."""
+        ssh_state_no_exe = {
+            "pid": os.getpid(),
+            "port": 18081,
+            "create_time": self.valid_proc_info["create_time"],
+            # executable omitted
+        }
+        home_pilot.SSH_STATE_FILE.write_text(json.dumps(ssh_state_no_exe), encoding="utf-8")
+
+        with patch("subprocess.run") as mock_run:
+            home_pilot.cleanup_tunnel_ssh(port=18081)
+            mock_run.assert_not_called()
+            self.assertFalse(home_pilot.SSH_STATE_FILE.exists(), "State file should be cleaned up")
+
+    def test_cleanup_tunnel_ssh_when_state_has_relative_executable_leaves_process_untouched(self):
+        """cleanup_tunnel_ssh must refuse to terminate process if executable in state is not an absolute path."""
+        ssh_state_rel_exe = {
+            "pid": os.getpid(),
+            "port": 18081,
+            "create_time": self.valid_proc_info["create_time"],
+            "executable": "ssh.exe",
+        }
+        home_pilot.SSH_STATE_FILE.write_text(json.dumps(ssh_state_rel_exe), encoding="utf-8")
+
+        with patch("subprocess.run") as mock_run:
+            home_pilot.cleanup_tunnel_ssh(port=18081)
+            mock_run.assert_not_called()
+            self.assertFalse(home_pilot.SSH_STATE_FILE.exists(), "State file should be cleaned up")
+
+    def test_is_process_alive_and_matched_requires_confirmed_metadata(self):
+        """is_process_alive_and_matched must return False when create_time or executable is missing or relative."""
+        # Missing create_time
+        self.assertFalse(home_pilot.is_process_alive_and_matched({
+            "pid": os.getpid(),
+            "executable": self.valid_proc_info["executable"],
+        }))
+        # Missing executable
+        self.assertFalse(home_pilot.is_process_alive_and_matched({
+            "pid": os.getpid(),
+            "create_time": self.valid_proc_info["create_time"],
+        }))
+        # Relative executable
+        self.assertFalse(home_pilot.is_process_alive_and_matched({
+            "pid": os.getpid(),
+            "create_time": self.valid_proc_info["create_time"],
+            "executable": "python.exe",
+        }))
+        # All valid and matching
+        self.assertTrue(home_pilot.is_process_alive_and_matched(self.valid_proc_info))
 
 
 if __name__ == "__main__":
