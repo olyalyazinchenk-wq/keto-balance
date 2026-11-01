@@ -1,47 +1,44 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { ScreenId, UserSettingsDraft, ShoppingFixtureItem, GeneratedMenu } from './contract';
+import type { ScreenId, UserSettingsDraft, RecipeViewModel } from './contract';
+import type { PilotCatalogV1, PilotProfileV1, PilotStateV1, PilotShoppingItemV1 } from '../../api/pilotTypes';
+import type { SubscriptionState } from '../../types/subscription';
 import { AppShell } from './AppShell';
+import { Header } from './Header';
+import { PaywallModal } from './PaywallModal';
 import { FoodToday } from './Today';
 import { MenuScreen } from './Menu';
 import { RecipeScreen } from './Recipe';
 import { ShoppingScreen } from './Shopping';
 import { toFoodCard, photoForRecipe } from './model';
-import { resolveSelectedDay } from './selectedDay';
-import { rebuildShoppingFromMenu } from './shoppingFromMenu';
 import { resolveDayMenuSlots } from './state';
-import { UI_RECIPES, UI_RECIPES_BY_ID, DEFAULT_FOOD_MENU } from './recipesAdapter';
+import { toRecipeViewModel } from './recipesAdapter';
+import { preferencesToUserProfile } from '../../adapters/pilotState';
+import { isRecipeAllowed } from '../../domain/eligibility';
+import { PREVIEW_RECIPE_IDS } from '../../data/releasedRecipeIds';
 import PrivateSupportPage from '../../pages/PrivateSupportPage';
+import { EducationGuides } from './EducationGuides';
 
-const STORAGE_KEYS = {
-  selectedDay: 'kb_proto_selected_day_v1',
-  menu: 'kb_proto_menu_v1',
-  shopping: 'kb_proto_shopping_v1',
-  shoppingStale: 'kb_proto_shopping_stale_v1',
-  checkedIngredients: 'kb_proto_checked_ing_v1',
-  checkedSteps: 'kb_proto_checked_steps_v1',
-};
-
-function readJsonStorage<T>(key: string, fallback: T): T {
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
+export interface FoodFirstAppProps {
+  catalog: PilotCatalogV1;
+  profile: PilotProfileV1;
+  state: PilotStateV1;
+  shoppingItems: PilotShoppingItemV1[];
+  syncStatus: 'idle' | 'saving' | 'saved' | 'error' | 'conflict';
+  onSelectDate: (date: string) => void;
+  onReplaceRecipe: (date: string, slotKey: string, nextRecipeId: string) => Promise<void>;
+  onRebuildMenu: () => Promise<void>;
+  onToggleIngredient: (key: string) => void;
+  onToggleStep: (key: string) => void;
+  onChangeBatches: (batches: 1 | 2) => void;
+  onRefreshShopping: () => void;
+  onToggleCheckedInStore: (id: string) => void;
+  onToggleAlreadyHave: (id: string) => void;
+  onAddCustomItem: (item: PilotShoppingItemV1) => void;
+  onOpenSettings?: () => void;
+  subscription?: SubscriptionState | null;
+  onUpdateSubscription?: (sub: SubscriptionState) => void;
+  sessionToken?: string;
 }
-
-const DEFAULT_SETTINGS: UserSettingsDraft = {
-  confirmed18Plus: true,
-  approach: 'keto',
-  restrictions: [],
-  prepTimeMax: 35,
-  mealsPerDay: 3,
-  preferenceNote: 'simple_daily',
-  remindersOptIn: false,
-  currentStep: 1,
-  isSaved: true,
-};
 
 function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
   try {
@@ -49,7 +46,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
       const params = new URLSearchParams(window.location.search);
       const qScreen = params.get('screen')?.toLowerCase();
       const qRecipe = params.get('recipe');
-      if (qScreen && ['today', 'menu', 'recipe', 'shopping', 'support'].includes(qScreen)) {
+      if (qScreen && ['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more'].includes(qScreen)) {
         return { screen: qScreen as ScreenId, recipeId: qRecipe || undefined };
       }
       const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
@@ -57,7 +54,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
         const parts = hash.split('/');
         return { screen: 'recipe', recipeId: parts[1] || undefined };
       }
-      if (['today', 'menu', 'recipe', 'shopping', 'support'].includes(hash)) {
+      if (['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more'].includes(hash)) {
         return { screen: hash as ScreenId };
       }
     }
@@ -65,110 +62,103 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
   return { screen: 'today' };
 }
 
-export function FoodFirstApp() {
+export function FoodFirstApp({
+  catalog,
+  profile,
+  state,
+  shoppingItems,
+  syncStatus,
+  onSelectDate,
+  onReplaceRecipe,
+  onRebuildMenu,
+  onToggleIngredient,
+  onToggleStep,
+  onChangeBatches,
+  onRefreshShopping,
+  onToggleCheckedInStore,
+  onToggleAlreadyHave,
+  onAddCustomItem,
+  onOpenSettings,
+  subscription,
+  onUpdateSubscription,
+  sessionToken,
+}: FoodFirstAppProps) {
   const [initialRoute] = useState(() => getInitialRoute());
   const [navStack, setNavStack] = useState<ScreenId[]>([initialRoute.screen]);
   const currentScreen: ScreenId = navStack[navStack.length - 1] || 'today';
 
-  const [menu, setMenu] = useState<GeneratedMenu>(() =>
-    readJsonStorage<GeneratedMenu>(STORAGE_KEYS.menu, DEFAULT_FOOD_MENU)
+  // Subscription state and Paywall modal control
+  const [localSubscription, setLocalSubscription] = useState<SubscriptionState | null>(
+    subscription || null
   );
 
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(() => {
-    const stored = readJsonStorage<unknown>(STORAGE_KEYS.selectedDay, null);
-    const restored = resolveSelectedDay(stored, menu.days);
-    return restored ?? 0;
-  });
-
-  const [activeRecipeId, setActiveRecipeId] = useState<string>(initialRoute.recipeId || 'k1');
-
-  const [shoppingNeedsRefresh, setShoppingNeedsRefresh] = useState<boolean>(() =>
-    readJsonStorage<boolean>(STORAGE_KEYS.shoppingStale, false)
-  );
-
-  const [shoppingPortions, setShoppingPortions] = useState<1 | 2>(() =>
-    readJsonStorage<1 | 2>('kb_proto_shopping_portions_v1', 1)
-  );
-
-  const [shoppingItems, setShoppingItems] = useState<ShoppingFixtureItem[]>(() => {
-    const stored = readJsonStorage<ShoppingFixtureItem[] | null>(STORAGE_KEYS.shopping, null);
-    if (stored && stored.length > 0) return stored;
-    try {
-      const initialPortions = readJsonStorage<1 | 2>('kb_proto_shopping_portions_v1', 1);
-      return rebuildShoppingFromMenu(menu, UI_RECIPES_BY_ID, [], initialPortions);
-    } catch {
-      return [];
+  useEffect(() => {
+    if (subscription) {
+      setLocalSubscription(subscription);
     }
-  });
+  }, [subscription]);
 
-  const [checkedIngredients, setCheckedIngredients] = useState<Record<string, boolean>>(() =>
-    readJsonStorage<Record<string, boolean>>(STORAGE_KEYS.checkedIngredients, {})
-  );
+  const [isPaywallOpen, setIsPaywallOpen] = useState<boolean>(false);
 
-  const [checkedSteps, setCheckedSteps] = useState<Record<string, boolean>>(() =>
-    readJsonStorage<Record<string, boolean>>(STORAGE_KEYS.checkedSteps, {})
-  );
-
-  // Sync state to localStorage
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEYS.selectedDay, JSON.stringify(selectedDayIndex));
-    } catch {}
-  }, [selectedDayIndex]);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEYS.menu, JSON.stringify(menu));
-    } catch {}
-  }, [menu]);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEYS.shopping, JSON.stringify(shoppingItems));
-    } catch {}
-  }, [shoppingItems]);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEYS.shoppingStale, JSON.stringify(shoppingNeedsRefresh));
-    } catch {}
-  }, [shoppingNeedsRefresh]);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem('kb_proto_shopping_portions_v1', JSON.stringify(shoppingPortions));
-    } catch {}
-  }, [shoppingPortions]);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEYS.checkedIngredients, JSON.stringify(checkedIngredients));
-    } catch {}
-  }, [checkedIngredients]);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEYS.checkedSteps, JSON.stringify(checkedSteps));
-    } catch {}
-  }, [checkedSteps]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const syncHash = () => {
-      const raw = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-      if (raw.startsWith('recipe')) {
-        const parts = raw.split('/');
-        if (parts[1]) setActiveRecipeId(parts[1]);
-        setNavStack((prev) => (prev[prev.length - 1] === 'recipe' ? prev : [...prev, 'recipe']));
-      } else if (['today', 'menu', 'recipe', 'shopping', 'support'].includes(raw)) {
-        const scr = raw as ScreenId;
-        setNavStack((prev) => (prev[prev.length - 1] === scr ? prev : [...prev, scr]));
-      }
-    };
-    window.addEventListener('hashchange', syncHash);
-    return () => window.removeEventListener('hashchange', syncHash);
+  const handleOpenPaywall = useCallback(() => {
+    setIsPaywallOpen(true);
   }, []);
 
+  const handleClosePaywall = useCallback(() => {
+    setIsPaywallOpen(false);
+  }, []);
+
+  const handlePaymentSuccess = useCallback(
+    (updatedSub: SubscriptionState) => {
+      setLocalSubscription(updatedSub);
+      if (onUpdateSubscription) {
+        onUpdateSubscription(updatedSub);
+      }
+      setIsPaywallOpen(false);
+    },
+    [onUpdateSubscription]
+  );
+
+  const isPremium = Boolean(localSubscription?.is_premium);
+
+  const [activeRecipeId, setActiveRecipeId] = useState<string>(
+    initialRoute.recipeId || (state.menu?.days[0]?.slots?.breakfast || 'k1')
+  );
+
+  // Compute UI recipe representations strictly from admitted catalog
+  const recipesById = useMemo<Record<string, RecipeViewModel>>(() => {
+    const map: Record<string, RecipeViewModel> = {};
+    for (const r of catalog.recipes) {
+      map[r.id] = toRecipeViewModel(r);
+    }
+    return map;
+  }, [catalog.recipes]);
+
+  const uiRecipes = useMemo<RecipeViewModel[]>(() => {
+    return Object.values(recipesById);
+  }, [recipesById]);
+
+  // Current day calculation
+  const currentDay = useMemo(() => {
+    if (!state.menu || !state.menu.days || state.menu.days.length === 0) return null;
+    if (state.selected_date) {
+      const found = state.menu.days.find((d) => d.date === state.selected_date);
+      if (found) return found;
+    }
+    return state.menu.days[0];
+  }, [state.menu, state.selected_date]);
+
+  const selectedDayIndex = useMemo(() => {
+    if (!state.menu || !currentDay) return 0;
+    const idx = state.menu.days.findIndex((d) => d.date === currentDay.date);
+    return idx >= 0 ? idx : 0;
+  }, [state.menu, currentDay]);
+
+  const selectedDayLabel = useMemo(() => {
+    return `День ${selectedDayIndex + 1}`;
+  }, [selectedDayIndex]);
+
+  // Navigation handlers
   const navigateTo = useCallback((screen: ScreenId) => {
     setNavStack((prev) => (prev[prev.length - 1] === screen ? prev : [...prev, screen]));
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
@@ -179,92 +169,193 @@ export function FoodFirstApp() {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }, []);
 
-  const handleOpenRecipe = useCallback((recipeId: string) => {
-    setActiveRecipeId(recipeId);
-    navigateTo('recipe');
-  }, [navigateTo]);
+  const handleOpenRecipe = useCallback(
+    (recipeId: string) => {
+      setActiveRecipeId(recipeId);
+      navigateTo('recipe');
+    },
+    [navigateTo]
+  );
 
-  const handleSelectDay = useCallback((dayIdx: number) => {
-    setSelectedDayIndex(dayIdx);
+  const handleSelectDay = useCallback(
+    (dayIdx: number) => {
+      if (!state.menu) return;
+      const targetDay = state.menu.days[dayIdx];
+      if (targetDay) {
+        onSelectDate(targetDay.date);
+      }
+    },
+    [state.menu, onSelectDate]
+  );
+
+  const handleReplaceSlot = useCallback(
+    (dayIndex: number, slotKey: string, nextRecipeId: string) => {
+      if (!state.menu) return;
+      const targetDay = state.menu.days[dayIndex];
+      if (targetDay) {
+        onReplaceRecipe(targetDay.date, slotKey, nextRecipeId);
+      }
+    },
+    [state.menu, onReplaceRecipe]
+  );
+
+  // Hash synchronization
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const syncHash = () => {
+      const raw = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+      if (raw.startsWith('recipe')) {
+        const parts = raw.split('/');
+        if (parts[1]) setActiveRecipeId(parts[1]);
+        setNavStack((prev) => (prev[prev.length - 1] === 'recipe' ? prev : [...prev, 'recipe']));
+      } else if (['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more'].includes(raw)) {
+        const scr = raw as ScreenId;
+        setNavStack((prev) => (prev[prev.length - 1] === scr ? prev : [...prev, scr]));
+      }
+    };
+    window.addEventListener('hashchange', syncHash);
+    return () => window.removeEventListener('hashchange', syncHash);
   }, []);
 
-  const handleReplaceRecipe = useCallback((dayIndex: number, slotKey: string, nextRecipeId: string) => {
-    setMenu((prev) => ({
-      ...prev,
-      days: prev.days.map((day) =>
-        day.dayIndex === dayIndex
-          ? {
-              ...day,
-              slots: {
-                ...day.slots,
-                [slotKey]: nextRecipeId,
-              },
-            }
-          : day
-      ),
-    }));
-    setShoppingNeedsRefresh(true);
-  }, []);
+  // Prepare Day Menu presentation
+  const viewDayMenu = useMemo(() => {
+    if (!currentDay) return null;
+    return {
+      dayIndex: selectedDayIndex,
+      date: currentDay.date,
+      label: selectedDayLabel,
+      slots: currentDay.slots,
+    };
+  }, [currentDay, selectedDayIndex, selectedDayLabel]);
 
-  const handlePortionsMultiplierChange = useCallback((nextMultiplier: 1 | 2) => {
-    setShoppingPortions(nextMultiplier);
-    setShoppingItems((prev) =>
-      rebuildShoppingFromMenu(menu, UI_RECIPES_BY_ID, prev, nextMultiplier)
-    );
-  }, [menu]);
-
-  const handleRefreshShopping = useCallback(() => {
-    try {
-      const next = rebuildShoppingFromMenu(menu, UI_RECIPES_BY_ID, shoppingItems, shoppingPortions);
-      setShoppingItems(next);
-      setShoppingNeedsRefresh(false);
-    } catch (e) {
-      console.warn('Failed to rebuild shopping items', e);
+  const viewGeneratedMenu = useMemo(() => {
+    if (!state.menu) {
+      return { created: 1, title: 'Кето-меню', days: [] };
     }
-  }, [menu, shoppingItems, shoppingPortions]);
+    return {
+      created: state.menu.created || 1,
+      title: state.menu.mode === 'carnivore' ? 'Карнивор-рацион' : 'Кето-рацион',
+      days: state.menu.days.map((d, idx) => ({
+        dayIndex: idx,
+        date: d.date,
+        label: `День ${idx + 1}`,
+        slots: d.slots,
+      })),
+    };
+  }, [state.menu]);
 
-  const currentDay = useMemo(
-    () => menu.days.find((d) => d.dayIndex === selectedDayIndex) || menu.days[0],
-    [menu, selectedDayIndex]
-  );
+  const resolvedSlots = useMemo(() => {
+    if (!viewDayMenu) return [];
+    return resolveDayMenuSlots(viewDayMenu, recipesById, profile.settings?.mealsPerDay || 3);
+  }, [viewDayMenu, recipesById, profile.settings?.mealsPerDay]);
 
-  const resolvedSlots = useMemo(
-    () => (currentDay ? resolveDayMenuSlots(currentDay, UI_RECIPES_BY_ID, 3) : []),
-    [currentDay]
-  );
+  const canonProfile = useMemo(() => {
+    return preferencesToUserProfile(profile.settings || null);
+  }, [profile.settings]);
+
+  const effectiveCatalogIds = useMemo(() => {
+    if (catalog.released_ids && catalog.released_ids.length > 0) return catalog.released_ids;
+    if (catalog.test_only) return PREVIEW_RECIPE_IDS;
+    return [];
+  }, [catalog.released_ids, catalog.test_only]);
 
   const leadRecipe = resolvedSlots[0]?.recipe;
   const primaryCard = useMemo(() => {
     if (!leadRecipe) return null;
+    const catRecipe = catalog.recipes.find((r) => r.id === leadRecipe.id);
+    if (!catRecipe) return null;
+    if (!effectiveCatalogIds.includes(catRecipe.id)) return null;
+    if (canonProfile.mode && catRecipe.mode !== canonProfile.mode) return null;
+    if (!isRecipeAllowed(catRecipe, canonProfile)) return null;
+
+    const serv = typeof catRecipe.serv === 'number' && catRecipe.serv > 0 ? catRecipe.serv : 1;
     return toFoodCard(
       {
         id: leadRecipe.id,
         title: leadRecipe.title,
         time: leadRecipe.prepMinutes,
-        serv: 1,
+        serv,
       },
       photoForRecipe(leadRecipe.id)
     );
-  }, [leadRecipe]);
+  }, [leadRecipe, catalog.recipes, effectiveCatalogIds, canonProfile]);
 
   const otherCards = useMemo(() => {
     return resolvedSlots
       .slice(1)
       .filter((s) => Boolean(s.recipe))
-      .map((s) =>
-        toFoodCard({
+      .map((s) => {
+        const catRecipe = catalog.recipes.find((r) => r.id === s.recipe!.id);
+        if (!catRecipe || !effectiveCatalogIds.includes(catRecipe.id)) return null;
+        if (canonProfile.mode && catRecipe.mode !== canonProfile.mode) return null;
+        if (!isRecipeAllowed(catRecipe, canonProfile)) return null;
+        const serv = typeof catRecipe.serv === 'number' && catRecipe.serv > 0 ? catRecipe.serv : 1;
+        return toFoodCard({
           id: s.recipe!.id,
           title: s.recipe!.title,
           time: s.recipe!.prepMinutes,
-          serv: 1,
-        })
-      );
-  }, [resolvedSlots]);
+          serv,
+        });
+      })
+      .filter((c): c is NonNullable<typeof c> => c !== null);
+  }, [resolvedSlots, catalog.recipes, effectiveCatalogIds, canonProfile]);
 
-  const activeRecipe = useMemo(
-    () => UI_RECIPES_BY_ID[activeRecipeId] || UI_RECIPES[0],
-    [activeRecipeId]
-  );
+  // Notice text for AppShell
+  const noticeText = useMemo(() => {
+    if (syncStatus === 'conflict') {
+      return 'Конфликт версий. Обновите страницу';
+    }
+    if (syncStatus === 'error') {
+      return 'Ошибка синхронизации с сервером';
+    }
+    if (syncStatus === 'saving') {
+      return 'Сохранение изменений на сервере...';
+    }
+    if (state.shopping_stale) {
+      return 'Список покупок не согласован с меню · требуется обновление';
+    }
+    if (catalog.test_only) {
+      return 'Тестовый каталог · синтетические данные';
+    }
+    return 'Кето Баланс · Пилотный выпуск';
+  }, [catalog.test_only, syncStatus, state.shopping_stale]);
+
+  // View settings draft for MenuScreen
+  const settingsDraft: UserSettingsDraft = useMemo(() => {
+    return {
+      confirmed18Plus: profile.settings?.confirmed18Plus ?? true,
+      approach: profile.settings?.approach ?? 'keto',
+      restrictions: profile.settings?.restrictions ?? [],
+      prepTimeMax: profile.settings?.prepTimeMax ?? 35,
+      mealsPerDay: profile.settings?.mealsPerDay ?? 3,
+      preferenceNote: profile.settings?.preferenceNote ?? '',
+      remindersOptIn: false,
+      currentStep: 1,
+      isSaved: true,
+    };
+  }, [profile.settings]);
+
+  // Active recipe for RecipeScreen and eligibility check
+  const activeRecipe = recipesById[activeRecipeId];
+  const isRecipeEligible = useMemo(() => {
+    if (!activeRecipe) return false;
+    const catRecipe = catalog.recipes.find((r) => r.id === activeRecipe.id);
+    if (!catRecipe) return false;
+
+    // 1. Verify membership in admitted/released pool
+    const effectiveIds = catalog.released_ids && catalog.released_ids.length > 0
+      ? catalog.released_ids
+      : (catalog.test_only ? PREVIEW_RECIPE_IDS : []);
+    if (!effectiveIds.includes(catRecipe.id)) return false;
+
+    // 2. Verify profile mode and canonical restrictions
+    if (profile.settings) {
+      const canon = preferencesToUserProfile(profile.settings);
+      if (catRecipe.mode !== canon.mode) return false;
+      if (!isRecipeAllowed(catRecipe, canon)) return false;
+    }
+    return true;
+  }, [activeRecipe, catalog.recipes, catalog.released_ids, catalog.test_only, profile.settings]);
 
   return (
     <AppShell
@@ -273,93 +364,230 @@ export function FoodFirstApp() {
       onGoBack={navigateBack}
       onNavigate={navigateTo}
       onOpenSupport={() => navigateTo('support')}
-      shoppingNeedsRefresh={shoppingNeedsRefresh}
+      shoppingNeedsRefresh={state.shopping_stale}
       selectedDayIndex={selectedDayIndex}
-      selectedDayLabel={currentDay?.label || 'День 1'}
+      selectedDayLabel={selectedDayLabel}
     >
+      <Header
+        isPremium={isPremium}
+        onOpenPaywall={handleOpenPaywall}
+        canGoBack={navStack.length > 1}
+        onGoBack={navigateBack}
+        onOpenSupport={() => navigateTo('support')}
+      />
+
+      {/* Notice header */}
+      <aside className="ff-proof__notice" data-testid="pilot-sync-banner">
+        {noticeText}
+      </aside>
+
       {currentScreen === 'today' && (
         <FoodToday
-          dateLabel={currentDay?.label || 'День 1'}
+          dateLabel={selectedDayLabel}
           primary={primaryCard}
           others={otherCards}
           rhythm={resolvedSlots.map(({ slotKey, slotLabel, recipe }) => ({
             key: slotKey,
             label: slotLabel,
-            completed: Boolean(recipe && recipe.steps.length > 0 && recipe.steps.every(
-              (_, index) => checkedSteps[`${recipe.id}:step:${index}`]
-            )),
+            completed: Boolean(
+              recipe &&
+                recipe.steps.length > 0 &&
+                recipe.steps.every((_, idx) => state.checked_steps[`${recipe.id}:step:${idx}`])
+            ),
           }))}
           onOpenRecipe={handleOpenRecipe}
           onChooseMenu={() => navigateTo('menu')}
+          onOpenSettings={onOpenSettings}
         />
       )}
 
       {currentScreen === 'menu' && (
         <MenuScreen
-          menu={menu}
+          menu={viewGeneratedMenu}
           selectedDayIndex={selectedDayIndex}
           onSelectDayIndex={handleSelectDay}
-          recipes={UI_RECIPES}
-          recipesById={UI_RECIPES_BY_ID}
-          settings={DEFAULT_SETTINGS}
-          onReplaceRecipe={handleReplaceRecipe}
+          recipes={uiRecipes}
+          recipesById={recipesById}
+          settings={settingsDraft}
+          onReplaceRecipe={handleReplaceSlot}
           onOpenRecipe={handleOpenRecipe}
           onChooseMenuAndGoToShopping={() => {
-            handleRefreshShopping();
+            onRefreshShopping();
             navigateTo('shopping');
           }}
+          onEditSettings={onOpenSettings}
+          onRebuildMenu={onRebuildMenu}
+          catalogRecipes={catalog.recipes}
         />
       )}
 
       {currentScreen === 'recipe' && (
-        <RecipeScreen
-          recipe={activeRecipe}
-          checkedIngredients={checkedIngredients}
-          onToggleIngredient={(key) =>
-            setCheckedIngredients((prev) => ({ ...prev, [key]: !prev[key] }))
-          }
-          checkedSteps={checkedSteps}
-          onToggleStep={(key) =>
-            setCheckedSteps((prev) => ({ ...prev, [key]: !prev[key] }))
-          }
-          onGoBack={navigateBack}
-        />
+        activeRecipe && isRecipeEligible ? (
+          <RecipeScreen
+            recipe={activeRecipe}
+            checkedIngredients={state.checked_ingredients}
+            onToggleIngredient={onToggleIngredient}
+            checkedSteps={state.checked_steps}
+            onToggleStep={onToggleStep}
+            onGoBack={navigateBack}
+          />
+        ) : (
+          <div className="p-8 max-w-xl mx-auto text-center space-y-4" data-testid="recipe-unavailable-notice">
+            <h2 className="text-xl font-bold">Блюдо недоступно</h2>
+            <p className="text-sm text-stone-600">
+              {!activeRecipe
+                ? `Рецепт (ID: ${activeRecipeId}) не найден в допущенном каталоге.`
+                : 'Выбранное блюдо не подходит под ограничения вашего профиля питания или режим диеты.'}
+            </p>
+            <button
+              type="button"
+              onClick={navigateBack}
+              className="px-4 py-2 bg-[#5F7161] text-white rounded-xl text-xs font-semibold"
+            >
+              ← Вернуться к меню
+            </button>
+          </div>
+        )
       )}
 
       {currentScreen === 'shopping' && (
         <ShoppingScreen
           items={shoppingItems}
-          menuTitle={menu.title}
-          isStaleAfterMenuEdit={shoppingNeedsRefresh}
-          onRefreshShoppingFromMenu={handleRefreshShopping}
-          portionsMultiplier={shoppingPortions}
-          onChangePortionsMultiplier={handlePortionsMultiplierChange}
-          onToggleCheckedInStore={(id) =>
-            setShoppingItems((prev) =>
-              prev.map((it) => (it.id === id ? { ...it, checkedInStore: !it.checkedInStore } : it))
-            )
-          }
-          onToggleAlreadyHave={(id) =>
-            setShoppingItems((prev) =>
-              prev.map((it) => (it.id === id ? { ...it, alreadyHave: !it.alreadyHave } : it))
-            )
-          }
-          onAddCustomItem={(item) => setShoppingItems((prev) => [...prev, item])}
+          menuTitle={state.menu ? (state.menu.mode === 'carnivore' ? 'Карнивор-меню' : 'Кето-рацион') : 'Список покупок'}
+          isStaleAfterMenuEdit={state.shopping_stale}
+          onRefreshShoppingFromMenu={onRefreshShopping}
+          portionsMultiplier={state.shopping_batches}
+          onChangePortionsMultiplier={onChangeBatches}
+          onToggleCheckedInStore={onToggleCheckedInStore}
+          onToggleAlreadyHave={onToggleAlreadyHave}
+          onAddCustomItem={onAddCustomItem}
         />
       )}
 
       {currentScreen === 'support' && (
-        <div className="p-4 max-w-xl mx-auto">
+        <div className="p-4 max-w-xl mx-auto space-y-4">
           <button
             type="button"
             onClick={navigateBack}
-            className="mb-4 text-xs font-semibold px-3 py-1.5 rounded-lg border border-[var(--kb-border)]"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-[var(--kb-border)]"
           >
             ← Вернуться назад
           </button>
           <PrivateSupportPage />
         </div>
       )}
+
+      {currentScreen === 'more' && (
+        <div className="p-4 sm:p-6 max-w-xl mx-auto space-y-5" data-testid="more-screen">
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                  Аккаунт и доступ
+                </span>
+                <h2 className="text-lg font-bold text-stone-900 mt-0.5">
+                  {isPremium ? '👑 Кето Баланс Premium' : 'Базовый доступ (Free)'}
+                </h2>
+              </div>
+              <div>
+                {isPremium ? (
+                  <span
+                    data-testid="more-premium-badge"
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300"
+                  >
+                    👑 Premium
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-600">
+                    Free
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {isPremium ? (
+              <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60 text-xs text-amber-900 space-y-1">
+                <div className="font-semibold">✓ Ваша подписка активна</div>
+                <div className="text-stone-600">
+                  {localSubscription?.expires_at
+                    ? `Срок действия: до ${new Date(localSubscription.expires_at).toLocaleDateString('ru-RU')}`
+                    : 'Неограниченный премиум доступ'}
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200/60 text-xs text-emerald-950 space-y-1">
+                <div className="font-semibold">🥑 Откройте полный потенциал программы</div>
+                <div className="text-stone-600">
+                  37+ авторских блюд, меню на 7 дней, умный автосписок покупок и авторское ведение.
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              data-testid="more-open-paywall-btn"
+              onClick={handleOpenPaywall}
+              className={`w-full py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
+                isPremium
+                  ? 'bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300'
+                  : 'bg-[#255c48] hover:bg-[#1d4939] text-white'
+              }`}
+            >
+              {isPremium ? '💎 Управление подпиской и тарифами' : '⭐ Оформить Premium доступ'}
+            </button>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm space-y-2">
+            <div className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
+              Настройки и помощь
+            </div>
+            {onOpenSettings && (
+              <button
+                type="button"
+                onClick={onOpenSettings}
+                className="w-full py-2.5 px-3 rounded-xl border border-stone-200 text-left text-xs sm:text-sm font-semibold text-stone-700 hover:bg-stone-50 flex items-center justify-between transition-all cursor-pointer"
+              >
+                <span>⚙️ Настройки питания и аллергены</span>
+                <span className="text-stone-400">→</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => navigateTo('support')}
+              className="w-full py-2.5 px-3 rounded-xl border border-stone-200 text-left text-xs sm:text-sm font-semibold text-stone-700 hover:bg-stone-50 flex items-center justify-between transition-all cursor-pointer"
+            >
+              <span>💬 Связаться с нутрициологом Ольгой</span>
+              <span className="text-stone-400">→</span>
+            </button>
+          </div>
+
+          {/* Educational Guides Section */}
+          <EducationGuides />
+        </div>
+      )}
+
+      {currentScreen === 'diary' && (
+        <div className="p-4 sm:p-6 max-w-xl mx-auto space-y-5" data-testid="diary-screen">
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3 text-center">
+            <div className="text-3xl">🌿</div>
+            <h2 className="text-lg font-bold text-stone-900">Раздел «Дневник и База знаний»</h2>
+            <p className="text-xs text-stone-600 leading-relaxed">
+              Отслеживание самочувствия будет доступно в следующем цикле. Сейчас вы можете изучить проверенные клинические руководства по кето и карнивор рационам:
+            </p>
+          </div>
+          <EducationGuides />
+        </div>
+      )}
+
+      <PaywallModal
+        isOpen={isPaywallOpen}
+        onClose={handleClosePaywall}
+        onSuccess={handlePaymentSuccess}
+        sessionToken={sessionToken}
+        currentTier={localSubscription?.tier}
+        availableProducts={localSubscription?.available_products}
+      />
     </AppShell>
   );
 }

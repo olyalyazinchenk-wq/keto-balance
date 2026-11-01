@@ -1013,6 +1013,25 @@ export default function PilotApp() {
         setDraftConfirmed18(true);
         setGatePassed(true);
         setErrorMessage('');
+
+        if (sessionToken || userId) {
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+          };
+          if (sessionToken) headers['Authorization'] = `Bearer ${sessionToken}`;
+          if (userId) headers['X-User-Id'] = String(userId);
+
+          fetch('/api/user/consents', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              consents: [
+                { consent_type: 'personal_data', version: 'v1.0.0-release', granted: true, source: 'tma_start_gate' },
+                { consent_type: 'age_18_plus', version: 'v1.0.0-release', granted: true, source: 'tma_start_gate' },
+              ],
+            }),
+          }).catch((err) => console.warn('Consent recording failed:', err));
+        }
       };
 
       return (
