@@ -2,7 +2,7 @@
 
 > **Единая точка оперативной правды для всех агентов и разработчиков.**
 > Читать первым при входе в сессию. Обновлять при завершении этапа.
-> **Последнее обновление**: 2026-11-01 22:55 MSK · Antigravity (Fix 3 defects, Recovery Drill, 40 tests passed).
+> **Последнее обновление**: 2026-11-01 23:15 MSK · Antigravity (Harden process tree recovery, path matching, 46 tests passed).
 
 ---
 
@@ -11,7 +11,7 @@
 - **Проект**: Keto-Balance (Премиум Telegram Mini App + Бот).
 - **Канонический путь**: `C:\Users\HP\Keto-balance`.
 - **Ветка релиза**: `release/1.0.0` (создана от `design/argon-ui-import`).
-- **HEAD коммит**: `e8822a8` — `fix(ops): secure token handling, independent process recovery, and pinned build readiness for home pilot`.
+- **HEAD коммит**: `b29659c` — `fix(ops): harden process matching, tree termination, URL normalization, and receipt dist validation`.
 - **Текущий этап**: **Home Pilot — защищённый домашний показ для Ольги (Telegram ID 1084557944)**.
 - **Инфраструктура показа**:
   - Изолированный порт сервера: строго **`127.0.0.1:18081`** (порты 8000, 4387, 8090, 10808, 10809 не затрагиваются).
@@ -30,9 +30,9 @@
 
 | Компонент / Проверка | Команда | Результат | Статус |
 |---|---|---|:---:|
-| **Home Pilot Ops Suite** | `unittest discover -s tests/ops -p test_home_pilot.py` | **28 passed, 0 failed** (безопасность токена, независимое восстановление, 8 негативных тестов, бэкофф) | **PASS** |
+| **Home Pilot Ops Suite** | `unittest discover -s tests/ops -p test_home_pilot.py` | **34 passed, 0 failed** (безопасность токена, независимое восстановление, путь процесса, 8 негативных тестов, бэкофф) | **PASS** |
 | **Home Staging & Webhook Security** | `unittest test_home_staging test_payment_webhook_security` | **12 passed, 0 failed** (авторизация Ольги 1084557944, persistent DB, receipt alignment, безопасные платежи) | **PASS** |
-| **Recovery Drill (Live)** | `ops/status-keto-balance.ps1` | Сервер PID 21932 сохранён при падении туннеля, туннель восстановлен, кнопка Ольги обновлена | **PASS** |
+| **Recovery Drill (Live)** | `ops/status-keto-balance.ps1` | Сервер PID 18932 сохранён при падении туннеля, туннель восстановлен (PID 23424), кнопка Ольги обновлена | **PASS** |
 | **Backend Test Suite** | `python scripts/run_backend_tests.py` | **168 passed, 0 failed, 0 errors, 0 skipped** across all backend modules | **PASS** |
 | **Subscription & Billing** | `unittest test_subscription_*.py` | **62 passed, 0 failed** (атомарность, идемпотентность, CAS, продление) | **PASS** |
 | **Stars Webhook & Invoices** | `unittest test_telegram_stars_webhook.py` | **4 passed, 0 failed** (pre_checkout, successful_payment, replay idempotency) | **PASS** |
