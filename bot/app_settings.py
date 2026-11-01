@@ -26,6 +26,10 @@ class AppSettings:
     max_support_message_length: int = 2000
     support_rate_limit_per_minute: int = 5
     allow_anonymous_preview: bool = True
+    owner_allowlist: Optional[FrozenSet[int]] = None
+    allow_demo_auth: bool = False
+    allow_demo_payments: bool = False
+    session_max_lifetime_seconds: Optional[int] = None
 
     @property
     def is_pilot(self) -> bool:

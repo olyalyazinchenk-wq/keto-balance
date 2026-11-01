@@ -73,7 +73,7 @@ DATA_PATH = Path(__file__).resolve().parent.parent / "bot_data.json"
 RECIPES: List[Dict[str, Any]] = []
 TIPS: List[str] = []
 
-if DATA_PATH.exists():
+if DATA_PATH.exists() and os.environ.get('APP_STAGE') != 'test':
     try:
         with open(DATA_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -110,6 +110,8 @@ def get_reply_keyboard() -> ReplyKeyboardMarkup:
 
 def get_current_webapp_url() -> str:
     """Получение актуального HTTPS адреса Mini App из файла туннеля или .env."""
+    if os.environ.get("APP_STAGE") in ("test", "staging") or "unittest" in sys.modules:
+        return WEBAPP_URL
     fpath = Path(__file__).resolve().parent.parent / "current_tunnel_url.txt"
     if fpath.exists():
         try:
@@ -435,18 +437,13 @@ async def cancel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def tariffs_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /tariffs и раздела Тарифы."""
     from bot.config import PRODUCTS
+    sub = PRODUCTS["sub_month"]
     text = (
-        "👑 <b>Тарифы и продукты Кето Баланс</b>\n\n"
-        f"1️⃣ <b>{PRODUCTS['plateau_guide']['title']}</b>\n"
-        f"{PRODUCTS['plateau_guide']['description']}\n"
-        f"💰 Стоимость: <b>{PRODUCTS['plateau_guide']['price']} ₽</b>\n\n"
-        f"2️⃣ <b>{PRODUCTS['sub_month']['title']}</b>\n"
-        f"{PRODUCTS['sub_month']['description']}\n"
-        f"💰 Стоимость: <b>{PRODUCTS['sub_month']['price']} ₽ / мес</b>\n\n"
-        f"3️⃣ <b>{PRODUCTS['vip_care']['title']}</b>\n"
-        f"{PRODUCTS['vip_care']['description']}\n"
-        f"💰 Стоимость: <b>{PRODUCTS['vip_care']['price']} ₽ / мес</b>\n\n"
-        "ℹ️ <i>Покупки временно недоступны. Оформление новых заказов приостановлено.</i>"
+        "👑 <b>Тариф подписки Кето Баланс</b>\n\n"
+        f"<b>{sub['title']}</b>\n"
+        f"{sub['description']}\n"
+        f"💰 Стоимость: <b>{sub['price']} ₽ / мес</b>\n\n"
+        "ℹ️ <i>Подписка даёт полный доступ к планированию рационов, рецептам и автоспискам покупок в Mini App.</i>"
     )
     kb = InlineKeyboardMarkup([
         [webapp_button("📱 Открыть приложение")],

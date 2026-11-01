@@ -110,6 +110,8 @@ def main():
         app_stage="test",
         telegram_bot_token=SYNTHETIC_SIGNING_KEY,
         allow_anonymous_preview=False,
+        allow_demo_auth=True,
+        allow_demo_payments=True,
         db_path=db_path,
         dist_dir=dist_path,
         released_recipe_ids=released_ids,

@@ -1,11 +1,12 @@
 """
 Кето Баланс — FastAPI сервер для статики Mini App и REST API (K2-Pilot).
 """
+import hashlib
 import json
 import os
 import secrets
 import urllib.parse
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -13,7 +14,7 @@ from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 import uvicorn
 
-from bot.config import PRODUCTS
+from bot.config import PRODUCTS, ALL_PRODUCTS
 from bot.app_settings import AppSettings, get_settings
 from bot.auth import parse_and_validate_init_data, AuthError, TokenExpiredError, InvalidSignatureError
 from bot.app_models import (
@@ -26,9 +27,22 @@ from bot.app_models import (
     SupportTicketResponse,
     SafetyCheckPayload,
     SafetyCheckResponse,
+    SubscriptionReadV1,
+    PurchaseInitPayloadV1,
+    PurchaseInitResponseV1,
+    PurchaseConfirmPayloadV1,
+    PurchaseConfirmResponseV1,
+)
+from bot.pilot_models import (
+    PilotUserReadV1,
+    PilotUserWriteV1,
+    PilotShoppingReadV1,
+    PilotShoppingWriteV1,
+    PilotSaveResultV1,
 )
 from bot.app_db import (
     init_db,
+    get_db_connection,
     create_or_get_user,
     create_session,
     get_session_user,
@@ -38,13 +52,23 @@ from bot.app_db import (
     get_user_state,
     save_shopping_state,
     get_shopping_state,
+    get_pilot_user,
+    save_pilot_user,
+    get_pilot_shopping,
+    save_pilot_shopping,
+    StaleRevisionError,
     create_support_ticket,
     get_support_tickets,
     export_all_user_data,
     delete_all_user_data,
+    get_user_subscription,
+    save_user_subscription,
+    create_order,
+    get_order,
+    complete_order,
 )
 from bot.safety import evaluate_contraindications
-from bot.catalog import get_released_catalog, get_recipe_by_id
+from bot.catalog import CatalogService, CatalogProvider, is_shopping_consistent_with_menu
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_DIST_DIR = Path(os.getenv("KETO_DIST_DIR", str(BASE_DIR / "dist"))).resolve()
@@ -69,15 +93,29 @@ def resolve_safe_path(dist_dir: Path, requested_path: str) -> Path:
 
     return resolved
 
+def _compute_backend_fingerprint() -> str:
+    bot_dir = Path(__file__).resolve().parent
+    hasher = hashlib.sha256()
+    for py_file in sorted(bot_dir.glob("*.py")):
+        try:
+            hasher.update(py_file.name.encode("utf-8"))
+            hasher.update(py_file.read_bytes())
+        except Exception:
+            pass
+    return hasher.hexdigest()[:16]
+
 def create_app(
     dist_dir: Path | str | None = None,
     db_path: Optional[Path] = None,
     settings: Optional[AppSettings] = None,
+    catalog_provider: Optional[CatalogProvider] = None,
 ) -> FastAPI:
     app = FastAPI(title="Кето Баланс API & Mini App Server")
     resolved_dist = Path(dist_dir).resolve() if dist_dir is not None else DEFAULT_DIST_DIR
     active_settings = settings if settings is not None else get_settings()
     active_db = db_path if db_path is not None else active_settings.db_path
+    catalog_service = CatalogService(dist_dir=resolved_dist, provider=catalog_provider, app_stage=active_settings.app_stage)
+    startup_backend_fingerprint = _compute_backend_fingerprint()
 
     def extract_authenticated_user_id(
         auth_header: Optional[str] = None,
@@ -85,30 +123,28 @@ def create_app(
         query_user_id: Optional[int] = None,
     ) -> int:
         """Извлекает и проверяет ID пользователя с защитой межпользовательской изоляции."""
-        session_user_id = None
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header.split(" ", 1)[1].strip()
-            session_info = get_session_user(token, db_path=active_db)
-            if not session_info:
-                raise HTTPException(status_code=401, detail="Invalid or expired session token")
-            session_user_id = session_info["user_id"]
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Authentication required: provide Bearer session token")
 
-        target_user_id = query_user_id or x_user_id
+        token = auth_header.split(" ", 1)[1].strip()
+        if not token:
+            raise HTTPException(status_code=401, detail="Authentication required: provide Bearer session token")
 
-        # Если задан токен сессии, он имеет приоритет или должен совпадать с target_user_id
-        if session_user_id is not None:
-            if target_user_id is not None and target_user_id != session_user_id:
-                raise HTTPException(status_code=403, detail="Cross-user data access is forbidden")
-            return session_user_id
+        session_info = get_session_user(token, db_path=active_db)
+        if not session_info:
+            raise HTTPException(status_code=401, detail="Invalid or expired session token")
 
-        if target_user_id is not None:
-            return target_user_id
+        session_user_id = session_info["user_id"]
+        if active_settings.owner_allowlist is not None and session_user_id not in active_settings.owner_allowlist:
+            raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
 
-        # Гостевой/тестовый fallback если разрешен
-        if active_settings.allow_anonymous_preview:
-            return 1000
+        # Если заданы query_user_id или x_user_id, каждый из них обязан совпадать с session_user_id
+        if query_user_id is not None and query_user_id != session_user_id:
+            raise HTTPException(status_code=403, detail="Cross-user data access is forbidden")
+        if x_user_id is not None and x_user_id != session_user_id:
+            raise HTTPException(status_code=403, detail="Cross-user data access is forbidden")
 
-        raise HTTPException(status_code=401, detail="Authentication required: provide Bearer session or user_id")
+        return session_user_id
 
     @app.get("/api/health")
     def health_check():
@@ -126,6 +162,7 @@ def create_app(
         try:
             with open(release_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            data["backendFingerprint"] = startup_backend_fingerprint
             return JSONResponse(
                 content=data,
                 headers={"Cache-Control": "no-store, no-cache, must-revalidate"}
@@ -151,10 +188,10 @@ def create_app(
     def validate_auth(payload: InitSessionPayload):
         bot_token = active_settings.telegram_bot_token
         if not bot_token:
-            # Для дев/тест окружений, если токен не задан
-            if payload.init_data.startswith("test_") or "mock" in payload.init_data:
-                return {"valid": True, "user_data": {"id": 1000, "first_name": "TestUser"}}
-            raise HTTPException(status_code=500, detail="Telegram bot token not configured")
+            raise HTTPException(status_code=503, detail="Telegram bot token not configured")
+
+        if not payload.init_data:
+            raise HTTPException(status_code=401, detail="Missing init_data")
 
         try:
             res = parse_and_validate_init_data(
@@ -162,46 +199,96 @@ def create_app(
                 bot_token=bot_token,
                 max_age_seconds=active_settings.auth_max_age_seconds
             )
-            return {"valid": True, "auth_date": res.get("auth_date"), "user_data": res.get("user_data")}
+            user_obj = res.get("user_data")
+            if not user_obj or not isinstance(user_obj, dict) or not user_obj.get("id"):
+                raise HTTPException(status_code=401, detail="User payload missing or invalid")
+            return {"valid": True, "auth_date": res.get("auth_date"), "user_data": user_obj}
         except TokenExpiredError as e:
             raise HTTPException(status_code=401, detail=f"Session expired: {e}")
         except InvalidSignatureError as e:
             raise HTTPException(status_code=401, detail=f"Invalid signature: {e}")
         except AuthError as e:
-            raise HTTPException(status_code=400, detail=f"Authentication error: {e}")
+            raise HTTPException(status_code=401, detail=f"Authentication error: {e}")
 
     @app.post("/api/session", response_model=SessionResponse)
     def create_user_session(payload: InitSessionPayload):
-        user_id = 1000
-        username = "guest"
-        first_name = "Guest"
-
         bot_token = active_settings.telegram_bot_token
-        if bot_token and not (payload.init_data.startswith("test_") or "mock" in payload.init_data):
-            try:
-                res = parse_and_validate_init_data(
-                    payload.init_data,
-                    bot_token=bot_token,
-                    max_age_seconds=active_settings.auth_max_age_seconds
-                )
-                user_obj = res.get("user_data", {})
-                user_id = user_obj.get("id", user_id)
-                username = user_obj.get("username", username)
-                first_name = user_obj.get("first_name", first_name)
-            except (AuthError, InvalidSignatureError, TokenExpiredError) as e:
-                raise HTTPException(status_code=401, detail=f"Session creation failed: {e}")
-        else:
-            # Парсинг тестовых параметров если переданы
-            if "user_id=" in payload.init_data:
-                q = dict(urllib.parse.parse_qsl(payload.init_data))
-                user_id = int(q.get("user_id", user_id))
-                username = q.get("username", username)
-                first_name = q.get("first_name", first_name)
+        if not bot_token:
+            raise HTTPException(status_code=503, detail="Telegram bot token not configured")
+
+        if not payload.init_data:
+            raise HTTPException(status_code=401, detail="Missing init_data")
+
+        try:
+            res = parse_and_validate_init_data(
+                payload.init_data,
+                bot_token=bot_token,
+                max_age_seconds=active_settings.auth_max_age_seconds
+            )
+            user_obj = res.get("user_data")
+            if not user_obj or not isinstance(user_obj, dict):
+                raise HTTPException(status_code=401, detail="Session creation failed: missing user payload")
+            user_id = user_obj.get("id")
+            if not isinstance(user_id, int) or user_id <= 0:
+                raise HTTPException(status_code=401, detail="Session creation failed: invalid Telegram user ID")
+            username = user_obj.get("username", "") or ""
+            first_name = user_obj.get("first_name", "") or ""
+        except TokenExpiredError as e:
+            raise HTTPException(status_code=401, detail=f"Session creation failed: {e}")
+        except InvalidSignatureError as e:
+            raise HTTPException(status_code=401, detail=f"Invalid signature: {e}")
+        except AuthError as e:
+            raise HTTPException(status_code=401, detail=f"Session creation failed: {e}")
+
+        if active_settings.owner_allowlist is not None and user_id not in active_settings.owner_allowlist:
+            raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
 
         create_or_get_user(user_id, username=username, first_name=first_name, db_path=active_db)
         token = secrets.token_hex(24)
-        create_session(user_id, token, expires_in_seconds=active_settings.auth_max_age_seconds, db_path=active_db)
+        session_ttl = (
+            active_settings.session_max_lifetime_seconds
+            if active_settings.session_max_lifetime_seconds is not None
+            else active_settings.auth_max_age_seconds
+        )
+        create_session(user_id, token, expires_in_seconds=session_ttl, db_path=active_db)
         return SessionResponse(session_token=token, user_id=user_id, username=username, first_name=first_name)
+
+    if active_settings.allow_demo_auth and active_settings.app_stage == "test":
+        @app.get("/api/demo-session", response_model=SessionResponse)
+        def create_demo_session(
+            demo_user: int = Query(1084557944),
+            premium: Optional[int] = Query(None),
+        ):
+            if active_settings.owner_allowlist is not None and demo_user not in active_settings.owner_allowlist:
+                raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
+            username = "demo_owner"
+            first_name = "Ольга"
+            create_or_get_user(demo_user, username=username, first_name=first_name, db_path=active_db)
+            if premium is not None:
+                if premium == 1:
+                    save_user_subscription(
+                        active_db,
+                        demo_user,
+                        tier="sub_month",
+                        status="active",
+                        expires_at=(datetime.now(timezone.utc) + timedelta(days=30)).isoformat().replace("+00:00", "Z"),
+                    )
+                else:
+                    save_user_subscription(
+                        active_db,
+                        demo_user,
+                        tier="free",
+                        status="none",
+                        expires_at=None,
+                    )
+            token = secrets.token_hex(24)
+            session_ttl = (
+                active_settings.session_max_lifetime_seconds
+                if active_settings.session_max_lifetime_seconds is not None
+                else active_settings.auth_max_age_seconds
+            )
+            create_session(demo_user, token, expires_in_seconds=session_ttl, db_path=active_db)
+            return SessionResponse(session_token=token, user_id=demo_user, username=username, first_name=first_name)
 
     @app.get("/api/session")
     def get_current_session(authorization: Optional[str] = Header(None)):
@@ -211,73 +298,305 @@ def create_app(
         user = get_session_user(token, db_path=active_db)
         if not user:
             raise HTTPException(status_code=401, detail="Session expired or invalid")
+        if active_settings.owner_allowlist is not None and user["user_id"] not in active_settings.owner_allowlist:
+            raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
         return user
+
+    # --- SUBSCRIPTION & MONETIZATION API ---
+
+    @app.get("/api/subscription", response_model=SubscriptionReadV1)
+    def get_user_subscription_endpoint(
+        authorization: Optional[str] = Header(None),
+        x_user_id: Optional[int] = Header(None),
+        user_id: Optional[int] = Query(None),
+    ):
+        target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+        sub = get_user_subscription(active_db, target_uid)
+        is_premium = False
+        tier = None
+        status = "none"
+        expires_at = None
+
+        if sub:
+            tier = sub.get("tier")
+            status = sub.get("status", "none")
+            expires_at = sub.get("expires_at")
+            if status == "active":
+                if expires_at:
+                    try:
+                        exp_dt = datetime.fromisoformat(str(expires_at).replace("Z", "+00:00"))
+                        if exp_dt.tzinfo is None:
+                            exp_dt = exp_dt.replace(tzinfo=timezone.utc)
+                        if datetime.now(timezone.utc) > exp_dt:
+                            status = "expired"
+                            save_user_subscription(
+                                active_db,
+                                target_uid,
+                                tier=tier or "free",
+                                status="expired",
+                                expires_at=expires_at,
+                            )
+                    except Exception:
+                        # Corrupt or unparseable expiration date must never grant premium
+                        status = "expired"
+                else:
+                    # In production and staging, every subscription requires a valid expiration date
+                    if active_settings.is_production or active_settings.app_stage in ("production", "staging"):
+                        status = "expired"
+                if status == "active" and tier not in (None, "free"):
+                    is_premium = True
+
+        available_catalog = (
+            PRODUCTS
+            if (active_settings.is_production or active_settings.app_stage in ("production", "staging"))
+            else ALL_PRODUCTS
+        )
+        available_products = [
+            {
+                "id": p["id"],
+                "title": p["title"],
+                "price_rub": p["price"],
+                "period": "month" if "month" in p["id"] or p["id"] == "vip_care" else "one_time",
+                "description": p.get("description", ""),
+                "badge": p.get("badge", ""),
+            }
+            for p in available_catalog.values()
+        ]
+
+        return SubscriptionReadV1(
+            is_premium=is_premium,
+            tier=tier,
+            status=status,
+            expires_at=expires_at,
+            available_products=available_products,
+            user_id=target_uid,
+        )
+
+    @app.post("/api/subscription/purchase", response_model=PurchaseInitResponseV1)
+    def purchase_subscription_endpoint(
+        payload: PurchaseInitPayloadV1,
+        authorization: Optional[str] = Header(None),
+        x_user_id: Optional[int] = Header(None),
+        user_id: Optional[int] = Query(None),
+    ):
+        target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+        available_catalog = (
+            PRODUCTS
+            if (active_settings.is_production or active_settings.app_stage in ("production", "staging"))
+            else ALL_PRODUCTS
+        )
+        if payload.product_id not in available_catalog:
+            raise HTTPException(status_code=400, detail=f"Unknown product '{payload.product_id}'")
+
+        prod = available_catalog[payload.product_id]
+        order_id = create_order(
+            db_path=active_db,
+            user_id=target_uid,
+            product_id=payload.product_id,
+            amount_rub=float(prod["price"]),
+            provider=payload.provider or "demo",
+        )
+        return PurchaseInitResponseV1(
+            order_id=order_id,
+            status="pending",
+            payment_url=None,
+            demo_mode=True,
+        )
+
+    @app.post("/api/subscription/confirm-demo", response_model=PurchaseConfirmResponseV1)
+    def confirm_demo_subscription_endpoint(
+        payload: PurchaseConfirmPayloadV1,
+        authorization: Optional[str] = Header(None),
+        x_user_id: Optional[int] = Header(None),
+        user_id: Optional[int] = Query(None),
+    ):
+        # Strict boundary: demo payment confirmation is completely disabled in production and staging
+        if (
+            active_settings.is_production
+            or active_settings.app_stage in ("production", "staging")
+            or not (active_settings.allow_demo_auth and active_settings.app_stage == "test")
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail="Demo subscription confirmation is disabled in production and staging environments",
+            )
+
+        target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+        order = get_order(active_db, payload.order_id)
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        if order["user_id"] != target_uid:
+            raise HTTPException(status_code=403, detail="Cross-user order confirmation forbidden")
+        if order.get("provider") != "demo":
+            raise HTTPException(status_code=403, detail="Only demo orders can be confirmed via demo endpoint")
+
+        completed_order = complete_order(active_db, payload.order_id)
+        sub = completed_order.get("subscription") or get_user_subscription(active_db, target_uid)
+
+        available_catalog = (
+            PRODUCTS
+            if (active_settings.is_production or active_settings.app_stage in ("production", "staging"))
+            else ALL_PRODUCTS
+        )
+        available_products = [
+            {
+                "id": p["id"],
+                "title": p["title"],
+                "price_rub": p["price"],
+                "period": "month" if "month" in p["id"] or p["id"] == "vip_care" else "one_time",
+                "description": p.get("description", ""),
+                "badge": p.get("badge", ""),
+            }
+            for p in available_catalog.values()
+        ]
+
+        is_prem = False
+        if sub and sub.get("status") == "active":
+            exp_raw = sub.get("expires_at")
+            if exp_raw:
+                try:
+                    if isinstance(exp_raw, (int, float)):
+                        exp_dt = datetime.fromtimestamp(exp_raw, tz=timezone.utc)
+                    else:
+                        exp_dt = datetime.fromisoformat(str(exp_raw).replace("Z", "+00:00"))
+                    if exp_dt.tzinfo is None:
+                        exp_dt = exp_dt.replace(tzinfo=timezone.utc)
+                    if datetime.now(timezone.utc) > exp_dt:
+                        sub["status"] = "expired"
+                    elif sub.get("tier") not in (None, "free"):
+                        is_prem = True
+                except Exception:
+                    sub["status"] = "expired"
+            else:
+                if not (active_settings.is_production or active_settings.app_stage in ("production", "staging")):
+                    if sub.get("tier") not in (None, "free"):
+                        is_prem = True
+        sub_read = SubscriptionReadV1(
+            is_premium=is_prem,
+            tier=sub.get("tier") if sub else None,
+            status=sub.get("status", "active") if sub else "active",
+            expires_at=sub.get("expires_at") if sub else None,
+            available_products=available_products,
+            user_id=target_uid,
+        )
+        return PurchaseConfirmResponseV1(
+            success=True,
+            subscription=sub_read,
+            is_premium=sub_read.is_premium,
+            tier=sub_read.tier,
+            status=sub_read.status,
+            expires_at=sub_read.expires_at,
+        )
 
     # --- K2 USER PROFILE & STATE API ---
 
-    @app.get("/api/user")
+    @app.get("/api/user", response_model=PilotUserReadV1)
     def get_user_data(
         authorization: Optional[str] = Header(None),
         x_user_id: Optional[int] = Header(None),
         user_id: Optional[int] = Query(None),
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-        profile = get_user_profile(target_uid, db_path=active_db)
-        state = get_user_state(target_uid, db_path=active_db)
-        return {"user_id": target_uid, "profile": profile, "state": state}
+        user_data = get_pilot_user(target_uid, db_path=active_db)
+        state = user_data.get("state")
+        if state and isinstance(state, dict):
+            menu = state.get("menu")
+            if menu and isinstance(menu, dict):
+                admitted_recipes = catalog_service.get_released_recipes()
+                admitted_ids = {r.get("id") for r in admitted_recipes if r.get("id")}
+                has_revoked = False
+                days = menu.get("days") or []
+                menu_recipe_ids = set()
+                for day in days:
+                    slots = day.get("slots") or {}
+                    for slot_key, r_id in slots.items():
+                        if r_id:
+                            menu_recipe_ids.add(r_id)
+                        if r_id not in admitted_ids:
+                            has_revoked = True
+                            break
+                    if has_revoked:
+                        break
+                if has_revoked:
+                    state["shopping_stale"] = True
+                else:
+                    shopping_data = get_pilot_shopping(target_uid, db_path=active_db)
+                    has_shopping_record = bool(shopping_data.get("revision", 0) > 0)
+                    if has_shopping_record:
+                        shopping_items = shopping_data.get("items") or []
+                        is_consistent = is_shopping_consistent_with_menu(
+                            menu, state.get("shopping_batches", 1), shopping_items, catalog_service
+                        )
+                        state["shopping_stale"] = not is_consistent
+        return user_data
 
-    @app.put("/api/user")
+    @app.put("/api/user", response_model=PilotSaveResultV1)
     def update_user_data(
-        payload: Dict[str, Any],
+        payload: PilotUserWriteV1,
         authorization: Optional[str] = Header(None),
         x_user_id: Optional[int] = Header(None),
         user_id: Optional[int] = Query(None),
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-        if "profile" in payload:
-            save_user_profile(target_uid, payload["profile"], db_path=active_db)
-        if "state" in payload:
-            save_user_state(target_uid, payload["state"], db_path=active_db)
-        return {"status": "ok", "user_id": target_uid}
+        if payload.state and payload.state.menu:
+            admitted_recipes = catalog_service.get_released_recipes()
+            admitted_ids = {r.get("id") for r in admitted_recipes if r.get("id")}
+            for day in payload.state.menu.days:
+                for slot_key, r_id in day.slots.items():
+                    if r_id not in admitted_ids:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Menu contains unreleased or unknown recipe ID: '{r_id}'"
+                        )
+            shopping_data = get_pilot_shopping(target_uid, db_path=active_db)
+            has_shopping_record = bool(shopping_data.get("revision", 0) > 0)
+            if has_shopping_record:
+                shopping_items = shopping_data.get("items") or []
+                is_consistent = is_shopping_consistent_with_menu(
+                    payload.state.menu.model_dump(),
+                    payload.state.shopping_batches,
+                    shopping_items,
+                    catalog_service
+                )
+                payload.state.shopping_stale = not is_consistent
+        try:
+            return save_pilot_user(target_uid, payload.model_dump(), db_path=active_db)
+        except StaleRevisionError as e:
+            raise HTTPException(status_code=409, detail=str(e))
 
     # --- K2 SHOPPING API ---
 
-    @app.get("/api/shopping")
+    @app.get("/api/shopping", response_model=PilotShoppingReadV1)
     def get_shopping(
         authorization: Optional[str] = Header(None),
         x_user_id: Optional[int] = Header(None),
         user_id: Optional[int] = Query(None),
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-        state = get_shopping_state(target_uid, db_path=active_db)
-        return state or {"items": [], "checked_map": {}}
+        return get_pilot_shopping(target_uid, db_path=active_db)
 
-    @app.put("/api/shopping")
+    @app.put("/api/shopping", response_model=PilotSaveResultV1)
     def update_shopping(
-        payload: ShoppingUpdatePayload,
+        payload: PilotShoppingWriteV1,
         authorization: Optional[str] = Header(None),
         x_user_id: Optional[int] = Header(None),
         user_id: Optional[int] = Query(None),
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-        save_shopping_state(target_uid, payload.model_dump(), db_path=active_db)
-        return {"status": "ok", "user_id": target_uid}
+        try:
+            return save_pilot_shopping(target_uid, payload.model_dump(), db_path=active_db)
+        except StaleRevisionError as e:
+            raise HTTPException(status_code=409, detail=str(e))
 
     # --- K2 CATALOG & RELEASE BOUNDARIES ---
 
     @app.get("/api/catalog")
     def get_catalog():
-        recipes = get_released_catalog(active_settings.released_recipe_ids)
-        return {
-            "recipes": recipes,
-            "total": len(recipes),
-            "stage": active_settings.app_stage,
-            "released_ids": sorted(list(active_settings.released_recipe_ids)),
-        }
+        return catalog_service.get_catalog_data()
 
     @app.get("/api/catalog/{recipe_id}")
     def get_recipe(recipe_id: str):
-        recipe = get_recipe_by_id(recipe_id, active_settings.released_recipe_ids)
+        recipe = catalog_service.get_recipe_by_id(recipe_id)
         if not recipe:
             raise HTTPException(
                 status_code=404,

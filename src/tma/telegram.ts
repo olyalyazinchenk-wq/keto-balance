@@ -31,6 +31,7 @@ export type MiniApp = {
   setHeaderColor?: (color: string) => void;
   setBackgroundColor?: (color: string) => void;
   setBottomBarColor?: (color: string) => void;
+  openInvoice?: (url: string, callback?: (status: string) => void) => void;
   BackButton?: {
     isVisible?: boolean;
     show: () => void;
