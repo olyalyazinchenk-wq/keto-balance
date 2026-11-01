@@ -708,6 +708,161 @@ class TestHomePilot(unittest.TestCase):
             # Confirmed recovery was verified
             self.assertIn(5, slept_intervals)
 
+    def test_safe_terminate_process_refuses_to_kill_different_executable_path_with_same_name(self):
+        """safe_terminate_process must refuse to terminate if executable path is different, even if basename is python.exe."""
+        current_info = home_pilot.get_process_info(os.getpid())
+        self.assertIsNotNone(current_info)
+
+        different_path_exe = {
+            "pid": os.getpid(),
+            "create_time": current_info["create_time"],
+            "executable": "C:\\Foreign\\Environment\\Scripts\\python.exe"
+        }
+        with patch("subprocess.run") as mock_run:
+            terminated = home_pilot.safe_terminate_process(different_path_exe)
+            self.assertFalse(terminated, "Must refuse to terminate when executable path differs despite matching filename")
+            mock_run.assert_not_called()
+
+    def test_is_process_alive_and_matched_distinguishes_different_executable_paths(self):
+        """is_process_alive_and_matched must return False when executable path differs."""
+        current_info = home_pilot.get_process_info(os.getpid())
+        self.assertIsNotNone(current_info)
+
+        different_path_exe = {
+            "pid": os.getpid(),
+            "create_time": current_info["create_time"],
+            "executable": "C:\\Foreign\\Environment\\Scripts\\python.exe"
+        }
+        matched = home_pilot.is_process_alive_and_matched(different_path_exe)
+        self.assertFalse(matched, "is_process_alive_and_matched must not match a process at a different directory path")
+
+    def test_check_ready_normalizes_trailing_slash_in_tunnel_url(self):
+        """check_ready must normalize trailing slashes in tunnel URL to avoid 404 //api/health requests."""
+        home_pilot.save_state({
+            "receipt_path": str(self.test_receipt_file),
+            "server": self.valid_proc_info,
+            "tunnel": self.valid_proc_info,
+        })
+        # Write URL with trailing slash
+        self.tunnel_url_file.write_text("https://test.lhr.life/\n", encoding="utf-8")
+
+        requested_urls = []
+
+        def mock_urlopen(req, timeout=None):
+            url = req if isinstance(req, str) else req.full_url
+            requested_urls.append(url)
+            m = MagicMock()
+            m.status = 200
+            m.headers = {"Content-Type": "application/json"}
+            if "/api/health" in url:
+                m.read.return_value = b'{"status": "ok"}'
+                m.__enter__.return_value = m
+                return m
+            if "/api/version" in url:
+                m.read.return_value = json.dumps({
+                    "buildId": "test-build-123",
+                    "backendFingerprint": "test-backend-fp",
+                    "catalogHash": "test-catalog-hash",
+                }).encode("utf-8")
+                m.__enter__.return_value = m
+                return m
+            raise Exception(f"Unexpected URL: {url}")
+
+        with patch("scripts.home_pilot.is_port_listening", return_value=True), \
+             patch("urllib.request.urlopen", side_effect=mock_urlopen):
+            res = home_pilot.check_ready(mode="PUBLIC_READY")
+            self.assertTrue(res["ready"], f"PUBLIC_READY should pass: {res.get('error')}")
+
+            # Verify no double slashes in requests
+            for url in requested_urls:
+                self.assertNotIn("//api/", url, f"URL {url} must not contain double slashes")
+
+    def test_check_ready_rejects_external_version_differing_from_local_version(self):
+        """External version differing from local version payload must cause PUBLIC_READY to fail."""
+        home_pilot.save_state({
+            "receipt_path": str(self.test_receipt_file),
+            "server": self.valid_proc_info,
+            "tunnel": self.valid_proc_info,
+        })
+        self.tunnel_url_file.write_text("https://test.lhr.life", encoding="utf-8")
+
+        def mock_urlopen(req, timeout=None):
+            url = req if isinstance(req, str) else req.full_url
+            m = MagicMock()
+            m.status = 200
+            m.headers = {"Content-Type": "application/json"}
+            if "127.0.0.1" in url and "/api/health" in url:
+                m.read.return_value = b'{"status": "ok"}'
+                m.__enter__.return_value = m
+                return m
+            if "127.0.0.1" in url and "/api/version" in url:
+                m.read.return_value = json.dumps({
+                    "buildId": "test-build-123",
+                    "backendFingerprint": "test-backend-fp",
+                    "catalogHash": "test-catalog-hash",
+                    "version": "1.0.0"
+                }).encode("utf-8")
+                m.__enter__.return_value = m
+                return m
+            if "test.lhr.life" in url and "/api/health" in url:
+                m.read.return_value = b'{"status": "ok"}'
+                m.__enter__.return_value = m
+                return m
+            if "test.lhr.life" in url and "/api/version" in url:
+                # Matches receipt fields, but differs from local version in extra field
+                m.read.return_value = json.dumps({
+                    "buildId": "test-build-123",
+                    "backendFingerprint": "test-backend-fp",
+                    "catalogHash": "test-catalog-hash",
+                    "version": "0.9.0-diverged"
+                }).encode("utf-8")
+                m.__enter__.return_value = m
+                return m
+            raise Exception(f"Unexpected URL: {url}")
+
+        with patch("scripts.home_pilot.is_port_listening", return_value=True), \
+             patch("urllib.request.urlopen", side_effect=mock_urlopen):
+            res = home_pilot.check_ready(mode="PUBLIC_READY")
+            self.assertFalse(res["ready"], "PUBLIC_READY must fail when external version differs from local version")
+            self.assertIn("differs", res["error"].lower())
+
+    def test_start_validates_dist_files_in_saved_receipt_on_recovery(self):
+        """start() must fail with exit code 1 if saved receipt points to non-existent dist directory."""
+        corrupted_receipt_file = self.tmp_path / "corrupted_receipt.json"
+        corrupted_receipt_file.write_text(json.dumps({
+            "build_id": "corrupt-123",
+            "backend_fingerprint": "fp",
+            "catalog_hash": "ch",
+            "dist_dir": str(self.tmp_path / "non_existent_dist"),
+        }), encoding="utf-8")
+
+        home_pilot.save_state({
+            "receipt_path": str(corrupted_receipt_file),
+        })
+
+        code = home_pilot.start(with_tunnel=False)
+        self.assertEqual(code, 1, "start() must return 1 when saved receipt references missing dist directory")
+
+    def test_run_ssh_tunnel_writes_url_file_even_without_env_file(self):
+        """run_ssh_tunnel.update_env_url must write current_tunnel_url.txt even when .env does not exist."""
+        import scripts.run_ssh_tunnel as run_ssh_tunnel
+        orig_url_file = run_ssh_tunnel.URL_FILE
+        orig_env_file = run_ssh_tunnel.ENV_FILE
+
+        test_url_file = self.tmp_path / "test_tunnel_url.txt"
+        test_env_file = self.tmp_path / ".non_existent_env"
+
+        run_ssh_tunnel.URL_FILE = test_url_file
+        run_ssh_tunnel.ENV_FILE = test_env_file
+        try:
+            run_ssh_tunnel.update_env_url("https://sample-domain.lhr.life/\n")
+            self.assertTrue(test_url_file.is_file(), "current_tunnel_url.txt must be written even without .env")
+            saved_content = test_url_file.read_text(encoding="utf-8")
+            self.assertEqual(saved_content, "https://sample-domain.lhr.life", "Trailing slash and whitespace must be stripped")
+        finally:
+            run_ssh_tunnel.URL_FILE = orig_url_file
+            run_ssh_tunnel.ENV_FILE = orig_env_file
+
 
 if __name__ == "__main__":
     unittest.main()

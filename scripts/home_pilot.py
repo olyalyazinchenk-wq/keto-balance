@@ -125,6 +125,20 @@ def get_process_info(pid: int) -> Optional[Dict[str, Any]]:
             return None
 
 
+def is_matching_executable(current_exe: str, expected_exe: str) -> bool:
+    """Matches executable taking into account path normalization and Windows file systems."""
+    if not current_exe or not expected_exe:
+        return False
+    cur_norm = os.path.normcase(os.path.abspath(current_exe))
+    exp_norm = os.path.normcase(os.path.abspath(expected_exe))
+    if cur_norm == exp_norm:
+        return True
+    # If expected_exe is only a file name without directory (e.g. 'ssh.exe'), match by basename
+    if os.path.basename(expected_exe) == expected_exe:
+        return os.path.normcase(os.path.basename(current_exe)) == os.path.normcase(expected_exe)
+    return False
+
+
 def is_process_alive_and_matched(proc_info: Optional[Dict[str, Any]]) -> bool:
     """Verifies that a managed process is actively running and matches stored metadata."""
     if not proc_info or not proc_info.get("pid"):
@@ -138,10 +152,7 @@ def is_process_alive_and_matched(proc_info: Optional[Dict[str, Any]]) -> bool:
         return False
     expected_exe = proc_info.get("executable")
     if expected_exe and current.get("executable"):
-        # Match base executable name or normalized path
-        cur_base = os.path.normcase(os.path.basename(current["executable"]))
-        exp_base = os.path.normcase(os.path.basename(expected_exe))
-        if cur_base != exp_base:
+        if not is_matching_executable(current["executable"], expected_exe):
             return False
     return True
 
@@ -187,19 +198,20 @@ def safe_terminate_process(proc_info: Dict[str, Any]) -> bool:
         return False
 
     if expected_exe and current.get("executable"):
-        cur_base = os.path.normcase(os.path.basename(current["executable"]))
-        exp_base = os.path.normcase(os.path.basename(expected_exe))
-        if cur_base != exp_base:
+        if not is_matching_executable(current["executable"], expected_exe):
             print(f"[WARN] PID {pid} executable mismatch (expected {expected_exe}, got {current.get('executable')}). Process not killed.", file=sys.stderr)
             return False
 
     try:
         if os.name == "nt":
-            import ctypes
-            h = ctypes.windll.kernel32.OpenProcess(0x0001, False, pid)  # PROCESS_TERMINATE
-            if h:
-                ctypes.windll.kernel32.TerminateProcess(h, 0)
-                ctypes.windll.kernel32.CloseHandle(h)
+            # Safely terminate verified process and its children to avoid leaving orphaned listeners
+            res = subprocess.run(["taskkill.exe", "/F", "/T", "/PID", str(pid)], capture_output=True, text=True)
+            if res.returncode != 0:
+                import ctypes
+                h = ctypes.windll.kernel32.OpenProcess(0x0001, False, pid)  # PROCESS_TERMINATE
+                if h:
+                    ctypes.windll.kernel32.TerminateProcess(h, 0)
+                    ctypes.windll.kernel32.CloseHandle(h)
         else:
             os.kill(pid, 15)  # SIGTERM
     except Exception as e:
@@ -214,7 +226,7 @@ def query_orphan_ssh_pids(port: int = STAGING_PORT) -> list:
         try:
             cmd = [
                 "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
-                f"Get-CimInstance Win32_Process | Where-Object {{ $_.Name -like '*ssh*' -and $_.CommandLine -like '*:{port}*' -and $_.CommandLine -like '*localhost.run*' }} | Select-Object -ExpandProperty ProcessId"
+                f"Get-CimInstance Win32_Process | Where-Object {{ $_.Name -like '*ssh*' -and $_.CommandLine -match ':{port}\\b' -and $_.CommandLine -like '*localhost.run*' }} | Select-Object -ExpandProperty ProcessId"
             ]
             res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
             if res.returncode == 0 and res.stdout.strip():
@@ -475,10 +487,15 @@ def check_ready(
         req = urllib.request.Request(target, headers={"User-Agent": "HomePilotReadyCheck/1.0"})
         try:
             return urllib.request.urlopen(req, timeout=timeout_sec)
+        except urllib.error.HTTPError:
+            # Server responded with an HTTP status error (e.g. 502, 404, 500) -> do not retry through proxy
+            raise
         except Exception:
-            # Fallback through local proxy if configured
-            opener_proxy = urllib.request.build_opener(urllib.request.ProxyHandler({"https": "http://127.0.0.1:10809"}))
-            return opener_proxy.open(req, timeout=timeout_sec)
+            # Fallback through local proxy if configured and listening
+            if is_port_listening("127.0.0.1", 10809):
+                opener_proxy = urllib.request.build_opener(urllib.request.ProxyHandler({"https": "http://127.0.0.1:10809"}))
+                return opener_proxy.open(req, timeout=timeout_sec)
+            raise
 
     start_ext = time.time()
     ext_health_ok = False
@@ -492,7 +509,7 @@ def check_ready(
             continue
 
         try:
-            tunnel_url = active_tunnel_file.read_text(encoding="utf-8").strip()
+            tunnel_url = active_tunnel_file.read_text(encoding="utf-8").strip().rstrip("/")
         except Exception as e:
             last_ext_err = f"Failed to read current_tunnel_url.txt: {e}"
             time.sleep(0.4)
@@ -590,6 +607,12 @@ def check_ready(
             "mode": "PUBLIC_READY",
             "error": f"External catalogHash mismatch with receipt ({ext_version.get('catalogHash')} != {receipt_meta['catalog_hash']})"
         }
+    if ext_version != local_version:
+        return {
+            "ready": False,
+            "mode": "PUBLIC_READY",
+            "error": f"External version differs from local version ({ext_version} != {local_version})"
+        }
 
     return {
         "ready": True,
@@ -612,9 +635,10 @@ def start(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> int:
     if receipt_path:
         pinned_receipt = resolve_and_validate_receipt(receipt_path)
     elif state.get("receipt_path"):
-        pinned_receipt = Path(state["receipt_path"]).resolve()
-        if not pinned_receipt.is_file():
-            print(f"[HOME_PILOT ERROR] Pinned receipt {pinned_receipt} not found on disk.", file=sys.stderr)
+        try:
+            pinned_receipt = resolve_and_validate_receipt(state["receipt_path"])
+        except RuntimeError as e:
+            print(f"[HOME_PILOT ERROR] Pinned receipt validation failed: {e}", file=sys.stderr)
             return 1
     else:
         try:
@@ -854,7 +878,7 @@ def status(mode: Optional[str] = None) -> int:
         except Exception:
             pass
 
-    ready = check_ready(mode=target_mode, port=STAGING_PORT, timeout=2.5)
+    ready = check_ready(mode=target_mode, port=STAGING_PORT, timeout=6.0)
     print(f"  Ready Check ({target_mode}): {'PASSED' if ready.get('ready') else 'FAILED'}")
     if ready.get("ready"):
         if ready.get("version"):
@@ -925,7 +949,8 @@ def supervisor(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> 
             time.sleep(delay)
 
             # Perform recovery
-            recovery_code = start(with_tunnel=with_tunnel, receipt_path=state.get("receipt_path"))
+            saved_receipt = receipt_path or state.get("receipt_path")
+            recovery_code = start(with_tunnel=with_tunnel, receipt_path=saved_receipt)
             verify_recovery = check_ready(mode=target_mode, port=STAGING_PORT, timeout=15.0)
 
             if recovery_code == 0 and verify_recovery.get("ready"):

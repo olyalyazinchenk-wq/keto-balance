@@ -129,7 +129,7 @@ def get_bot_token() -> str:
         return ""
     for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
         line = line.strip()
-        if line.startswith("KETO_BOT_TOKEN="):
+        if line.startswith("KETO_BOT_TOKEN=") or line.startswith("TELEGRAM_BOT_TOKEN="):
             return line.split("=", 1)[1].strip("\"' ")
     return ""
 
@@ -138,6 +138,7 @@ def update_telegram_menu_button(url: str, chat_id: int = 1084557944):
     if not token:
         print("[TUNNEL] Токен KETO_BOT_TOKEN не найден, пропуск обновления кнопки меню.", flush=True)
         return
+    clean_url = url.strip().rstrip("/")
     try:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({"https": "http://127.0.0.1:10809"}))
         payload = json.dumps({
@@ -145,7 +146,7 @@ def update_telegram_menu_button(url: str, chat_id: int = 1084557944):
             "menu_button": {
                 "type": "web_app",
                 "text": "🥑 Открыть Кето Баланс",
-                "web_app": {"url": url}
+                "web_app": {"url": clean_url}
             }
         }).encode("utf-8")
         req = urllib.request.Request(
@@ -153,27 +154,36 @@ def update_telegram_menu_button(url: str, chat_id: int = 1084557944):
             data=payload,
             headers={"Content-Type": "application/json"}
         )
-        with opener.open(req, timeout=10) as resp:
+        try:
+            resp = urllib.request.urlopen(req, timeout=10)
+        except Exception:
+            resp = opener.open(req, timeout=10)
+        with resp:
             data = json.loads(resp.read().decode())
             if data.get("ok"):
-                print(f"[TUNNEL] Кнопка меню в Telegram успешно обновлена для chat_id={chat_id}: {url}", flush=True)
+                print(f"[TUNNEL] Кнопка меню в Telegram успешно обновлена для chat_id={chat_id}: {clean_url}", flush=True)
             else:
                 print(f"[TUNNEL WARNING] setChatMenuButton вернул: {data}", flush=True)
     except Exception as e:
         print(f"[TUNNEL WARNING] Не удалось обновить кнопку меню в Telegram: {type(e).__name__}", flush=True)
 
 def update_env_url(url: str):
+    clean_url = url.strip().rstrip("/")
+    try:
+        URL_FILE.write_text(clean_url, encoding="utf-8")
+        print(f"[TUNNEL] Сохранен актуальный URL: {clean_url}", flush=True)
+    except Exception as e:
+        print(f"[TUNNEL ERROR] Ошибка записи URL в current_tunnel_url.txt: {e}", flush=True)
+
     if not ENV_FILE.exists():
         return
     try:
         content = ENV_FILE.read_text(encoding="utf-8")
         if "WEBAPP_URL=" in content:
-            content = re.sub(r"WEBAPP_URL=.*", f"WEBAPP_URL={url}", content)
+            content = re.sub(r"WEBAPP_URL=.*", f"WEBAPP_URL={clean_url}", content)
         else:
-            content += f"\nWEBAPP_URL={url}\n"
+            content += f"\nWEBAPP_URL={clean_url}\n"
         ENV_FILE.write_text(content, encoding="utf-8")
-        URL_FILE.write_text(url, encoding="utf-8")
-        print(f"[TUNNEL] Сохранен актуальный URL: {url}", flush=True)
     except Exception as e:
         print(f"[TUNNEL ERROR] Ошибка записи URL в .env: {e}", flush=True)
 
