@@ -76,7 +76,12 @@ K2_BACK = K1_BACK + (
     'test_app_models', 'test_user_api', 'test_data_rights', 'test_catalog_api',
     'test_support', 'test_log_redaction', 'test_release_boundaries',
     'test_safety_routing', 'test_backup_restore',
+    'test_pilot_auth_regressions', 'test_pilot_harness', 'test_pilot_roundtrip',
+    'test_staging_and_demo',
 )
+K2_FRONT = tuple(dict.fromkeys(K1_FRONT + (
+    'pilot-client', 'pilot-state', 'pilot-preferences', 'release-catalog-export',
+)))
 K3_BACK = K2_BACK + (
     'test_products', 'test_billing_orders', 'test_stars_handlers',
     'test_entitlements', 'test_refunds', 'test_release_gate',
@@ -97,7 +102,8 @@ def build_product_plan(root: Path, stage: str) -> list[Step]:
             ('scripts/run_backend_tests.py', f'tests/backend/{name}.py'),
             'backend',
         ))
-    for name in K1_FRONT:
+    front = K2_FRONT if stage in ('k2-pilot', 'k3-pilot') else K1_FRONT
+    for name in front:
         file = f'tests/frontend/{name}.test.cjs'
         steps.append(Step(
             f'Frontend:{name}',
@@ -105,7 +111,7 @@ def build_product_plan(root: Path, stage: str) -> list[Step]:
         ))
     steps.extend((
         Step('Typecheck', (npm, 'run', 'typecheck'), ('tsconfig.json',)),
-        Step('Build', (npm, 'run', 'build'), ('scripts/stamp-release.mjs',)),
+        Step('Build', ('node', 'scripts/build-isolated.mjs'), ('scripts/build-isolated.mjs',)),
     ))
     if stage != 'k1-local':
         specs = ('food-flow', 'support', 'persistence')
@@ -116,8 +122,8 @@ def build_product_plan(root: Path, stage: str) -> list[Step]:
             file = f'tests/e2e/{name}.spec.ts'
             steps.append(Step(
                 f'E2E:{name}',
-                ('npx.cmd' if os.name == 'nt' else 'npx', '--no-install',
-                 'playwright', 'test', f'--config={config}', file),
+                ('node', 'node_modules/@playwright/test/cli.js',
+                 'test', f'--config={config}', file),
                 (config, file), 'playwright',
             ))
     return steps
@@ -126,6 +132,16 @@ def build_product_plan(root: Path, stage: str) -> list[Step]:
 def build_plan(root: Path, stage: str) -> list[Step]:
     if stage in PRODUCT_GATES:
         return build_product_plan(root, stage)
+    if stage == 'public-paid':
+        npm = 'npm.cmd' if os.name == 'nt' else 'npm'
+        config = 'playwright.full.config.ts'
+        return [
+            Step('Backend', (sys.executable, '-B', 'scripts/run_backend_tests.py'), ('scripts/run_backend_tests.py',), 'backend'),
+            Step('Frontend', (npm, 'run', 'test:unit'), ('package.json',), 'tap'),
+            Step('Typecheck', (npm, 'run', 'typecheck'), ('tsconfig.json',)),
+            Step('Build', ('node', 'scripts/build-isolated.mjs'), ('scripts/build-isolated.mjs',)),
+            Step('E2E', ('npx.cmd' if os.name == 'nt' else 'npx', '--no-install', 'playwright', 'test', f'--config={config}'), (config,), 'playwright'),
+        ]
     if stage not in {'checkpoint', 'p0', 'visual', 'free', 'paid'}:
         raise GateError('Unknown verification stage')
     npm = 'npm.cmd' if os.name == 'nt' else 'npm'

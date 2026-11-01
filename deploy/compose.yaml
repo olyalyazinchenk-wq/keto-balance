@@ -1,0 +1,37 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    environment:
+      - APP_STAGE=production
+      - PAYMENT_MODE=enabled
+      - PAYMENTS_ENABLED=1
+      - KETO_DB_PATH=/data/keto_balance.db
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    volumes:
+      - keto_data:/data
+    networks:
+      - internal_net
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - internal_net
+
+volumes:
+  keto_data:
+    name: keto_balance_data
+
+networks:
+  internal_net:
+    driver: bridge
