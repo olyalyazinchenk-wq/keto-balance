@@ -1,0 +1,1386 @@
+{
+  "branch_before": "design/argon-ui-import",
+  "head_before": "5f39a90",
+  "files": [
+    {
+      "status": " M",
+      "path": ".gitignore",
+      "size": 469,
+      "sha256": "855c39a755ac9f647c3356f725bf0d6d34b7cecef647ac5f24ae1163d78336c1"
+    },
+    {
+      "status": " M",
+      "path": "AGENTS.md",
+      "size": 6515,
+      "sha256": "1e9bc7e23933c5c5f0ed60617e35c9e35c04678f03266a5bad76a95f2343c798"
+    },
+    {
+      "status": " M",
+      "path": "README.md",
+      "size": 8241,
+      "sha256": "b4c271dfc4106451e18d373bc29a8a813b3c96ee83b940d3deb707bd41d71014"
+    },
+    {
+      "status": " M",
+      "path": "bot/app_db.py",
+      "size": 37939,
+      "sha256": "89b561486df9cde3717449f589de5a152198533ae39fbdddaa9b3bbe3eac48a6"
+    },
+    {
+      "status": " M",
+      "path": "bot/app_models.py",
+      "size": 3822,
+      "sha256": "be6aa05121c4b39f09c0cb1f0a9aae3fcd2206a908dd1c2bc128f2cbbc21ed91"
+    },
+    {
+      "status": " M",
+      "path": "bot/app_settings.py",
+      "size": 1876,
+      "sha256": "52b85771d90fcedfcd6ad0dc170dcd776e8391f36809ab61deeadd4745977b55"
+    },
+    {
+      "status": " M",
+      "path": "bot/bot.py",
+      "size": 43439,
+      "sha256": "5cda054c59d3e3a6161df79eebe7d504b16b9e490a24b12746dadce41990c737"
+    },
+    {
+      "status": " M",
+      "path": "bot/catalog.py",
+      "size": 8303,
+      "sha256": "3a7d22d881733d129009438537cafe34e7005be56eb04ded371c07f109b1eab2"
+    },
+    {
+      "status": " M",
+      "path": "bot/payments.py",
+      "size": 3361,
+      "sha256": "e97ffbcfddf9ea859ffcc43ec2a58210b5aa18a3a037fc102648727d46c2a1d6"
+    },
+    {
+      "status": " M",
+      "path": "bot/server.py",
+      "size": 28595,
+      "sha256": "c67d350760d1b2e25afd5371b09681d343578713a4a9a8979131dfdfe1863b15"
+    },
+    {
+      "status": " M",
+      "path": "current_tunnel_url.txt",
+      "size": 57,
+      "sha256": "e4928d7475b87e76f9cd1487dd1d88536eb98d8eb39aca2d69817b4d2f136738"
+    },
+    {
+      "status": " M",
+      "path": "docs/release/acceptance.md",
+      "size": 13715,
+      "sha256": "9c8ef960a691833b1937f2ca88865e04eaf4d2d3cd2c0d0fa0a706464b7b1574"
+    },
+    {
+      "status": " M",
+      "path": "docs/release/catalog-validation-report.json",
+      "size": 28465,
+      "sha256": "7cbfd401cdd46530eac5d22528668fe9fb38c969d0a94677bdcb087064ebf6f6"
+    },
+    {
+      "status": " M",
+      "path": "docs/release/current-slice.md",
+      "size": 3520,
+      "sha256": "ec84374551efea86874c120d6d67fe91b9c6da1ba88679745e199adc3133178f"
+    },
+    {
+      "status": " M",
+      "path": "docs/release/execution-log.md",
+      "size": 50873,
+      "sha256": "2ef34cfbdadb6084d0e872a5f69f723f4a7ce1d3c988b460efe0720740d8a2bc"
+    },
+    {
+      "status": " M",
+      "path": "package.json",
+      "size": 929,
+      "sha256": "78cbcc79068290766fbdecfc03d2d5195d0f993a56ca98c90e7ece83d0b979cb"
+    },
+    {
+      "status": " M",
+      "path": "playwright.full.config.ts",
+      "size": 781,
+      "sha256": "07b0c24197567d9888eb39ccc9cb7861b3f91124eb30fd9a395d632d2d69ea32"
+    },
+    {
+      "status": " M",
+      "path": "scripts/run_backend_tests.py",
+      "size": 2791,
+      "sha256": "9d477274c3fab7a50940f7b16c31a2ec2f1eb094e7461c301961d681066504e7"
+    },
+    {
+      "status": " M",
+      "path": "scripts/stamp-release.mjs",
+      "size": 2889,
+      "sha256": "b6740914c38580f3bceccd3adb293f8c7ec1de0ce6b599fea47dd7d9b5d97009"
+    },
+    {
+      "status": " M",
+      "path": "scripts/verification.py",
+      "size": 10767,
+      "sha256": "49d2dff1334e2f57fcdafe01eae3d210145423a4597e72f46806a98487d9739b"
+    },
+    {
+      "status": " M",
+      "path": "src/App.tsx",
+      "size": 189924,
+      "sha256": "c8d3577b0fb859ecc606acd5fc886b4c57d5adcd6525ab0ceed6bdf76f45f330"
+    },
+    {
+      "status": " M",
+      "path": "src/data/releasedRecipeIds.ts",
+      "size": 840,
+      "sha256": "7d55a42eb81bc0a9573bc62f6074a70f158c34bafaae413086f8ee3624c86f08"
+    },
+    {
+      "status": " M",
+      "path": "src/domain/eligibility.ts",
+      "size": 8469,
+      "sha256": "5e796bfcfe40c420ae435d5dd28fa3fc4594465b055d3ae40dc05cbbb2fd6a8c"
+    },
+    {
+      "status": " M",
+      "path": "src/index.css",
+      "size": 9506,
+      "sha256": "63e183a1c99979977eba618a4d21ec98438fd29369f3161a972dc36a2a7fd889"
+    },
+    {
+      "status": " M",
+      "path": "src/main.tsx",
+      "size": 520,
+      "sha256": "bc925c5063b1aa998361036bb57d62394a578302b201c082ee6818cb282fe8f5"
+    },
+    {
+      "status": " M",
+      "path": "src/tma/telegram.ts",
+      "size": 8896,
+      "sha256": "b1fbb848ae4fd08a29333a3389b30e480a07aa00a36fad0e86e70b4cb0082aea"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/AppShell.tsx",
+      "size": 5128,
+      "sha256": "94901e65224eba7fb98d3db6b29502a326032870e3d00da46728f199f4784979"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/FoodFirstApp.tsx",
+      "size": 23154,
+      "sha256": "1b7ed61c3f2a761315299d635b0f8cf9fbaaa3b63f97634189c99c7d82304f35"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/Menu.tsx",
+      "size": 12369,
+      "sha256": "a94af15cf22b21653844507aac89e30a8803bb3ce08769b106c8c8e03bad0bad"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/Recipe.tsx",
+      "size": 18468,
+      "sha256": "edef7a29320e6698e97a2799e8f17a27f232b6e51a26a93d4ae9bbdf5913f4c9"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/Shopping.tsx",
+      "size": 15693,
+      "sha256": "8e96eaf414efb2847e1813ca3f097bafcf3e482084233dd1df71b0572afa2753"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/Today.tsx",
+      "size": 6472,
+      "sha256": "9a0aad11b8176bc0d30236d78084271b7dfdf77014ecb6bb88d60d64fc65b2dd"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/contract.ts",
+      "size": 1982,
+      "sha256": "0d0b952fa9f8fe4178bcf83f9d294d13f6483249ea498d51958ba2c014534383"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/recipesAdapter.ts",
+      "size": 5302,
+      "sha256": "b69aa8be2cfc75e864b6087cf32df276a42ee51177cee41dadf59d848f9b0349"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/shoppingFromMenu.ts",
+      "size": 7096,
+      "sha256": "caa69dda3ed15b1b312647e70d47116281c1ff1a6ec15ce29a31e5f1c5af3bc2"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/state.ts",
+      "size": 6713,
+      "sha256": "5426ca7121d9864e38d453ce79f6e47f0fcd7c2d0407f977b40453165b188892"
+    },
+    {
+      "status": " M",
+      "path": "src/ui/food-first/today.css",
+      "size": 8820,
+      "sha256": "9932a9f1b2cac68b5679eb4f0b921b469c3bf25112894a2fe74db400834bffef"
+    },
+    {
+      "status": " M",
+      "path": "tests/backend/test_app_db.py",
+      "size": 4703,
+      "sha256": "58ec48b35c18db843053546d845dc6db5fcd43dd3b7cf6b16d1a6a25015d1587"
+    },
+    {
+      "status": " M",
+      "path": "tests/backend/test_app_models.py",
+      "size": 5678,
+      "sha256": "2d5c7451e88cb40a4ba5dc253d50d586d2c0406b02e6e4b62920137ed92979ca"
+    },
+    {
+      "status": " M",
+      "path": "tests/backend/test_catalog_api.py",
+      "size": 1902,
+      "sha256": "5f8a50bab52a105f061fb5c2464836074b5211a3174eabbc8c5d4d58fc0a9834"
+    },
+    {
+      "status": " M",
+      "path": "tests/backend/test_channel_nutritionist_isolation.py",
+      "size": 2716,
+      "sha256": "c1a2f857d5e2097175b64caa5e7b87110891fdd031e8458985f93dea2c81fe84"
+    },
+    {
+      "status": " M",
+      "path": "tests/backend/test_data_rights.py",
+      "size": 2884,
+      "sha256": "b256208ee324d9168802507f9d18c26c7ed4cf750e1d0c04d46b3b8c88b2da9a"
+    },
+    {
+      "status": " M",
+      "path": "tests/backend/test_release_boundaries.py",
+      "size": 2507,
+      "sha256": "07ca99180cc5d33d58dd0b672f3b37ba0ddf3be49d94084d404b72c8f87e271b"
+    },
+    {
+      "status": " M",
+      "path": "tests/backend/test_release_version.py",
+      "size": 3982,
+      "sha256": "1451e3a04472d19408caa498f4461d6ad62d3e062212a2b9f76b292738f868a1"
+    },
+    {
+      "status": " M",
+      "path": "tests/backend/test_support.py",
+      "size": 2841,
+      "sha256": "e211df4b4d909a0391a7c4454cb21d2311fd594f285c48952336f7688cb27e59"
+    },
+    {
+      "status": " M",
+      "path": "tests/backend/test_user_api.py",
+      "size": 6678,
+      "sha256": "d462985299cb56c9b97275e3eb58093b2cfb1eb4b14924cade98f7234e6b9505"
+    },
+    {
+      "status": " M",
+      "path": "tests/e2e/food-flow.spec.ts",
+      "size": 3463,
+      "sha256": "f46dc0856cd9745704262647e70224b2d13289ce21ee6bf9856331434c826a3d"
+    },
+    {
+      "status": " M",
+      "path": "tests/e2e/p0.spec.ts",
+      "size": 871,
+      "sha256": "ff534d68f01b77c6528e90aecb17babcd5d6df7982872a1b0dba9b94aa2fe18d"
+    },
+    {
+      "status": " M",
+      "path": "tests/e2e/persistence.spec.ts",
+      "size": 4391,
+      "sha256": "8ce11f6599422c9fba5c6d634c90fa1a1a381ba6bc08f9f76263e37fdc293a84"
+    },
+    {
+      "status": " M",
+      "path": "tests/e2e/support.spec.ts",
+      "size": 1085,
+      "sha256": "0aaf385182686f06c2f1186af01291bcd37434f9de0b6d20a0ac7b49a46e2a66"
+    },
+    {
+      "status": " M",
+      "path": "tests/frontend/food-import-boundary.test.cjs",
+      "size": 2188,
+      "sha256": "10656f5a9634c84ed7d5d8e2068010f419c5d0c7f0b7e40ed37d8c7f5aa370fe"
+    },
+    {
+      "status": " M",
+      "path": "tests/frontend/food-shopping.test.cjs",
+      "size": 5834,
+      "sha256": "eb173b5c821611d64d5aeb18b7fcbc68d19cf0aa6f16a89acf706b1137fb99fb"
+    },
+    {
+      "status": "??",
+      "path": ".hermes/plans/2026-11-01_001918-start-gate-and-teamwork.md",
+      "size": 78314,
+      "sha256": "a5b4f95a4d5d9df0b4fb926f4aca899a57e8956896ba1dc599eb29b0f93f8b6a"
+    },
+    {
+      "status": "??",
+      "path": ".hermes/plans/2026-11-01_paid_release_prompt.md",
+      "size": 40668,
+      "sha256": "6e47b21498bc7a61308f70360448caea7d43586b0e02051ebe231c11c18e384a"
+    },
+    {
+      "status": "??",
+      "path": "bot/pilot_models.py",
+      "size": 5222,
+      "sha256": "85dd429a80d7f7dd40b97b7a588e3dd8d6a24756b6d278798a2d3de677d28fb5"
+    },
+    {
+      "status": "??",
+      "path": "docs/LIVE_STATUS.md",
+      "size": 7814,
+      "sha256": "9ac439fc151eeaad23294be49a944e7e12c5ec71388a3f539188e8fdaec6c1b2"
+    },
+    {
+      "status": "??",
+      "path": "docs/TEAMWORK.md",
+      "size": 7699,
+      "sha256": "ef8a594e973ea33849e43a6a7dc89a3f89cb5744de647a48432c3e068be6680a"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/2026-10-31-antigravity-k2-review.md",
+      "size": 20317,
+      "sha256": "cb959bae84c00e67b0765bec9c4f61b38162ad5b9e87ef251aa2e077dd56a832"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/2026-10-31-connected-pilot-review.md",
+      "size": 21973,
+      "sha256": "b61dce4dbb9e336dad4b171d673314c29b1dbda2c466057a566463eae595f1c5"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/2026-10-31-deepcoder-recheck.md",
+      "size": 20953,
+      "sha256": "8632ce49da75880bb4cf3e520f998e3a2aaab9e54368b10e3376143db45343ad"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/2026-10-31-f1-f4-independent-review.md",
+      "size": 26188,
+      "sha256": "775dcac3be90795fa34435ce0ab349e295f910779bc6d59b9ee2e9fe67ca4f51"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/2026-10-31-r1-r3-acceptance.md",
+      "size": 10405,
+      "sha256": "43dafa3a7a78fb7bd39933ad197cc045d9a59bfa806efab00f59a5699557aefa"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/2026-10-31-r1-r3-recheck.md",
+      "size": 17795,
+      "sha256": "7b1e459051e459280becd18b3c6c3b544585345f3a111e58f83f5271ae8c80b4"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/2026-10-31-r1-r7-recheck.md",
+      "size": 16394,
+      "sha256": "c04eebcd72e716d7f7f4ba8eb488b1b9b46bef87501c23c08c055e9cc5316b0f"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/2026-11-01-start-gate/start-gate-390x844.png",
+      "size": 1646115,
+      "sha256": "b769d98e3af77d75a2c5a41bd3027184aa0caff30a74687032b2895275531e30"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/connected-pilot-2026-10-31/backend-targeted.txt",
+      "size": 1668,
+      "sha256": "6ed186c5f23e712ba3ac0f0d26f037bc258fdd50204445ab2bdb73e1246f7135"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/connected-pilot-2026-10-31/canonical-hash-probe.json",
+      "size": 149,
+      "sha256": "38cfeade8743ad58a82440bd97b333c70faaf049097ad2a752df904ea6e409d9"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/connected-pilot-2026-10-31/frontend.tap",
+      "size": 35888,
+      "sha256": "9be02370b750f3265da47fc697756975a0ef6ffef56cf124a3783a0e0b77ab7b"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/connected-pilot-2026-10-31/independent-tests.json",
+      "size": 1726,
+      "sha256": "8bfe979b7810d084591d2fecb7ccf79661c0b14543cb01828d58e0a45ddde1e0"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/connected-pilot-2026-10-31/metadata.json",
+      "size": 5311,
+      "sha256": "fe2c277b0e9a2105a7f7fc650da86b25f3b2550af3a627b436ee659f1bf24ec3"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/connected-pilot-2026-10-31/persistence-probes.json",
+      "size": 860,
+      "sha256": "e78d03911b8559810a0877462a7351b8778fc54a0af2fc8b9a025a7fb3677d5e"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/connected-pilot-2026-10-31/ui-probes.json",
+      "size": 657,
+      "sha256": "99c2c8050cfdd5164b1962d0ff226b150067f187a2f1bc742e9c901aecebccc6"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/backend-full.txt",
+      "size": 28194,
+      "sha256": "f762d78846963fb85d030d66b26d74b01c6439cf6093bc4aed05cc775502e10a"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/backend-probes.json",
+      "size": 882,
+      "sha256": "f8e5ff1533ccf760399fa7f8cb3951a86dfd29e902a37f854913761b319af733"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/build-receipt.json",
+      "size": 1684,
+      "sha256": "7cc34ec791dcb99e9b4f791b40a091290c73029460d0593d43bdd19a6833b49d"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/build.txt",
+      "size": 1585,
+      "sha256": "9ed5ceb144d60eced94aa52d964cdb98c38f8db9da71e75397065919e7bb085c"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/checks.json",
+      "size": 4262,
+      "sha256": "a07bb16c1f9fcb449ba2b2596e0347b9121e17c667972b4f448ee0448fbde56f"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/default-launchers-policy.json",
+      "size": 1598,
+      "sha256": "f00218cb0c2be725c823ef1659cafc0659359353935391b2711d8a31ecb624be"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/frontend.tap",
+      "size": 39917,
+      "sha256": "27c7f88eba6c265d2f9626f761afeb2b1e6ec602906761226e12c6106d2a0e89"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/helper-probes.json",
+      "size": 285,
+      "sha256": "11bb2784c5721975ace2b83f4b15ae5195731f311713be9767309ae1203c1637"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/refresh-interleaving-ui.json",
+      "size": 555,
+      "sha256": "c6c7f1d796d1c9b6eea3348e84498aef31a82f879c8b2be6139f38e2384b3618"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/source-manifest.json",
+      "size": 4992,
+      "sha256": "ba59631ace2f0c40abd698e7d056ce6d9770ff80d3bcea8c11921b9a2830b066"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/synthetic-payloads.json",
+      "size": 10083,
+      "sha256": "f2a9192c0bc347a91e59a1a282e89286b67fda7db52b6770d0adf8085a49dafd"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/deepcoder-recheck-2026-10-31/ui-probes.json",
+      "size": 1359,
+      "sha256": "7ed8fd1cb4f707845bb19fd382db5695c1640a638ff587eaad95ceb87b96b417"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/backend-full-result.json",
+      "size": 410,
+      "sha256": "1fd2a97bd7a766e8901ec8c55f0ba7ae5e5dbc483b2e3b60a54307edce3fe20e"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/backend-full.txt",
+      "size": 23260,
+      "sha256": "34d4606ae4b4fc0e599d35e35a73b6965b3b09a52d81594168b575df4dd8339b"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/build-receipt.json",
+      "size": 1694,
+      "sha256": "ca64515ffa524a27806462189ff26f98d6ab70e9dc8076d3742dc7d0d10a618c"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/checks.json",
+      "size": 4865,
+      "sha256": "b95c1770aecd618afa73750874cf5aa45bdbe21939db3ba911bbfe4747a84422"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/compound-backend.json",
+      "size": 689,
+      "sha256": "b0fc289a33559f9677b35020d157020b18ac3c23d27bbb2986bb10818eb3779e"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/frontend.tap",
+      "size": 39394,
+      "sha256": "28048bdb8a863cbf919a8f862b8b902655efba310e2f09cde7bda823ffc4b014"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/isolated-build.txt",
+      "size": 1597,
+      "sha256": "628b02b7c9d3a531c82c06eb81a8df2de2cceac7bdfd3af8bf09934b19a0f140"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/network-error-ui.json",
+      "size": 563,
+      "sha256": "6d00030bc158c01b503561a8d5115e5c5e67ef8f00c681de59458c3d6b891c8b"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/policy-probes.json",
+      "size": 735,
+      "sha256": "a4ac85756112cff0cfea8d055a0879bf92e0ac6de3c87697d56af300801de660"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/restore-helper-probes.json",
+      "size": 339,
+      "sha256": "9a07ed7bf754644e43f2cffda58dce6a57d0d6994401910363db1e6c1565de51"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/session-policy-probe.json",
+      "size": 489,
+      "sha256": "7b9e51f26aa4b99117c85e5d858d3e34881e4573ce967a66d2c7c9f1c4abd530"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/source-consistency.json",
+      "size": 241,
+      "sha256": "ef745819b31428f56c573e0848605288d22f3187fcdbbe40433486bb339ca307"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/source-manifest.json",
+      "size": 4992,
+      "sha256": "a0f47ae6ce8ace19954f80b38c3b40e29fabb2f1b3ebfa280674810931408520"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/f1-f4-recheck-2026-10-31/ui-probes.json",
+      "size": 21657,
+      "sha256": "7c56b057895d1906b52df94496be0adce85725d77e18cbd04ad269ecef90052e"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/k2-antigravity-2026-10-31/api-bypass.json",
+      "size": 1152,
+      "sha256": "51d5143227025d9555a53ccfdc51e342e1dbf8f5ddb0bfd1a894c99c004729d8"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/k2-antigravity-2026-10-31/backend-subset.json",
+      "size": 2235,
+      "sha256": "b3e94e6fbdeb8443c5ecf959ae0912bbb532785e7c41f0b938a0addfe7d50457"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/k2-antigravity-2026-10-31/browser.json",
+      "size": 3057,
+      "sha256": "313cac5b7478ae2163cf1d0e1833f5857ef1c32d3877649eab137370a93fb197"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/k2-antigravity-2026-10-31/frontend-typecheck.json",
+      "size": 410,
+      "sha256": "74c0837d6ea91e4100bb5c8202b6eec6361f9d1f06ab0431001c69dbee85daad"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/k2-antigravity-2026-10-31/frontend.tap",
+      "size": 31478,
+      "sha256": "d864ea1641e8869c73edff55c991de8adbc50049218c4014813ceeb7de9cf541"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/k2-antigravity-2026-10-31/manifest.json",
+      "size": 2326,
+      "sha256": "f1188ad6553e6660f7323f03ffcab44932139072d394dfcc609588a15babcfb5"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/k2-antigravity-2026-10-31/public-network-followup.json",
+      "size": 725,
+      "sha256": "d0931755906736bf6d368954469e30644e835f110ef276b4d38e38fa34fa55e0"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/already-have-queued-checkbox-payloads.json",
+      "size": 15394,
+      "sha256": "640b40b7bf8e76e74d730e96d42ed0abb911099562630db9c9c894345a29b578"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/already-have-r2-real-backend-replay.json",
+      "size": 405,
+      "sha256": "1550340945ca003eff16e8b198f0b29c62165421c502722800bf0056bd5088d4"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/already-have-ui-probes-full.json",
+      "size": 2537,
+      "sha256": "c1f1c64e564dd9d572dc6ce9825bd7b3a6477188a4679240252c54e3e0771851"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/backend-full.txt",
+      "size": 28954,
+      "sha256": "19986afc4b2223117cd1cce338a56042ebeb19d427e1cecb76c818ebeafb7f2d"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/build-receipt.json",
+      "size": 1685,
+      "sha256": "c3d0496c882a0967ab7dc3428218a496de211513d8ba53fa263aad682f43e552"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/build.txt",
+      "size": 1585,
+      "sha256": "21abe95f16e12323f5e7c4c0473ac0f6cd881165598ef6783bae37591972d03a"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/checks.json",
+      "size": 2540,
+      "sha256": "a98a95e184b1931c2bda748630c1faad8d9da8d285dacfb17de21830ddcfdfb9"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/consistency-inputs.json",
+      "size": 80207,
+      "sha256": "f5da9c59fc296ffd4e5f683cae9c8dbdefe6b384c565747c0f417c66de6f5dcf"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/deepcoder-helper-probes.cjs",
+      "size": 2180,
+      "sha256": "ea93845b504531b534ece9bcec3783faf7cbf67b48fef5b307121c910c2f09db"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/deepcoder-recheck.py",
+      "size": 7435,
+      "sha256": "bdf9bbef93e73df8518c5a5451e753e1667ed681772781fbfa44886f58b01dd6"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/deepcoder-ui-interleave.cjs",
+      "size": 9230,
+      "sha256": "a42830457a9ccd05fd2a20e58395c2e5a7898b1e15f06e33cc5be26ad1ddf94c"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/evidence-index.json",
+      "size": 972,
+      "sha256": "9628ef74e973c1a579603dbb419efca575e9829e2fd0effd047d5cb6f8968583"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/frontend.tap",
+      "size": 40270,
+      "sha256": "b35436809d2fe08cc16607e5d55c90182bafebbe3c088e0e4a08d6c588021b60"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/helper-probes.json",
+      "size": 285,
+      "sha256": "11bb2784c5721975ace2b83f4b15ae5195731f311713be9767309ae1203c1637"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/launcher-configuration.txt",
+      "size": 1115,
+      "sha256": "50d0857b3de33f946a51cb33fc454648644bd0a801c22b4fc85f4b0158d9f1cf"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/native-receipt.json",
+      "size": 4262,
+      "sha256": "05bb8c2168e988e9b3488347860463a4ac3b84b4102e231ef16f10e63ea4c96a"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/pilot-f1-f4-full-backend.py",
+      "size": 3707,
+      "sha256": "7a6283b02bedab6332fd202e8e5fcb4acecf17406868fa2fe49f7c3fb8798169"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/pilot-f1-f4-recheck.py",
+      "size": 9821,
+      "sha256": "b677832d976bddbc4d2c92f92f81b878d7423a38b14fb6fe104adebc96b9c8b8"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/queued-checkbox-payloads.json",
+      "size": 15394,
+      "sha256": "efa2f468ad4279529c971df3e86d40fa4c76e29ccbdbe20b6a7adafb434bcd16"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/r1-backend-consistency.json",
+      "size": 6450,
+      "sha256": "1b0804628dda38340d53cc0926a1724f1a60261dc2e14510e13f3af8e396c7cb"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/r1-r3-final-already-have-probes.py",
+      "size": 14676,
+      "sha256": "5cdf3841210f4c0fa917061f22e487239ed6a761471b8e6a091b2a926a0e651e"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/r1-r3-final-current-probes.py",
+      "size": 14664,
+      "sha256": "6c8bc50271e6e5556c9310588947f115c2241755e0267b74e5cf6ee960f9d825"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/r2-real-backend-replay.json",
+      "size": 405,
+      "sha256": "1550340945ca003eff16e8b198f0b29c62165421c502722800bf0056bd5088d4"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/source-manifest.json",
+      "size": 4992,
+      "sha256": "f2634dffa63f2fb6c732dfaaa2da7bb63309d7122994299ccaead9b49d2c4989"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/synthetic-payloads.json",
+      "size": 10083,
+      "sha256": "f2a9192c0bc347a91e59a1a282e89286b67fda7db52b6770d0adf8085a49dafd"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/targeted-runner.json",
+      "size": 681,
+      "sha256": "1b8ee779862c564a8379bba51b850878d1ff90fb8557237d77bd3e73955dc6de"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/typecheck.txt",
+      "size": 2,
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-acceptance-2026-10-31/ui-probes.json",
+      "size": 2537,
+      "sha256": "4323b52afde78e77c1ccce10cb0c20d69168ca310b0233eb5efe8d9ad208f915"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/backend-full.txt",
+      "size": 28720,
+      "sha256": "1496b974df84095fe76de321e9d8470603d31287ea5809546a5d3991dc97af09"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/build-receipt.json",
+      "size": 1685,
+      "sha256": "167c37d9df364d64bae29164e962cd4cfdbd2bd078af393077ab26140f96efc9"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/build.txt",
+      "size": 1585,
+      "sha256": "47edcf0a173db1182a2a429356b72462dfacf8ec563b99609dd467d49ef94dac"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/checks.json",
+      "size": 2263,
+      "sha256": "c422a52d703e1a0ed7ef93164e9384f3145fe10aba21e824a4c56f99fc3de540"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/consistency-inputs.json",
+      "size": 80207,
+      "sha256": "f5da9c59fc296ffd4e5f683cae9c8dbdefe6b384c565747c0f417c66de6f5dcf"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/deepcoder-helper-probes.cjs",
+      "size": 2180,
+      "sha256": "ea93845b504531b534ece9bcec3783faf7cbf67b48fef5b307121c910c2f09db"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/deepcoder-recheck.py",
+      "size": 7435,
+      "sha256": "bdf9bbef93e73df8518c5a5451e753e1667ed681772781fbfa44886f58b01dd6"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/deepcoder-ui-interleave.cjs",
+      "size": 9230,
+      "sha256": "a42830457a9ccd05fd2a20e58395c2e5a7898b1e15f06e33cc5be26ad1ddf94c"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/evidence-index.json",
+      "size": 782,
+      "sha256": "ffeafba2f3255659e23650e6cc82ba99dc394636554de76e91c9d4e8dfd04f1f"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/frontend.tap",
+      "size": 39940,
+      "sha256": "566430a50d0c76b16fc0a99762b3955b54a510b7fb9298366c2a0abe545a4d17"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/helper-probes.json",
+      "size": 285,
+      "sha256": "11bb2784c5721975ace2b83f4b15ae5195731f311713be9767309ae1203c1637"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/launcher-configuration.txt",
+      "size": 1115,
+      "sha256": "43835b890fa2b8088cd93dde3bf91b391b9ecfbc4511a977c290ff2baa217630"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/native-receipt.json",
+      "size": 4262,
+      "sha256": "e132b150d81ddc5a507faf90b48421628e616aea396bca5f285bebb949f156fa"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/pilot-f1-f4-full-backend.py",
+      "size": 3707,
+      "sha256": "7a6283b02bedab6332fd202e8e5fcb4acecf17406868fa2fe49f7c3fb8798169"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/pilot-f1-f4-recheck.py",
+      "size": 9821,
+      "sha256": "b677832d976bddbc4d2c92f92f81b878d7423a38b14fb6fe104adebc96b9c8b8"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/queued-checkbox-payloads.json",
+      "size": 15395,
+      "sha256": "f35f1f8d665bd21c8ac1464f39e6d85b74f54547537f330d39011bb0cd2d9601"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/r1-backend-consistency.json",
+      "size": 6456,
+      "sha256": "648cd7db5eda0664adfb28711dd1713712dbdbf6b2ebb226fdd58315bfd16a7d"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/r1-r3-current-probes.py",
+      "size": 14614,
+      "sha256": "5ba34f887301d922b3db405a58a6310aa0b124e538b3bb3458fcbb86e9ab81f1"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/r2-real-backend-replay.json",
+      "size": 407,
+      "sha256": "35ce9b9a4882df185aea1da5023f5b9d739bd5bfa0fdda979ce84754ef76f5f3"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/source-manifest.json",
+      "size": 4992,
+      "sha256": "3fb6b037e9b441ad6fbded33283d4185515a404902a3adef0755ec09c9c98b43"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/synthetic-payloads.json",
+      "size": 10083,
+      "sha256": "f2a9192c0bc347a91e59a1a282e89286b67fda7db52b6770d0adf8085a49dafd"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/targeted-runner.json",
+      "size": 681,
+      "sha256": "73029854ad65a72f42ebea309ff91aef11c116990407d95aecc2840e83ba2c0e"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/typecheck.txt",
+      "size": 2,
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r3-recheck-2026-10-31/ui-probes.json",
+      "size": 2544,
+      "sha256": "746d09a95f8ca6b90e4fdc9dc165f2e39af89858bc48f6af8dd7b2a2d0389416"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r7-recheck-2026-10-31/backend-targeted.txt",
+      "size": 3259,
+      "sha256": "0ff0a1fae9617124cb360d31ad50386d36e0da7f501c8f87b32b23165fae2843"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r7-recheck-2026-10-31/checks.json",
+      "size": 3623,
+      "sha256": "1bca82b69f64dea86508bdecb1229f3fdb73521d04450f15f67dcc80d3f1f32b"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r7-recheck-2026-10-31/frontend.tap",
+      "size": 37250,
+      "sha256": "acc9b2d8fe0d211f2f9cc9f28ce16e9cc941d86d38e29ba30fec5c23216fabe2"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r7-recheck-2026-10-31/isolated-build.txt",
+      "size": 1588,
+      "sha256": "f0a39268d5c07bd301fba4922c863176890b661643ecc71287228c66dca3b1eb"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r7-recheck-2026-10-31/ui-error-path-final.json",
+      "size": 1260,
+      "sha256": "3204900724110782c463886974f38cbcaf5d302d113836088e8c480e838accf2"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r7-recheck-2026-10-31/ui-error-path.json",
+      "size": 1010,
+      "sha256": "530e07011e53b1c511d8292837eab94591251c49566764b15fd468c7a3045f91"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/evidence/r1-r7-recheck-2026-10-31/ui-regressions.json",
+      "size": 671,
+      "sha256": "7eb8e9dfa553f75f6028c578f1043dfd6321c787bfb09214117a2e2c194831cb"
+    },
+    {
+      "status": "??",
+      "path": "docs/content/catalog-release-checklist.md",
+      "size": 3655,
+      "sha256": "edf69bc601d44f2947d7537f6b90cce1f96e3887bb36adf374ae9f53b97bb2a5"
+    },
+    {
+      "status": "??",
+      "path": "docs/evidence/screenshots/01_start_gate.png",
+      "size": 205433,
+      "sha256": "3440681a2a31b9c1c9d8cc73f6d18193cd3579e437a58b4c1adacaaefbb06d46"
+    },
+    {
+      "status": "??",
+      "path": "docs/evidence/screenshots/02_today.png",
+      "size": 164931,
+      "sha256": "a71e98828ebd7ad3f913644ac697f4637408b38fe0269ae5d7f5a068ceac393f"
+    },
+    {
+      "status": "??",
+      "path": "docs/evidence/screenshots/03_menu.png",
+      "size": 171132,
+      "sha256": "32bb8689471f357b1f3fcc0e859bb91233d9aa4049f1054ce272ec8f262b0dd5"
+    },
+    {
+      "status": "??",
+      "path": "docs/evidence/screenshots/04_recipe.png",
+      "size": 162219,
+      "sha256": "0a0d23408e17e1fb66a94a9354060d6ba25895cb0efe4d6ac3606e425eb6d1a4"
+    },
+    {
+      "status": "??",
+      "path": "docs/evidence/screenshots/05_shopping.png",
+      "size": 52747,
+      "sha256": "1dd702dec8c1332b228af305872ed1b587d1192a856c219824c77c109573f3c1"
+    },
+    {
+      "status": "??",
+      "path": "docs/evidence/screenshots/06_paywall.png",
+      "size": 54587,
+      "sha256": "76a394deeec0756fc94fa99c975c072b4c08d7d58a37d96617c25bf34aa5e01b"
+    },
+    {
+      "status": "??",
+      "path": "docs/handoff/2026-10-31-gemini-deliver-working-pilot.md",
+      "size": 80945,
+      "sha256": "7f7bf2d3ebb3b242d898e12f0f59be2fc872c99f32d928da82fd68aec8fda690"
+    },
+    {
+      "status": "??",
+      "path": "docs/handoff/2026-10-31-gemini-k2-brief-amendments.md",
+      "size": 17332,
+      "sha256": "6ee31f3630e893fab9e91cc41c0b5e69973ef59d4939d40fe8eae99bfc86992d"
+    },
+    {
+      "status": "??",
+      "path": "docs/handoff/2026-11-01-start-gate-report.md",
+      "size": 19790,
+      "sha256": "b8455291ad11f24b742b515347cc8a3f7bc64645b0bb693bc78c840e709a54f1"
+    },
+    {
+      "status": "??",
+      "path": "docs/handoff/TEMPLATE.md",
+      "size": 4663,
+      "sha256": "9989cc7647b459a70df48581830fc67aa697d36c36f6f0fcb7b1a69f21bf2b0d"
+    },
+    {
+      "status": "??",
+      "path": "docs/release/artifact-manifest.json",
+      "size": 2238,
+      "sha256": "d24e5fad1a04f4e0ceb93baa61e170b77f90b3b06816ca9ccb55dad0891d3df3"
+    },
+    {
+      "status": "??",
+      "path": "docs/release/evidence/k2-pilot-receipt.json",
+      "size": 3894,
+      "sha256": "536447a58c20b88f6456fead0d39f3bad5031807f7d23c570a1a683c439308a2"
+    },
+    {
+      "status": "??",
+      "path": "docs/release/pilot-approval-request.md",
+      "size": 12014,
+      "sha256": "ccde694573e5d9328bd45575f9122362b3fd59ac94ac786c9577476223098c64"
+    },
+    {
+      "status": "??",
+      "path": "docs/release/pilot-runbook.md",
+      "size": 7558,
+      "sha256": "0088e37cd88cd7799d2af5ce2f24712f2bf4d86d245a1856d472e2e2a18849ba"
+    },
+    {
+      "status": "??",
+      "path": "docs/release/pilot-smoke.md",
+      "size": 6246,
+      "sha256": "40a449bf4dfbadd9dea969ac52504c346d20794db0e279e4e8c699a8f62c9634"
+    },
+    {
+      "status": "??",
+      "path": "public/media/food-first/hero.webp",
+      "size": 147034,
+      "sha256": "dce6267f00013f661dc4bd8444862d69729cdd242a7d7600595333335da943d3"
+    },
+    {
+      "status": "??",
+      "path": "public/media/start/carnivore_raw_meat.png",
+      "size": 95514,
+      "sha256": "1acf9a07863f070ecb77d81cff8b60a72726740e42cf7a3bc17e471c711f9f34"
+    },
+    {
+      "status": "??",
+      "path": "public/media/start/carnivore_steak_plate.png",
+      "size": 215830,
+      "sha256": "5bc2c7dc4ea77c9a4baf5dc766d0fa479370fac62cc1be0c3e0cd9d0ef24239a"
+    },
+    {
+      "status": "??",
+      "path": "public/media/start/keto_kale_avocado.png",
+      "size": 102297,
+      "sha256": "6ba4f293e80f31d9804bee01f23691d7c52becd265c3f556c4a394f78886007d"
+    },
+    {
+      "status": "??",
+      "path": "public/media/start/keto_salmon_plate.png",
+      "size": 215664,
+      "sha256": "b0b314a37f73ecabec2b0d77e444e2cfe16800b4aaed91b406975b89d07dced4"
+    },
+    {
+      "status": "??",
+      "path": "scratch-preview.err",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "status": "??",
+      "path": "scratch-preview.out",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "status": "??",
+      "path": "scripts/build-isolated.mjs",
+      "size": 10322,
+      "sha256": "5eec534441303c545132895a6766c937825c3ad3e063a380776e045333b7d5c2"
+    },
+    {
+      "status": "??",
+      "path": "scripts/capture_key_screens.mjs",
+      "size": 5201,
+      "sha256": "6743e83337397f7e0da5c8bbb7445d7247d82da07032e92790dc0f202a21569c"
+    },
+    {
+      "status": "??",
+      "path": "scripts/capture_start_gate_screenshot.mjs",
+      "size": 2397,
+      "sha256": "7b582e333258c9b4d4053f563866d0945d19aae707188b769ad9566dba868745"
+    },
+    {
+      "status": "??",
+      "path": "scripts/empirical_challenger_m2.mjs",
+      "size": 21736,
+      "sha256": "44edb00cc87a2da900317fcb67918bf8fc715147283f86c98e2fa781d4d06e3f"
+    },
+    {
+      "status": "??",
+      "path": "scripts/empirical_challenger_m2_r2.mjs",
+      "size": 15335,
+      "sha256": "1d56307a8ea76052f22ddc735f22dc148bef639ff993b228744e21477f44a296"
+    },
+    {
+      "status": "??",
+      "path": "scripts/export-release-catalog.mjs",
+      "size": 4858,
+      "sha256": "427b37a099c3a629fe7c044620059da873324d155be0606f2088dd763c2ee1fa"
+    },
+    {
+      "status": "??",
+      "path": "scripts/inventory_baseline.py",
+      "size": 1904,
+      "sha256": "b369707619bdf6490e04885ae887c5a66416ae7750571dfdbc16f9731c04f559"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pilot_test_server.py",
+      "size": 5016,
+      "sha256": "2b55d96776172e70e59ba3c44719c982e57d8d459282046347b2994e5f079747"
+    },
+    {
+      "status": "??",
+      "path": "scripts/run_local_preview.py",
+      "size": 9642,
+      "sha256": "6734168e24478fb4838880f0b2d938af0b9f085aac15308068af5867c5f57c4a"
+    },
+    {
+      "status": "??",
+      "path": "scripts/run_staging.py",
+      "size": 9879,
+      "sha256": "407d52ece39198c1c2100ea9d2f072f76dc12db3a3c654008cd377e513a687b8"
+    },
+    {
+      "status": "??",
+      "path": "src/PilotApp.tsx",
+      "size": 49525,
+      "sha256": "9aa2b671490fc5f75f0e6519b5ebc5c519b8d5ce85897e08546cb1856d1c89b3"
+    },
+    {
+      "status": "??",
+      "path": "src/adapters/pilotApi.ts",
+      "size": 4419,
+      "sha256": "44ac0d68a9421240f7bff571a2dbe373dab22e881828c8a4bd7fd4abaa45d4b6"
+    },
+    {
+      "status": "??",
+      "path": "src/adapters/pilotState.ts",
+      "size": 5853,
+      "sha256": "2bd0c7d9e3f211ba1eb5096d80d3d335b48d8820d19dc44830d61572c98ec4d7"
+    },
+    {
+      "status": "??",
+      "path": "src/api/ketoClient.ts",
+      "size": 4445,
+      "sha256": "fc62df121b27c69ada0d2c2fa919f3c2310f148e88245f9a140a22a3de8c7f82"
+    },
+    {
+      "status": "??",
+      "path": "src/api/pilotTypes.ts",
+      "size": 2145,
+      "sha256": "74792f9789c36e6cc17aca3611818ef5713c9ed6f53a7ce52b591f24a4d54f76"
+    },
+    {
+      "status": "??",
+      "path": "src/types/subscription.ts",
+      "size": 1032,
+      "sha256": "011f2af7deb8ada72e9bcc053129a649a97c7bd33ae16d99bc0cc491dcc51fa4"
+    },
+    {
+      "status": "??",
+      "path": "src/ui/food-first/Header.tsx",
+      "size": 3088,
+      "sha256": "1a1b843a68bdfe135479bf5acd8ac5f43fd829c2d12499bff446245a071b4200"
+    },
+    {
+      "status": "??",
+      "path": "src/ui/food-first/PaywallModal.tsx",
+      "size": 17062,
+      "sha256": "47724e51816fd573cd567d87f162c4a2fbac034835430f65d0ac07ea1387745b"
+    },
+    {
+      "status": "??",
+      "path": "src/ui/pilot/gate.ts",
+      "size": 1100,
+      "sha256": "c793505a836972d8f1318f9581e19ea31d5df300fd646d326af36e3ee46aa1b4"
+    },
+    {
+      "status": "??",
+      "path": "src/ui/pilot/StartGateScreen.tsx",
+      "size": 17572,
+      "sha256": "23c9141515d3593d558626d4dc51efd85f6e9f1543bb67679b0ffafb52bf0750"
+    },
+    {
+      "status": "??",
+      "path": "tests/backend/test_pilot_auth_regressions.py",
+      "size": 5219,
+      "sha256": "5dea7a612799f67c670b51921211098902ffdfb8c5812e7d54d3ea333f89d514"
+    },
+    {
+      "status": "??",
+      "path": "tests/backend/test_pilot_harness.py",
+      "size": 6248,
+      "sha256": "24be43edb23314db2eaacc935aef85cf83f07a26d4c56aeebd4320b0875e1b81"
+    },
+    {
+      "status": "??",
+      "path": "tests/backend/test_pilot_roundtrip.py",
+      "size": 7942,
+      "sha256": "cef559d61090c97ea98c2a2c958885f6dee74f7b83767182299db3f46594d94a"
+    },
+    {
+      "status": "??",
+      "path": "tests/backend/test_staging_and_demo.py",
+      "size": 32629,
+      "sha256": "81ce05c4cbf87215acc92a344251640fd7b1377d0b146e8e18ef47835899133d"
+    },
+    {
+      "status": "??",
+      "path": "tests/e2e/monetization.spec.ts",
+      "size": 12915,
+      "sha256": "334e6f67fa4514e1f1b0922bdbd80ae10d37bed250f4c2eee034e204d778f4f5"
+    },
+    {
+      "status": "??",
+      "path": "tests/e2e/pilot.fixture.ts",
+      "size": 4525,
+      "sha256": "79d65b6e54886d38934699573727be01af81337c3ef71d6c13bfe6b350c8c76a"
+    },
+    {
+      "status": "??",
+      "path": "tests/e2e/start-gate.spec.ts",
+      "size": 7781,
+      "sha256": "00dabbdfee4cb231fe63fcfe5a90a67fb618f2920f99121ccdb3062dd9b19dc7"
+    },
+    {
+      "status": "??",
+      "path": "tests/fixtures/pilot/catalog.json",
+      "size": 6218,
+      "sha256": "a158f603c8212c678b2c7e9ed2f6594285de1598e607d867c154359ca1e66f3c"
+    },
+    {
+      "status": "??",
+      "path": "tests/fixtures/pilot/consistency-inputs.json",
+      "size": 80207,
+      "sha256": "f5da9c59fc296ffd4e5f683cae9c8dbdefe6b384c565747c0f417c66de6f5dcf"
+    },
+    {
+      "status": "??",
+      "path": "tests/fixtures/pilot/manifest.json",
+      "size": 1143,
+      "sha256": "f33dbb434768d5aff0a516fd2a2f45ec4cb24e0233ba0d45da2dcd41d758de0a"
+    },
+    {
+      "status": "??",
+      "path": "tests/fixtures/pilot/synthetic_env_documentation.txt",
+      "size": 528,
+      "sha256": "7d495f5913e6f00dfaafb50fea10489ca53374a613b617a78cc97f4d7de256b8"
+    },
+    {
+      "status": "??",
+      "path": "tests/frontend/build-isolated-public.test.cjs",
+      "size": 1680,
+      "sha256": "a992349c23ca6e235f4b2bfb77e3397389604826f6cf5ea225a0722cb52cc227"
+    },
+    {
+      "status": "??",
+      "path": "tests/frontend/empirical_m3_tma.cjs",
+      "size": 24335,
+      "sha256": "8e3a62a38da2b51d003835fc42891cab3bf3ff78a66892fcb93ac053b5dba5b6"
+    },
+    {
+      "status": "??",
+      "path": "tests/frontend/pilot-client.test.cjs",
+      "size": 4334,
+      "sha256": "e5307422a840f1db607e1d515b5dc33f2a6eae46c54d4936689f6e6b06a46794"
+    },
+    {
+      "status": "??",
+      "path": "tests/frontend/pilot-preferences.test.cjs",
+      "size": 6555,
+      "sha256": "0a4cf222b1cfaf52724a64f220ba1510914ddb0c96b19408e6fd7a32873a77c6"
+    },
+    {
+      "status": "??",
+      "path": "tests/frontend/pilot-state.test.cjs",
+      "size": 17792,
+      "sha256": "5721356d06b3b94f94a448506b94c02f1f8be8fe5b2e458985329f4926073fc8"
+    },
+    {
+      "status": "??",
+      "path": "tests/frontend/release-catalog-export.test.cjs",
+      "size": 4906,
+      "sha256": "41d405e8563c056daeb48adf08986a946063fe0ae3b0d33b5bfcee3122b94ee5"
+    },
+    {
+      "status": "??",
+      "path": "tests/frontend/start-gate.test.cjs",
+      "size": 1375,
+      "sha256": "6c7365548e80ee555f1cb7a7cd74c5001877b7201908626a517c594404317b5c"
+    },
+    {
+      "status": "??",
+      "path": "tests/helpers/pilot_io_guard.py",
+      "size": 7234,
+      "sha256": "35ee464e4a77d126532d18f9b69017b429a2e08d54dd8eb4d74ab50b97d38f75"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_subscription_adversarial.py",
+      "size": 27088,
+      "sha256": "e28cc2316301c08b1fdb1cbfa2f80b57a3a4bcab96025deac452914ea7f4a35c"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_subscription_api.py",
+      "size": 17547,
+      "sha256": "bcceafb40d0f73c6750bf063d6f9a993f2bd78cd2fe0788d5e51194512f1bc62"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_subscription_concurrency.py",
+      "size": 17263,
+      "sha256": "0320525fc8e7e1995e365b4c85dabedd7f8b8c881d3d9a352a8eac5ab8b16ae6"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_subscription_empiric_r2.py",
+      "size": 20699,
+      "sha256": "c4478ace2177b8a84f01e99d977f4fe0c780f87d04003584ed5421fac8441929"
+    }
+  ]
+}

@@ -25,3 +25,8 @@ tools/
 test_audio.mp3
 test_steak.jpg
 .cache/
+scratch-preview.*
+
+# публичные ассеты приложения должны попадать в репозиторий
+!public/media/
+!public/media/**
