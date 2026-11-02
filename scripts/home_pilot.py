@@ -716,7 +716,7 @@ def start(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> int:
 
         if tunnel_alive:
             # Check if public connection is operational
-            public_check = check_ready(mode="PUBLIC_READY", port=STAGING_PORT, timeout=3.0)
+            public_check = check_ready(mode="PUBLIC_READY", port=STAGING_PORT, timeout=12.0)
             if public_check.get("ready"):
                 print(f"[HOME_PILOT] SSH Tunnel is already running on PID {tunnel_info['pid']} and operational. No new tunnel spawned.")
             else:
@@ -779,7 +779,8 @@ def start(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> int:
                 return 1
 
     status(mode="PUBLIC_READY" if with_tunnel else "LOCAL_READY")
-    final_check = check_ready(mode="PUBLIC_READY" if with_tunnel else "LOCAL_READY", port=STAGING_PORT, timeout=2.0)
+    final_check_timeout = 12.0 if with_tunnel else 3.0
+    final_check = check_ready(mode="PUBLIC_READY" if with_tunnel else "LOCAL_READY", port=STAGING_PORT, timeout=final_check_timeout)
     return 0 if final_check.get("ready") else 1
 
 
@@ -913,7 +914,17 @@ def supervisor(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> 
                 tunnel_info = state.get("tunnel")
                 tunnel_ok = is_process_alive_and_matched(tunnel_info)
 
-            ready_info = check_ready(mode=target_mode, port=STAGING_PORT, timeout=3.0)
+            check_timeout = 10.0 if target_mode == "PUBLIC_READY" else 3.0
+            ready_info = check_ready(mode=target_mode, port=STAGING_PORT, timeout=check_timeout)
+            if not ready_info.get("ready") and server_ok and tunnel_ok and target_mode == "PUBLIC_READY":
+                # Check if local server is intact before declaring an operational outage.
+                # If local server is completely healthy, retry external check once to absorb transient public internet latency.
+                local_check = check_ready(mode="LOCAL_READY", port=STAGING_PORT, timeout=2.0)
+                if local_check.get("ready"):
+                    print(f"[HOME_PILOT SUPERVISOR] Transient external ping failure ({ready_info.get('error')}). Re-verifying external readiness...", flush=True)
+                    time.sleep(1.0)
+                    ready_info = check_ready(mode=target_mode, port=STAGING_PORT, timeout=12.0)
+
             is_operational = server_ok and tunnel_ok and ready_info.get("ready")
 
             if is_operational:

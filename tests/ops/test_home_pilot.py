@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
@@ -1035,6 +1036,129 @@ class TestHomePilot(unittest.TestCase):
         }))
         # All valid and matching
         self.assertTrue(home_pilot.is_process_alive_and_matched(self.valid_proc_info))
+
+    def test_check_ready_public_mode_resilient_to_realistic_network_latency(self):
+        """Regression test: transient network latency and timeout recovery under PUBLIC_READY mode."""
+        import urllib.error
+        home_pilot.save_state({
+            "receipt_path": str(self.test_receipt_file),
+            "server": self.valid_proc_info,
+            "tunnel": self.valid_proc_info,
+        })
+        self.tunnel_url_file.write_text("https://mock-tunnel.lhr.life\n", encoding="utf-8")
+
+        attempt_count = 0
+
+        def mock_urlopen_with_latency(req, timeout=None):
+            nonlocal attempt_count
+            url = req if isinstance(req, str) else req.full_url
+            if "127.0.0.1" in url and "/api/health" in url:
+                m = MagicMock()
+                m.status = 200
+                m.read.return_value = b'{"status": "ok"}'
+                m.headers = {"Content-Type": "application/json"}
+                m.__enter__.return_value = m
+                return m
+            if "127.0.0.1" in url and "/api/version" in url:
+                m = MagicMock()
+                m.status = 200
+                m.headers = {"Content-Type": "application/json"}
+                m.read.return_value = json.dumps({
+                    "buildId": "test-build-123",
+                    "backendFingerprint": "test-backend-fp",
+                    "catalogHash": "test-catalog-hash",
+                }).encode("utf-8")
+                m.__enter__.return_value = m
+                return m
+            if "mock-tunnel.lhr.life" in url:
+                attempt_count += 1
+                if attempt_count == 1:
+                    # First attempt times out after 2.1s (exceeding a 2.0s budget)
+                    time.sleep(2.1)
+                    raise urllib.error.URLError("timed out")
+                # Subsequent attempts succeed
+                if "/api/health" in url:
+                    m = MagicMock()
+                    m.status = 200
+                    m.headers = {"Content-Type": "application/json"}
+                    m.read.return_value = b'{"status": "ok"}'
+                    m.__enter__.return_value = m
+                    return m
+                if "/api/version" in url:
+                    m = MagicMock()
+                    m.status = 200
+                    m.headers = {"Content-Type": "application/json"}
+                    m.read.return_value = json.dumps({
+                        "buildId": "test-build-123",
+                        "backendFingerprint": "test-backend-fp",
+                        "catalogHash": "test-catalog-hash",
+                    }).encode("utf-8")
+                    m.__enter__.return_value = m
+                    return m
+            raise Exception(f"Unexpected URL: {url}")
+
+        with patch("scripts.home_pilot.is_port_listening", side_effect=lambda host, p: p == 18081), \
+             patch("urllib.request.urlopen", side_effect=mock_urlopen_with_latency):
+            # Under tight 2.0s timeout (the bug that caused code 1 exit), check_ready must fail with timeout
+            attempt_count = 0
+            res_tight = home_pilot.check_ready(mode="PUBLIC_READY", timeout=2.0)
+            self.assertFalse(res_tight["ready"], "2.0s timeout must fail when external request experiences latency")
+            self.assertIn("timed out", res_tight.get("error", "").lower())
+
+            # Under adequate 12.0s timeout (the fix), check_ready must retry and pass
+            attempt_count = 0
+            res_generous = home_pilot.check_ready(mode="PUBLIC_READY", timeout=12.0)
+            self.assertTrue(res_generous["ready"], f"12.0s timeout must succeed after retry: {res_generous.get('error')}")
+
+    def test_supervisor_absorbs_transient_external_glitch_when_processes_healthy(self):
+        """Supervisor retries transient external failure once without incrementing backoff failures when processes are healthy."""
+        home_pilot.save_state({
+            "receipt_path": str(self.test_receipt_file),
+            "server": self.valid_proc_info,
+            "tunnel": self.valid_proc_info,
+        })
+
+        check_calls = []
+
+        def mock_check_ready(mode="PUBLIC_READY", timeout=None, **kwargs):
+            check_calls.append((mode, timeout))
+            if mode == "PUBLIC_READY":
+                if len(check_calls) == 1:
+                    # First external ping fails due to transient network drop
+                    return {"ready": False, "error": "Connection timed out"}
+                else:
+                    # Retry succeeds!
+                    return {"ready": True, "mode": "PUBLIC_READY"}
+            elif mode == "LOCAL_READY":
+                # Local check confirms server is completely intact
+                return {"ready": True, "mode": "LOCAL_READY"}
+            return {"ready": True}
+
+        interrupted = False
+
+        def mock_sleep(seconds):
+            nonlocal interrupted
+            if len(check_calls) >= 3 and not interrupted:
+                interrupted = True
+                raise KeyboardInterrupt("Stop supervisor test loop")
+
+        with patch("scripts.home_pilot.start", return_value=0), \
+             patch("scripts.home_pilot.is_process_alive_and_matched", return_value=True), \
+             patch("scripts.home_pilot.check_ready", side_effect=mock_check_ready), \
+             patch("scripts.home_pilot.stop", return_value=0), \
+             patch("time.sleep", side_effect=mock_sleep):
+
+            code = home_pilot.supervisor(with_tunnel=True, receipt_path=str(self.test_receipt_file))
+            self.assertEqual(code, 0, "Supervisor should recover cleanly without exiting with error code 1")
+            # Verify that transient retry pattern occurred:
+            # Call 1: initial check_ready(PUBLIC_READY, timeout=10.0) -> False
+            # Call 2: local verification check_ready(LOCAL_READY, timeout=2.0) -> True
+            # Call 3: external retry check_ready(PUBLIC_READY, timeout=12.0) -> True
+            self.assertEqual(check_calls[0][0], "PUBLIC_READY")
+            self.assertEqual(check_calls[0][1], 10.0)
+            self.assertEqual(check_calls[1][0], "LOCAL_READY")
+            self.assertEqual(check_calls[2][0], "PUBLIC_READY")
+            self.assertEqual(check_calls[2][1], 12.0)
 
 
 if __name__ == "__main__":
