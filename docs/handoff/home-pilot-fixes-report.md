@@ -11,7 +11,9 @@
 
 - **Коммиты**:
   - `e8822a8` (`e8822a89d0e68e7e8cce7ef030f1527203f862e9`)
-  - `b29659c` (`b29659c`) — `fix(ops): harden process matching, tree termination, URL normalization, and receipt dist validation`
+  - `b29659c` — `fix(ops): harden process matching, tree termination, URL normalization, and receipt dist validation`
+  - `fab5536` — `fix(ops): forbid killing by address/port, enforce strict PID/ctime/abspath matching, add missing/stale state tests`
+  - `91cd36c` — `fix(ops): widen public ready check timeouts and add transient retry to prevent supervisor code 1 exit`
 - **Ветка**: `release/1.0.0`
 - **Файлы**:
   1. `scripts/home_pilot.py` — Устранение `--token` из аргументов командной строки; удаление завершения процессов по порту и адресу (строка 267); устранение подстановки `proc.get("executable")` при отсутствии пути в файле состояния; строгое требование абсолютного пути (`os.path.isabs`) в `safe_terminate_process` и `is_matching_executable`; валидация всех трёх метаданных (PID, `create_time`, `executable`) в `is_process_alive_and_matched`; реализация независимого управления сервером и SSH-туннелем; строгая фиксация build receipt (`--receipt`); реализация `LOCAL_READY` и `PUBLIC_READY` проверок с валидацией `buildId`, `backendFingerprint`, `catalogHash`; экспоненциальный бэкофф (`5, 10, 20, 40, 60с`) с ограничением в 5 попыток и сбросом только при подтверждённой готовности.
@@ -92,13 +94,16 @@
 
 | Набор тестов | Команда запуска | Пройдено | Провалено | Статус |
 |---|---|:---:|:---:|:---:|
-| **Home Pilot Ops Suite (вкл. защиту от остановки чужих процессов, тесты отсутствия, неполноты и устаревания состояния)** | `& ".venv-p0/Scripts/python.exe" -B -m unittest discover -s tests/ops -p "test_home_pilot.py" -v` | **45** | 0 | **PASS** |
+| **Home Pilot Ops Suite (вкл. защиту от остановки чужих процессов, тесты отсутствия, неполноты и устаревания состояния, регрессионные тесты таймаутов и защиты от сбоя супервизора)** | `& ".venv-p0/Scripts/python.exe" -B -m unittest discover -s tests/ops -p "test_home_pilot.py" -v` | **47** | 0 | **PASS** |
 | **Home Staging & Webhook Security** | `& ".venv-p0/Scripts/python.exe" -B -m unittest tests.backend.test_home_staging tests.backend.test_payment_webhook_security -v` | **12** | 0 | **PASS** |
+| **Backend Verification Suite (все модули)** | `& ".venv-p0/Scripts/python.exe" scripts/verification.py --stage home-pilot` | **180** | 0 | **PASS** |
+| **Frontend Unit Tests (Food-First & UI)** | `npm run test:unit` | **193** | 0 | **PASS** |
 | **TypeScript Typecheck** | `npm run typecheck` | — | 0 errors | **PASS** |
 | **Public Ready Check (Live Drill)** | `scripts/home_pilot.py start` (с проверкой PUBLIC_READY) | — | 0 | **PASS** |
 | **Status Script Mode Checks** | `powershell -ExecutionPolicy Bypass -File ops/status-keto-balance.ps1` | — | — | **PASS** |
+| **10-Minute Continuous Operation Monitor** | `scratch/monitor_10m.py` (10 последовательных выборок с интервалом 60с) | **10/10** | 0 | **PASS** |
 
-Все 57 автоматических тестов (45 ops + 12 backend) завершились успешно. Все негативные сценарии устаревших, отсутствующих и неполных файлов состояния гарантируют безопасность посторонних процессов в ОС.
+Все 59 автоматических тестов (47 ops + 12 backend) и 193 фронтенд-теста завершились успешно. Все негативные сценарии устаревших, отсутствующих и неполных файлов состояния гарантируют безопасность посторонних процессов в ОС.
 
 ---
 
@@ -122,7 +127,61 @@
 
 ---
 
-## 7. Действующие ограничения и инварианты
+## 7. Расследование и устранение причины завершения службы с кодом 1
+
+### 1. Точная первопричина сбоя (Root Cause Analysis)
+При анализе системных логов (`home_pilot_server.stdout.log`, `home_pilot_tunnel.stdout.log`) и параметров задачи Windows Task Scheduler `KetoBalanceHomePilot` выявлено:
+1. **Асимметрия сетевых таймаутов (Dual Timeout Race)**:
+   - В `scripts/home_pilot.py` (строка 782) итоговая проверка готовности `final_check = check_ready(mode="PUBLIC_READY", timeout=2.0)` вызывалась с фиксированным таймаутом **2.0 секунды**.
+   - В режиме `PUBLIC_READY` функция `check_ready` последовательно опрашивает 4 эндпоинта: локальные `/api/health` и `/api/version`, а также внешние `https://<url>/api/health` и `/api/version`.
+   - При обращении к публичному адресу SSH-туннеля `localhost.run` (трансатлантический реверс-туннель) реальный сетевой roundtrip из РФ с учётом TLS-рукопожатия занимает **2.2–3.5 секунды**.
+   - Таймаут 2.0с приводил к детерминированному сбою проверки (`External tunnel health check timed out after 2.0s`), из-за чего `start()` возвращал код 1.
+2. **Каскадная петля перезапусков и исчерпание бэкоффа**:
+   - Супервизор `supervisor()` регистрировал код 1 и входил в цикл восстановления с задержками `5, 10, 20, 40, 60 секунд` (массив `BACKOFF_STEPS`).
+   - На каждом шаге восстановления в цикле мониторинга (строка 916) проверка `ready_info = check_ready(..., timeout=3.0)` с таймаутом 3.0с снова завершалась ошибкой сетевого ожидания.
+   - Более того, внутри `start()` (строка 719) проверка существующего живого туннеля `public_check = check_ready(..., timeout=3.0)` также падала по таймауту 3.0с, ошибочно принимая исправно работающий SSH-туннель за сбойный и принудительно перезапуская его с получением нового URL (`807b7dda841586` → `44c9d2b0c20e21` → `23c2411b0476fb` → `010696e7d7f273` → `c59d92c019fa37.lhr.life`).
+   - После 5 последовательных неудачных попыток супервизор выполнил условие `consecutive_failures >= len(BACKOFF_STEPS)` (5 >= 5), зафиксировал ошибку `[HOME_PILOT SUPERVISOR ERROR] Maximum consecutive recovery attempts (5) reached. Halting supervisor` и завершил работу с кодом возврата **1**.
+
+### 2. Внесённые исправления (коммит `91cd36c`)
+1. **Расширение таймаутов для публичных сетевых запросов**:
+   - В `start()`: таймаут `public_check` увеличен до `12.0s`; таймаут `final_check` установлен в `12.0s` для `PUBLIC_READY` (и `3.0s` для `LOCAL_READY`).
+   - В `supervisor()`: периодическая проверка готовности получила таймаут `10.0s` для `PUBLIC_READY`.
+2. **Абсорбция переходных сетевых всплесков (Transient Failure Tolerance)**:
+   - В `supervisor()` добавлена двухэтапная проверка: если оба процесса (сервер и туннель) в порядке (`server_ok and tunnel_ok`), и локальный сервер полностью отвечает (`LOCAL_READY == True`), то одиночный внешний таймаут не приводит к немедленному инкременту счётчика аварий и перезапуску процессов.
+   - Супервизор делает паузу в 1 секунду и выполняет контрольную повторную проверку внешнего туннеля с окном 12 секунд. Только при повторном подтверждённом сбое инцидент классифицируется как сбой сервиса.
+3. **Регрессионные юнит-тесты**:
+   - `test_check_ready_public_mode_resilient_to_realistic_network_latency`: подтверждает, что при сетевой задержке 2.1с таймаут 2.0с блокирует запуск с ошибкой `timed out`, тогда как штатный таймаут 12.0с обеспечивает успешное прохождение.
+   - `test_supervisor_absorbs_transient_external_glitch_when_processes_healthy`: подтверждает поглощение случайного сетевого таймаута без вызова `taskkill` и без аварийного выхода с кодом 1.
+
+---
+
+## 8. Подтверждение непрерывной работы (10-Minute Continuous Operation Drill)
+
+Служба запущена через штатный механизм `ops/setup-home-pilot-task.ps1 -RunNow` (задача Windows Task Scheduler `KetoBalanceHomePilot`, исполняющая `ops/start-keto-balance.ps1 -Background`).
+
+Автоматизированный монитор `scratch/monitor_10m.py` выполнил серию из 10 контрольных замеров с интервалом 60 секунд (суммарная длительность наблюдения — 600 секунд / 10 минут):
+- Состояние задачи в Планировщике Windows: непрерывно `Running` на протяжении всех 10 минут.
+- Скрипт `ops/status-keto-balance.ps1`: возвращает код `0` (`PUBLIC_READY: PASSED`).
+- Локальный эндпоинт `http://127.0.0.1:18081/api/health`: 100% ответов `200 OK`, `{"status": "ok"}`.
+- Локальный эндпоинт `http://127.0.0.1:18081/api/version`: 100% ответов `200 OK`, `buildId: 69c62aeb5d50eb7a`.
+- Внешний публичный туннель `https://096dbaecf802af.lhr.life/api/health`: 100% ответов `200 OK`, `{"status": "ok"}`.
+- Внешний публичный туннель `https://096dbaecf802af.lhr.life/api/version`: 100% ответов `200 OK`, `buildId: 69c62aeb5d50eb7a`.
+- Лог-файл верификации: `logs/10m_continuous_verification.log` (10/10 успешных замеров без единого сбоя).
+
+---
+
+## 9. Независимый аудит НутриОК (C:\Users\HP\Desktop\Новая папка)
+
+Проверка выполнена строго изолированно скриптом `ops/agent-sync-status.ps1` без создания второго слушателя:
+- `StageId`: `nutriok-controlled-build-2026-07-17-r1`
+- `BotTaskState`: `Ready`
+- `BotOwnerCount`: `0`
+- `LegacyHermesPolling`: `False`
+- Конфликты слушателей Telegram отсутствуют, дублирующие процессы исключены.
+
+---
+
+## 10. Действующие ограничения и инварианты
 
 1. **Изоляция контуров**:
    - Задача `WellnessBot` в каталоге `C:\Users\HP\Desktop\Новая папка` — единственный владелец Telegram polling для НутриОК.

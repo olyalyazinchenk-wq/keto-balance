@@ -2,7 +2,7 @@
 
 > **Единая точка оперативной правды для всех агентов и разработчиков.**
 > Читать первым при входе в сессию. Обновлять при завершении этапа.
-> **Последнее обновление**: 2026-11-02 04:45 MSK · Antigravity (Strict safe termination by PID, create_time and full absolute executable path; removed port-only termination; eliminated active-process path fallback; 57 tests passed: 45 ops + 12 backend).
+> **Последнее обновление**: 2026-11-02 06:25 MSK · Antigravity (Fixed background exit code 1 root cause by widening public timeouts and absorbing transient internet latency; verified 10-minute continuous run with 10/10 samples; 47 ops + 12 backend tests PASS; 180 verification tests PASS; NutriOK single polling owner preserved).
 
 ---
 
@@ -11,16 +11,16 @@
 - **Проект**: Keto-Balance (Премиум Telegram Mini App + Бот).
 - **Канонический путь**: `C:\Users\HP\Keto-balance`.
 - **Ветка релиза**: `release/1.0.0` (создана от `design/argon-ui-import`).
-- **HEAD коммит**: `b29659c` — `fix(ops): harden process matching, tree termination, URL normalization, and receipt dist validation`.
+- **HEAD коммит**: `91cd36c` — `fix(ops): widen public ready check timeouts and add transient retry to prevent supervisor code 1 exit`.
 - **Текущий этап**: **Home Pilot — защищённый домашний показ для Ольги (Telegram ID 1084557944)**.
 - **Инфраструктура показа**:
   - Изолированный порт сервера: строго **`127.0.0.1:18081`** (порты 8000, 4387, 8090, 10808, 10809 не затрагиваются).
-  - Внешнее подключение: SSH-туннель `localhost.run` с верификацией SSH host key (`StrictHostKeyChecking=yes`).
-  - Персональное меню Telegram: кнопка «🥑 Открыть Кето Баланс» обновляется строго в чате Ольги (`chat_id=1084557944`).
-  - Автозапуск и защита от сбоев: задача Windows Task Scheduler `KetoBalanceHomePilot` (`ops/setup-home-pilot-task.ps1`).
+  - Внешнее подключение: SSH-туннель `localhost.run` (`https://096dbaecf802af.lhr.life`).
+  - Персональное меню Telegram: кнопка «🥑 Открыть Кето Баланс» обновлена в чате Ольги (`chat_id=1084557944`).
+  - Автозапуск и защита от сбоев: задача Windows Task Scheduler `KetoBalanceHomePilot` в статусе **Running**.
 - **Смежный контур НутриОК** (`C:\Users\HP\Desktop\Новая папка`):
   - Единственный легитимный владелец Telegram updates — Windows Scheduled Task `WellnessBot`.
-  - Запуск второго слушателя категорически запрещён.
+  - Запуск второго слушателя исключён (`BotOwnerCount: 0` активных дублей, `LegacyHermesPolling: False`).
 
 ---
 
@@ -30,8 +30,10 @@
 
 | Компонент / Проверка | Команда | Результат | Статус |
 |---|---|---|:---:|
-| **Home Pilot Ops Suite** | `unittest discover -s tests/ops -p test_home_pilot.py` | **45 passed, 0 failed** (безопасность токена, независимое восстановление, полный абсолютный путь процесса, 8 негативных тестов, защита от остановки чужих процессов, 11 тестов отсутствующего/неполного/устаревшего состояния, бэкофф) | **PASS** |
+| **Home Pilot Ops Suite** | `unittest discover -s tests/ops -p test_home_pilot.py` | **47 passed, 0 failed** (безопасность токена, независимое восстановление, полный абсолютный путь процесса, 8 негативных тестов, защита от остановки чужих процессов, 11 тестов состояний, регрессия таймаутов 2.0с vs 12.0с, поглощение сетевых задержек) | **PASS** |
 | **Home Staging & Webhook Security** | `unittest test_home_staging test_payment_webhook_security` | **12 passed, 0 failed** (авторизация Ольги 1084557944, persistent DB, receipt alignment, безопасные платежи) | **PASS** |
+| **10-Minute Continuous Operation Monitor** | `scratch/monitor_10m.py` | **10/10 замеров (600с) успешны**: Task Scheduler непрерывно `Running`, локальные и внешние эндпоинты 100% 200 OK | **PASS** |
+| **Unified Verification Gate** | `scripts/verification.py --stage home-pilot` | **180 backend + 47 ops + 193 frontend passed**, isolated receipt generated | **PASS** |
 | **Recovery Drill (Live)** | `ops/status-keto-balance.ps1` | Сервер PID 18932 сохранён при падении туннеля, туннель восстановлен (PID 23424), кнопка Ольги обновлена | **PASS** |
 | **Backend Test Suite** | `python scripts/run_backend_tests.py` | **168 passed, 0 failed, 0 errors, 0 skipped** across all backend modules | **PASS** |
 | **Subscription & Billing** | `unittest test_subscription_*.py` | **62 passed, 0 failed** (атомарность, идемпотентность, CAS, продление) | **PASS** |
