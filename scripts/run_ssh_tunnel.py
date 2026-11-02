@@ -153,7 +153,8 @@ def get_bot_token() -> str:
             return line.split("=", 1)[1].strip("\"' ")
     return ""
 
-def update_telegram_menu_button(url: str, chat_id: int = 1084557944):
+def update_telegram_menu_button(url: str, chat_id: int = 0):
+    """chat_id=0 -> обновить кнопку по умолчанию (для всех пользователей)."""
     token = get_bot_token()
     if not token:
         print("[TUNNEL] Токен KETO_BOT_TOKEN не найден, пропуск обновления кнопки меню.", flush=True)
@@ -161,14 +162,16 @@ def update_telegram_menu_button(url: str, chat_id: int = 1084557944):
     clean_url = url.strip().rstrip("/")
     try:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({"https": "http://127.0.0.1:10809"}))
-        payload = json.dumps({
-            "chat_id": chat_id,
+        payload_data: dict = {
             "menu_button": {
                 "type": "web_app",
                 "text": "🥑 Открыть Кето Баланс",
                 "web_app": {"url": clean_url}
             }
-        }).encode("utf-8")
+        }
+        if chat_id:
+            payload_data["chat_id"] = chat_id
+        payload = json.dumps(payload_data).encode("utf-8")
         req = urllib.request.Request(
             f"https://api.telegram.org/bot{token}/setChatMenuButton",
             data=payload,
@@ -181,7 +184,8 @@ def update_telegram_menu_button(url: str, chat_id: int = 1084557944):
         with resp:
             data = json.loads(resp.read().decode())
             if data.get("ok"):
-                print(f"[TUNNEL] Кнопка меню в Telegram успешно обновлена для chat_id={chat_id}: {clean_url}", flush=True)
+                target = f"chat_id={chat_id}" if chat_id else "default (все пользователи)"
+                print(f"[TUNNEL] Кнопка меню в Telegram успешно обновлена для {target}: {clean_url}", flush=True)
             else:
                 print(f"[TUNNEL WARNING] setChatMenuButton вернул: {data}", flush=True)
     except Exception as e:
@@ -288,6 +292,8 @@ def run(port: int = 18081, chat_id: int = 1084557944):
                         print(f"==========================================\n", flush=True)
                         update_env_url(active_url)
                         update_telegram_menu_button(active_url, chat_id=chat_id)
+                        # кнопка по умолчанию — чтобы свежий адрес видели все пользователи бота
+                        update_telegram_menu_button(active_url)
                         
                         if keepalive_thread and keepalive_thread.is_alive():
                             stop_keepalive.set()
