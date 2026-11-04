@@ -74,9 +74,11 @@ ssh root@<NEW_SERVER_IP>
 ### Шаг 4: Настройка конфигурации окружения
 Создайте боевой файл конфигурации:
 ```bash
-cp .env.production.example .env.production
-nano .env.production
+cp .env.production.example .env
+nano .env
 ```
+*(Или сохраните как `.env.production` и используйте `docker compose --env-file .env.production up -d --build`).*
+
 Заполните переменные:
 ```env
 APP_STAGE=production
@@ -113,8 +115,9 @@ TELEGRAM_WEBHOOK_SECRET_TOKEN=strong_random_token_here
 ```bash
 cd /opt/keto-balance
 docker compose up -d --build
+# Или: docker compose --env-file .env.production up -d --build
 ```
-Caddy автоматически обнаружит домен из `.env.production` и за 15–30 секунд выпустит доверенный бесплатный SSL-сертификат Let's Encrypt.
+Caddy автоматически обнаружит домен из конфигурации и за 15–30 секунд выпустит доверенный бесплатный SSL-сертификат Let's Encrypt.
 
 ### Шаг 8: Проверка работоспособности
 ```bash

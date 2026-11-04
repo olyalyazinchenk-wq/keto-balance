@@ -54,9 +54,11 @@ class CloudRuEvolutionClient:
         self,
         auth_url: Optional[str] = None,
         project_id: Optional[str] = None,
+        project_name: Optional[str] = None,
         key_id: Optional[str] = None,
         secret_key: Optional[str] = None,
         user_domain_name: Optional[str] = None,
+        project_domain_name: Optional[str] = None,
         token: Optional[str] = None,
         region: Optional[str] = None,
         http_requester: Optional[Callable[[str, str, Optional[Dict[str, str]], Optional[bytes]], Tuple[int, Dict[str, str], Any]]] = None,
@@ -64,9 +66,11 @@ class CloudRuEvolutionClient:
     ):
         self.auth_url = (auth_url or os.getenv("CLOUDRU_AUTH_URL") or os.getenv("OS_AUTH_URL") or "").rstrip("/")
         self.project_id = project_id or os.getenv("CLOUDRU_PROJECT_ID") or os.getenv("OS_PROJECT_ID") or ""
+        self.project_name = project_name or os.getenv("CLOUDRU_PROJECT_NAME") or os.getenv("OS_PROJECT_NAME") or ""
         self.key_id = key_id or os.getenv("CLOUDRU_KEY_ID") or os.getenv("OS_USERNAME") or ""
         self.secret_key = secret_key or os.getenv("CLOUDRU_SECRET_KEY") or os.getenv("OS_PASSWORD") or ""
         self.user_domain_name = user_domain_name or os.getenv("CLOUDRU_USER_DOMAIN_NAME") or os.getenv("OS_USER_DOMAIN_NAME") or "Default"
+        self.project_domain_name = project_domain_name or os.getenv("CLOUDRU_PROJECT_DOMAIN_NAME") or os.getenv("OS_PROJECT_DOMAIN_NAME") or "Default"
         self.token = token or os.getenv("CLOUDRU_TOKEN") or os.getenv("OS_AUTH_TOKEN") or os.getenv("OS_TOKEN") or ""
         self.region = region or os.getenv("CLOUDRU_REGION_NAME") or os.getenv("OS_REGION_NAME") or "ru-1"
         self.http_requester = http_requester
@@ -89,7 +93,7 @@ class CloudRuEvolutionClient:
                 "Отсутствуют учётные данные Cloud.ru API. "
                 "Задайте CLOUDRU_KEY_ID и CLOUDRU_SECRET_KEY (или OS_USERNAME и OS_PASSWORD)."
             )
-        if not self.project_id and not self.token:
+        if not self.project_id and not self.project_name and not self.token:
             raise CloudRuApiError(
                 "Отсутствует идентификатор проекта Cloud.ru. "
                 "Задайте CLOUDRU_PROJECT_ID или OS_PROJECT_ID."
@@ -183,6 +187,13 @@ class CloudRuEvolutionClient:
             auth_body["auth"]["scope"] = {
                 "project": {"id": self.project_id}
             }
+        elif self.project_name:
+            auth_body["auth"]["scope"] = {
+                "project": {
+                    "name": self.project_name,
+                    "domain": {"name": self.project_domain_name},
+                }
+            }
 
         body_bytes = json.dumps(auth_body).encode("utf-8")
         headers = {"Content-Type": "application/json"}
@@ -205,13 +216,25 @@ class CloudRuEvolutionClient:
         for service in catalog:
             s_type = service.get("type")
             endpoints = service.get("endpoints", [])
+            chosen_url = None
             for ep in endpoints:
                 if ep.get("interface") == "public":
-                    if self.region and ep.get("region") == self.region:
-                        self.endpoints[s_type] = ep.get("url", "").rstrip("/")
+                    ep_region = ep.get("region_id") or ep.get("region")
+                    raw_url = ep.get("url", "").rstrip("/")
+                    if self.project_id:
+                        raw_url = (
+                            raw_url.replace("%(tenant_id)s", self.project_id)
+                            .replace("$(tenant_id)s", self.project_id)
+                            .replace("%(project_id)s", self.project_id)
+                            .replace("$(project_id)s", self.project_id)
+                        )
+                    if self.region and ep_region == self.region:
+                        chosen_url = raw_url
                         break
-                    elif s_type not in self.endpoints:
-                        self.endpoints[s_type] = ep.get("url", "").rstrip("/")
+                    elif chosen_url is None:
+                        chosen_url = raw_url
+            if chosen_url:
+                self.endpoints[s_type] = chosen_url
 
         return self.token
 
@@ -243,9 +266,18 @@ class CloudRuEvolutionClient:
             })
         return results
 
+    def _get_volume_url(self) -> Optional[str]:
+        return (
+            self.endpoints.get("block-storage")
+            or self.endpoints.get("volumev3")
+            or self.endpoints.get("volumev2")
+            or self.endpoints.get("volume")
+            or self.endpoints.get("block-store")
+        )
+
     def list_volumes(self) -> List[Dict[str, Any]]:
         self.authenticate()
-        vol_url = self.endpoints.get("volumev3") or self.endpoints.get("volumev2") or self.endpoints.get("volume")
+        vol_url = self._get_volume_url()
         if not vol_url:
             return []
         url = f"{vol_url}/volumes/detail"
@@ -287,7 +319,7 @@ class CloudRuEvolutionClient:
 
     def list_snapshots(self) -> List[Dict[str, Any]]:
         self.authenticate()
-        vol_url = self.endpoints.get("volumev3") or self.endpoints.get("volumev2") or self.endpoints.get("volume")
+        vol_url = self._get_volume_url()
         if not vol_url:
             return []
         url = f"{vol_url}/snapshots/detail"
@@ -306,9 +338,38 @@ class CloudRuEvolutionClient:
             })
         return results
 
+    def list_images(self) -> List[Dict[str, Any]]:
+        self.authenticate()
+        image_url = self.endpoints.get("image")
+        if not image_url:
+            return []
+        url = f"{image_url}/v2/images?visibility=private"
+        if self.project_id:
+            url += f"&owner={self.project_id}"
+        try:
+            data = self._get_authed(url)
+            images = data.get("images", []) if isinstance(data, dict) else []
+            results = []
+            for img in images:
+                bytes_used = img.get("size") or img.get("virtual_size") or 0
+                size_gb = max(1, round(bytes_used / (1024 ** 3), 2)) if bytes_used else 0
+                results.append({
+                    "id": img.get("id"),
+                    "name": img.get("name") or "",
+                    "status": img.get("status"),
+                    "size_gb": size_gb,
+                    "image_type": img.get("image_type", "snapshot"),
+                    "cost_rub_month": self.estimate_snapshot_cost(size_gb) if size_gb else 50,
+                })
+            return results
+        except CloudRuApiError as e:
+            if "HTTP 404" in str(e):
+                return []
+            raise
+
     def list_backups(self) -> List[Dict[str, Any]]:
         self.authenticate()
-        vol_url = self.endpoints.get("volumev3") or self.endpoints.get("volumev2") or self.endpoints.get("volume")
+        vol_url = self._get_volume_url()
         if not vol_url:
             return []
         try:
@@ -326,12 +387,14 @@ class CloudRuEvolutionClient:
                     "cost_rub_month": self.estimate_snapshot_cost(size_gb),
                 })
             return results
-        except Exception:
-            return []
+        except CloudRuApiError as e:
+            if "HTTP 404" in str(e):
+                return []
+            raise
 
     def list_buckets(self) -> List[Dict[str, Any]]:
         self.authenticate()
-        swift_url = self.endpoints.get("object-store")
+        swift_url = self.endpoints.get("object-store") or self.endpoints.get("s3")
         if not swift_url:
             return []
         try:
@@ -351,8 +414,10 @@ class CloudRuEvolutionClient:
                     "cost_rub_month": max(10, int(size_gb * 2)),
                 })
             return results
-        except Exception:
-            return []
+        except CloudRuApiError as e:
+            if "HTTP 404" in str(e):
+                return []
+            raise
 
     def get_full_inventory(self) -> Dict[str, Any]:
         self.authenticate()
@@ -360,6 +425,7 @@ class CloudRuEvolutionClient:
         volumes = self.list_volumes()
         fips = self.list_floating_ips()
         snapshots = self.list_snapshots()
+        images = self.list_images()
         backups = self.list_backups()
         buckets = self.list_buckets()
 
@@ -368,17 +434,27 @@ class CloudRuEvolutionClient:
             sum(v.get("cost_rub_month", 0) for v in volumes) +
             sum(f.get("cost_rub_month", 0) for f in fips) +
             sum(s.get("cost_rub_month", 0) for s in snapshots) +
+            sum(im.get("cost_rub_month", 0) for im in images) +
             sum(b.get("cost_rub_month", 0) for b in backups) +
             sum(bk.get("cost_rub_month", 0) for bk in buckets)
         )
 
-        total_count = len(instances) + len(volumes) + len(fips) + len(snapshots) + len(backups) + len(buckets)
+        total_count = (
+            len(instances)
+            + len(volumes)
+            + len(fips)
+            + len(snapshots)
+            + len(images)
+            + len(backups)
+            + len(buckets)
+        )
 
         return {
             "instances": instances,
             "volumes": volumes,
             "floating_ips": fips,
             "snapshots": snapshots,
+            "images": images,
             "backups": backups,
             "buckets": buckets,
             "total_resources_count": total_count,
@@ -536,6 +612,7 @@ def execute_teardown_plan(
         sum(v.get("cost_rub_month", 0) for v in inventory.get("volumes", [])) +
         sum(f.get("cost_rub_month", 0) for f in inventory.get("floating_ips", [])) +
         sum(s.get("cost_rub_month", 0) for s in inventory.get("snapshots", [])) +
+        sum(im.get("cost_rub_month", 0) for im in inventory.get("images", [])) +
         sum(b.get("cost_rub_month", 0) for b in inventory.get("backups", [])) +
         sum(bk.get("cost_rub_month", 0) for bk in inventory.get("buckets", []))
     )
@@ -550,6 +627,8 @@ def execute_teardown_plan(
             actions_planned.append(f"Release floating IP {fip.get('id')} ({fip.get('ip')})")
         for snap in inventory.get("snapshots", []):
             actions_planned.append(f"Delete snapshot {snap.get('id')} ({snap.get('name')})")
+        for img in inventory.get("images", []):
+            actions_planned.append(f"Delete image {img.get('id')} ({img.get('name')})")
         for b in inventory.get("backups", []):
             actions_planned.append(f"Delete backup {b.get('id')} ({b.get('name')})")
         for bk in inventory.get("buckets", []):
@@ -566,6 +645,7 @@ def execute_teardown_plan(
                 "volumes": len(inventory.get("volumes", [])),
                 "floating_ips": len(inventory.get("floating_ips", [])),
                 "snapshots": len(inventory.get("snapshots", [])),
+                "images": len(inventory.get("images", [])),
                 "backups": len(inventory.get("backups", [])),
                 "buckets": len(inventory.get("buckets", [])),
             },
@@ -605,6 +685,10 @@ def execute_teardown_plan(
         executor("snapshot", snap["id"])
         deleted_log.append(f"Deleted snapshot: {snap['id']}")
 
+    for img in inventory.get("images", []):
+        executor("image", img["id"])
+        deleted_log.append(f"Deleted image: {img['id']}")
+
     for b in inventory.get("backups", []):
         executor("backup", b["id"])
         deleted_log.append(f"Deleted backup: {b['id']}")
@@ -622,6 +706,7 @@ def execute_teardown_plan(
             len(residual.get("volumes", [])) +
             len(residual.get("floating_ips", [])) +
             len(residual.get("snapshots", [])) +
+            len(residual.get("images", [])) +
             len(residual.get("backups", [])) +
             len(residual.get("buckets", []))
         )

@@ -21,11 +21,13 @@
 
 ## 2. Подготовка перед запуском (Pre-flight)
 
-### 2.1. Создание конфигурации `.env.production`
+### 2.1. Создание конфигурации `.env`
 На сервере в корневой директории скопируйте шаблон:
 ```bash
-cp .env.production.example .env.production
+cp .env.production.example .env
 ```
+*(Также можно сохранить как `.env.production` и передавать флаг `--env-file .env.production` в Docker Compose).*
+
 Заполните параметры:
 - `WEBAPP_DOMAIN` — домен для HTTPS (например, `ketobalans.ru` или `app.ketobalans.ru`).
 - `TELEGRAM_BOT_TOKEN` — токен бота от `@BotFather`.
@@ -43,7 +45,7 @@ cp .env.production.example .env.production
 python3 scripts/check_telegram_access.py
 ```
 - Если результат `[OK]` (`TELEGRAM_DIRECT_OK`): сервер свободно связывается с Telegram.
-- Если результат `[WARNING]` (`TELEGRAM_BLOCKED_OR_UNREACHABLE`): укажите прокси в `.env.production`:
+- Если результат `[WARNING]` (`TELEGRAM_BLOCKED_OR_UNREACHABLE`): укажите прокси в `.env` (или `.env.production`):
   ```env
   KETO_BOT_PROXY=http://proxy_user:proxy_password@proxy_host:proxy_port
   ```
@@ -56,6 +58,7 @@ python3 scripts/check_telegram_access.py
 
 ```bash
 docker compose up -d --build
+# Или при явном файле окружения: docker compose --env-file .env.production up -d --build
 ```
 
 Команда автоматически:

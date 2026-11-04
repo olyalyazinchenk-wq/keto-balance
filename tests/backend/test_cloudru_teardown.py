@@ -453,6 +453,154 @@ class TestCloudRuTeardown(unittest.TestCase):
             verify_backup_readiness(bad_sqlite_backup, key_file=key_file)
         self.assertTrue("PRAGMA integrity_check" in str(ctx.exception) or "не содержит пользователей" in str(ctx.exception))
 
+    def test_keystone_region_id_matching_and_template_interpolation(self):
+        """Keystone v3 region_id must match client region even if other regions come first, and %(tenant_id)s must be replaced."""
+        def mock_req(method, url, headers=None, body=None):
+            return (
+                201,
+                {"x-subject-token": "tok_region_test"},
+                {
+                    "token": {
+                        "catalog": [
+                            {
+                                "type": "compute",
+                                "endpoints": [
+                                    {"interface": "public", "region_id": "ru-2", "url": "https://compute.ru-2.cloud.ru/v2.1/%(tenant_id)s"},
+                                    {"interface": "public", "region_id": "ru-1", "url": "https://compute.ru-1.cloud.ru/v2.1/%(tenant_id)s"},
+                                ],
+                            }
+                        ]
+                    }
+                },
+            )
+
+        client = CloudRuEvolutionClient(
+            auth_url="https://iam.ru-1.cloud.ru/v3",
+            project_id="proj_alpha",
+            token="initial_tok",
+            region="ru-1",
+            http_requester=mock_req,
+        )
+        client.authenticate()
+        self.assertEqual(
+            client.endpoints.get("compute"),
+            "https://compute.ru-1.cloud.ru/v2.1/proj_alpha",
+            "Must select ru-1 endpoint matching region_id and interpolate project_id"
+        )
+
+    def test_block_storage_service_type_and_glance_images(self):
+        """Official OpenStack type 'block-storage' and Glance images must be discovered."""
+        def mock_req(method, url, headers=None, body=None):
+            if "auth/tokens" in url:
+                return (
+                    201,
+                    {"x-subject-token": "tok_bs"},
+                    {
+                        "token": {
+                            "catalog": [
+                                {
+                                    "type": "block-storage",
+                                    "endpoints": [{"interface": "public", "region_id": "ru-1", "url": "https://volume.ru-1.cloud.ru/v3"}],
+                                },
+                                {
+                                    "type": "image",
+                                    "endpoints": [{"interface": "public", "region_id": "ru-1", "url": "https://image.ru-1.cloud.ru"}],
+                                },
+                            ]
+                        }
+                    },
+                )
+            elif "volumes/detail" in url:
+                return (200, {}, {"volumes": [{"id": "vol-bs-1", "size": 25, "status": "available"}]})
+            elif "images" in url:
+                return (200, {}, {"images": [{"id": "img-1", "name": "vm-backup-snap", "size": 10737418240, "status": "active"}]})
+            return (200, {}, {})
+
+        client = CloudRuEvolutionClient(
+            auth_url="https://iam.ru-1.cloud.ru/v3",
+            project_id="proj-123",
+            token="tok",
+            region="ru-1",
+            http_requester=mock_req,
+        )
+        volumes = client.list_volumes()
+        self.assertEqual(len(volumes), 1)
+        self.assertEqual(volumes[0]["id"], "vol-bs-1")
+
+        images = client.list_images()
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]["id"], "img-1")
+        self.assertEqual(images[0]["size_gb"], 10.0)
+
+    def test_backups_and_buckets_raise_on_auth_or_network_error(self):
+        """list_backups and list_buckets must NOT swallow 403 or network errors into fake 0 resources."""
+        def mock_fail_req(method, url, headers=None, body=None):
+            if "auth/tokens" in url:
+                return (
+                    201,
+                    {"x-subject-token": "tok"},
+                    {
+                        "token": {
+                            "catalog": [
+                                {"type": "volumev3", "endpoints": [{"interface": "public", "region": "ru-1", "url": "https://vol.cloud.ru"}]},
+                                {"type": "object-store", "endpoints": [{"interface": "public", "region": "ru-1", "url": "https://s3.cloud.ru"}]},
+                            ]
+                        }
+                    },
+                )
+            raise CloudRuApiError(f"HTTP 403 Forbidden on {url}")
+
+        client = CloudRuEvolutionClient(
+            auth_url="https://iam.ru-1.cloud.ru/v3",
+            project_id="proj",
+            token="tok",
+            region="ru-1",
+            http_requester=mock_fail_req,
+        )
+        with self.assertRaises(CloudRuApiError):
+            client.list_backups()
+        with self.assertRaises(CloudRuApiError):
+            client.list_buckets()
+
+    def test_backups_and_buckets_empty_on_404_service_disabled(self):
+        """When a service returns 404 (disabled in deployment), list_backups and list_buckets safely return empty list."""
+        def mock_404_req(method, url, headers=None, body=None):
+            if "auth/tokens" in url:
+                return (
+                    201,
+                    {"x-subject-token": "tok"},
+                    {
+                        "token": {
+                            "catalog": [
+                                {"type": "volumev3", "endpoints": [{"interface": "public", "region": "ru-1", "url": "https://vol.cloud.ru"}]},
+                                {"type": "object-store", "endpoints": [{"interface": "public", "region": "ru-1", "url": "https://s3.cloud.ru"}]},
+                            ]
+                        }
+                    },
+                )
+            raise CloudRuApiError(f"HTTP 404 Not Found on {url}")
+
+        client = CloudRuEvolutionClient(
+            auth_url="https://iam.ru-1.cloud.ru/v3",
+            project_id="proj",
+            token="tok",
+            region="ru-1",
+            http_requester=mock_404_req,
+        )
+        self.assertEqual(client.list_backups(), [])
+        self.assertEqual(client.list_buckets(), [])
+
+    def test_execute_teardown_plan_accounts_for_remaining_images(self):
+        """Residual verification must fail zero_residual_confirmed if images remain."""
+        inv = {"images": [{"id": "img-1", "cost_rub_month": 50}]}
+        def mock_executor(kind, res_id):
+            pass
+        def mock_verifier():
+            return {"instances": [], "volumes": [], "floating_ips": [], "snapshots": [], "images": [{"id": "img-1"}], "backups": [], "buckets": []}
+
+        res = execute_teardown_plan(inv, dry_run=False, executor=mock_executor, verifier=mock_verifier)
+        self.assertFalse(res["zero_residual_confirmed"], "Must NOT confirm zero residual when image remains")
+
 
 if __name__ == "__main__":
     unittest.main()

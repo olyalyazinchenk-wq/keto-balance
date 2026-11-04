@@ -20,21 +20,7 @@ sys.path.insert(0, str(ROOT))
 from typing import Optional
 
 from bot.app_db import restore_database, get_settings
-from scripts.backup_db import resolve_encryption_key, SecurityError, LEGACY_BACKUP_SALT
-
-
-def derive_key(passphrase_or_key: str, salt: Optional[bytes] = None) -> bytes:
-    """Нормализует ключ или выводит 32-байтный base64-ключ для Fernet через PBKDF2."""
-    raw = passphrase_or_key.strip()
-    try:
-        decoded = base64.urlsafe_b64decode(raw)
-        if len(decoded) == 32:
-            return raw.encode("ascii")
-    except Exception:
-        pass
-    effective_salt = salt if salt is not None else LEGACY_BACKUP_SALT
-    derived = hashlib.pbkdf2_hmac("sha256", raw.encode("utf-8"), effective_salt, 100_000)
-    return base64.urlsafe_b64encode(derived)
+from scripts.backup_db import resolve_encryption_key, SecurityError, LEGACY_BACKUP_SALT, derive_key
 
 
 def compute_sha256(file_path: Path) -> str:
