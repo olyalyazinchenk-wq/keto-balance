@@ -43,16 +43,19 @@ def compute_sha256(file_path: Path) -> str:
 
 
 def verify_integrity(db_path: Path) -> bool:
+    conn = None
     try:
         conn = sqlite3.connect(str(db_path))
         cur = conn.cursor()
         cur.execute("PRAGMA integrity_check")
         rows = cur.fetchall()
-        conn.close()
         return len(rows) == 1 and rows[0][0] == "ok"
     except Exception as e:
         print(f"[ERROR] Integrity check failed: {e}", file=sys.stderr)
         return False
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def find_meta_file(backup_file: Path) -> Path:

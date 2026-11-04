@@ -47,18 +47,20 @@ def compute_sha256(file_path: Path) -> str:
 
 def count_db_stats(db_path: Path) -> dict:
     conn = sqlite3.connect(str(db_path))
-    cur = conn.cursor()
-    cur.execute("SELECT count(*) FROM sqlite_master WHERE type='table'")
-    table_count = cur.fetchone()[0]
-    stats = {"tables": table_count}
-    for tbl in ["users", "user_profiles", "orders", "subscriptions", "user_consents"]:
-        try:
-            cur.execute(f"SELECT count(*) FROM {tbl}")
-            stats[tbl] = cur.fetchone()[0]
-        except Exception:
-            stats[tbl] = 0
-    conn.close()
-    return stats
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT count(*) FROM sqlite_master WHERE type='table'")
+        table_count = cur.fetchone()[0]
+        stats = {"tables": table_count}
+        for tbl in ["users", "user_profiles", "orders", "subscriptions", "user_consents"]:
+            try:
+                cur.execute(f"SELECT count(*) FROM {tbl}")
+                stats[tbl] = cur.fetchone()[0]
+            except Exception:
+                stats[tbl] = 0
+        return stats
+    finally:
+        conn.close()
 
 
 class SecurityError(RuntimeError):
@@ -84,16 +86,18 @@ def resolve_encryption_key(
          видны всем пользователям в ps aux, Process Explorer и shell history.
        - В непродовом окружении: выводит предупреждение [SECURITY WARNING] в sys.stderr.
     """
-    if key_arg:
+    stripped_key_arg = key_arg.strip() if key_arg else ""
+    if stripped_key_arg:
         is_prod = False
-        try:
-            from bot.app_settings import get_settings as _get_settings
-            is_prod = _get_settings().is_production
-        except Exception:
-            pass
-        if not is_prod:
-            app_stage = os.getenv("APP_STAGE", "").strip().lower()
-            is_prod = app_stage in {"production", "prod"}
+        app_stage = os.getenv("APP_STAGE", "").strip().lower()
+        if app_stage in {"production", "prod"}:
+            is_prod = True
+        else:
+            try:
+                from bot.app_settings import get_settings as _get_settings
+                is_prod = _get_settings().is_production
+            except Exception:
+                pass
 
         if is_prod:
             raise SecurityError(
@@ -111,23 +115,28 @@ def resolve_encryption_key(
 
     if key_stdin:
         stdin_key = sys.stdin.read().strip()
-        if stdin_key:
-            return stdin_key
+        if not stdin_key:
+            raise ValueError("Encryption key provided via stdin is empty.")
+        return stdin_key
 
     if key_file:
         key_path = Path(key_file)
         if not key_path.is_file():
             raise FileNotFoundError(f"Key file not found: {key_path}")
-        file_key = key_path.read_text(encoding="utf-8").strip()
-        if file_key:
-            return file_key
+        try:
+            file_key = key_path.read_text(encoding="utf-8").strip()
+        except UnicodeDecodeError as err:
+            raise ValueError(f"Key file '{key_path}' contains invalid text encoding (must be UTF-8): {err}")
+        if not file_key:
+            raise ValueError(f"Key file '{key_path}' is empty.")
+        return file_key
 
     env_key = os.getenv(env_var_name, "").strip()
     if env_key:
         return env_key
 
-    if key_arg:
-        return key_arg.strip()
+    if stripped_key_arg:
+        return stripped_key_arg
 
     return ""
 

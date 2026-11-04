@@ -205,7 +205,60 @@ class TestCloudRuTeardown(unittest.TestCase):
         self.assertTrue(out["backup_verification"]["verified"])
         self.assertEqual(out["backup_verification"]["user_count"], 1)
 
+    def test_gate_blocks_corrupted_encrypted_backup_with_teardown_gate_error(self):
+        corrupt_backup = self.tmp_path / "corrupt.db.enc"
+        corrupt_backup.write_bytes(b"corrupted-ciphertext-content")
+        corrupt_meta = self.tmp_path / "corrupt.json"
+        corrupt_meta.write_text(json.dumps({
+            "encrypted": True,
+            "sha256_ciphertext": compute_sha256(corrupt_backup),
+        }), encoding="utf-8")
+
+        key_file = self.tmp_path / "teardown.key"
+        key_file.write_text(self.enc_key, encoding="utf-8")
+
+        with self.assertRaises(TeardownGateError) as ctx:
+            verify_backup_readiness(corrupt_backup, key_file=key_file)
+        self.assertIn("Ошибка расшифровки бэкапа", str(ctx.exception))
+
+    def test_gate_blocks_wrong_decryption_key_with_teardown_gate_error(self):
+        key_file = self.tmp_path / "wrong.key"
+        key_file.write_text("completely-wrong-key-value", encoding="utf-8")
+
+        with self.assertRaises(TeardownGateError) as ctx:
+            verify_backup_readiness(self.enc_backup_db, key_file=key_file)
+        self.assertIn("Ошибка расшифровки бэкапа", str(ctx.exception))
+
+    def test_gate_blocks_empty_key_file_with_teardown_gate_error(self):
+        empty_key = self.tmp_path / "empty.key"
+        empty_key.write_text("   \n", encoding="utf-8")
+
+        with self.assertRaises(TeardownGateError) as ctx:
+            verify_backup_readiness(self.enc_backup_db, key_file=empty_key)
+        self.assertIn("is empty", str(ctx.exception))
+
+    def test_gate_blocks_corrupted_sqlite_header_without_permission_error(self):
+        # Fernet encrypted data that is not a valid sqlite database
+        from cryptography.fernet import Fernet
+        fernet = Fernet(derive_key(self.enc_key))
+        bad_sqlite_backup = self.tmp_path / "bad_sqlite.db.enc"
+        bad_sqlite_backup.write_bytes(fernet.encrypt(b"This is definitely not a sqlite database header!"))
+        bad_sqlite_meta = self.tmp_path / "bad_sqlite.json"
+        bad_sqlite_meta.write_text(json.dumps({
+            "encrypted": True,
+            "sha256_ciphertext": compute_sha256(bad_sqlite_backup),
+        }), encoding="utf-8")
+
+        key_file = self.tmp_path / "teardown.key"
+        key_file.write_text(self.enc_key, encoding="utf-8")
+
+        with self.assertRaises(TeardownGateError) as ctx:
+            verify_backup_readiness(bad_sqlite_backup, key_file=key_file)
+        # Must fail gate without unhandled PermissionError [WinError 32]
+        self.assertTrue("PRAGMA integrity_check" in str(ctx.exception) or "не содержит пользователей" in str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

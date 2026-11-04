@@ -342,3 +342,75 @@ class TestBackupRestoreCLI(unittest.TestCase):
         cur.execute("SELECT username FROM users WHERE user_id = 101")
         self.assertEqual(cur.fetchone()[0], "tester1")
         conn.close()
+
+    def test_empty_key_file_rejected(self):
+        backup_script = ROOT / "scripts" / "backup_db.py"
+        empty_key_file = self.tmp_path / "empty.key"
+        empty_key_file.write_text("   \n", encoding="utf-8")
+        enc_backup = self.tmp_path / "backups" / "snap_empty_file.db.enc"
+
+        res = subprocess.run(
+            [
+                sys.executable,
+                str(backup_script),
+                "--source",
+                str(self.src_db),
+                "--dest",
+                str(enc_backup),
+                "--encrypt",
+                "--key-file",
+                str(empty_key_file),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("is empty", res.stderr)
+
+    def test_empty_key_stdin_rejected(self):
+        backup_script = ROOT / "scripts" / "backup_db.py"
+        enc_backup = self.tmp_path / "backups" / "snap_empty_stdin.db.enc"
+
+        res = subprocess.run(
+            [
+                sys.executable,
+                str(backup_script),
+                "--source",
+                str(self.src_db),
+                "--dest",
+                str(enc_backup),
+                "--encrypt",
+                "--key-stdin",
+            ],
+            input="   \n",
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("stdin is empty", res.stderr)
+
+    def test_non_utf8_key_file_rejected(self):
+        backup_script = ROOT / "scripts" / "backup_db.py"
+        bad_key_file = self.tmp_path / "bad_encoding.key"
+        # Write invalid non-UTF8 bytes
+        bad_key_file.write_bytes(b"\xff\xfe\x00\x80\x90\xaa")
+        enc_backup = self.tmp_path / "backups" / "snap_bad_enc.db.enc"
+
+        res = subprocess.run(
+            [
+                sys.executable,
+                str(backup_script),
+                "--source",
+                str(self.src_db),
+                "--dest",
+                str(enc_backup),
+                "--encrypt",
+                "--key-file",
+                str(bad_key_file),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("invalid text encoding", res.stderr)
+

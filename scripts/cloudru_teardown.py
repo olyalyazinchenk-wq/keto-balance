@@ -83,14 +83,18 @@ def verify_backup_readiness(
             raise TeardownGateError("Бэкап зашифрован, но ключ не передан (KETO_BACKUP_ENCRYPTION_KEY, --key-file или --key-stdin)")
 
     # Тестовое восстановление во временную БД
-    with tempfile.NamedTemporaryFile(suffix=".teardown_drill.db", delete=False) as tmp:
-        drill_db = Path(tmp.name)
-
+    drill_db = None
     try:
+        with tempfile.NamedTemporaryFile(suffix=".teardown_drill.db", delete=False) as tmp:
+            drill_db = Path(tmp.name)
+
         if is_encrypted:
             from cryptography.fernet import Fernet
-            fernet = Fernet(derive_key(effective_key))
-            decrypted = fernet.decrypt(backup_path.read_bytes())
+            try:
+                fernet = Fernet(derive_key(effective_key))
+                decrypted = fernet.decrypt(backup_path.read_bytes())
+            except Exception as decrypt_err:
+                raise TeardownGateError(f"Ошибка расшифровки бэкапа: неверный ключ или повреждённые данные ({decrypt_err})")
             drill_db.write_bytes(decrypted)
         else:
             drill_db.write_bytes(backup_path.read_bytes())
@@ -99,13 +103,19 @@ def verify_backup_readiness(
             raise TeardownGateError("Тестовая проверка целостности PRAGMA integrity_check провалена!")
 
         # Проверка ключевых таблиц
-        conn = sqlite3.connect(str(drill_db))
-        cur = conn.cursor()
-        cur.execute("SELECT count(*) FROM users")
-        user_count = cur.fetchone()[0]
-        conn.close()
+        conn = None
+        try:
+            conn = sqlite3.connect(str(drill_db))
+            cur = conn.cursor()
+            cur.execute("SELECT count(*) FROM users")
+            user_count = cur.fetchone()[0]
+        except Exception as db_err:
+            raise TeardownGateError(f"Тестовая БД повреждена или не содержит пользователей: {db_err}")
+        finally:
+            if conn is not None:
+                conn.close()
     finally:
-        if drill_db.is_file():
+        if drill_db is not None and drill_db.is_file():
             drill_db.unlink(missing_ok=True)
 
     return {
