@@ -1,26 +1,33 @@
 # Keto Balance — VPS / Telegram migration (PREPARATION ONLY)
 
-One VPS in Russia hosts React Mini App, Python FastAPI, one polling Telegram bot and SQLite. A stable HTTPS hostname is required, but buying a domain is NOT a prerequisite. Beget advertises a VPS technical domain under beget.app; verify that the actual VPS account provides the hostname and that public DNS and trusted TLS issuance work before accepting it as the permanent entry URL. A separately purchased domain remains an optional later upgrade. The current local Terra/Antigravity edits must be reconciled first: public GitHub master is from 27 October and is NOT the latest live app.
+One VPS in Russia hosts React Mini App, Python FastAPI, one polling Telegram bot and SQLite. A stable publicly verified HTTPS hostname is required. For long-lived Telegram buttons an independently owned domain is recommended; a provider or free hostname must not be assumed permanent. The current local Terra/Antigravity edits must be reconciled first: public GitHub master is from 27 October and is NOT the latest live app.
 
-## Provider decision — 2026-11-04 (trial, NOT activated)
+## Updated recommendation — 2026-11-04 (PAID VPS, NOT ORDERED)
 
-- Beget was unavailable and SmartApe registration failed because the owner could not complete its phone callback verification. Neither service is approved as current candidate.
-- Next candidate: **1Gb.ru Linux KVM VDS, Russian location, 10-day free test without prepayment**; official sources:
-  - https://www.1gb.ru/l_vds5.php
-  - https://www.1gb.ru/services_howto.php
-  - https://www.1gb.ru/registered_ajax_register_vds.php
-- 1Gb.ru registration information says **a valid mobile number receives an SMS activation code to continue the trial beyond two hours**. This still requires phone verification but **not the unavailable outbound voice call used by SmartApe**. No account or VPS has been created and the SMS step has not been tested.
-- Select Ubuntu 24.04 LTS (or supported recent LTS), at least 2 GiB RAM, public IPv4. Confirm full monthly price, outbound Telegram API reachability, Docker support, HTTPS and backup cost in the actual order.
-- Lower-priority alternatives: HostiMan's 14-day VPS trial requires a sales ticket and **photo of an ID document**; not recommended without explicit informed choice. SpaceWeb VPS trial is 3 days and requires phone verification. RUVDS is 3 days and may require a card.
-- No custom domain has been purchased. For the trial use a correctly configured free hostname and public TLS, not a temporary tunnel.
-- Never send genuine client data for a trial. Do not change Telegram's live menu button or public deployment until the new server and built assets are verified and the user authorizes cutover.
-- On trial expiry, preserve data and verify no automatic charge before continuation. Trial does not establish production readiness.
+Owner declined further free trials. Official incident notice: Beget suffered a serious attack 2026-11-02 and was still restoring systems on 2026-11-04; exclude Beget. SmartApe sign-up phone verification failed.
+
+**Best current starting option, conditional on checkout verification:** AdminVPS Russia / 3.6 GHz / Promo: 1 vCPU, 2 GB RAM, 30 GB NVMe. The vendor's indexed price page shows 429 RUB (older cached rate); a November 1 independent price check shows **499 RUB/month**. Budget using the fresher 499 number, not 429. Published terms indicate weekly server snapshots, 3 TB traffic, basic protection and Russian datacentre. Verify the exact amount, public IPv4 inclusion, no recurring panel upsell and availability in the actual order; otherwise decline checkout. Free-trial Telegram-bot prohibition in AdminVPS's terms applies to the **trial**, not a paid VPS, but outbound Telegram Bot API still must be independently verified from the deployed host.
+
+**Backup choice:** FirstVDS Russia "Старт SSD": 1 vCPU, 2 GB RAM, 40 GB SSD, one included IPv4, 519 RUB/month from effective 2026-08 official price list. Backups are **6 RUB/month per billed GB** as a separate paid feature; do not assume full disk necessarily billed.
+
+**Premium alternative:** Timeweb Cloud Russia Cloud-40: 2 vCPU, 2 GB RAM, 40 GB NVMe, listed 900 RUB/month; clarify IPv4 and backup in checkout. More CPU but larger monthly cost, not justified for initial Keto Balance usage without measured load.
+
+Cost & evidence:
+- https://adminvps.ru/vps/vps_russia.php (older cached 429 figure)
+- https://servercalc.ru/indeks-cen-vps/ (2026-11-01 newer 499 figure)
+- https://firstvds.ru/docs/tariffs.html (official 519, backup 6 RUB/GB)
+- https://timeweb.cloud/services/cloud-servers
+- https://beget.com/ru (incident notice 2026-11-04)
+
+**Risk controls:** initially pay for **one month only**, not an annual discount. Do not add ispmanager, premium admin, extra IPv4 or extra backup services silently. Confirm actual IP/network, ports 80/443, outbound api.telegram.org, TLS and static asset release ID within initial paid period. Only then transfer the production polling bot and cut over Telegram buttons. Preserve clean old server backup and rollback information. Never claim a published service until an Android Telegram acceptance test passes.
+
+**Domain:** owner confirmed there is **no purchased domain**. A stable owned domain is recommended for long-term Telegram buttons and avoids provider-specific and ephemeral tunnel URLs, but requires a separate owner purchase decision. For .RU, registration/renewal require ESIA identity verification since 2026-09-01; R01's published 2026 prices were 635 RUB first year and 1049 RUB renewal, not a guarantee of today's checkout price. Do not purchase a domain without the owner's approval, and do not treat a disposable tunnel/free subdomain as permanent.
 
 ## Safety prerequisites
 
-- Owner approves VPS rental and the quoted cost before purchasing. Owner confirms NO OWNED DOMAIN; avoid domain purchase, use a verified free provider hostname if available. Owner approves production cutover before changing the active bot.
+- Owner approves VPS rental and exact quote before purchasing. Owner confirms NO OWNED DOMAIN; domain purchase needs separate approval. Owner approves production cutover before changing the active bot.
 - Preserve local dirty work and make a verified backup of the current database. Do not upload client data to GitHub or public services.
-- Owner explicitly confirmed on 2026-11-04 that no domain has been purchased. First inspect the VPS provider's free technical hostname (beget.app) and whether it resolves to the assigned VPS IPv4. If the provider does not supply a reliable technical hostname, choose another stable free DNS hostname as a temporary option; purchase a custom domain only after separate approval.
+- Owner explicitly confirmed on 2026-11-04 that no domain has been purchased. Do not assume an AdminVPS free hostname. Use a temporary verified HTTPS DNS only for technical validation; choose an independently owned domain for persistent Telegram entry when separately approved.
 - Test whether VPS can reach Telegram Bot API before migration. Run only one polling process for the bot token; stop old one immediately before cutover.
 - Do not enable payments. Verify current Telegram user authentication, consent/data deletion and backup recovery before involving real participants.
 
