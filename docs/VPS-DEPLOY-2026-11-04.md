@@ -2,19 +2,19 @@
 
 One VPS in Russia hosts React Mini App, Python FastAPI, one polling Telegram bot and SQLite. A stable HTTPS hostname is required, but buying a domain is NOT a prerequisite. Beget advertises a VPS technical domain under beget.app; verify that the actual VPS account provides the hostname and that public DNS and trusted TLS issuance work before accepting it as the permanent entry URL. A separately purchased domain remains an optional later upgrade. The current local Terra/Antigravity edits must be reconciled first: public GitHub master is from 27 October and is NOT the latest live app.
 
-## Provider choice — 2026-11-04 (trial, not yet activated)
+## Provider decision — 2026-11-04 (trial, NOT activated)
 
-- Beget was reported unavailable by the owner. **Trial candidate: SmartApe NVMe X2**, advertised 4 vCPU / 2 GB RAM / 20 GB NVMe at 585 RUB/month after trial.
-- SmartApe publishes a **10-day free VPS trial, no card and no payment**, but eligibility depends on a tariff marked **"Тест"** (not **"Тест (Только для юр. лиц)"** for an individual). Confirm in provider cart before activation. Do not claim the trial is already approved.
-- Choose a Russian data centre. Request Ubuntu 24.04, external IPv4, SSH access and ports 80/443. Ask provider about Telegram Bot API reachability, trial outbound restrictions, Docker support and what happens to data at trial expiry.
-- For staging HTTPS, use a free subdomain from a service such as DuckDNS (requires owner/account sign-in) or other verified free DNS. This is a **temporary test hostname**, not a guarantee of long-term reliability. SSL via Caddy requires successful public DNS and ACME issuance.
-- Do not change live Telegram buttons until full HTTPS/buildId/assets pass and deployment/cutover is approved. Test with synthetic data; keep payment disabled, backup current bot SQLite before any move.
-- The Docker config under deploy/ is preparation, not tested or deployed; reconcile Terra local edits first.
-
-Sources:
-- https://www.smartape.ru/ssd-vps
-- https://www.smartape.ru/offer
-- https://www.duckdns.org/about.jsp
+- Beget was unavailable and SmartApe registration failed because the owner could not complete its phone callback verification. Neither service is approved as current candidate.
+- Next candidate: **1Gb.ru Linux KVM VDS, Russian location, 10-day free test without prepayment**; official sources:
+  - https://www.1gb.ru/l_vds5.php
+  - https://www.1gb.ru/services_howto.php
+  - https://www.1gb.ru/registered_ajax_register_vds.php
+- 1Gb.ru registration information says **a valid mobile number receives an SMS activation code to continue the trial beyond two hours**. This still requires phone verification but **not the unavailable outbound voice call used by SmartApe**. No account or VPS has been created and the SMS step has not been tested.
+- Select Ubuntu 24.04 LTS (or supported recent LTS), at least 2 GiB RAM, public IPv4. Confirm full monthly price, outbound Telegram API reachability, Docker support, HTTPS and backup cost in the actual order.
+- Lower-priority alternatives: HostiMan's 14-day VPS trial requires a sales ticket and **photo of an ID document**; not recommended without explicit informed choice. SpaceWeb VPS trial is 3 days and requires phone verification. RUVDS is 3 days and may require a card.
+- No custom domain has been purchased. For the trial use a correctly configured free hostname and public TLS, not a temporary tunnel.
+- Never send genuine client data for a trial. Do not change Telegram's live menu button or public deployment until the new server and built assets are verified and the user authorizes cutover.
+- On trial expiry, preserve data and verify no automatic charge before continuation. Trial does not establish production readiness.
 
 ## Safety prerequisites
 
