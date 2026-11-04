@@ -13,19 +13,21 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     APP_STAGE=production \
-    PAYMENT_MODE=enabled \
-    PAYMENTS_ENABLED=1
+    PAYMENT_MODE=disabled \
+    PAYMENTS_ENABLED=0 \
+    KETO_LOAD_DOTENV=0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     sqlite3 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements-p0.txt ./
+RUN pip install --no-cache-dir -r requirements-p0.txt
 
 # Copy backend code and built frontend
 COPY bot ./bot
+COPY bot_data.json ./bot_data.json
 COPY docs ./docs
 COPY scripts ./scripts
 COPY --from=frontend-builder /app/dist ./dist

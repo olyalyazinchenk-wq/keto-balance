@@ -6,8 +6,9 @@ services:
     restart: unless-stopped
     environment:
       - APP_STAGE=production
-      - PAYMENT_MODE=enabled
-      - PAYMENTS_ENABLED=1
+      - PAYMENT_MODE=disabled
+      - PAYMENTS_ENABLED=0
+      - KETO_LOAD_DOTENV=0
       - KETO_DB_PATH=/data/keto_balance.db
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
     volumes:

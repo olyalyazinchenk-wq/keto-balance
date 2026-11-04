@@ -276,7 +276,7 @@ def run_step(step: Step, root: Path, env: dict[str, str] | None = None) -> None:
 def main(default_stage: str = 'p0') -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--stage', choices=['visual', 'free', 'paid', 'p0', *PRODUCT_GATES],
+        '--stage', choices=['visual', 'free', 'paid', 'p0', 'public-paid', *PRODUCT_GATES],
         default=default_stage,
     )
     parser.add_argument('--checkpoint', nargs='?', const='current')
