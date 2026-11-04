@@ -2,6 +2,20 @@
 
 One VPS in Russia hosts React Mini App, Python FastAPI, one polling Telegram bot and SQLite. A stable HTTPS hostname is required, but buying a domain is NOT a prerequisite. Beget advertises a VPS technical domain under beget.app; verify that the actual VPS account provides the hostname and that public DNS and trusted TLS issuance work before accepting it as the permanent entry URL. A separately purchased domain remains an optional later upgrade. The current local Terra/Antigravity edits must be reconciled first: public GitHub master is from 27 October and is NOT the latest live app.
 
+## Provider choice — 2026-11-04 (trial, not yet activated)
+
+- Beget was reported unavailable by the owner. **Trial candidate: SmartApe NVMe X2**, advertised 4 vCPU / 2 GB RAM / 20 GB NVMe at 585 RUB/month after trial.
+- SmartApe publishes a **10-day free VPS trial, no card and no payment**, but eligibility depends on a tariff marked **"Тест"** (not **"Тест (Только для юр. лиц)"** for an individual). Confirm in provider cart before activation. Do not claim the trial is already approved.
+- Choose a Russian data centre. Request Ubuntu 24.04, external IPv4, SSH access and ports 80/443. Ask provider about Telegram Bot API reachability, trial outbound restrictions, Docker support and what happens to data at trial expiry.
+- For staging HTTPS, use a free subdomain from a service such as DuckDNS (requires owner/account sign-in) or other verified free DNS. This is a **temporary test hostname**, not a guarantee of long-term reliability. SSL via Caddy requires successful public DNS and ACME issuance.
+- Do not change live Telegram buttons until full HTTPS/buildId/assets pass and deployment/cutover is approved. Test with synthetic data; keep payment disabled, backup current bot SQLite before any move.
+- The Docker config under deploy/ is preparation, not tested or deployed; reconcile Terra local edits first.
+
+Sources:
+- https://www.smartape.ru/ssd-vps
+- https://www.smartape.ru/offer
+- https://www.duckdns.org/about.jsp
+
 ## Safety prerequisites
 
 - Owner approves VPS rental and the quoted cost before purchasing. Owner confirms NO OWNED DOMAIN; avoid domain purchase, use a verified free provider hostname if available. Owner approves production cutover before changing the active bot.
