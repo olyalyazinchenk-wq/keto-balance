@@ -1,12 +1,12 @@
 # Keto Balance — VPS / Telegram migration (PREPARATION ONLY)
 
-One VPS in Russia hosts React Mini App, Python FastAPI, one polling Telegram bot and SQLite. An owned domain subdomain provides stable HTTPS. The current local Terra/Antigravity edits must be reconciled first: public GitHub master is from 27 October and is NOT the latest live app.
+One VPS in Russia hosts React Mini App, Python FastAPI, one polling Telegram bot and SQLite. A stable HTTPS hostname is required, but buying a domain is NOT a prerequisite. Beget advertises a VPS technical domain under beget.app; verify that the actual VPS account provides the hostname and that public DNS and trusted TLS issuance work before accepting it as the permanent entry URL. A separately purchased domain remains an optional later upgrade. The current local Terra/Antigravity edits must be reconciled first: public GitHub master is from 27 October and is NOT the latest live app.
 
 ## Safety prerequisites
 
-- Owner approves VPS rental and the quoted cost before purchasing. Owner approves production cutover before changing the active bot.
+- Owner approves VPS rental and the quoted cost before purchasing. Owner confirms NO OWNED DOMAIN; avoid domain purchase, use a verified free provider hostname if available. Owner approves production cutover before changing the active bot.
 - Preserve local dirty work and make a verified backup of the current database. Do not upload client data to GitHub or public services.
-- Verify actual domain and registrar, then set A record for the chosen subdomain to VPS IPv4.
+- Owner explicitly confirmed on 2026-11-04 that no domain has been purchased. First inspect the VPS provider's free technical hostname (beget.app) and whether it resolves to the assigned VPS IPv4. If the provider does not supply a reliable technical hostname, choose another stable free DNS hostname as a temporary option; purchase a custom domain only after separate approval.
 - Test whether VPS can reach Telegram Bot API before migration. Run only one polling process for the bot token; stop old one immediately before cutover.
 - Do not enable payments. Verify current Telegram user authentication, consent/data deletion and backup recovery before involving real participants.
 
@@ -14,7 +14,7 @@ One VPS in Russia hosts React Mini App, Python FastAPI, one polling Telegram bot
 
 1. Install Docker Engine / Compose from official packages on Ubuntu 24.04, restrict SSH and expose TCP 80/443.
 2. Put the reconciled current source on VPS; do not overwrite uncommitted local changes with old GitHub master.
-3. Copy .env.production.example to .env.production in repo root, set real domain, HTTPS URL and token **only on VPS**, chmod 600. Add an A record for the domain and verify DNS before expecting automatic Caddy TLS.
+3. Copy .env.production.example to .env.production in repo root, set the assigned provider hostname (or separately approved custom domain), HTTPS URL and token **only on VPS**, chmod 600. Verify public DNS points to the VPS before expecting automatic Caddy TLS. Do not invent a domain or buy one without approval.
 4. Check: docker compose --env-file .env.production -f deploy/compose.yml config --quiet
 5. After securing existing database and stopping the old poller, launch:
    docker compose --env-file .env.production -f deploy/compose.yml up -d --build
