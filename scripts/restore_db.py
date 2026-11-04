@@ -17,11 +17,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from typing import Optional
+
 from bot.app_db import restore_database, get_settings
-from scripts.backup_db import resolve_encryption_key, SecurityError
+from scripts.backup_db import resolve_encryption_key, SecurityError, LEGACY_BACKUP_SALT
 
 
-def derive_key(passphrase_or_key: str) -> bytes:
+def derive_key(passphrase_or_key: str, salt: Optional[bytes] = None) -> bytes:
     """Нормализует ключ или выводит 32-байтный base64-ключ для Fernet через PBKDF2."""
     raw = passphrase_or_key.strip()
     try:
@@ -30,7 +32,8 @@ def derive_key(passphrase_or_key: str) -> bytes:
             return raw.encode("ascii")
     except Exception:
         pass
-    derived = hashlib.pbkdf2_hmac("sha256", raw.encode("utf-8"), b"keto_balance_backup_salt_v1", 100_000)
+    effective_salt = salt if salt is not None else LEGACY_BACKUP_SALT
+    derived = hashlib.pbkdf2_hmac("sha256", raw.encode("utf-8"), effective_salt, 100_000)
     return base64.urlsafe_b64encode(derived)
 
 
@@ -125,7 +128,9 @@ def main() -> int:
             print("[FATAL] 'cryptography' library is required to decrypt backup. Install via pip install cryptography.", file=sys.stderr)
             return 1
 
-        fernet_key = derive_key(encryption_key)
+        salt_hex = meta.get("kdf_salt_hex") or meta.get("salt_hex") or (meta.get("kdf", {}).get("salt_hex") if isinstance(meta.get("kdf"), dict) else None)
+        salt = bytes.fromhex(salt_hex) if salt_hex else None
+        fernet_key = derive_key(encryption_key, salt=salt)
         fernet = Fernet(fernet_key)
 
         with tempfile.NamedTemporaryFile(suffix=".decrypted.tmp.db", delete=False) as tmp:

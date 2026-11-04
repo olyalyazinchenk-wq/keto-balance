@@ -116,3 +116,23 @@ git checkout <ХЭШ_ПРЕДЫДУЩЕГО_КОММИТА> && docker compose up
 ```bash
 ./ops/restore-db.sh /app/data/backups/<НУЖНЫЙ_СНАПШОТ>.db
 ```
+
+---
+
+## 7. Контроль тарифицируемых ресурсов и демонтаж (0 ₽)
+
+При выводе сервера из эксплуатации или завершении использования гранта:
+1. Запустите сухой прогон проверки бэкапа и готовности:
+   ```bash
+   python3 scripts/cloudru_teardown.py --backup-file /path/to/backup.db.enc --key-file /path/to/key
+   ```
+2. Выполните гарантированный ручной демонтаж всех ресурсов (VM, Boot Volume, Data Volumes, Floating IP, Snapshots, Buckets) строго по регламенту:
+   [`docs/CLOUDRU_MANUAL_TEARDOWN.md`](../CLOUDRU_MANUAL_TEARDOWN.md).
+
+---
+
+## 8. Безопасный перенос на другого провайдера
+
+Для переноса базы данных и всего стека на независимый VPS (Beget, Timeweb, Selectel, Hetzner и др.) за 10 минут используйте:
+[`docs/MIGRATION_GUIDE.md`](../MIGRATION_GUIDE.md).
+

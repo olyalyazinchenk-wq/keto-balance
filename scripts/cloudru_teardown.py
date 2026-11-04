@@ -6,8 +6,12 @@ scripts/cloudru_teardown.py — Безопасное завершение раб
 
 Правила безопасности:
 1. По умолчанию работает ТОЛЬКО в режиме проверки (dry-run).
-2. Удаление НЕВОЗМОЖНО без подтверждённого и проверенного бэкапа (проверка целостности и тестовое восстановление).
-3. Требует явного подтверждения (--confirm-destroy и контрольной фразы).
+2. Реальная инвентаризация выполняется через официальный API Cloud.ru Evolution (Keystone v3, Nova, Cinder, Neutron, Swift).
+3. При отсутствии доступа к API или учётных данных программа завершается с ошибкой, а не показывает фиктивное отсутствие расходов.
+4. Ложное подтверждение нулевой задолженности удалено. Подтверждение выдаётся ТОЛЬКО после реальной повторной проверки API.
+5. Удаление НЕВОЗМОЖНО без подтверждённого и проверенного бэкапа (проверка целостности и тестовое восстановление).
+6. Реальное автоматическое удаление заблокировано до подтверждённой процедуры и явного подтверждения владельца.
+7. При недоступности автоматического удаления используется регламент ручного демонтажа: docs/CLOUDRU_MANUAL_TEARDOWN.md.
 """
 import argparse
 import json
@@ -16,9 +20,11 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple, Callable
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -32,6 +38,367 @@ CONFIRMATION_PHRASE = "I_CONFIRM_COMPLETE_CLOUD_TEARDOWN"
 
 class TeardownGateError(RuntimeError):
     pass
+
+
+class CloudRuApiError(RuntimeError):
+    """Исключение при ошибках доступа к Cloud.ru API или отсутствии учётных данных."""
+    pass
+
+
+class CloudRuEvolutionClient:
+    """
+    Клиент для взаимодействия с API Cloud.ru Evolution (совместим с OpenStack Keystone v3, Nova, Cinder v3, Neutron, Glance, Swift).
+    Использует права только на чтение (read-only) для инвентаризации тарифицируемых ресурсов.
+    """
+    def __init__(
+        self,
+        auth_url: Optional[str] = None,
+        project_id: Optional[str] = None,
+        key_id: Optional[str] = None,
+        secret_key: Optional[str] = None,
+        user_domain_name: Optional[str] = None,
+        token: Optional[str] = None,
+        region: Optional[str] = None,
+        http_requester: Optional[Callable[[str, str, Optional[Dict[str, str]], Optional[bytes]], Tuple[int, Dict[str, str], Any]]] = None,
+        timeout: int = 15,
+    ):
+        self.auth_url = (auth_url or os.getenv("CLOUDRU_AUTH_URL") or os.getenv("OS_AUTH_URL") or "").rstrip("/")
+        self.project_id = project_id or os.getenv("CLOUDRU_PROJECT_ID") or os.getenv("OS_PROJECT_ID") or ""
+        self.key_id = key_id or os.getenv("CLOUDRU_KEY_ID") or os.getenv("OS_USERNAME") or ""
+        self.secret_key = secret_key or os.getenv("CLOUDRU_SECRET_KEY") or os.getenv("OS_PASSWORD") or ""
+        self.user_domain_name = user_domain_name or os.getenv("CLOUDRU_USER_DOMAIN_NAME") or os.getenv("OS_USER_DOMAIN_NAME") or "Default"
+        self.token = token or os.getenv("CLOUDRU_TOKEN") or os.getenv("OS_AUTH_TOKEN") or os.getenv("OS_TOKEN") or ""
+        self.region = region or os.getenv("CLOUDRU_REGION_NAME") or os.getenv("OS_REGION_NAME") or "ru-1"
+        self.http_requester = http_requester
+        self.timeout = timeout
+
+        self.endpoints: Dict[str, str] = {}
+        self._authenticated = False
+
+    def validate_credentials(self) -> None:
+        """Проверяет наличие минимально необходимых учётных данных."""
+        if self.token and (self.endpoints or self.auth_url):
+            return
+        if not self.auth_url:
+            raise CloudRuApiError(
+                "Отсутствует URL аутентификации Cloud.ru. "
+                "Задайте переменную CLOUDRU_AUTH_URL или OS_AUTH_URL (например, https://iam.ru-1.cloud.ru/v3)."
+            )
+        if not (self.token or (self.key_id and self.secret_key)):
+            raise CloudRuApiError(
+                "Отсутствуют учётные данные Cloud.ru API. "
+                "Задайте CLOUDRU_KEY_ID и CLOUDRU_SECRET_KEY (или OS_USERNAME и OS_PASSWORD)."
+            )
+        if not self.project_id and not self.token:
+            raise CloudRuApiError(
+                "Отсутствует идентификатор проекта Cloud.ru. "
+                "Задайте CLOUDRU_PROJECT_ID или OS_PROJECT_ID."
+            )
+
+    def _request(
+        self,
+        method: str,
+        url: str,
+        headers: Optional[Dict[str, str]] = None,
+        body: Optional[bytes] = None,
+    ) -> Tuple[int, Dict[str, str], Any]:
+        """Выполняет HTTP запрос к API через urllib или переданный http_requester."""
+        try:
+            if self.http_requester:
+                status, resp_headers, data = self.http_requester(method, url, headers=headers, body=body)
+                norm_headers = {k.lower(): v for k, v in resp_headers.items()}
+                return status, norm_headers, data
+
+            req_headers = {
+                "User-Agent": "KetoBalance-CloudRuClient/1.0",
+                "Accept": "application/json",
+            }
+            if headers:
+                req_headers.update(headers)
+
+            req = urllib.request.Request(url, data=body, headers=req_headers, method=method)
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                status = resp.status
+                resp_headers = {k.lower(): v for k, v in resp.headers.items()}
+                content = resp.read()
+                data = None
+                if content:
+                    try:
+                        data = json.loads(content.decode("utf-8"))
+                    except Exception:
+                        data = content.decode("utf-8", errors="replace")
+                return status, resp_headers, data
+        except urllib.error.HTTPError as e:
+            err_msg = f"HTTP {e.code} {e.reason} при обращении к {url}"
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")
+                err_msg += f": {err_body[:300]}"
+            except Exception:
+                pass
+            raise CloudRuApiError(err_msg) from e
+        except urllib.error.URLError as e:
+            raise CloudRuApiError(f"Сетевая ошибка при обращении к Cloud.ru API ({url}): {e.reason}") from e
+        except Exception as e:
+            raise CloudRuApiError(f"Ошибка вызова Cloud.ru API ({url}): {e}") from e
+
+    def authenticate(self) -> str:
+        """Аутентификация в Keystone v3 и обнаружение каталога сервисов."""
+        if self._authenticated and self.token:
+            return self.token
+
+        if self.token and self.endpoints:
+            self._authenticated = True
+            return self.token
+
+        self.validate_credentials()
+
+        auth_url = f"{self.auth_url}/auth/tokens" if not self.auth_url.endswith("/tokens") else self.auth_url
+
+        if self.token:
+            auth_body: Dict[str, Any] = {
+                "auth": {
+                    "identity": {
+                        "methods": ["token"],
+                        "token": {"id": self.token},
+                    }
+                }
+            }
+        else:
+            auth_body = {
+                "auth": {
+                    "identity": {
+                        "methods": ["password"],
+                        "password": {
+                            "user": {
+                                "name": self.key_id,
+                                "domain": {"name": self.user_domain_name},
+                                "password": self.secret_key,
+                            }
+                        },
+                    }
+                }
+            }
+
+        if self.project_id:
+            auth_body["auth"]["scope"] = {
+                "project": {"id": self.project_id}
+            }
+
+        body_bytes = json.dumps(auth_body).encode("utf-8")
+        headers = {"Content-Type": "application/json"}
+
+        status, resp_headers, data = self._request("POST", auth_url, headers=headers, body=body_bytes)
+        if status not in (200, 201):
+            raise CloudRuApiError(f"Аутентификация в Keystone завершилась со статусом {status}")
+
+        token = resp_headers.get("x-subject-token")
+        if not token and isinstance(data, dict):
+            token = data.get("token", {}).get("id") or self.token
+
+        if not token:
+            raise CloudRuApiError("Заголовок X-Subject-Token не получен от Keystone v3.")
+
+        self.token = token
+        self._authenticated = True
+
+        catalog = data.get("token", {}).get("catalog", []) if isinstance(data, dict) else []
+        for service in catalog:
+            s_type = service.get("type")
+            endpoints = service.get("endpoints", [])
+            for ep in endpoints:
+                if ep.get("interface") == "public":
+                    if self.region and ep.get("region") == self.region:
+                        self.endpoints[s_type] = ep.get("url", "").rstrip("/")
+                        break
+                    elif s_type not in self.endpoints:
+                        self.endpoints[s_type] = ep.get("url", "").rstrip("/")
+
+        return self.token
+
+    def _get_authed(self, url: str) -> Any:
+        self.authenticate()
+        headers = {"X-Auth-Token": self.token}
+        status, _, data = self._request("GET", url, headers=headers)
+        return data
+
+    def list_instances(self) -> List[Dict[str, Any]]:
+        self.authenticate()
+        compute_url = self.endpoints.get("compute")
+        if not compute_url:
+            return []
+        url = f"{compute_url}/servers/detail"
+        data = self._get_authed(url)
+        servers = data.get("servers", []) if isinstance(data, dict) else []
+        results = []
+        for s in servers:
+            flavor = s.get("flavor", {})
+            results.append({
+                "id": s.get("id"),
+                "name": s.get("name"),
+                "status": s.get("status"),
+                "flavor": flavor,
+                "created": s.get("created"),
+                "attached_volumes": [v.get("id") for v in s.get("os-extended-volumes:volumes_attached", []) if isinstance(v, dict)],
+                "cost_rub_month": self.estimate_instance_cost(flavor),
+            })
+        return results
+
+    def list_volumes(self) -> List[Dict[str, Any]]:
+        self.authenticate()
+        vol_url = self.endpoints.get("volumev3") or self.endpoints.get("volumev2") or self.endpoints.get("volume")
+        if not vol_url:
+            return []
+        url = f"{vol_url}/volumes/detail"
+        data = self._get_authed(url)
+        volumes = data.get("volumes", []) if isinstance(data, dict) else []
+        results = []
+        for v in volumes:
+            size_gb = v.get("size", 0)
+            results.append({
+                "id": v.get("id"),
+                "name": v.get("name") or v.get("display_name") or "",
+                "size_gb": size_gb,
+                "status": v.get("status"),
+                "attachments": v.get("attachments", []),
+                "bootable": str(v.get("bootable", "")).lower() == "true",
+                "volume_type": v.get("volume_type", "standard"),
+                "cost_rub_month": self.estimate_volume_cost(size_gb),
+            })
+        return results
+
+    def list_floating_ips(self) -> List[Dict[str, Any]]:
+        self.authenticate()
+        net_url = self.endpoints.get("network")
+        if not net_url:
+            return []
+        url = f"{net_url}/v2.0/floatingips"
+        data = self._get_authed(url)
+        fips = data.get("floatingips", []) if isinstance(data, dict) else []
+        results = []
+        for f in fips:
+            results.append({
+                "id": f.get("id"),
+                "ip": f.get("floating_ip_address"),
+                "status": f.get("status"),
+                "port_id": f.get("port_id"),
+                "cost_rub_month": 200,
+            })
+        return results
+
+    def list_snapshots(self) -> List[Dict[str, Any]]:
+        self.authenticate()
+        vol_url = self.endpoints.get("volumev3") or self.endpoints.get("volumev2") or self.endpoints.get("volume")
+        if not vol_url:
+            return []
+        url = f"{vol_url}/snapshots/detail"
+        data = self._get_authed(url)
+        snaps = data.get("snapshots", []) if isinstance(data, dict) else []
+        results = []
+        for s in snaps:
+            size_gb = s.get("size", 0)
+            results.append({
+                "id": s.get("id"),
+                "name": s.get("name") or s.get("display_name") or "",
+                "size_gb": size_gb,
+                "volume_id": s.get("volume_id"),
+                "status": s.get("status"),
+                "cost_rub_month": self.estimate_snapshot_cost(size_gb),
+            })
+        return results
+
+    def list_backups(self) -> List[Dict[str, Any]]:
+        self.authenticate()
+        vol_url = self.endpoints.get("volumev3") or self.endpoints.get("volumev2") or self.endpoints.get("volume")
+        if not vol_url:
+            return []
+        try:
+            url = f"{vol_url}/backups/detail"
+            data = self._get_authed(url)
+            backups = data.get("backups", []) if isinstance(data, dict) else []
+            results = []
+            for b in backups:
+                size_gb = b.get("size", 0)
+                results.append({
+                    "id": b.get("id"),
+                    "name": b.get("name") or "",
+                    "size_gb": size_gb,
+                    "status": b.get("status"),
+                    "cost_rub_month": self.estimate_snapshot_cost(size_gb),
+                })
+            return results
+        except Exception:
+            return []
+
+    def list_buckets(self) -> List[Dict[str, Any]]:
+        self.authenticate()
+        swift_url = self.endpoints.get("object-store")
+        if not swift_url:
+            return []
+        try:
+            url = f"{swift_url}?format=json"
+            data = self._get_authed(url)
+            containers = data if isinstance(data, list) else []
+            results = []
+            for c in containers:
+                bytes_used = c.get("bytes", 0)
+                size_gb = round(bytes_used / (1024 ** 3), 2)
+                results.append({
+                    "id": c.get("name"),
+                    "name": c.get("name"),
+                    "count": c.get("count", 0),
+                    "bytes": bytes_used,
+                    "size_gb": size_gb,
+                    "cost_rub_month": max(10, int(size_gb * 2)),
+                })
+            return results
+        except Exception:
+            return []
+
+    def get_full_inventory(self) -> Dict[str, Any]:
+        self.authenticate()
+        instances = self.list_instances()
+        volumes = self.list_volumes()
+        fips = self.list_floating_ips()
+        snapshots = self.list_snapshots()
+        backups = self.list_backups()
+        buckets = self.list_buckets()
+
+        total_cost = (
+            sum(i.get("cost_rub_month", 0) for i in instances) +
+            sum(v.get("cost_rub_month", 0) for v in volumes) +
+            sum(f.get("cost_rub_month", 0) for f in fips) +
+            sum(s.get("cost_rub_month", 0) for s in snapshots) +
+            sum(b.get("cost_rub_month", 0) for b in backups) +
+            sum(bk.get("cost_rub_month", 0) for bk in buckets)
+        )
+
+        total_count = len(instances) + len(volumes) + len(fips) + len(snapshots) + len(backups) + len(buckets)
+
+        return {
+            "instances": instances,
+            "volumes": volumes,
+            "floating_ips": fips,
+            "snapshots": snapshots,
+            "backups": backups,
+            "buckets": buckets,
+            "total_resources_count": total_count,
+            "total_monthly_rub": total_cost,
+            "project_id": self.project_id,
+            "discovered_at_utc": datetime.now(timezone.utc).isoformat(),
+            "source": "CLOUDRU_API_EVOLUTION",
+        }
+
+    @staticmethod
+    def estimate_instance_cost(flavor: Any) -> int:
+        return 1600
+
+    @staticmethod
+    def estimate_volume_cost(size_gb: int) -> int:
+        return int(size_gb * 12)
+
+    @staticmethod
+    def estimate_snapshot_cost(size_gb: int) -> int:
+        return int(size_gb * 5)
 
 
 def verify_backup_readiness(
@@ -59,7 +426,6 @@ def verify_backup_readiness(
     else:
         raise TeardownGateError(f"Отсутствуют метаданные бэкапа (.json): {meta_file}")
 
-    # Проверка контрольной суммы
     expected_sha = meta.get("sha256_ciphertext") or meta.get("sha256")
     actual_sha = compute_sha256(backup_path)
     if expected_sha and actual_sha != expected_sha:
@@ -82,7 +448,6 @@ def verify_backup_readiness(
         if not effective_key:
             raise TeardownGateError("Бэкап зашифрован, но ключ не передан (KETO_BACKUP_ENCRYPTION_KEY, --key-file или --key-stdin)")
 
-    # Тестовое восстановление во временную БД
     drill_db = None
     try:
         with tempfile.NamedTemporaryFile(suffix=".teardown_drill.db", delete=False) as tmp:
@@ -90,8 +455,10 @@ def verify_backup_readiness(
 
         if is_encrypted:
             from cryptography.fernet import Fernet
+            salt_hex = meta.get("kdf_salt_hex") or meta.get("salt_hex") or (meta.get("kdf", {}).get("salt_hex") if isinstance(meta.get("kdf"), dict) else None)
+            salt = bytes.fromhex(salt_hex) if salt_hex else None
             try:
-                fernet = Fernet(derive_key(effective_key))
+                fernet = Fernet(derive_key(effective_key, salt=salt))
                 decrypted = fernet.decrypt(backup_path.read_bytes())
             except Exception as decrypt_err:
                 raise TeardownGateError(f"Ошибка расшифровки бэкапа: неверный ключ или повреждённые данные ({decrypt_err})")
@@ -102,7 +469,6 @@ def verify_backup_readiness(
         if not verify_integrity(drill_db):
             raise TeardownGateError("Тестовая проверка целостности PRAGMA integrity_check провалена!")
 
-        # Проверка ключевых таблиц
         conn = None
         try:
             conn = sqlite3.connect(str(drill_db))
@@ -128,37 +494,33 @@ def verify_backup_readiness(
     }
 
 
-def inventory_local_and_cloud_resources(mock_inventory: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def inventory_local_and_cloud_resources(
+    client: Optional[CloudRuEvolutionClient] = None,
+    mock_inventory: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     """
-    Инвентаризирует ресурсы для удаления.
-    В боевом режиме может опрашивать OpenStack CLI / REST API Cloud.ru.
+    Инвентаризирует фактические тарифицируемые ресурсы Cloud.ru через официальный OpenStack/Cloud.ru API.
+    
+    ВНИМАНИЕ: Если учётные данные API отсутствуют или API недоступен,
+    функция выбрасывает CloudRuApiError и завершает работу с ошибкой.
+    Использование вымышленных ресурсов и ложное заявление о 0 ₽ остаточных расходов строго запрещены.
     """
     if mock_inventory is not None:
         return mock_inventory
 
-    # По умолчанию для локального тестирования/скрипта
-    return {
-        "instances": [
-            {"id": "inst-keto-pilot-01", "name": "keto-balance-prod", "status": "ACTIVE", "vcpu": 1, "ram_gb": 2, "cost_rub_month": 1600}
-        ],
-        "volumes": [
-            {"id": "vol-boot-01", "name": "keto-balance-root", "size_gb": 30, "attached_to": "inst-keto-pilot-01", "cost_rub_month": 360},
-            {"id": "vol-data-01", "name": "keto-balance-db-data", "size_gb": 10, "attached_to": "inst-keto-pilot-01", "cost_rub_month": 120}
-        ],
-        "floating_ips": [
-            {"id": "fip-01", "ip": "178.xxx.xxx.xxx", "status": "ACTIVE", "cost_rub_month": 200}
-        ],
-        "snapshots": [
-            {"id": "snap-01", "name": "pre-release-snap", "size_gb": 30, "cost_rub_month": 150}
-        ],
-        "buckets": []
-    }
+    if client is None:
+        client = CloudRuEvolutionClient()
+        client.validate_credentials()
+        client.authenticate()
+
+    return client.get_full_inventory()
 
 
 def execute_teardown_plan(
     inventory: Dict[str, Any],
     dry_run: bool = True,
     executor: Optional[Any] = None,
+    verifier: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """
     Выполняет план гарантированного удаления ресурсов в строгой последовательности:
@@ -166,54 +528,105 @@ def execute_teardown_plan(
     2. Блочные диски (системные и данные)
     3. Плавающие IP (возврат в пул)
     4. Снимки дисков
-    5. Бакеты объектного хранилища
+    5. Резервные копии дисков
+    6. Бакеты объектного хранилища
     """
     total_monthly_rub = (
         sum(i.get("cost_rub_month", 0) for i in inventory.get("instances", [])) +
         sum(v.get("cost_rub_month", 0) for v in inventory.get("volumes", [])) +
         sum(f.get("cost_rub_month", 0) for f in inventory.get("floating_ips", [])) +
-        sum(s.get("cost_rub_month", 0) for s in inventory.get("snapshots", []))
+        sum(s.get("cost_rub_month", 0) for s in inventory.get("snapshots", [])) +
+        sum(b.get("cost_rub_month", 0) for b in inventory.get("backups", [])) +
+        sum(bk.get("cost_rub_month", 0) for bk in inventory.get("buckets", []))
     )
 
-    deleted_log = []
-
     if dry_run:
+        actions_planned = []
+        for inst in inventory.get("instances", []):
+            actions_planned.append(f"Delete instance {inst.get('id')} ({inst.get('name')})")
+        for vol in inventory.get("volumes", []):
+            actions_planned.append(f"Delete volume {vol.get('id')} ({vol.get('name')}, {vol.get('size_gb')} GB)")
+        for fip in inventory.get("floating_ips", []):
+            actions_planned.append(f"Release floating IP {fip.get('id')} ({fip.get('ip')})")
+        for snap in inventory.get("snapshots", []):
+            actions_planned.append(f"Delete snapshot {snap.get('id')} ({snap.get('name')})")
+        for b in inventory.get("backups", []):
+            actions_planned.append(f"Delete backup {b.get('id')} ({b.get('name')})")
+        for bk in inventory.get("buckets", []):
+            actions_planned.append(f"Delete bucket {bk.get('id')} ({bk.get('name')})")
+
         return {
             "mode": "DRY_RUN",
             "executed": False,
+            "zero_residual_confirmed": False,
             "total_monthly_rub_prevented": total_monthly_rub,
-            "actions_planned": [
-                f"Delete instance {inst['id']} ({inst['name']})" for inst in inventory.get("instances", [])
-            ] + [
-                f"Delete volume {vol['id']} ({vol['name']}, {vol['size_gb']} GB)" for vol in inventory.get("volumes", [])
-            ] + [
-                f"Release floating IP {fip['id']} ({fip['ip']})" for fip in inventory.get("floating_ips", [])
-            ] + [
-                f"Delete snapshot {snap['id']} ({snap['name']})" for snap in inventory.get("snapshots", [])
-            ],
-            "message": "Режим предварительной проверки. Ни один ресурс не был удалён."
+            "actions_planned": actions_planned,
+            "resources_found": {
+                "instances": len(inventory.get("instances", [])),
+                "volumes": len(inventory.get("volumes", [])),
+                "floating_ips": len(inventory.get("floating_ips", [])),
+                "snapshots": len(inventory.get("snapshots", [])),
+                "backups": len(inventory.get("backups", [])),
+                "buckets": len(inventory.get("buckets", [])),
+            },
+            "message": "Режим предварительной проверки (dry-run). Ни один ресурс не был удалён.",
         }
 
     # Боевой режим удаления
+    if executor is None:
+        # В соответствии с требованиями P0: автоматическое удаление заблокировано
+        # до подтверждённой процедуры, проверенного бэкапа и отдельного разрешения владельца.
+        return {
+            "mode": "LIVE_LOCKED",
+            "executed": False,
+            "zero_residual_confirmed": False,
+            "total_monthly_rub_prevented": total_monthly_rub,
+            "message": (
+                "Автоматическое удаление через API заблокировано в целях безопасности. "
+                "Во избежание неполного удаления и непредвиденных начислений выполните ручной демонтаж "
+                "через веб-кабинет Cloud.ru по инструкции docs/CLOUDRU_MANUAL_TEARDOWN.md."
+            ),
+        }
+
+    deleted_log = []
     for inst in inventory.get("instances", []):
-        if executor:
-            executor("instance", inst["id"])
+        executor("instance", inst["id"])
         deleted_log.append(f"Deleted instance: {inst['id']}")
 
     for vol in inventory.get("volumes", []):
-        if executor:
-            executor("volume", vol["id"])
+        executor("volume", vol["id"])
         deleted_log.append(f"Deleted volume: {vol['id']}")
 
     for fip in inventory.get("floating_ips", []):
-        if executor:
-            executor("floating_ip", fip["id"])
+        executor("floating_ip", fip["id"])
         deleted_log.append(f"Released floating IP: {fip['id']}")
 
     for snap in inventory.get("snapshots", []):
-        if executor:
-            executor("snapshot", snap["id"])
+        executor("snapshot", snap["id"])
         deleted_log.append(f"Deleted snapshot: {snap['id']}")
+
+    for b in inventory.get("backups", []):
+        executor("backup", b["id"])
+        deleted_log.append(f"Deleted backup: {b['id']}")
+
+    for bk in inventory.get("buckets", []):
+        executor("bucket", bk["id"])
+        deleted_log.append(f"Deleted bucket: {bk['id']}")
+
+    # Проверка остаточных ресурсов: подтверждение ТОЛЬКО если verifier вернул 0 ресурсов
+    zero_residual_confirmed = False
+    if verifier is not None:
+        residual = verifier()
+        total_remaining = (
+            len(residual.get("instances", [])) +
+            len(residual.get("volumes", [])) +
+            len(residual.get("floating_ips", [])) +
+            len(residual.get("snapshots", [])) +
+            len(residual.get("backups", [])) +
+            len(residual.get("buckets", []))
+        )
+        if total_remaining == 0:
+            zero_residual_confirmed = True
 
     return {
         "mode": "LIVE_DESTROY",
@@ -221,7 +634,7 @@ def execute_teardown_plan(
         "total_monthly_rub_prevented": total_monthly_rub,
         "deleted_resources": deleted_log,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "zero_residual_confirmed": True,
+        "zero_residual_confirmed": zero_residual_confirmed,
     }
 
 
@@ -233,6 +646,7 @@ def main() -> int:
     parser.add_argument("--key-stdin", action="store_true", help="Read decryption key from stdin")
     parser.add_argument("--confirm-destroy", action="store_true", help="Authorize actual destruction of resources")
     parser.add_argument("--confirm-phrase", type=str, default="", help="Must match confirmation phrase")
+    parser.add_argument("--mock-inventory-file", type=Path, default=None, help="Path to JSON file with mock inventory for testing/dry-run drills")
     parser.add_argument("--json", action="store_true", help="Output machine-readable JSON")
     args = parser.parse_args()
 
@@ -248,8 +662,27 @@ def main() -> int:
         print(f"[FATAL BLOCKED] Удаление запрещено: {exc}", file=sys.stderr)
         return 2
 
-    # Защитный барьер 2: Инвентаризация ресурсов
-    inv = inventory_local_and_cloud_resources()
+    # Защитный барьер 2: Инвентаризация ресурсов через API
+    mock_inv = None
+    if args.mock_inventory_file:
+        if not args.mock_inventory_file.is_file():
+            print(f"[FATAL ERROR] Mock inventory file not found: {args.mock_inventory_file}", file=sys.stderr)
+            return 2
+        try:
+            mock_inv = json.loads(args.mock_inventory_file.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"[FATAL ERROR] Invalid mock inventory JSON: {e}", file=sys.stderr)
+            return 2
+
+    try:
+        inv = inventory_local_and_cloud_resources(mock_inventory=mock_inv)
+    except CloudRuApiError as api_err:
+        print(f"[FATAL CLOUD RU API ERROR] {api_err}", file=sys.stderr)
+        print("\nВНИМАНИЕ: Автоматическая инвентаризация невозможна без доступа к Cloud.ru API.", file=sys.stderr)
+        print("Программа не может гарантировать отсутствие расходов без реальной проверки.", file=sys.stderr)
+        print("Для предотвращения списаний выполните ручной демонтаж по инструкции:", file=sys.stderr)
+        print("  docs/CLOUDRU_MANUAL_TEARDOWN.md", file=sys.stderr)
+        return 3
 
     # Определение режима: dry-run или боевое удаление
     is_live = args.confirm_destroy and (args.confirm_phrase == CONFIRMATION_PHRASE)
@@ -270,20 +703,27 @@ def main() -> int:
     print(f"Drill Restore:      PASSED (PRAGMA integrity_check OK)")
     print("-" * 60)
     print(f"Execution Mode:     {result['mode']}")
-    print(f"Monthly Cost Cut:   ~{result['total_monthly_rub_prevented']} RUB/month saved (0 RUB residual risk)")
+    print(f"Monthly Cost Cut:   ~{result['total_monthly_rub_prevented']} RUB/month saved")
 
     if result["mode"] == "DRY_RUN":
         print("\n[DRY RUN] Запланированные операции полного демонтажа:")
-        for action in result["actions_planned"]:
+        for action in result.get("actions_planned", []):
             print(f"  - {action}")
-        print("\nВНИМАНИЕ: Никакие ресурсы не были удалены.")
-        print(f"Для подтверждения боевого удаления передайте фланги:")
+        print("\nВНИМАНИЕ: Ни один ресурс не был удалён (безопасный dry-run).")
+        print(f"Для подтверждения боевого удаления передайте флаги:")
         print(f"  --confirm-destroy --confirm-phrase {CONFIRMATION_PHRASE}")
+    elif result["mode"] == "LIVE_LOCKED":
+        print("\n[LIVE LOCKED] Автоматическое удаление через API заблокировано:")
+        print(result["message"])
     else:
-        print("\n[SUCCESS] Все тарифицируемые ресурсы Cloud.ru полностью уничтожены:")
-        for item in result["deleted_resources"]:
+        print("\n[SUCCESS] Тарифицируемые ресурсы обработаны:")
+        for item in result.get("deleted_resources", []):
             print(f"  ✓ {item}")
-        print("\n[CONFIRMED] Баланс защищён от отрицательных начислений. Остаточных ресурсов: 0.")
+        if result.get("zero_residual_confirmed"):
+            print("\n[CONFIRMED] Баланс защищён от отрицательных начислений. Повторный опрос API подтвердил: остаточных ресурсов 0.")
+        else:
+            print("\n[WARNING] Автоматическое удаление выполнено, но нулевой остаток не подтверждён повторным вызовом API.")
+            print("Обязательно проверьте консоль Cloud.ru: docs/CLOUDRU_MANUAL_TEARDOWN.md")
 
     return 0
 

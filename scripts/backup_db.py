@@ -10,20 +10,27 @@ import base64
 import hashlib
 import json
 import os
+import secrets
 import sqlite3
 import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from bot.app_db import backup_database, get_settings
 
+LEGACY_BACKUP_SALT = b"keto_balance_backup_salt_v1"
 
-def derive_key(passphrase_or_key: str) -> bytes:
-    """Нормализует ключ или выводит 32-байтный base64-ключ для Fernet через PBKDF2."""
+
+def derive_key(passphrase_or_key: str, salt: Optional[bytes] = None) -> bytes:
+    """
+    Нормализует ключ или выводит 32-байтный base64-ключ для Fernet через PBKDF2-HMAC-SHA256.
+    Если salt не передан, используется LEGACY_BACKUP_SALT для обратной совместимости.
+    """
     raw = passphrase_or_key.strip()
     # Если уже 32 url-safe base64 байта
     try:
@@ -32,8 +39,9 @@ def derive_key(passphrase_or_key: str) -> bytes:
             return raw.encode("ascii")
     except Exception:
         pass
-    # Выводим детерминированный ключ через PBKDF2
-    derived = hashlib.pbkdf2_hmac("sha256", raw.encode("utf-8"), b"keto_balance_backup_salt_v1", 100_000)
+    # Выводим ключ через PBKDF2 с индивидуальной солью (или legacy солью для обратной совместимости)
+    effective_salt = salt if salt is not None else LEGACY_BACKUP_SALT
+    derived = hashlib.pbkdf2_hmac("sha256", raw.encode("utf-8"), effective_salt, 100_000)
     return base64.urlsafe_b64encode(derived)
 
 
@@ -149,7 +157,24 @@ def main() -> int:
     parser.add_argument("--key", type=str, default="", help="Encryption key or passphrase (insecure; prefer --key-file, --key-stdin or KETO_BACKUP_ENCRYPTION_KEY)")
     parser.add_argument("--key-file", type=Path, default=None, help="Path to file containing encryption key")
     parser.add_argument("--key-stdin", action="store_true", help="Read encryption key from stdin")
+    parser.add_argument("--generate-key", action="store_true", help="Generate a fresh cryptographically random Fernet key and print it")
+    parser.add_argument("--generate-key-file", type=Path, default=None, help="Generate a fresh cryptographically random Fernet key and save to specified file")
     args = parser.parse_args()
+
+    if args.generate_key or args.generate_key_file:
+        try:
+            from cryptography.fernet import Fernet
+        except ImportError:
+            print("[ERROR] 'cryptography' library is required to generate Fernet keys. Install via pip install cryptography.", file=sys.stderr)
+            return 1
+        new_key = Fernet.generate_key().decode("ascii")
+        if args.generate_key_file:
+            args.generate_key_file.parent.mkdir(parents=True, exist_ok=True)
+            args.generate_key_file.write_text(new_key + "\n", encoding="utf-8")
+            print(f"[SUCCESS] Cryptographically random Fernet key generated and saved to: {args.generate_key_file}")
+        if args.generate_key:
+            print(new_key)
+        return 0
 
     source_db = args.source if args.source else Path(get_settings().db_path)
     if not source_db.is_file():
@@ -192,7 +217,24 @@ def main() -> int:
             print("[ERROR] 'cryptography' library is required for encrypted backups. Install via pip install cryptography.", file=sys.stderr)
             return 1
 
-        fernet_key = derive_key(encryption_key)
+        # Проверяем, является ли переданный ключ готовым 32-байтным base64 Fernet ключом
+        is_direct_fernet = False
+        try:
+            decoded = base64.urlsafe_b64decode(encryption_key.strip())
+            if len(decoded) == 32:
+                is_direct_fernet = True
+        except Exception:
+            pass
+
+        if is_direct_fernet:
+            fernet_key = encryption_key.strip().encode("ascii")
+            salt_hex = None
+        else:
+            # Генерация криптографически стойкой индивидуальной соли для каждого нового бэкапа
+            salt = secrets.token_bytes(16)
+            salt_hex = salt.hex()
+            fernet_key = derive_key(encryption_key, salt=salt)
+
         fernet = Fernet(fernet_key)
 
         with tempfile.NamedTemporaryFile(suffix=".tmp.db", delete=False) as tmp:
@@ -220,6 +262,9 @@ def main() -> int:
             "backup_file": dest_file.name,
             "encrypted": True,
             "cipher": "AES-128-CBC/HMAC-SHA256 (Fernet)",
+            "kdf_algorithm": "PBKDF2-HMAC-SHA256" if not is_direct_fernet else "DIRECT_FERNET",
+            "kdf_iterations": 100_000 if not is_direct_fernet else None,
+            "kdf_salt_hex": salt_hex,
             "sha256": ciphertext_sha,
             "sha256_ciphertext": ciphertext_sha,
             "sha256_plaintext": plaintext_sha,

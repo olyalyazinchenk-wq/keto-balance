@@ -1,6 +1,7 @@
 import os
 os.environ["KETO_LOAD_DOTENV"] = "0"
 
+import json
 import subprocess
 import sys
 import tempfile
@@ -413,4 +414,112 @@ class TestBackupRestoreCLI(unittest.TestCase):
         )
         self.assertEqual(res.returncode, 1)
         self.assertIn("invalid text encoding", res.stderr)
+
+    def test_individual_salt_per_backup_with_passphrase(self):
+        backup_script = ROOT / "scripts" / "backup_db.py"
+        restore_script = ROOT / "scripts" / "restore_db.py"
+        passphrase = "my-shared-backup-passphrase-2026"
+
+        enc_backup1 = self.tmp_path / "backups" / "snap_salt1.db.enc"
+        enc_backup2 = self.tmp_path / "backups" / "snap_salt2.db.enc"
+        env = os.environ.copy()
+        env["KETO_BACKUP_ENCRYPTION_KEY"] = passphrase
+
+        # Backup 1
+        res1 = subprocess.run(
+            [sys.executable, str(backup_script), "--source", str(self.src_db), "--dest", str(enc_backup1), "--encrypt"],
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res1.returncode, 0, res1.stderr)
+
+        # Backup 2
+        res2 = subprocess.run(
+            [sys.executable, str(backup_script), "--source", str(self.src_db), "--dest", str(enc_backup2), "--encrypt"],
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res2.returncode, 0, res2.stderr)
+
+        meta1 = json.loads(enc_backup1.parent.joinpath("snap_salt1.json").read_text(encoding="utf-8"))
+        meta2 = json.loads(enc_backup2.parent.joinpath("snap_salt2.json").read_text(encoding="utf-8"))
+
+        self.assertIn("kdf_salt_hex", meta1)
+        self.assertIn("kdf_salt_hex", meta2)
+        self.assertNotEqual(meta1["kdf_salt_hex"], meta2["kdf_salt_hex"], "Each backup must have an individual random salt")
+        self.assertNotEqual(meta1["sha256_ciphertext"], meta2["sha256_ciphertext"], "Ciphertexts must differ due to unique salts")
+
+        # Both must restore correctly
+        restored1 = self.tmp_path / "restored1.db"
+        res_r1 = subprocess.run(
+            [sys.executable, str(restore_script), str(enc_backup1), "--target", str(restored1)],
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res_r1.returncode, 0, res_r1.stderr)
+
+        restored2 = self.tmp_path / "restored2.db"
+        res_r2 = subprocess.run(
+            [sys.executable, str(restore_script), str(enc_backup2), "--target", str(restored2)],
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res_r2.returncode, 0, res_r2.stderr)
+
+    def test_generate_key_and_restore_cycle(self):
+        backup_script = ROOT / "scripts" / "backup_db.py"
+        restore_script = ROOT / "scripts" / "restore_db.py"
+        gen_key_file = self.tmp_path / "generated.key"
+
+        # Generate key file
+        res_gen = subprocess.run(
+            [sys.executable, str(backup_script), "--generate-key-file", str(gen_key_file)],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res_gen.returncode, 0, res_gen.stderr)
+        self.assertTrue(gen_key_file.is_file())
+        key_content = gen_key_file.read_text(encoding="utf-8").strip()
+        self.assertGreater(len(key_content), 30)
+
+        # Encrypt with generated key file
+        enc_backup = self.tmp_path / "backups" / "snap_gen.db.enc"
+        res_b = subprocess.run(
+            [
+                sys.executable,
+                str(backup_script),
+                "--source",
+                str(self.src_db),
+                "--dest",
+                str(enc_backup),
+                "--encrypt",
+                "--key-file",
+                str(gen_key_file),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res_b.returncode, 0, res_b.stderr)
+
+        # Restore with generated key file
+        restored_db = self.tmp_path / "restored_gen.db"
+        res_r = subprocess.run(
+            [
+                sys.executable,
+                str(restore_script),
+                str(enc_backup),
+                "--target",
+                str(restored_db),
+                "--key-file",
+                str(gen_key_file),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res_r.returncode, 0, res_r.stderr)
+        self.assertTrue(restored_db.is_file())
 
