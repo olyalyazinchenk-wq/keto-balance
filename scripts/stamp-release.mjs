@@ -30,7 +30,11 @@ if (gitSha === 'unknown') {
   try {
     gitSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
     const status = execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-    if (status.length > 0) dirty = true;
+    const meaningful = status
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !l.endsWith('catalog-validation-report.json'));
+    if (meaningful.length > 0) dirty = true;
   } catch {
     /* Source archives may not contain .git. Artifact identity still exists. */
   }
