@@ -14,6 +14,23 @@ Provider references:
 - https://timeweb.cloud/docs/cloud-servers/manage-servers/backup
 - https://timeweb.cloud/docs/cloud-servers/data-storage-after-block
 
+## 152-FZ / client health data gate (2026-11-04)
+
+User now explicitly requires a provider capable of hosting the app in compliance with Federal Law 152-FZ. Because user questionnaires and symptom/wellbeing diaries can reveal health status, **Article 10 treats health-related personal data as a special category**. A Russian datacentre or provider's generic 152-FZ marketing statement does NOT establish compliance of the deployed app.
+
+Verified provider resources:
+- Timeweb protected 152-FZ service (up to UZ-1): https://timeweb.cloud/solutions/152fz and https://timeweb.cloud/docs/152-fz
+- Selectel compliant cloud (NOT its cheap new VDS line): https://selectel.ru/solutions/pdps/ . Selectel explicitly offers a data-processing instruction/agreement for its cloud platform.
+- Iteko.Cloud protected cloud says UZ-2 and from 576 RUB/month; homepage advertises 14-day test: https://iteco.cloud/content/cloud-152/ and https://iteco.cloud/ . Whether 576 RUB includes a usable 2 GiB server and whether individuals are eligible is NOT verified.
+
+Before deploying **real client data**:
+1. Obtain written confirmation from Timeweb that the exact selected cloud server product and Russian location are covered by its UZ-1 compliance scope and relevant provider security assessment; ask about physical-person accounts and any special-category exclusions.
+2. Request a data-processing instruction/agreement under 152-FZ Art. 6(3), document the parties' security duties, backup locations and possible subcontractors; check whether the provider signs this with an individual.
+3. Identify required threat/security level for this specific system, confirm legal basis for special-category health data and appropriate written consent where applicable, RKN notification obligations and Russian data localization, without incorrectly asserting that provider certification alone settles them.
+4. Audit authentication, access-control separation, encryption and secret storage; set up Russian offsite encrypted backups, retention/deletion, audit logs and breach response.
+5. Until these checks are complete, use **synthetic data only** and no client records, even if the app is reachable in Telegram.
+6. Confirm price of the **covered configuration**, including CPU/RAM/disk, IPv4, backup, approved processor documentation, and any mandatory security service. Cloud-40 900 RUB/month is only a previous ordinary VPS indicative rate, **not verified as the cost of fully 152-FZ-covered solution**.
+
 ## Intended single test server, only after verified credit and owner expense approval
 
 - Region: Russia, prefer Saint Petersburg if available; verify status of exact zone.
