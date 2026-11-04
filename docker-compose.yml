@@ -1,0 +1,99 @@
+# ==============================================================================
+# Keto Balance — Root Docker Compose Specification
+# Usage: docker compose up -d --build
+# ==============================================================================
+
+name: keto-balance
+
+x-service-defaults: &service-defaults
+  build:
+    context: .
+    dockerfile: deploy/Dockerfile
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+  volumes:
+    - keto_data:/app/data
+  environment:
+    APP_STAGE: production
+    PAYMENT_MODE: disabled
+    PAYMENTS_ENABLED: "0"
+    KETO_LOAD_DOTENV: "0"
+    KETO_DB_PATH: /app/data/keto_balance.db
+    KETO_DIST_DIR: /app/dist
+    TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN must be set in .env.production}
+    KETO_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+    KETO_BOT_PROXY: ${KETO_BOT_PROXY:-}
+    WEBAPP_URL: https://${WEBAPP_DOMAIN:?WEBAPP_DOMAIN must be set in .env.production}
+    TELEGRAM_WEBHOOK_SECRET_TOKEN: ${TELEGRAM_WEBHOOK_SECRET_TOKEN:-}
+
+services:
+  web:
+    <<: *service-defaults
+    command: ["python", "-m", "uvicorn", "bot.server:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+    expose:
+      - "8000"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.60"
+          memory: 700M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/api/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - internal_net
+
+  bot:
+    <<: *service-defaults
+    command: ["python", "-m", "bot.bot"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.40"
+          memory: 500M
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - internal_net
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      WEBAPP_DOMAIN: ${WEBAPP_DOMAIN:?WEBAPP_DOMAIN must be set in .env.production}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    deploy:
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 200M
+    depends_on:
+      web:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - internal_net
+
+volumes:
+  keto_data:
+    name: keto_balance_data
+  caddy_data:
+    name: keto_balance_caddy_data
+  caddy_config:
+    name: keto_balance_caddy_config
+
+networks:
+  internal_net:
+    driver: bridge

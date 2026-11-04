@@ -1,0 +1,7 @@
+# Keto Balance Production Python Dependencies (Pinned)
+python-telegram-bot==22.8
+fastapi==0.133.1
+pydantic==2.13.4
+uvicorn==0.41.0
+httpx==0.28.1
+socksio==1.0.0
