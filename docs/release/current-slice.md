@@ -1,27 +1,30 @@
-# Текущий рабочий срез (Current Slice)
+# Текущий рабочий срез (Current Slice) — Gemini Working Pilot
 
-**Дата:** 30 октября 2026 года, 16:16 МСК  
-**Назначенный интегратор:** Hermes / Antigravity pair assistant  
-- **Активный gate:** K1 prep (I01–I05 и V01–V06 выполнены, далее I06–I13 data bridge)  
+**Дата:** 31 октября 2026 года
+**Назначенный интегратор:** Gemini 3.8 в Antigravity (единственный интегратор и writer)
+**Активный gate:** Рабочий пилот «Кето Баланс» (L0 -> L1 -> L2) по спецификации `docs/handoff/2026-10-31-gemini-deliver-working-pilot.md`
+**Git Baseline:** `5f39a90f3eb59295869e389acc2a9add4b6e0ad0` на ветке `design/argon-ui-import`
 
 ## Прогресс критического пути
-- [x] **K00–K09:** Локальный checkpoint восстановления дня (PASS).
-- [x] **I01–I05:** Изоляция lifecycle сборки от неявного `bot_data.json` и защита `.env` (PASS).
-- [x] **V01–V06:** Policy manifests технических stages в `scripts/verification.py` (PASS).
-- [ ] **I06–I13:** Data bridge (адаптер `foodView.ts` и `menuController.ts`).
-- [ ] **I14–I27:** Компонентный перенос 4 экранов food-first в `src/ui/food-first/`.
-- [ ] **C01–C15:** Статический показ владельцу кнопкой Telegram (K1).
+- [x] **K1 (Food-First UI & Data Bridge):** 4 экрана перенесены, unit/build/visual проверки выполнены.
+- [x] **K2 (Baseline Backend & Validation):** Валидатор каталога 0 warnings, smart aggregation, baseline API.
+- [x] **S01–S02:** Фиксация baseline, guard изоляции тестового ввода-вывода (`tests/helpers/pilot_io_guard.py`, `scripts/run_backend_tests.py`).
+- [x] **A01–A05 (L0 Security):** Полное закрытие auth bypass, отрицательные route-тесты, hash-only сессии, валидация Telegram initData без mock/guest лазеек.
+- [x] **C01–C07:** Wire v1 контракт (`pilotTypes.ts`, `pilot_models.py`), идемпотентная схема SQLite, CAS оптимистическая блокировка, roundtrip меню/настроек/покупок.
+- [x] **R01–R03:** Статический release catalog exporter (`scripts/export-release-catalog.mjs`), инъекция `catalog_provider`, mapping ограничений и time guard.
+- [x] **U01–U09 (L1 Connected UI):** `ketoClient.ts`, controlled `PilotApp.tsx`, save queue, связь экранов Сегодня/Меню/Рецепт/Покупки с реальным API и SQLite.
+- [x] **H01:** Сохранение проверенного пути личной поддержки Ольге (`1084557944`).
+- [x] **V01–V03 (L2 Verification Gate):** Изолированная сборка (`scripts/build-isolated.mjs`), test server на 18080, Playwright E2E тесты (food-flow, persistence, support), receipt/fingerprints.
+- [ ] **V04 (Operational Packet):** Runbook, manifest и structured approval request владельцу.
+- [ ] **T1–T2:** Внешний вход и приёмка владельцем (только после отдельного согласования).
 
 ## Границы среза
 - **Разрешено:**
-  - K00–K06: TDD исправления инициализации и сохранения `selectedDayIndex` в `design/argon-food-first-work/src/utils/selectedDay.ts` и `src/App.tsx`.
-  - K07: запуск существующих тестов и typecheck в `design/argon-food-first-work/`.
-  - K08–K09: фиксация лога исполнения и acceptance checkpoint.
+  - Автономная локальная реализация рубежей L0 -> L1 -> L2 в `C:\Users\HP\Keto-balance`.
+  - Тестовый HTTP-сервер исключительно на `127.0.0.1:18080` с временными базами данных в `C:\Users\HP\AppData\Local\hermes\cache\scratch\`.
+  - Изолированная сборка frontend без перезаписи боевого `dist/`.
 - **Запрещено:**
-  - Редизайн экранов, изменение стилей или разметки.
-  - Правка канонического домена или импорт `dayIndex` в `src/domain/`.
-  - Изменение production backend, сетевые вызовы, запуск `npm run dev` со сторонним сервером.
-  - Публикация, коммит, пуш.
-
-## Критический путь к K1
-`K0 (текущий) → I01–I05 (изоляция сборки) → V01–V06 (проверка 4 экранов) → I06–I20, I23–I27 (доменный адаптер и перенос) → C01–C15 (статический показ для владельца)`
+  - Трогать чужие и боевые процессы (порт 8000, 4387, 8090, 10808, 10809).
+  - Читать/раскрывать реальные секреты, `.env`, `.tunnel_cache.json`.
+  - Модифицировать внешние сетевые сервисы или слать сообщения в Telegram до отдельного согласования.
+  - Менять дизайн или проводить новые маркетинговые интервью.

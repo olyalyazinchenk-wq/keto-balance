@@ -28,3 +28,22 @@ test('food-first ui components have clean import boundary without demo fixtures 
     );
   }
 });
+
+test('main.tsx and PilotApp.tsx do not import or execute legacy global loadStore', () => {
+  const mainContent = fs.readFileSync(path.resolve(__dirname, '../../src/main.tsx'), 'utf8');
+  assert.match(mainContent, /PilotApp/, 'main.tsx must import PilotApp');
+  assert.doesNotMatch(mainContent, /import\s+App\s+from\s+['"]\.\/App['"]/, 'main.tsx must not import legacy App');
+
+  const pilotAppPath = path.resolve(__dirname, '../../src/PilotApp.tsx');
+  assert.ok(fs.existsSync(pilotAppPath), 'PilotApp.tsx must exist');
+  const pilotContent = fs.readFileSync(pilotAppPath, 'utf8');
+  assert.doesNotMatch(pilotContent, /loadStore/, 'PilotApp must not import or use loadStore');
+  assert.doesNotMatch(pilotContent, /useStore/, 'PilotApp must not import or use useStore');
+  assert.doesNotMatch(pilotContent, /['"]\.\/App['"]/, 'PilotApp must not import legacy App');
+});
+
+test('legacy App.tsx returns PilotApp without breaking typecheck', () => {
+  const appContent = fs.readFileSync(path.resolve(__dirname, '../../src/App.tsx'), 'utf8');
+  assert.match(appContent, /PilotApp/, 'App.tsx must reference PilotApp');
+  assert.doesNotMatch(appContent, /return\s+<FoodFirstApp\s*\/>;/, 'App.tsx must not render unconfigured FoodFirstApp');
+});

@@ -1,0 +1,67 @@
+{
+  "timestamp": "2026-10-31T21:41:00+03:00",
+  "stage": "k2-pilot",
+  "status": "PASSED",
+  "git_baseline": "5f39a90f3eb59295869e389acc2a9add4b6e0ad0",
+  "git_dirty": true,
+  "frontend_build_id": "c9774a016e0173e8",
+  "catalog_hash": "face03d34bf329b2",
+  "backend_fingerprint": "317b35e410187a94",
+  "command": "& \".venv-p0/Scripts/python.exe\" -B scripts/verification.py --stage k2-pilot",
+  "exit_code": 0,
+  "test_results": {
+    "backend_total_collected": 155,
+    "backend_total_passed": 155,
+    "backend_runner": "& \".venv-p0/Scripts/python.exe\" scripts/run_backend_tests.py",
+    "backend_stage_suites": {
+      "tests.backend.test_verify_script": {"count": 8, "status": "PASS"},
+      "tests.backend.test_import_safety": {"count": 3, "status": "PASS"},
+      "tests.backend.test_database": {"count": 4, "status": "PASS"},
+      "tests.backend.test_release_version": {"count": 7, "status": "PASS"},
+      "tests.backend.test_bot_transport": {"count": 2, "status": "PASS"},
+      "tests.backend.test_server_security": {"count": 7, "status": "PASS"},
+      "tests.backend.test_payments_disabled": {"count": 3, "status": "PASS"},
+      "tests.backend.test_channel_nutritionist_isolation": {"count": 5, "status": "PASS"},
+      "tests.backend.test_support_integration": {"count": 6, "status": "PASS"},
+      "tests.backend.test_auth": {"count": 6, "status": "PASS"},
+      "tests.backend.test_app_settings": {"count": 3, "status": "PASS"},
+      "tests.backend.test_app_db": {"count": 6, "status": "PASS"},
+      "tests.backend.test_session_api": {"count": 3, "status": "PASS"},
+      "tests.backend.test_staging_and_demo": {"count": 13, "status": "PASS"},
+      "tests.backend.test_app_models": {"count": 8, "status": "PASS"},
+      "tests.backend.test_user_api": {"count": 3, "status": "PASS"},
+      "tests.backend.test_data_rights": {"count": 3, "status": "PASS"},
+      "tests.backend.test_catalog_api": {"count": 2, "status": "PASS"},
+      "tests.backend.test_support": {"count": 3, "status": "PASS"},
+      "tests.backend.test_log_redaction": {"count": 2, "status": "PASS"},
+      "tests.backend.test_release_boundaries": {"count": 3, "status": "PASS"},
+      "tests.backend.test_safety_routing": {"count": 4, "status": "PASS"},
+      "tests.backend.test_backup_restore": {"count": 1, "status": "PASS"},
+      "tests.backend.test_pilot_auth_regressions": {"count": 6, "status": "PASS"},
+      "tests.backend.test_pilot_harness": {"count": 11, "status": "PASS"},
+      "tests.backend.test_pilot_roundtrip": {"count": 4, "status": "PASS"}
+    },
+    "frontend_total_collected": 187,
+    "frontend_total_passed": 187,
+    "frontend_runner": "node --test tests/frontend/*.test.cjs",
+    "typecheck": {"status": "PASS", "command": "npm run typecheck", "exit_code": 0},
+    "isolated_build": {
+      "status": "PASS",
+      "scratch_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\build-run-1793472035849-0bqol6",
+      "receipt_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\build-run-1793472035849-0bqol6\\build-receipt.json",
+      "source_manifest_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\build-run-1793472035849-0bqol6\\source-manifest.json"
+    },
+    "playwright_e2e": {
+      "E1_food_flow": {"status": "PASS", "duration_s": 16.2, "spec": "tests/e2e/food-flow.spec.ts"},
+      "E2_persistence": {"status": "PASS", "duration_s": 16.2, "spec": "tests/e2e/persistence.spec.ts"},
+      "E3_support": {"status": "PASS", "duration_s": 15.3, "spec": "tests/e2e/support.spec.ts"}
+    }
+  }
+}
+    "playwright_e2e": {
+      "E1_food_flow": {"status": "PASS", "duration_s": 20.9, "spec": "tests/e2e/food-flow.spec.ts"},
+      "E2_persistence": {"status": "PASS", "duration_s": 19.6, "spec": "tests/e2e/persistence.spec.ts"},
+      "E3_support": {"status": "PASS", "duration_s": 17.1, "spec": "tests/e2e/support.spec.ts"}
+    }
+  }
+}

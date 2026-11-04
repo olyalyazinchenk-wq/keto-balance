@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FoodCard } from './model';
+import { triggerHaptic } from '../../tma/telegram';
 import './today.css';
 
 export interface FoodTodayProps {
@@ -9,6 +10,7 @@ export interface FoodTodayProps {
   rhythm?: { key: string; label: string; completed: boolean }[];
   onOpenRecipe: (id: string) => void;
   onChooseMenu: () => void;
+  onOpenSettings?: () => void;
 }
 
 function FoodPhoto({ card }: { card: FoodCard }) {
@@ -42,6 +44,7 @@ export function FoodToday({
   rhythm = [],
   onOpenRecipe,
   onChooseMenu,
+  onOpenSettings,
 }: FoodTodayProps) {
   return (
     <section
@@ -58,7 +61,21 @@ export function FoodToday({
           <div className="ff-rhythm__heading"><strong>Ритм дня</strong><span>Готовим в своём темпе</span></div>
           <ol>
             {rhythm.map((meal) => (
-              <li key={meal.key} className={meal.completed ? 'ff-rhythm__done' : ''}>
+              <li
+                key={meal.key}
+                className={`${meal.completed ? 'ff-rhythm__done' : ''} cursor-pointer transition-transform active:scale-[0.98]`}
+                onClick={() => {
+                  triggerHaptic(meal.completed ? 'selection' : 'success');
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    triggerHaptic(meal.completed ? 'selection' : 'success');
+                  }
+                }}
+                aria-label={`${meal.label}: ${meal.completed ? 'Приготовлено' : 'В плане'}`}
+              >
                 <span className="ff-rhythm__dot" aria-hidden="true">{meal.completed ? '✓' : '·'}</span>
                 <strong>{meal.label}</strong>
                 <small>{meal.completed ? 'Приготовлено' : 'В плане'}</small>
@@ -83,9 +100,45 @@ export function FoodToday({
               type="button"
               className="ff-action"
               data-testid="food-main-action"
-              onClick={() => onOpenRecipe(primary.id)}
+              onClick={() => {
+                triggerHaptic('impact_light');
+                onOpenRecipe(primary.id);
+              }}
             >
               Открыть рецепт <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </article>
+      ) : rhythm.length > 0 ? (
+        <article className="ff-empty" data-testid="food-today-incompatible">
+          <h2>Блюда меню недоступны</h2>
+          <p>
+            Блюда текущего дня не соответствуют установленным ограничениям или лимиту времени.
+          </p>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {onOpenSettings && (
+              <button
+                type="button"
+                className="ff-action"
+                data-testid="food-today-open-settings"
+                onClick={() => {
+                  triggerHaptic('selection');
+                  onOpenSettings();
+                }}
+              >
+                Изменить параметры
+              </button>
+            )}
+            <button
+              type="button"
+              className="ff-action"
+              data-testid="food-main-action"
+              onClick={() => {
+                triggerHaptic('selection');
+                onChooseMenu();
+              }}
+            >
+              Перейти в меню
             </button>
           </div>
         </article>
@@ -100,7 +153,10 @@ export function FoodToday({
             type="button"
             className="ff-action"
             data-testid="food-main-action"
-            onClick={onChooseMenu}
+            onClick={() => {
+              triggerHaptic('selection');
+              onChooseMenu();
+            }}
           >
             Выбрать меню
           </button>
@@ -113,7 +169,10 @@ export function FoodToday({
             <button
               type="button"
               key={card.id}
-              onClick={() => onOpenRecipe(card.id)}
+              onClick={() => {
+                triggerHaptic('impact_light');
+                onOpenRecipe(card.id);
+              }}
             >
               <span className="ff-next__text">
                 {card.title}

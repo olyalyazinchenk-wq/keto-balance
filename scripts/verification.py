@@ -142,6 +142,15 @@ def build_plan(root: Path, stage: str) -> list[Step]:
             Step('Build', ('node', 'scripts/build-isolated.mjs'), ('scripts/build-isolated.mjs',)),
             Step('E2E', ('npx.cmd' if os.name == 'nt' else 'npx', '--no-install', 'playwright', 'test', f'--config={config}'), (config,), 'playwright'),
         ]
+    if stage == 'home-pilot':
+        npm = 'npm.cmd' if os.name == 'nt' else 'npm'
+        return [
+            Step('Backend:Full', (sys.executable, '-B', 'scripts/run_backend_tests.py'), ('scripts/run_backend_tests.py',), 'backend'),
+            Step('Ops:HomePilot', (sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'tests/ops', '-p', 'test_home_pilot.py'), ('tests/ops/test_home_pilot.py',), 'command'),
+            Step('Typecheck', (npm, 'run', 'typecheck'), ('tsconfig.json',)),
+            Step('Frontend:Unit', (npm, 'run', 'test:unit'), ('package.json',), 'tap'),
+            Step('Build:Isolated', ('node', 'scripts/build-isolated.mjs'), ('scripts/build-isolated.mjs',)),
+        ]
     if stage not in {'checkpoint', 'p0', 'visual', 'free', 'paid'}:
         raise GateError('Unknown verification stage')
     npm = 'npm.cmd' if os.name == 'nt' else 'npm'
@@ -276,7 +285,7 @@ def run_step(step: Step, root: Path, env: dict[str, str] | None = None) -> None:
 def main(default_stage: str = 'p0') -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--stage', choices=['visual', 'free', 'paid', 'p0', *PRODUCT_GATES],
+        '--stage', choices=['visual', 'free', 'paid', 'p0', 'home-pilot', 'public-paid', *PRODUCT_GATES],
         default=default_stage,
     )
     parser.add_argument('--checkpoint', nargs='?', const='current')

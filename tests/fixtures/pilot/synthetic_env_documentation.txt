@@ -1,0 +1,9 @@
+# ========================================================
+# Synthetic Documentation Template for Channel/Nutritionist Isolation
+# ========================================================
+CHANNEL_URL="https://t.me/olga_nutri_med"
+SUPPORT_CHAT="https://t.me/keto_balance_support"
+NUTRITIONIST_USERNAME="Olgazinchenko1186"
+NUTRITIONIST_CHAT_ID="1084557944"
+ADMIN_ID="1084557944"
+# ВНИМАНИЕ: Автоматический fallback личных обращений на канал категорически запрещён.

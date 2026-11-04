@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   RefreshCw,
   ShoppingBag,
@@ -19,6 +19,7 @@ import {
 } from './state';
 import './menu-food.css';
 import { photoForRecipe } from './model';
+import { triggerHaptic, bindBackButton } from '../../tma/telegram';
 
 export interface MenuScreenProps {
   menu: GeneratedMenu;
@@ -35,6 +36,8 @@ export interface MenuScreenProps {
   onOpenRecipe: (recipeId: string) => void;
   onChooseMenuAndGoToShopping: () => void;
   onEditSettings?: () => void;
+  onRebuildMenu?: () => void;
+  catalogRecipes?: any[];
 }
 
 const SLOT_TIMESTAMPS: Record<number, string> = {
@@ -54,16 +57,29 @@ export function MenuScreen({
   onOpenRecipe,
   onChooseMenuAndGoToShopping,
   onEditSettings,
+  onRebuildMenu,
+  catalogRecipes,
 }: MenuScreenProps) {
   const [replacingSlot, setReplacingSlot] = useState<{
     slotKey: string;
     slotLabel: string;
     currentRecipeId: string;
   } | null>(null);
-  const [simulateEmptyConflict, setSimulateEmptyConflict] = useState(false);
-  const matchingRecipes = simulateEmptyConflict
-    ? []
-    : filterRecipesBySettings(recipes, settings);
+
+  useEffect(() => {
+    if (!replacingSlot) return;
+    const cleanup = bindBackButton(() => {
+      triggerHaptic('selection');
+      setReplacingSlot(null);
+    });
+    return cleanup;
+  }, [replacingSlot]);
+
+  const matchingRecipes = filterRecipesBySettings(
+    recipes,
+    settings,
+    catalogRecipes
+  );
   const currentDay =
     menu.days.find((day) => day.dayIndex === selectedDayIndex) || menu.days[0];
   const resolvedSlots = currentDay
@@ -78,18 +94,30 @@ export function MenuScreen({
         <p>{appliedConditionsText}</p>
         <div className="fm-tools">
           {onEditSettings && (
-            <button type="button" className="fm-secondary" onClick={onEditSettings}>
+            <button
+              type="button"
+              className="fm-secondary"
+              onClick={() => {
+                triggerHaptic('selection');
+                onEditSettings();
+              }}
+            >
               <SlidersHorizontal aria-hidden="true" /> Параметры
             </button>
           )}
-          <button
-            type="button"
-            className="fm-secondary"
-            aria-pressed={simulateEmptyConflict}
-            onClick={() => setSimulateEmptyConflict((prev) => !prev)}
-          >
-            {simulateEmptyConflict ? 'Сбросить конфликт' : 'Проверить конфликт'}
-          </button>
+          {onRebuildMenu && (
+            <button
+              type="button"
+              className="fm-secondary"
+              data-testid="menu-rebuild-button"
+              onClick={() => {
+                triggerHaptic('impact_medium');
+                onRebuildMenu();
+              }}
+            >
+              <RefreshCw aria-hidden="true" /> Пересобрать
+            </button>
+          )}
         </div>
       </header>
 
@@ -108,7 +136,10 @@ export function MenuScreen({
                 data-testid={`menu-day-tab-${day.dayIndex}`}
                 aria-selected={day.dayIndex === currentDay?.dayIndex}
                 key={day.dayIndex}
-                onClick={() => onSelectDayIndex(day.dayIndex)}
+                onClick={() => {
+                  triggerHaptic('selection');
+                  onSelectDayIndex(day.dayIndex);
+                }}
               >
                 <strong>{day.label}</strong>
                 <span>{minutes} мин у плиты</span>
@@ -132,17 +163,15 @@ export function MenuScreen({
             лимит времени в настройках.
           </p>
           {onEditSettings && (
-            <button type="button" className="fm-primary" onClick={onEditSettings}>
-              Изменить ограничения
-            </button>
-          )}
-          {simulateEmptyConflict && (
             <button
               type="button"
-              className="fm-secondary"
-              onClick={() => setSimulateEmptyConflict(false)}
+              className="fm-primary"
+              onClick={() => {
+                triggerHaptic('selection');
+                onEditSettings();
+              }}
             >
-              Вернуть рабочий набор рецептов
+              Изменить ограничения
             </button>
           )}
         </section>
@@ -185,13 +214,14 @@ export function MenuScreen({
                           type="button"
                           className="fm-secondary"
                           data-testid={`replace-slot-btn-${slotKey}`}
-                          onClick={() =>
+                          onClick={() => {
+                            triggerHaptic('selection');
                             setReplacingSlot({
                               slotKey,
                               slotLabel,
                               currentRecipeId: recipe.id,
-                            })
-                          }
+                            });
+                          }}
                         >
                           <RefreshCw aria-hidden="true" /> Заменить
                         </button>
@@ -199,7 +229,10 @@ export function MenuScreen({
                           type="button"
                           className="fm-primary"
                           data-testid={`open-recipe-btn-${slotKey}`}
-                          onClick={() => onOpenRecipe(recipe.id)}
+                          onClick={() => {
+                            triggerHaptic('impact_light');
+                            onOpenRecipe(recipe.id);
+                          }}
                         >
                           Открыть рецепт →
                         </button>
@@ -218,7 +251,10 @@ export function MenuScreen({
               type="button"
               className="fm-primary"
               data-testid="choose-menu-shopping-btn"
-              onClick={onChooseMenuAndGoToShopping}
+              onClick={() => {
+                triggerHaptic('impact_medium');
+                onChooseMenuAndGoToShopping();
+              }}
             >
               <ShoppingBag aria-hidden="true" /> Выбрать меню и собрать покупки
             </button>
@@ -232,8 +268,17 @@ export function MenuScreen({
           role="dialog"
           aria-modal="true"
           aria-labelledby="replace-modal-title"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              triggerHaptic('selection');
+              setReplacingSlot(null);
+            }
+          }}
           onKeyDown={(event) => {
-            if (event.key === 'Escape') setReplacingSlot(null);
+            if (event.key === 'Escape') {
+              triggerHaptic('selection');
+              setReplacingSlot(null);
+            }
           }}
         >
           <div className="fm-dialog">
@@ -245,7 +290,10 @@ export function MenuScreen({
               <button
                 type="button"
                 className="fm-close"
-                onClick={() => setReplacingSlot(null)}
+                onClick={() => {
+                  triggerHaptic('selection');
+                  setReplacingSlot(null);
+                }}
                 aria-label="Закрыть окно замены"
               >
                 <X aria-hidden="true" />
@@ -258,6 +306,9 @@ export function MenuScreen({
               <div className="fm-candidates">
                 {matchingRecipes.map((candidate) => {
                   const isCurrent = candidate.id === replacingSlot.currentRecipeId;
+                  const isAlreadyUsedToday = resolvedSlots.some(
+                    (s) => s.slotKey !== replacingSlot.slotKey && s.recipe?.id === candidate.id
+                  );
                   return (
                     <div className="fm-candidate" key={candidate.id}>
                       <div>
@@ -270,8 +321,9 @@ export function MenuScreen({
                       <button
                         type="button"
                         className="fm-secondary"
-                        disabled={isCurrent}
+                        disabled={isCurrent || isAlreadyUsedToday}
                         onClick={() => {
+                          triggerHaptic('notification_success');
                           onReplaceRecipe(
                             currentDay?.dayIndex ?? 0,
                             replacingSlot.slotKey,
@@ -284,6 +336,8 @@ export function MenuScreen({
                           <>
                             <Check aria-hidden="true" /> Выбрано
                           </>
+                        ) : isAlreadyUsedToday ? (
+                          'Уже в меню на сегодня'
                         ) : (
                           'Поставить в план'
                         )}

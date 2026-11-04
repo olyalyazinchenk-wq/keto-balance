@@ -96,7 +96,7 @@ test('smart aggregation sums identical ingredients across meals and days without
   assert.equal(cottage.amountLabel, '80 г');
 });
 
-test('scaling portions multiplier scales amounts and strictly preserves checkedInStore state', () => {
+test('scaling portions multiplier scales amounts and resets checkmarks when amount changes (R4)', () => {
   const multiDayMenu = {
     id: 'menu-multi',
     created: 1,
@@ -127,16 +127,13 @@ test('scaling portions multiplier scales amounts and strictly preserves checkedI
   assert.equal(egg2x.amountLabel, '8 шт.');
   assert.equal(cottage2x.amountLabel, '160 г');
 
-  // Checkbox states preserved
-  assert.equal(egg2x.checkedInStore, true, 'checkedInStore should remain preserved at 2x');
-  assert.equal(cottage2x.alreadyHave, true, 'alreadyHave should remain preserved at 2x');
+  // Checkbox states reset when amount changed (audit R4)
+  assert.equal(egg2x.checkedInStore, false, 'checkedInStore should reset when amount changed');
+  assert.equal(cottage2x.alreadyHave, false, 'alreadyHave should reset when amount changed');
 
-  // Scale back to 1x portions: states still preserved
-  const listBack1x = rebuildShoppingFromMenu(multiDayMenu, fixtureRecipes, list2x, 1);
-  const eggBack = listBack1x.find((it) => it.name === 'Яйца куриные');
-  const cottageBack = listBack1x.find((it) => it.name === 'Творог 9%');
-
-  assert.equal(eggBack.amountLabel, '4 шт.');
-  assert.equal(eggBack.checkedInStore, true, 'checkedInStore preserved returning to 1x');
-  assert.equal(cottageBack.alreadyHave, true, 'alreadyHave preserved returning to 1x');
+  // When amount does NOT change, checkmark state is preserved
+  egg2x.checkedInStore = true;
+  const listSame = rebuildShoppingFromMenu(multiDayMenu, fixtureRecipes, list2x, 2);
+  const eggSame = listSame.find((it) => it.name === 'Яйца куриные');
+  assert.equal(eggSame.checkedInStore, true, 'checkedInStore preserved when amount is unchanged');
 });

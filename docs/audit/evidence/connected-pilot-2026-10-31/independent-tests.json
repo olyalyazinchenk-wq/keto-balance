@@ -1,0 +1,50 @@
+{
+  "scope": "Independent review: native frontend, targeted backend with outer IO/network guard, synthetic policy probes; no build, no server/network startup, no real DB/env reads",
+  "results": {
+    "frontend": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-report-independent-tj0jb7r5\\frontend.log",
+      "tests": 174,
+      "pass": 174,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "todo": 0,
+      "file_count": 25
+    },
+    "backend-targeted": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-report-independent-tj0jb7r5\\backend-targeted.log",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "guard-policy-probe": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-report-independent-tj0jb7r5\\guard-policy-probe.log",
+      "observed": {
+        "paths_allowed_outside_root": {
+          ".env": false,
+          ".env.staging": true,
+          ".env.example": true,
+          "sample.db": false
+        },
+        "runner_exit_when_guard_installation_failed": 0
+      }
+    },
+    "nested-content-hash-probe": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-report-independent-tj0jb7r5\\nested-content-hash-probe.log",
+      "observed": {
+        "nested_ingredient_changed": true,
+        "hash_unchanged": true
+      }
+    },
+    "runbook-cli-probe": {
+      "exit_code": 2,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-report-independent-tj0jb7r5\\runbook-cli-probe.log",
+      "required_args_missing": true
+    }
+  }
+}

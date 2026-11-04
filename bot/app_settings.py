@@ -30,6 +30,11 @@ class AppSettings:
     allow_demo_auth: bool = False
     allow_demo_payments: bool = False
     session_max_lifetime_seconds: Optional[int] = None
+    telegram_webhook_secret_token: Optional[str] = field(default_factory=lambda: os.getenv("TELEGRAM_WEBHOOK_SECRET_TOKEN"))
+
+    @property
+    def is_staging(self) -> bool:
+        return self.app_stage in {"staging", "home-pilot"}
 
     @property
     def is_pilot(self) -> bool:

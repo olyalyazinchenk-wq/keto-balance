@@ -9,21 +9,23 @@ import {
 import type {
   ShoppingFixtureItem,
 } from './contract';
+import type { PilotShoppingItemV1 } from '../../api/pilotTypes';
 import {
   calculateShoppingProgress,
   createCustomShoppingItem,
   formatShoppingListForClipboard,
 } from './state';
 import { copyShoppingText } from './clipboard';
+import { triggerHaptic } from '../../tma/telegram';
 
 export interface ShoppingScreenProps {
-  items: ShoppingFixtureItem[];
+  items: (ShoppingFixtureItem | PilotShoppingItemV1)[];
   menuTitle: string;
   isStaleAfterMenuEdit: boolean;
   onRefreshShoppingFromMenu: () => void;
   onToggleCheckedInStore: (id: string) => void;
   onToggleAlreadyHave: (id: string) => void;
-  onAddCustomItem?: (item: ShoppingFixtureItem) => void;
+  onAddCustomItem?: (item: PilotShoppingItemV1) => void;
   portionsMultiplier?: 1 | 2;
   onChangePortionsMultiplier?: (multiplier: 1 | 2) => void;
 }
@@ -68,7 +70,12 @@ export function ShoppingScreen({
     const success = await copyShoppingText(text, clipboard);
     setCopiedNotice(success);
     setCopyError(!success);
-    if (success) setTimeout(() => setCopiedNotice(false), 2500);
+    if (success) {
+      triggerHaptic('notification_success');
+      setTimeout(() => setCopiedNotice(false), 2500);
+    } else {
+      triggerHaptic('notification_error');
+    }
   };
 
   const handleAddCustomSubmit = (e: React.FormEvent) => {
@@ -79,7 +86,16 @@ export function ShoppingScreen({
       customDept
     );
     if (!created || !onAddCustomItem) return;
-    onAddCustomItem(created);
+    triggerHaptic('notification_success');
+    onAddCustomItem({
+      id: created.id,
+      name: created.name,
+      amountLabel: created.amountLabel,
+      department: created.department,
+      linkedRecipeTitles: created.linkedRecipeTitles || [],
+      alreadyHave: Boolean(created.alreadyHave),
+      checkedInStore: Boolean(created.checkedInStore),
+    });
     setCustomName('');
     setCustomAmount('');
     setShowAddForm(false);
@@ -118,7 +134,10 @@ export function ShoppingScreen({
                     <button
                       key={p}
                       type="button"
-                      onClick={() => onChangePortionsMultiplier(p)}
+                      onClick={() => {
+                        triggerHaptic('selection');
+                        onChangePortionsMultiplier(p);
+                      }}
                       data-testid={`shopping-portions-${p}x`}
                       aria-pressed={active}
                       className={`min-h-[30px] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] tabular-nums rounded-md kb-focus-ring kb-transition-scale ${
@@ -146,7 +165,10 @@ export function ShoppingScreen({
             </button>
             <button
               type="button"
-              onClick={() => setShowAddForm((p) => !p)}
+              onClick={() => {
+                triggerHaptic('selection');
+                setShowAddForm((p) => !p);
+              }}
               data-testid="shopping-add-custom-toggle-btn"
               className="px-3 py-2 text-xs font-semibold rounded-xl border border-[var(--kb-border)] inline-flex items-center gap-1.5"
             >
@@ -177,7 +199,10 @@ export function ShoppingScreen({
             <span>В меню были изменения блюд. Обнови список, чтобы не забыть нужные ингредиенты.</span>
             <button
               type="button"
-              onClick={onRefreshShoppingFromMenu}
+              onClick={() => {
+                triggerHaptic('impact_medium');
+                onRefreshShoppingFromMenu();
+              }}
               data-testid="shopping-refresh-btn"
               className="px-3 py-1.5 rounded-lg bg-amber-600 text-white font-semibold inline-flex items-center gap-1.5 shrink-0"
             >
@@ -226,13 +251,17 @@ export function ShoppingScreen({
             <div className="flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setShowAddForm(false)}
+                onClick={() => {
+                  triggerHaptic('selection');
+                  setShowAddForm(false);
+                }}
                 className="px-3 py-1.5 text-xs rounded-lg border"
               >
                 Отмена
               </button>
               <button
                 type="submit"
+                data-testid="shopping-custom-submit-btn"
                 className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white"
               >
                 Сохранить в список
@@ -247,7 +276,10 @@ export function ShoppingScreen({
             <button
               key={mode}
               type="button"
-              onClick={() => setFilterMode(mode)}
+              onClick={() => {
+                triggerHaptic('selection');
+                setFilterMode(mode);
+              }}
               className={`px-3 py-1 text-xs rounded-lg font-semibold ${
                 filterMode === mode
                   ? 'bg-emerald-700 text-white'
@@ -278,14 +310,17 @@ export function ShoppingScreen({
                     <div
                       key={item.id}
                       data-testid={`shopping-item-row-${item.id}`}
-                      className={`p-3 flex items-center justify-between gap-3 text-sm ${
+                      className={`food-shopping-item p-3 flex items-center justify-between gap-3 text-sm ${
                         isDone || isHome ? 'opacity-50 line-through' : ''
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <button
                           type="button"
-                          onClick={() => onToggleCheckedInStore(item.id)}
+                          onClick={() => {
+                            triggerHaptic('impact_light');
+                            onToggleCheckedInStore(item.id);
+                          }}
                           aria-pressed={isDone}
                           data-testid={`toggle-in-store-${item.id}`}
                           className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
@@ -309,7 +344,10 @@ export function ShoppingScreen({
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
-                          onClick={() => onToggleAlreadyHave(item.id)}
+                          onClick={() => {
+                            triggerHaptic('selection');
+                            onToggleAlreadyHave(item.id);
+                          }}
                           aria-pressed={isHome}
                           data-testid={`toggle-already-have-${item.id}`}
                           className={`px-2.5 py-1 text-xs rounded-lg border ${

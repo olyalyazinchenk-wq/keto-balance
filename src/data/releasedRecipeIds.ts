@@ -4,7 +4,19 @@
  * Preview mode uses PREVIEW_RECIPE_IDS demo pool.
  */
 
+export interface RecipeApprovalRecord {
+  id: string;
+  sourceHash: string;
+  approvalRef: string;
+  approvalDate: string;
+  serv: number;
+  imageStatus: 'verified' | 'unverified' | 'placeholder';
+  license: string;
+}
+
 export const RELEASED_RECIPE_IDS: readonly string[] = [];
+
+export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [];
 
 export const PREVIEW_RECIPE_IDS: readonly string[] = [
   'k1', 'k2', 'k3', 'k4', 'k5', 'k6', 'k7', 'k8', 'k9', 'k10',

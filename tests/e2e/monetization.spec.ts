@@ -34,6 +34,7 @@ test.describe('E4: Monetization, Paywall and Premium Subscription Flow', () => {
     // 3. Arrive at Today screen
     const todayScreen = page.locator('[data-testid="food-today"]');
     await expect(todayScreen).toBeVisible({ timeout: 10000 });
+    await page.getByRole('dialog', { name: 'Совет дня' }).getByRole('button', { name: 'Понятно, закрыть' }).click();
 
     // 4. Verify Free status in Header (no Premium badge, "⭐ Получить Premium" button is present)
     const headerPremiumBtn = page.locator('[data-testid="header-premium-btn"]');
@@ -91,6 +92,7 @@ test.describe('E4: Monetization, Paywall and Premium Subscription Flow', () => {
     ]);
 
     await expect(page.locator('[data-testid="food-today"]')).toBeVisible({ timeout: 10000 });
+    if (await page.getByRole('dialog', { name: 'Совет дня' }).isVisible()) await page.getByRole('dialog', { name: 'Совет дня' }).getByRole('button', { name: 'Понятно, закрыть' }).click();
 
     // 3. Open PaywallModal
     await page.locator('[data-testid="header-premium-btn"]').click();
@@ -149,6 +151,7 @@ test.describe('E4: Monetization, Paywall and Premium Subscription Flow', () => {
     ]);
 
     await expect(page.locator('[data-testid="food-today"]')).toBeVisible({ timeout: 10000 });
+    if (await page.getByRole('dialog', { name: 'Совет дня' }).isVisible()) await page.getByRole('dialog', { name: 'Совет дня' }).getByRole('button', { name: 'Понятно, закрыть' }).click();
     const paywallModal = page.locator('[data-testid="paywall-modal"]');
 
     // Dismissal Mechanism 1: Close button (✕)
@@ -206,6 +209,7 @@ test.describe('E4: Monetization, Paywall and Premium Subscription Flow', () => {
     }
 
     await expect(page.locator('[data-testid="food-today"]')).toBeVisible({ timeout: 10000 });
+    if (await page.getByRole('dialog', { name: 'Совет дня' }).isVisible()) await page.getByRole('dialog', { name: 'Совет дня' }).getByRole('button', { name: 'Понятно, закрыть' }).click();
 
     // Verify initial subscription status via API
     if (sessionToken) {
@@ -252,6 +256,7 @@ test.describe('E4: Monetization, Paywall and Premium Subscription Flow', () => {
     await page.reload();
     await expect(page.locator('[data-testid="start-gate-screen"]')).not.toBeVisible();
     await expect(page.locator('[data-testid="food-today"]')).toBeVisible({ timeout: 10000 });
+    if (await page.getByRole('dialog', { name: 'Совет дня' }).isVisible()) await page.getByRole('dialog', { name: 'Совет дня' }).getByRole('button', { name: 'Понятно, закрыть' }).click();
     await expect(page.locator('[data-testid="header-premium-badge"]')).toBeVisible();
     await expect(page.locator('[data-testid="header-premium-badge"]')).toContainText('👑 Premium');
   });

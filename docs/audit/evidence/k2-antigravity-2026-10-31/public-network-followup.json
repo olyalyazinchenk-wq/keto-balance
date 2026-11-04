@@ -1,0 +1,20 @@
+{
+  "scope": "One follow-up after observing tunnel URL rotation; GET health/version only, no user endpoints or tunnel creation/restart",
+  "results": [
+    {
+      "observedAt": "2026-10-31T00:26:57.068701+00:00",
+      "url": "https://controllers-bands-depending-condo.trycloudflare.com/api/health",
+      "error": "TimeoutError: The read operation timed out"
+    },
+    {
+      "observedAt": "2026-10-31T00:26:57.069531+00:00",
+      "url": "https://controllers-bands-depending-condo.trycloudflare.com/api/version",
+      "status": 200,
+      "contentType": "application/json",
+      "safeFields": {
+        "buildId": "2600878560633b6a",
+        "builtAt": "2026-10-30T23:18:02.489Z"
+      }
+    }
+  ]
+}

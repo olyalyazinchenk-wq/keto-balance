@@ -1,0 +1,12 @@
+{
+  "scope": "Adapted fresh built-bundle browser probe with all API traffic mocked/aborted; no real backend/server/Telegram used in this case",
+  "build_id": "e7d04da9d43a7f50",
+  "full_probe_receipt": "C:/Users/HP/AppData/Local/hermes/cache/scratch/pilot-f1-f4-ui-network-probe.json",
+  "harness_exit_code": 0,
+  "network_error_after_unrelated_success": {
+    "before": "Ошибка синхронизации с сервером",
+    "after": "Сохранение изменений на сервере...",
+    "shopping_puts": 1,
+    "unhandled": []
+  }
+}

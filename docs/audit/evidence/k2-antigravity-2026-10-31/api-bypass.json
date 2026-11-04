@@ -1,0 +1,39 @@
+{
+  "observedAt": "2026-10-31T00:17:21.426352+00:00",
+  "scope": "TestClient ASGI only; synthetic scratch DB; production-like settings; anonymous preview disabled; signing key synthetic and nonempty",
+  "cases": [
+    {
+      "case": "missing identity control",
+      "status": 401,
+      "expected": 401
+    },
+    {
+      "case": "unauthenticated query identity",
+      "status": 200,
+      "expected": "401 or 403",
+      "read_fake_profile": true
+    },
+    {
+      "case": "unauthenticated header identity",
+      "status": 200,
+      "expected": "401 or 403",
+      "read_fake_profile": true
+    },
+    {
+      "case": "unsigned mock session with configured synthetic signing key",
+      "status": 200,
+      "expected": "400 or 401 or 403",
+      "session_for_fake_victim": true,
+      "session_token_returned": true
+    },
+    {
+      "case": "forged session can read seeded fake profile",
+      "status": 200,
+      "expected": "session should never have existed",
+      "read_fake_profile": true
+    }
+  ],
+  "forbidden_io_attempts": [],
+  "no_live_api_requests": true,
+  "no_real_user_data_used": true
+}

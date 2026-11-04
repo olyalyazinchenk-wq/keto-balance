@@ -15,17 +15,17 @@ export default defineConfig({
     ['list'],
   ],
   use: {
-    baseURL: process.env.BASE_URL || 'http://127.0.0.1:8000',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:18080',
     trace: 'off',
     video: 'off',
     screenshot: 'off',
     headless: true,
   },
   webServer: {
-    command: 'python bot/server.py',
-    url: 'http://127.0.0.1:8000/api/health',
-    reuseExistingServer: true,
-    timeout: 15000,
+    command: 'node scripts/build-isolated.mjs --serve-test',
+    url: 'http://127.0.0.1:18080/api/health',
+    reuseExistingServer: false,
+    timeout: 60000,
   },
   projects: [
     {

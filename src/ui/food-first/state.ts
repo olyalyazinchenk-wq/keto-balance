@@ -4,6 +4,9 @@ import type {
   ShoppingFixtureItem,
   UserSettingsDraft,
 } from './contract';
+import { preferencesToUserProfile } from '../../adapters/pilotState';
+import { isRecipeAllowed } from '../../domain/eligibility';
+import { RECIPES } from '../../data/recipes';
 
 export const RESTRICTION_LABELS: Record<string, string> = {
   no_dairy: 'Без молочных продуктов',
@@ -27,7 +30,16 @@ export function extractStepTimerMinutes(stepText: string): number | null {
   return null;
 }
 
-export function calculateShoppingProgress(items: ShoppingFixtureItem[]): {
+export interface ShoppingItemLike {
+  id?: string;
+  name: string;
+  amountLabel: string;
+  department?: string;
+  alreadyHave?: boolean;
+  checkedInStore?: boolean;
+}
+
+export function calculateShoppingProgress(items: readonly ShoppingItemLike[]): {
   total: number;
   inStore: number;
   alreadyHome: number;
@@ -59,7 +71,7 @@ export function calculateShoppingProgress(items: ShoppingFixtureItem[]): {
 }
 
 export function formatShoppingListForClipboard(
-  items: ShoppingFixtureItem[],
+  items: readonly ShoppingItemLike[],
   menuTitle: string,
   isStale: boolean
 ): string {
@@ -125,6 +137,13 @@ export function resolveDayMenuSlots(
           { key: 'breakfast', label: 'Первый приём (завтрак / бранч)' },
           { key: 'dinner', label: 'Второй приём (ужин)' },
         ]
+      : mealsPerDay === 4
+      ? [
+          { key: 'breakfast', label: 'Завтрак' },
+          { key: 'lunch', label: 'Обед' },
+          { key: 'dinner', label: 'Ужин' },
+          { key: 'snack', label: 'Перекус' },
+        ]
       : [
           { key: 'breakfast', label: 'Завтрак' },
           { key: 'lunch', label: 'Обед' },
@@ -143,24 +162,29 @@ export function resolveDayMenuSlots(
 
 export function filterRecipesBySettings(
   recipes: RecipeViewModel[],
-  settings: Pick<UserSettingsDraft, 'approach' | 'restrictions' | 'prepTimeMax'>
+  settings: Pick<UserSettingsDraft, 'approach' | 'restrictions' | 'prepTimeMax'>,
+  catalogRecipes?: any[]
 ): RecipeViewModel[] {
-  return recipes.filter((recipe) => {
-    if (
-      settings.approach === 'carnivore' &&
-      !recipe.suitableFor.includes('carnivore')
-    ) {
-      return false;
-    }
-    if (recipe.prepMinutes > settings.prepTimeMax) {
-      return false;
-    }
-    for (const r of settings.restrictions) {
-      if (!recipe.avoids.includes(r)) {
-        return false;
-      }
-    }
-    return true;
+  const canonProfile = preferencesToUserProfile({
+    confirmed18Plus: true,
+    approach: (settings.approach as any) || 'keto',
+    restrictions: (settings.restrictions || []) as any,
+    prepTimeMax: settings.prepTimeMax || 0,
+    mealsPerDay: 3,
+    preferenceNote: '',
+  });
+
+  const recipeMap = new Map<string, any>();
+  const sourceList = (catalogRecipes && catalogRecipes.length > 0) ? catalogRecipes : RECIPES;
+  for (const r of sourceList) {
+    recipeMap.set(r.id, r);
+  }
+
+  return recipes.filter((vm) => {
+    const r = recipeMap.get(vm.id);
+    if (!r) return false;
+    if (r.mode !== canonProfile.mode) return false;
+    return isRecipeAllowed(r, canonProfile);
   });
 }
 

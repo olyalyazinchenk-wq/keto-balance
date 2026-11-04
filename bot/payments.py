@@ -44,6 +44,9 @@ def init_purchase(
     mode = os.getenv("PAYMENT_MODE", "disabled")
     payments_enabled = os.getenv("PAYMENTS_ENABLED", "0")
     is_demo = allow_demo or provider == "demo"
+    stage = os.getenv("APP_STAGE", "pilot")
+    if stage in ["staging", "home-pilot", "test"] and provider not in ("", "demo"):
+        is_demo = True
     if (mode == "disabled" or payments_enabled == "0") and not is_demo:
         raise RuntimeError("Payments are disabled")
 

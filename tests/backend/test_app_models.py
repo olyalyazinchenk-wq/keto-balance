@@ -60,3 +60,74 @@ class TestAppModels(unittest.TestCase):
         )
         self.assertFalse(resp.safe)
         self.assertTrue(resp.blocked)
+
+    def test_pilot_preferences_strict_validation(self):
+        from bot.pilot_models import PilotPreferencesV1
+        valid = PilotPreferencesV1(
+            confirmed18Plus=True,
+            approach="keto",
+            restrictions=["exclude_eggs", "exclude_dairy"],
+            prepTimeMax=30,
+            mealsPerDay=3,
+            preferenceNote=""
+        )
+        self.assertTrue(valid.confirmed18Plus)
+        self.assertEqual(valid.prepTimeMax, 30)
+
+        # Boolean strictness (int not accepted as bool)
+        with self.assertRaises(ValidationError):
+            PilotPreferencesV1(confirmed18Plus=1, approach="keto", restrictions=[], prepTimeMax=30, mealsPerDay=3)
+
+        # Invalid restriction token
+        with self.assertRaises(ValidationError):
+            PilotPreferencesV1(confirmed18Plus=True, approach="keto", restrictions=["unknown_allergy"], prepTimeMax=30, mealsPerDay=3)
+
+        # prepTimeMax out of range (0..240)
+        with self.assertRaises(ValidationError):
+            PilotPreferencesV1(confirmed18Plus=True, approach="keto", restrictions=[], prepTimeMax=300, mealsPerDay=3)
+
+        # Unknown field rejected
+        with self.assertRaises(ValidationError):
+            PilotPreferencesV1(confirmed18Plus=True, approach="keto", restrictions=[], prepTimeMax=30, mealsPerDay=3, extra_field="bad")
+
+    def test_pilot_user_write_revision_validation(self):
+        from bot.pilot_models import PilotUserWriteV1
+        # revision=0 is valid
+        valid_zero = PilotUserWriteV1(expected_revision=0, profile=None, state=None)
+        self.assertEqual(valid_zero.expected_revision, 0)
+
+        # negative revision rejected
+        with self.assertRaises(ValidationError):
+            PilotUserWriteV1(expected_revision=-1, profile=None, state=None)
+
+        # float revision rejected
+        with self.assertRaises(ValidationError):
+            PilotUserWriteV1(expected_revision=1.5, profile=None, state=None)
+
+        # boolean revision rejected
+        with self.assertRaises(ValidationError):
+            PilotUserWriteV1(expected_revision=True, profile=None, state=None)
+
+    def test_pilot_state_menu_and_selected_date_validation(self):
+        from bot.pilot_models import PilotStateV1, GeneratedMenuModel, DayMenuModel
+        # null menu with null selected_date is valid
+        valid_null = PilotStateV1(menu=None, selected_date=None)
+        self.assertIsNone(valid_null.selected_date)
+
+        # null menu with non-null selected_date is rejected
+        with self.assertRaises(ValidationError):
+            PilotStateV1(menu=None, selected_date="2026-10-31")
+
+        # invalid calendar date rejected
+        with self.assertRaises(ValidationError):
+            DayMenuModel(date="2026-02-31") # Feb 31 does not exist
+
+        # menu with matching selected_date is valid
+        day = DayMenuModel(date="2026-10-31", slots={"m1": "k1"})
+        menu = GeneratedMenuModel(mode="keto", numDays=1, meals=1, portion=1, saved=True, created=1700000000, days=[day])
+        valid_state = PilotStateV1(menu=menu, selected_date="2026-10-31")
+        self.assertEqual(valid_state.selected_date, "2026-10-31")
+
+        # selected_date not in menu days is rejected
+        with self.assertRaises(ValidationError):
+            PilotStateV1(menu=menu, selected_date="2026-11-01")

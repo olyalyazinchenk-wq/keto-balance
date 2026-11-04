@@ -1,0 +1,38 @@
+{
+  "scope": "Actual fresh built JS/CSS with private route-fulfilled/aborted synthetic API. Not a live server, native E2E or Telegram check.",
+  "build_id": "c145c16cbf4fdc16",
+  "invalid_restore": {
+    "settings_form_visible": true,
+    "today_visible": false,
+    "confirmed18_preserved": true,
+    "error": "⚠️ Сохранённое меню несовместимо с текущими настройками, а составить новое меню невозможно. Пожалуйста, измените параметры или ограничения.",
+    "unhandled": []
+  },
+  "network_sticky": {
+    "before": "Ошибка синхронизации с сервером",
+    "after": "Ошибка синхронизации с сервером",
+    "shopping_puts": 0,
+    "unhandled": []
+  },
+  "conflict_sticky": {
+    "before": "Конфликт версий. Обновите страницу",
+    "after": "Конфликт версий. Обновите страницу",
+    "shopping_puts": 0,
+    "unhandled": []
+  },
+  "duplicate_restore": {
+    "banner": "Конфликт версий. Обновите страницу",
+    "user_puts": [
+      {
+        "expected_revision": 0,
+        "status": 409
+      }
+    ],
+    "stored_first_day_ids": [
+      "k1",
+      "k1",
+      "k1"
+    ],
+    "unhandled": []
+  }
+}

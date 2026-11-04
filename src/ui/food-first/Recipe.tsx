@@ -13,6 +13,7 @@ import {
 } from './state';
 import { RecipeArtwork } from './RecipeArtwork';
 import { photoForRecipe } from './model';
+import { triggerHaptic } from '../../tma/telegram';
 
 export interface RecipeScreenProps {
   recipe: RecipeViewModel;
@@ -45,6 +46,7 @@ export function RecipeScreen({
     if (!timerRunning || timerSecondsLeft <= 0) {
       if (timerSecondsLeft <= 0 && timerRunning) {
         setTimerRunning(false);
+        triggerHaptic('notification_success');
       }
       return;
     }
@@ -55,6 +57,7 @@ export function RecipeScreen({
   }, [timerRunning, timerSecondsLeft]);
 
   const startStepTimer = (minutes: number, stepIndex?: number) => {
+    triggerHaptic('selection');
     setTimerSecondsLeft(minutes * 60);
     setTimerLabel(
       stepIndex !== undefined
@@ -79,6 +82,11 @@ export function RecipeScreen({
   ).length;
 
   const handleStartOrAdvanceStep = () => {
+    triggerHaptic(
+      completedStepsCount + 1 >= recipe.steps.length
+        ? 'notification_success'
+        : 'impact_medium'
+    );
     const firstUncheckedIdx = recipe.steps.findIndex(
       (_, idx) => !checkedSteps[`${recipe.id}:step:${idx}`]
     );
@@ -93,7 +101,10 @@ export function RecipeScreen({
         {onGoBack && (
           <button
             type="button"
-            onClick={onGoBack}
+            onClick={() => {
+              triggerHaptic('impact_light');
+              onGoBack();
+            }}
             data-testid="recipe-back-btn"
             className="mb-2 text-sm text-[var(--kb-text-2)] hover:text-[var(--kb-text-1)] flex items-center gap-1"
           >
@@ -162,7 +173,10 @@ export function RecipeScreen({
                     <button
                       key={p}
                       type="button"
-                      onClick={() => setPortions(p)}
+                      onClick={() => {
+                        triggerHaptic('selection');
+                        setPortions(p);
+                      }}
                       aria-pressed={active}
                       className={`min-h-[38px] px-2.5 sm:px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] tabular-nums kb-focus-ring kb-transition-scale ${
                         active
@@ -219,7 +233,10 @@ export function RecipeScreen({
                   key={ingKey}
                   type="button"
                   data-testid={`recipe-ingredient-row-${idx}`}
-                  onClick={() => onToggleIngredient(ingKey)}
+                  onClick={() => {
+                    triggerHaptic('selection');
+                    onToggleIngredient(ingKey);
+                  }}
                   aria-pressed={isChecked}
                   className={`w-full text-left kb-ingredient-row group kb-focus-ring ${
                     isChecked ? 'kb-ingredient-row-done' : ''
@@ -281,7 +298,10 @@ export function RecipeScreen({
                 <button
                   type="button"
                   className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white"
-                  onClick={() => setTimerRunning((prev) => !prev)}
+                  onClick={() => {
+                    triggerHaptic('selection');
+                    setTimerRunning((prev) => !prev);
+                  }}
                 >
                   {timerRunning ? 'Пауза' : 'Продолжить'}
                 </button>
@@ -289,6 +309,7 @@ export function RecipeScreen({
                   type="button"
                   className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
                   onClick={() => {
+                    triggerHaptic('impact_light');
                     setTimerRunning(false);
                     setTimerSecondsLeft(0);
                   }}
@@ -317,7 +338,10 @@ export function RecipeScreen({
                   <div className="flex items-start gap-3">
                     <button
                       type="button"
-                      onClick={() => onToggleStep(stepKey)}
+                      onClick={() => {
+                        triggerHaptic('impact_light');
+                        onToggleStep(stepKey);
+                      }}
                       aria-pressed={isChecked}
                       data-testid={`recipe-step-toggle-${idx}`}
                       className={`mt-0.5 w-6 h-6 rounded-md border flex items-center justify-center shrink-0 ${
@@ -336,7 +360,10 @@ export function RecipeScreen({
                       {timerMins !== null && (
                         <button
                           type="button"
-                          onClick={() => startStepTimer(timerMins, idx)}
+                          onClick={() => {
+                            triggerHaptic('selection');
+                            startStepTimer(timerMins, idx);
+                          }}
                           data-testid={`start-step-timer-btn-${idx}`}
                           className="mt-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 inline-flex items-center gap-1.5 hover:underline"
                         >
@@ -379,7 +406,10 @@ export function RecipeScreen({
               <div className="flex justify-end pt-2">
                 <button
                   type="button"
-                  onClick={() => onLogCookedMealToDiary(recipe.title)}
+                  onClick={() => {
+                    triggerHaptic('notification_success');
+                    onLogCookedMealToDiary(recipe.title);
+                  }}
                   data-testid="recipe-log-to-diary-btn"
                   className="px-4 py-2 text-xs font-semibold rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200 inline-flex items-center gap-2"
                 >

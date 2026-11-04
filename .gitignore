@@ -19,6 +19,16 @@ playwright-report/
 run_tunnel.lock
 .tunnel_cache.json
 
+# Runtime state and local operational artifacts
+.home_pilot_state.json
+.tunnel_ssh_state.json
+current_tunnel_url.txt
+backups/
+data/
+releases/
+scratch/
+*.backup*
+
 # артефакты и бинарники — не публикуем в репозиторий
 media/
 tools/

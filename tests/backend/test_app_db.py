@@ -95,3 +95,25 @@ class TestAppDB(unittest.TestCase):
         self.assertIsNone(get_user_profile(401, db_path=self.db_path))
         self.assertIsNone(get_session_user("token_401", db_path=self.db_path))
         self.assertEqual(len(get_support_tickets(401, db_path=self.db_path)), 0)
+
+    def test_session_token_stored_as_hash_only(self):
+        import hashlib
+        raw_token = "raw_secret_token_12345"
+        create_or_get_user(501, db_path=self.db_path)
+        create_session(501, raw_token, db_path=self.db_path)
+
+        # Проверяем, что в БД записан только SHA-256 хеш, а не сырой токен
+        conn = sqlite3.connect(str(self.db_path))
+        cur = conn.cursor()
+        cur.execute("SELECT session_token FROM user_sessions WHERE user_id = 501")
+        stored = cur.fetchone()[0]
+        conn.close()
+
+        expected_hash = hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+        self.assertEqual(stored, expected_hash)
+        self.assertNotIn(raw_token, stored)
+
+        # get_session_user по-прежнему находит сессию по сырому токену
+        session = get_session_user(raw_token, db_path=self.db_path)
+        self.assertIsNotNone(session)
+        self.assertEqual(session["user_id"], 501)

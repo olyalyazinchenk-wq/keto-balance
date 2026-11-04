@@ -675,7 +675,7 @@ def start(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> int:
         server_env["KETO_BOT_TOKEN"] = bot_token
 
         print(f"[HOME_PILOT] Starting Staging Server on port {STAGING_PORT} (--persistent, receipt={pinned_receipt.name})...", flush=True)
-        spawn_flags = (subprocess.CREATE_NO_WINDOW | getattr(subprocess, "DETACHED_PROCESS", 0x00000008)) if os.name == "nt" else 0
+        spawn_flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         try:
             server_proc = subprocess.Popen(
                 server_cmd,
@@ -746,7 +746,7 @@ def start(with_tunnel: bool = True, receipt_path: Optional[str] = None) -> int:
                 tunnel_env["KETO_BOT_TOKEN"] = bot_token
 
             print(f"[HOME_PILOT] Starting SSH Tunnel to port {STAGING_PORT} (chat_id={OLGA_CHAT_ID})...", flush=True)
-            spawn_flags = (subprocess.CREATE_NO_WINDOW | getattr(subprocess, "DETACHED_PROCESS", 0x00000008)) if os.name == "nt" else 0
+            spawn_flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
             try:
                 tunnel_proc = subprocess.Popen(
                     tunnel_cmd,

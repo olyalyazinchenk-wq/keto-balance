@@ -13,13 +13,20 @@ from typing import Any, Dict, Optional
 
 logger = logging.getLogger("KetoServer")
 
+PRODUCT_STARS: Dict[str, int] = {
+    "sub_month": 1000,
+    "plateau_guide": 250,
+    "vip_care": 7500,
+}
+
 def answer_pre_checkout_query(
     bot_token: str,
     pre_checkout_query_id: str,
     ok: bool = True,
-    error_message: Optional[str] = None
+    error_message: Optional[str] = None,
 ) -> bool:
-    if not bot_token or "test" in bot_token.lower() or os.getenv("APP_STAGE") == "test":
+    stage = os.getenv("APP_STAGE", "pilot")
+    if stage in ["staging", "home-pilot", "test"] or not bot_token or "test" in bot_token.lower():
         return True
     url = f"https://api.telegram.org/bot{bot_token}/answerPreCheckoutQuery"
     payload: Dict[str, Any] = {"pre_checkout_query_id": pre_checkout_query_id, "ok": ok}
@@ -30,7 +37,7 @@ def answer_pre_checkout_query(
         resp = httpx.post(url, json=payload, timeout=8.0)
         return resp.status_code == 200
     except Exception as e:
-        logger.warning(f"Failed to answer pre_checkout_query: {e}")
+        logger.warning(f"Failed to answer pre_checkout_query: {type(e).__name__}")
         return False
 
 def create_star_invoice_link(
@@ -38,9 +45,11 @@ def create_star_invoice_link(
     title: str,
     description: str,
     payload: str,
-    stars_amount: int = 1000
+    stars_amount: int = 1000,
+    app_stage: Optional[str] = None,
 ) -> Optional[str]:
-    if not bot_token or "test" in bot_token.lower() or os.getenv("APP_STAGE") == "test":
+    stage = app_stage or os.getenv("APP_STAGE", "pilot")
+    if stage in ["staging", "home-pilot", "test"] or not bot_token or "test" in bot_token.lower():
         return f"https://t.me/$stars_invoice_mock_{payload}"
     url = f"https://api.telegram.org/bot{bot_token}/createInvoiceLink"
     data = {
@@ -58,7 +67,7 @@ def create_star_invoice_link(
             result = resp.json().get("result")
             return result
     except Exception as e:
-        logger.warning(f"Failed to create Stars invoice link: {e}")
+        logger.warning(f"Failed to create Stars invoice link: {type(e).__name__}")
     return None
 
 from fastapi import FastAPI, Header, HTTPException, Query, Request
@@ -238,6 +247,14 @@ def create_app(
     @app.post("/api/telegram/webhook")
     @app.post("/api/payments/webhook")
     async def telegram_payments_webhook(request: Request):
+        expected_secret = active_settings.telegram_webhook_secret_token or os.getenv("TELEGRAM_WEBHOOK_SECRET_TOKEN")
+        if expected_secret or active_settings.app_stage in ("staging", "home-pilot", "production", "prod"):
+            if not expected_secret:
+                raise HTTPException(status_code=403, detail="Forbidden: Webhook secret token is not configured")
+            token_header = request.headers.get("x-telegram-bot-api-secret-token")
+            if not token_header or not secrets.compare_digest(token_header, expected_secret):
+                raise HTTPException(status_code=403, detail="Forbidden: Invalid or missing webhook secret token")
+
         from bot.payments import is_payments_enabled
         if not is_payments_enabled():
             raise HTTPException(status_code=503, detail="Payments are disabled in P0")
@@ -254,11 +271,24 @@ def create_app(
             pcq = update["pre_checkout_query"]
             pcq_id = pcq.get("id")
             order_id = pcq.get("invoice_payload")
-            if order_id:
-                order = get_order(active_db, order_id)
-                if not order:
-                    answer_pre_checkout_query(bot_token, pcq_id, ok=False, error_message="Заказ не найден")
-                    return JSONResponse(status_code=404, content={"ok": False, "error": "Order not found"})
+            if not order_id:
+                answer_pre_checkout_query(bot_token, pcq_id, ok=False, error_message="Отсутствует invoice_payload")
+                return JSONResponse(status_code=400, content={"ok": False, "error": "Missing invoice_payload"})
+
+            order = get_order(active_db, order_id)
+            if not order:
+                answer_pre_checkout_query(bot_token, pcq_id, ok=False, error_message="Заказ не найден")
+                return JSONResponse(status_code=404, content={"ok": False, "error": "Order not found"})
+
+            expected_stars = PRODUCT_STARS.get(order.get("product_id"), 1000)
+            if pcq.get("currency") != "XTR" or pcq.get("total_amount") != expected_stars:
+                answer_pre_checkout_query(bot_token, pcq_id, ok=False, error_message="Неверная сумма или валюта")
+                return JSONResponse(status_code=400, content={"ok": False, "error": "Amount or currency mismatch"})
+
+            pcq_user_id = pcq.get("from", {}).get("id")
+            if not pcq_user_id or pcq_user_id != order.get("user_id"):
+                answer_pre_checkout_query(bot_token, pcq_id, ok=False, error_message="Несовпадение пользователя заказа")
+                return JSONResponse(status_code=403, content={"ok": False, "error": "User mismatch"})
 
             answer_pre_checkout_query(bot_token=bot_token, pre_checkout_query_id=pcq_id, ok=True)
             return {"ok": True}
@@ -273,6 +303,26 @@ def create_app(
             order = get_order(active_db, order_id)
             if not order:
                 raise HTTPException(status_code=404, detail="Order not found")
+
+            # Validate currency
+            if succ.get("currency") != "XTR":
+                raise HTTPException(status_code=400, detail="Invalid currency: expected XTR")
+
+            # Validate total amount (Stars)
+            expected_stars = PRODUCT_STARS.get(order.get("product_id"), 1000)
+            if succ.get("total_amount") != expected_stars:
+                raise HTTPException(status_code=400, detail="Payment amount mismatch")
+
+            # Validate user identity
+            sender_id = msg.get("from", {}).get("id")
+            if not sender_id or sender_id != order.get("user_id"):
+                raise HTTPException(status_code=403, detail="Payment user mismatch")
+
+            # Idempotency check:
+            # If order is already completed, return existing subscription data without extending the expiration date!
+            if order.get("status") == "completed":
+                sub = get_user_subscription(active_db, order["user_id"])
+                return {"ok": True, "completed_order_id": order_id, "subscription": sub, "already_completed": True}
 
             completed = complete_order(db_path=active_db, order_id=order_id)
             return {"ok": True, "completed_order_id": order_id, "subscription": completed.get("subscription")}
@@ -299,13 +349,16 @@ def create_app(
             user_obj = res.get("user_data")
             if not user_obj or not isinstance(user_obj, dict) or not user_obj.get("id"):
                 raise HTTPException(status_code=401, detail="User payload missing or invalid")
+            user_id = user_obj.get("id")
+            if active_settings.owner_allowlist is not None and user_id not in active_settings.owner_allowlist:
+                raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
             return {"valid": True, "auth_date": res.get("auth_date"), "user_data": user_obj}
-        except TokenExpiredError as e:
-            raise HTTPException(status_code=401, detail=f"Session expired: {e}")
-        except InvalidSignatureError as e:
-            raise HTTPException(status_code=401, detail=f"Invalid signature: {e}")
-        except AuthError as e:
-            raise HTTPException(status_code=401, detail=f"Authentication error: {e}")
+        except TokenExpiredError:
+            raise HTTPException(status_code=401, detail="Session expired")
+        except InvalidSignatureError:
+            raise HTTPException(status_code=401, detail="Invalid signature")
+        except AuthError:
+            raise HTTPException(status_code=401, detail="Authentication error")
 
     @app.post("/api/session", response_model=SessionResponse)
     def create_user_session(payload: InitSessionPayload):
@@ -330,12 +383,12 @@ def create_app(
                 raise HTTPException(status_code=401, detail="Session creation failed: invalid Telegram user ID")
             username = user_obj.get("username", "") or ""
             first_name = user_obj.get("first_name", "") or ""
-        except TokenExpiredError as e:
-            raise HTTPException(status_code=401, detail=f"Session creation failed: {e}")
-        except InvalidSignatureError as e:
-            raise HTTPException(status_code=401, detail=f"Invalid signature: {e}")
-        except AuthError as e:
-            raise HTTPException(status_code=401, detail=f"Session creation failed: {e}")
+        except TokenExpiredError:
+            raise HTTPException(status_code=401, detail="Session creation failed: token expired")
+        except InvalidSignatureError:
+            raise HTTPException(status_code=401, detail="Session creation failed: invalid signature")
+        except AuthError:
+            raise HTTPException(status_code=401, detail="Session creation failed: authentication error")
 
         if active_settings.owner_allowlist is not None and user_id not in active_settings.owner_allowlist:
             raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
@@ -505,6 +558,7 @@ def create_app(
                 description=prod.get("description", "Подписка на 1 месяц"),
                 payload=order_id,
                 stars_amount=1000,
+                app_stage=active_settings.app_stage,
             )
         return PurchaseInitResponseV1(
             order_id=order_id,

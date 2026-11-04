@@ -1,0 +1,146 @@
+#!/usr/bin/env node
+/**
+ * scripts/export-release-catalog.mjs
+ *
+ * Экспорт проверенного канонического каталога рецептов в статический артефакт
+ * dist/released-catalog.json со схемой PilotCatalogV1 (Раздел 5.3).
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT = path.resolve(__dirname, '..');
+
+const require = createRequire(import.meta.url);
+const { loadTs } = require(path.join(ROOT, 'tests/helpers/load-ts.cjs'));
+
+function canonicalize(value) {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map(canonicalize);
+  }
+  const sortedKeys = Object.keys(value).sort();
+  const result = {};
+  for (const key of sortedKeys) {
+    result[key] = canonicalize(value[key]);
+  }
+  return result;
+}
+
+export function computeRecipeHash(recipe) {
+  // Рекурсивно детерминированный JSON для всех вложенных структур
+  const canonical = canonicalize(recipe);
+  const serialized = JSON.stringify(canonical);
+  return crypto.createHash('sha256').update(serialized).digest('hex');
+}
+
+export function exportReleaseCatalog(options = {}) {
+  const recipesPath = options.recipesPath ?? path.join(ROOT, 'src/data/recipes.ts');
+  const releasedIdsPath = options.releasedIdsPath ?? path.join(ROOT, 'src/data/releasedRecipeIds.ts');
+  const outputPath = options.outputPath ?? path.join(ROOT, 'dist/released-catalog.json');
+  const testOnly = options.testOnly ?? false;
+
+  const { RECIPES } = loadTs(recipesPath);
+  const { RELEASED_RECIPE_IDS, RELEASED_RECIPE_APPROVALS } = loadTs(releasedIdsPath);
+
+  if (!Array.isArray(RECIPES)) {
+    throw new TypeError('RECIPES must be an array.');
+  }
+
+  const releasedIds = options.releasedIds ?? RELEASED_RECIPE_IDS;
+  const approvals = options.approvals ?? (RELEASED_RECIPE_APPROVALS || []);
+
+  if (!Array.isArray(releasedIds)) {
+    throw new TypeError('releasedIds must be an array.');
+  }
+
+  // 1. Проверка на дубликаты
+  const seenIds = new Set();
+  for (const id of releasedIds) {
+    if (seenIds.has(id)) {
+      throw new Error(`Duplicate recipe ID in released list: ${id}`);
+    }
+    seenIds.add(id);
+  }
+
+  // 2. Индексация рецептов
+  const recipesMap = new Map();
+  for (const r of RECIPES) {
+    recipesMap.set(r.id, r);
+  }
+
+  const approvalsMap = new Map();
+  for (const a of approvals) {
+    approvalsMap.set(a.id, a);
+  }
+
+  const approvedRecipes = [];
+
+  for (const id of releasedIds) {
+    const recipe = recipesMap.get(id);
+    if (!recipe) {
+      throw new Error(`Released recipe ID not found in recipes catalog: ${id}`);
+    }
+
+    if (!testOnly) {
+      const approval = approvalsMap.get(id);
+      if (!approval) {
+        throw new Error(`Missing approval record for released recipe: ${id}`);
+      }
+      if (!approval.approvalRef || typeof approval.approvalRef !== 'string') {
+        throw new Error(`Invalid or empty approvalRef for recipe: ${id}`);
+      }
+      if (!approval.approvalDate || !/^\d{4}-\d{2}-\d{2}$/.test(approval.approvalDate)) {
+        throw new Error(`Invalid or missing approvalDate for recipe: ${id}`);
+      }
+      const actualHash = computeRecipeHash(recipe);
+      if (!approval.sourceHash || typeof approval.sourceHash !== 'string') {
+        throw new Error(`Missing required sourceHash for recipe: ${id}`);
+      }
+      if (approval.sourceHash !== actualHash) {
+        throw new Error(`Stale content hash for approved recipe ${id}: expected ${approval.sourceHash}, actual ${actualHash}`);
+      }
+    }
+
+    approvedRecipes.push(recipe);
+  }
+
+  const catalogArtifact = {
+    schema_version: 1,
+    catalog_id: options.catalogId ?? (testOnly ? 'synthetic-pilot-v1' : 'released-catalog-v1'),
+    test_only: testOnly,
+    released_ids: [...releasedIds],
+    recipes: approvedRecipes,
+    nutrition_status: 'unverified'
+  };
+
+  const outputDir = path.dirname(outputPath);
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  fs.writeFileSync(outputPath, JSON.stringify(catalogArtifact, null, 2), 'utf-8');
+
+  return {
+    status: 'ok',
+    outputPath,
+    catalog: catalogArtifact,
+    totalReleased: approvedRecipes.length
+  };
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  try {
+    const res = exportReleaseCatalog();
+    console.log(`[INFO] Release catalog exported to ${res.outputPath} (${res.totalReleased} recipes).`);
+  } catch (err) {
+    console.error(`[ERROR] Export failed: ${err.message}`);
+    process.exit(1);
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "observedAt": "2026-10-31T00:20:42.082Z",
+  "scope": "Fresh isolated headless Chromium, existing local server; all API and external requests blocked; not a Telegram/device or backend-persistence test",
+  "checks": [
+    {
+      "check": "Today renders with API blocked",
+      "passed": true
+    },
+    {
+      "check": "Menu opens",
+      "passed": true
+    },
+    {
+      "check": "Day 2 active state and full menu/shopping payload survive reload in same browser",
+      "passed": true
+    },
+    {
+      "check": "Recipe opens",
+      "passed": true
+    },
+    {
+      "check": "Shopping opens",
+      "passed": true
+    },
+    {
+      "check": "Support screen opens; no message is sent",
+      "passed": true
+    }
+  ],
+  "layout": [
+    {
+      "width": 320,
+      "screen": "food-today",
+      "scroll": 320,
+      "client": 320,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 320,
+      "screen": "food-menu-screen",
+      "scroll": 320,
+      "client": 320,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 320,
+      "screen": "food-shopping-screen",
+      "scroll": 320,
+      "client": 320,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 360,
+      "screen": "food-today",
+      "scroll": 360,
+      "client": 360,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 360,
+      "screen": "food-menu-screen",
+      "scroll": 360,
+      "client": 360,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 360,
+      "screen": "food-shopping-screen",
+      "scroll": 360,
+      "client": 360,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "screen": "food-today",
+      "scroll": 390,
+      "client": 390,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "screen": "food-menu-screen",
+      "scroll": 390,
+      "client": 390,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "screen": "food-shopping-screen",
+      "scroll": 390,
+      "client": 390,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 430,
+      "screen": "food-today",
+      "scroll": 430,
+      "client": 430,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 430,
+      "screen": "food-menu-screen",
+      "scroll": 430,
+      "client": 430,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 430,
+      "screen": "food-shopping-screen",
+      "scroll": 430,
+      "client": 430,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 768,
+      "screen": "food-today",
+      "scroll": 768,
+      "client": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 768,
+      "screen": "food-menu-screen",
+      "scroll": 768,
+      "client": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 768,
+      "screen": "food-shopping-screen",
+      "scroll": 768,
+      "client": 768,
+      "horizontalOverflow": false
+    }
+  ],
+  "apiAttempts": [],
+  "externalRequestsBlocked": 4,
+  "localStorageScope": "Only new browser context; no owner browser storage read or cleared"
+}

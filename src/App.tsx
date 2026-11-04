@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import PrivateSupportPage from "./pages/PrivateSupportPage";
 import TechnicalNotice from "./pages/TechnicalNotice";
-import { FoodFirstApp } from "./ui/food-first/FoodFirstApp";
+import PilotApp from "./PilotApp";
 
 /* ================= 1. ТИПЫ И КОНСТАНТЫ ================= */
 type Mode = "keto" | "carnivore" | "explore";
@@ -532,5 +532,5 @@ export default function App() {
     );
   }
 
-  return <FoodFirstApp />;
+  return <PilotApp />;
 }

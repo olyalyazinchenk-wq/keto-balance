@@ -244,7 +244,7 @@ def main():
     print(f"  Database:       {db_path}", flush=True)
     print(f"  PID File:       {pid_file} (PID {os.getpid()})", flush=True)
     print("=" * 60, flush=True)
-    print(f"\n👉 Откройте в браузере: {preview_url}\n", flush=True)
+    print(f"\n[PREVIEW] Откройте в браузере: {preview_url}\n", flush=True)
 
     try:
         server.run()

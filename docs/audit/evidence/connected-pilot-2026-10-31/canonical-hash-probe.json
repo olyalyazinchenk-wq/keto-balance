@@ -1,0 +1,6 @@
+{
+  "scope": "Cloned canonical source recipe; no product mutation",
+  "recipe_id": "k1",
+  "changed_field": "subs entry",
+  "hash_unchanged": true
+}

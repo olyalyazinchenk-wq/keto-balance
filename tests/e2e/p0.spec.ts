@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Keto Balance P0 E2E Verification', () => {
   test('front-end index loads and reflects honest services status', async ({ page }) => {
     // Local dev or preview URL
-    await page.goto('http://localhost:3000/');
+    await page.goto(process.env.BASE_URL || '/');
     
     // Title must be localized to Russian
     await expect(page).toHaveTitle(/Кето Баланс/);

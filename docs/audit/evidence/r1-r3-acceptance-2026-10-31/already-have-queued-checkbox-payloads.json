@@ -1,0 +1,429 @@
+{
+  "a_id": "shop-agg-яйца-count-шт",
+  "b_id": "shop-agg-бекон-weight-г",
+  "payloads": [
+    {
+      "schema_version": 1,
+      "expected_revision": 2,
+      "items": [
+        {
+          "id": "shop-agg-яйца-count-шт",
+          "name": "Яйца",
+          "amountLabel": "27 шт.",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом",
+            "Омлет с сыром и зеленью",
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": true,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-бекон-weight-г",
+          "name": "Бекон",
+          "amountLabel": "240 г",
+          "department": "Мясо, птица и рыба",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-шпинат-weight-г",
+          "name": "Шпинат",
+          "amountLabel": "300 г",
+          "department": "Овощи и зелень",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сливочное-масло-weight-г",
+          "name": "Сливочное масло",
+          "amountLabel": "90 г",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом",
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-специи-и-соль",
+          "name": "Специи и соль",
+          "amountLabel": "по вкусу",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сыр-тв-рдый-weight-г",
+          "name": "Сыр твёрдый",
+          "amountLabel": "120 г",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сливки-33-volume-мл",
+          "name": "Сливки 33%",
+          "amountLabel": "90 мл",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-зелень-укроп-петрушка-weight-г",
+          "name": "Зелень (укроп, петрушка)",
+          "amountLabel": "30 г",
+          "department": "Овощи и зелень",
+          "linkedRecipeTitles": [
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-творог-5-weight-г",
+          "name": "Творог 5%",
+          "amountLabel": "1200 г",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-кокосовая-мука-tbsp-ст-л",
+          "name": "Кокосовая мука",
+          "amountLabel": "9 ст. л.",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-эритрит-tbsp-ст-л",
+          "name": "Эритрит",
+          "amountLabel": "6 ст. л.",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сметана-tbsp-ст-л",
+          "name": "Сметана",
+          "amountLabel": "6 ст. л.",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "expected_revision": 3,
+      "items": [
+        {
+          "id": "shop-agg-яйца-count-шт",
+          "name": "Яйца",
+          "amountLabel": "27 шт.",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом",
+            "Омлет с сыром и зеленью",
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": true,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-бекон-weight-г",
+          "name": "Бекон",
+          "amountLabel": "240 г",
+          "department": "Мясо, птица и рыба",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом"
+          ],
+          "alreadyHave": true,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-шпинат-weight-г",
+          "name": "Шпинат",
+          "amountLabel": "300 г",
+          "department": "Овощи и зелень",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сливочное-масло-weight-г",
+          "name": "Сливочное масло",
+          "amountLabel": "90 г",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом",
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-специи-и-соль",
+          "name": "Специи и соль",
+          "amountLabel": "по вкусу",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сыр-тв-рдый-weight-г",
+          "name": "Сыр твёрдый",
+          "amountLabel": "120 г",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сливки-33-volume-мл",
+          "name": "Сливки 33%",
+          "amountLabel": "90 мл",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-зелень-укроп-петрушка-weight-г",
+          "name": "Зелень (укроп, петрушка)",
+          "amountLabel": "30 г",
+          "department": "Овощи и зелень",
+          "linkedRecipeTitles": [
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-творог-5-weight-г",
+          "name": "Творог 5%",
+          "amountLabel": "1200 г",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-кокосовая-мука-tbsp-ст-л",
+          "name": "Кокосовая мука",
+          "amountLabel": "9 ст. л.",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-эритрит-tbsp-ст-л",
+          "name": "Эритрит",
+          "amountLabel": "6 ст. л.",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сметана-tbsp-ст-л",
+          "name": "Сметана",
+          "amountLabel": "6 ст. л.",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "expected_revision": 4,
+      "items": [
+        {
+          "id": "shop-agg-яйца-count-шт",
+          "name": "Яйца",
+          "amountLabel": "27 шт.",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом",
+            "Омлет с сыром и зеленью",
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-бекон-weight-г",
+          "name": "Бекон",
+          "amountLabel": "240 г",
+          "department": "Мясо, птица и рыба",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом"
+          ],
+          "alreadyHave": true,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-шпинат-weight-г",
+          "name": "Шпинат",
+          "amountLabel": "300 г",
+          "department": "Овощи и зелень",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сливочное-масло-weight-г",
+          "name": "Сливочное масло",
+          "amountLabel": "90 г",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом",
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-специи-и-соль",
+          "name": "Специи и соль",
+          "amountLabel": "по вкусу",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Сливочная яичница с беконом и шпинатом"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сыр-тв-рдый-weight-г",
+          "name": "Сыр твёрдый",
+          "amountLabel": "120 г",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сливки-33-volume-мл",
+          "name": "Сливки 33%",
+          "amountLabel": "90 мл",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-зелень-укроп-петрушка-weight-г",
+          "name": "Зелень (укроп, петрушка)",
+          "amountLabel": "30 г",
+          "department": "Овощи и зелень",
+          "linkedRecipeTitles": [
+            "Омлет с сыром и зеленью"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-творог-5-weight-г",
+          "name": "Творог 5%",
+          "amountLabel": "1200 г",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-кокосовая-мука-tbsp-ст-л",
+          "name": "Кокосовая мука",
+          "amountLabel": "9 ст. л.",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-эритрит-tbsp-ст-л",
+          "name": "Эритрит",
+          "amountLabel": "6 ст. л.",
+          "department": "Масла и бакалея",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        },
+        {
+          "id": "shop-agg-сметана-tbsp-ст-л",
+          "name": "Сметана",
+          "amountLabel": "6 ст. л.",
+          "department": "Яйца и молочное",
+          "linkedRecipeTitles": [
+            "Ленивые сырники в духовке (кето)"
+          ],
+          "alreadyHave": false,
+          "checkedInStore": false
+        }
+      ]
+    }
+  ]
+}

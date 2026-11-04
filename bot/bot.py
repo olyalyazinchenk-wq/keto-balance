@@ -6,6 +6,9 @@ import sys
 import os
 import json
 import random
+import re
+import traceback
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from telegram import (
@@ -67,6 +70,11 @@ logging.basicConfig(
 logger = logging.getLogger("KetoBalanceBot")
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
+
+# Сбои бота пишем в отдельный файл: без деталей разбор инцидента невозможен
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+ERROR_LOG_PATH = PROJECT_ROOT / "logs" / "bot_errors.log"
+SECRET_PATTERN = re.compile(r"\d{5,}:[A-Za-z0-9_-]{30,}")
 
 # Загрузка рецептов и советов из bot_data.json
 DATA_PATH = Path(__file__).resolve().parent.parent / "bot_data.json"
@@ -823,7 +831,32 @@ async def post_init(application: Application):
         logger.warning("Не удалось зарегистрировать команды Telegram")
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-    logger.error("Ошибка обработки обновления (подробности скрыты)")
+    """Логирует сбой локально (без секретов), пользователю показывает нейтральный текст."""
+    err = context.error
+    update_id = getattr(update, "update_id", "?")
+    kind = type(update).__name__ if update is not None else "None"
+    detail = f"{type(err).__name__}: {err}" if err is not None else "unknown"
+    detail = SECRET_PATTERN.sub("[REDACTED]", detail)
+    err_type = type(err).__name__ if err is not None else "unknown"
+    logger.error("Ошибка обработки обновления %s (update_id=%s): %s", kind, update_id, err_type)
+    try:
+        ERROR_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with ERROR_LOG_PATH.open("a", encoding="utf-8") as fh:
+            fh.write(f"\n[{datetime.now().isoformat(timespec='seconds')}] {kind} update_id={update_id} {detail}\n")
+            if err is not None:
+                tb_text = "".join(traceback.format_exception(type(err), err, err.__traceback__))
+                fh.write(SECRET_PATTERN.sub("[REDACTED]", tb_text))
+    except Exception:  # логирование не должно ломать бота
+        pass
+    if update is not None and getattr(update, "effective_chat", None) is not None:
+        try:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Что-то пошло не так. Попробуйте ещё раз или напишите /menu.",
+                parse_mode=None,
+            )
+        except Exception:
+            pass
 
 
 def main():

@@ -1,4 +1,5 @@
-import type { GeneratedMenu, PortionIngredientFixture, RecipeViewModel, ShoppingFixtureItem } from './contract';
+import type { PortionIngredientFixture, RecipeViewModel, ShoppingFixtureItem } from './contract';
+import type { PilotShoppingItemV1 } from '../../api/pilotTypes';
 
 interface ParsedAmount {
   value: number;
@@ -94,11 +95,11 @@ export interface RebuildShoppingOptions {
  * - Retains custom added items
  */
 export function rebuildShoppingFromMenu(
-  menu: GeneratedMenu,
+  menu: { days: Array<{ slots: Record<string, string> }> },
   recipes: Record<string, RecipeViewModel>,
-  previous: ShoppingFixtureItem[],
+  previous: (ShoppingFixtureItem | PilotShoppingItemV1)[],
   optionsOrPortions: number | RebuildShoppingOptions = 1,
-): ShoppingFixtureItem[] {
+): PilotShoppingItemV1[] {
   const multiplier =
     typeof optionsOrPortions === 'number'
       ? optionsOrPortions
@@ -118,10 +119,10 @@ export function rebuildShoppingFromMenu(
         }
         const parsed = parseAmount(ingredient.amountLabel);
         const normName = ingredient.name.trim();
-        const groupKey = `${normName.toLowerCase()}:${parsed.unitType}`;
+        const groupKey = `${normName.toLowerCase()}:${parsed.unitType}:${parsed.baseUnit}`;
 
         if (!groups.has(groupKey)) {
-          const id = `shop-agg-${slugify(normName)}${parsed.unitType !== 'text' ? `-${parsed.unitType}` : ''}`;
+          const id = `shop-agg-${slugify(normName)}${parsed.unitType !== 'text' ? `-${parsed.unitType}-${slugify(parsed.baseUnit)}` : ''}`;
           groups.set(groupKey, {
             id,
             name: normName,
@@ -146,27 +147,21 @@ export function rebuildShoppingFromMenu(
     }
   }
 
-  const result: ShoppingFixtureItem[] = [];
+  const result: PilotShoppingItemV1[] = [];
 
   for (const group of groups.values()) {
     const scaledTotal = group.totalValue * multiplier;
     const amountLabel = formatAmount(scaledTotal, group.baseUnit, group.unitType, group.textLabel);
 
-    // Match previous item by id or canonical name to preserve user checkmarks
-    const oldChecked = previous.find(
-      (item) =>
-        (item.id === group.id || item.name.toLowerCase().trim() === group.name.toLowerCase()) &&
-        item.checkedInStore,
+    // Match previous item by id or canonical name
+    const prevItem = previous.find(
+      (item) => item.id === group.id || item.name.toLowerCase().trim() === group.name.toLowerCase()
     );
-    const oldHave = previous.find(
-      (item) =>
-        (item.id === group.id || item.name.toLowerCase().trim() === group.name.toLowerCase()) &&
-        item.alreadyHave,
-    );
-    const oldAny = previous.find(
-      (item) =>
-        item.id === group.id || item.name.toLowerCase().trim() === group.name.toLowerCase(),
-    );
+
+    // Checkmarks are ONLY preserved if amount has not changed!
+    const isAmountSame = prevItem && prevItem.amountLabel === amountLabel;
+    const alreadyHave = isAmountSame ? Boolean(prevItem.alreadyHave) : false;
+    const checkedInStore = isAmountSame ? Boolean(prevItem.checkedInStore) : false;
 
     result.push({
       id: group.id,
@@ -174,11 +169,21 @@ export function rebuildShoppingFromMenu(
       amountLabel,
       department: group.department,
       linkedRecipeTitles: group.linkedRecipeTitles,
-      alreadyHave: oldHave ? true : (oldAny?.alreadyHave ?? false),
-      checkedInStore: oldChecked ? true : (oldAny?.checkedInStore ?? false),
+      alreadyHave,
+      checkedInStore,
     });
   }
 
-  const customItems = previous.filter((item) => item.id.startsWith('shop-custom-'));
+  const customItems: PilotShoppingItemV1[] = previous
+    .filter((item) => item.id.startsWith('shop-custom-'))
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      amountLabel: item.amountLabel,
+      department: item.department,
+      linkedRecipeTitles: item.linkedRecipeTitles || [],
+      alreadyHave: Boolean(item.alreadyHave),
+      checkedInStore: Boolean(item.checkedInStore),
+    }));
   return [...result, ...customItems];
 }

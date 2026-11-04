@@ -42,20 +42,66 @@ class TestUserApi(unittest.TestCase):
 
     def test_user_profile_and_state_roundtrip(self):
         headers_a = {"Authorization": f"Bearer {self.token_a}"}
+
+        # Первичное чтение для нового пользователя: revision=0, profile=None, state=None
+        initial_resp = self.client.get("/api/user", headers=headers_a)
+        self.assertEqual(initial_resp.status_code, 200)
+        self.assertEqual(initial_resp.json()["revision"], 0)
+        self.assertIsNone(initial_resp.json()["profile"])
+        self.assertIsNone(initial_resp.json()["state"])
+
         update_data = {
-            "profile": {"weight": 68.5, "height": 172.0, "goal": "keto_boost"},
-            "state": {"onboarding_completed": True, "selected_day": 2, "cooked_recipe_ids": ["k1"]}
+            "schema_version": 1,
+            "expected_revision": 0,
+            "profile": {
+                "settings": {
+                    "confirmed18Plus": True,
+                    "approach": "keto",
+                    "restrictions": ["exclude_eggs"],
+                    "prepTimeMax": 45,
+                    "mealsPerDay": 3,
+                    "preferenceNote": ""
+                },
+                "weight": 68.5,
+                "height": 172.0,
+                "goal": "keto_boost"
+            },
+            "state": {
+                "schema_version": 1,
+                "menu": None,
+                "selected_date": None,
+                "checked_ingredients": {},
+                "checked_steps": {},
+                "shopping_batches": 1,
+                "shopping_stale": False
+            }
         }
         put_resp = self.client.put("/api/user", json=update_data, headers=headers_a)
         self.assertEqual(put_resp.status_code, 200)
+        save_res = put_resp.json()
+        self.assertEqual(save_res["status"], "ok")
+        self.assertEqual(save_res["revision"], 1)
 
         get_resp = self.client.get("/api/user", headers=headers_a)
         self.assertEqual(get_resp.status_code, 200)
         data = get_resp.json()
         self.assertEqual(data["user_id"], 1001)
+        self.assertEqual(data["revision"], 1)
         self.assertEqual(data["profile"]["weight"], 68.5)
-        self.assertTrue(data["state"]["onboarding_completed"])
-        self.assertEqual(data["state"]["selected_day"], 2)
+        self.assertTrue(data["profile"]["settings"]["confirmed18Plus"])
+        self.assertEqual(data["profile"]["settings"]["prepTimeMax"], 45)
+        self.assertFalse(data["state"]["shopping_stale"])
+
+        # Оптимистическая блокировка CAS: попытка сохранить с устаревшей revision 0 -> 409 Conflict
+        stale_resp = self.client.put("/api/user", json=update_data, headers=headers_a)
+        self.assertEqual(stale_resp.status_code, 409)
+
+        # Сохранение с актуальной expected_revision=1 -> успех, revision=2
+        update_data["expected_revision"] = 1
+        update_data["profile"]["weight"] = 67.8
+        ok_resp = self.client.put("/api/user", json=update_data, headers=headers_a)
+        self.assertEqual(ok_resp.status_code, 200)
+        self.assertEqual(ok_resp.json()["revision"], 2)
 
     def test_user_isolation_cross_access_blocked(self):
         headers_a = {"Authorization": f"Bearer {self.token_a}"}
@@ -66,22 +112,49 @@ class TestUserApi(unittest.TestCase):
         self.assertIn("forbidden", get_cross.text.lower())
 
         # User A пытается перезаписать данные User B
-        put_cross = self.client.put("/api/user?user_id=1002", json={"profile": {"weight": 99.0}}, headers=headers_a)
+        payload = {
+            "schema_version": 1,
+            "expected_revision": 0,
+            "profile": {"settings": None, "weight": 99.0},
+            "state": None
+        }
+        put_cross = self.client.put("/api/user?user_id=1002", json=payload, headers=headers_a)
         self.assertEqual(put_cross.status_code, 403)
 
-    def test_shopping_state_isolation(self):
+    def test_shopping_state_isolation_and_cas(self):
         headers_a = {"Authorization": f"Bearer {self.token_a}"}
         headers_b = {"Authorization": f"Bearer {self.token_b}"}
 
-        # User A сохраняет свой список покупок
+        # User A сохраняет список покупок
         shop_a = {
-            "items": [{"id": "item_a", "name": "Avocado", "amount": 3, "unit": "pcs", "checked": False}],
-            "checked_map": {"item_a": False}
+            "schema_version": 1,
+            "expected_revision": 0,
+            "items": [
+                {
+                    "id": "item_a",
+                    "name": "Авокадо",
+                    "amountLabel": "2 шт.",
+                    "department": "Овощи",
+                    "linkedRecipeTitles": ["Салат"],
+                    "alreadyHave": False,
+                    "checkedInStore": False
+                }
+            ]
         }
-        self.client.put("/api/shopping", json=shop_a, headers=headers_a)
+        put_a = self.client.put("/api/shopping", json=shop_a, headers=headers_a)
+        self.assertEqual(put_a.status_code, 200)
+        self.assertEqual(put_a.json()["revision"], 1)
 
-        # User B читает свой список покупок — он должен быть пустым
+        # User B читает свой список покупок — он пустой с revision 0
         res_b = self.client.get("/api/shopping", headers=headers_b)
         self.assertEqual(res_b.status_code, 200)
         data_b = res_b.json()
-        self.assertEqual(len(data_b.get("items", [])), 0)
+        self.assertEqual(data_b["revision"], 0)
+        self.assertEqual(len(data_b["items"]), 0)
+
+        # Shopping CAS conflict: User A отправляет expected_revision=0 -> 409
+        conflict_a = self.client.put("/api/shopping", json=shop_a, headers=headers_a)
+        self.assertEqual(conflict_a.status_code, 409)
+
+if __name__ == "__main__":
+    unittest.main()

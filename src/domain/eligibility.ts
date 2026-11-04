@@ -172,6 +172,17 @@ export function isRecipeAllowed(recipe: Recipe, profile?: UserProfile | null): b
   if (!profile) return true;
 
   // 2. Проверка повреждённых ограничений в профиле
+  if (profile.cookTime !== undefined && profile.cookTime !== null) {
+    if (typeof profile.cookTime !== "number" || isNaN(profile.cookTime) || profile.cookTime < 0 || profile.cookTime > 240) {
+      return false;
+    }
+    if (profile.cookTime > 0) {
+      if (typeof recipe.time !== "number" || isNaN(recipe.time) || recipe.time <= 0 || recipe.time > profile.cookTime) {
+        return false;
+      }
+    }
+  }
+
   if (profile.allergyNote !== undefined && profile.allergyNote !== null) {
     if (typeof profile.allergyNote !== "string") return false;
     if (profile.allergyNote.trim().length > 0) return false;

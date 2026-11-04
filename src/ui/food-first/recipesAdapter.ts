@@ -40,6 +40,13 @@ function scaleAmount(amount: string, factor: number): string {
   return `${num} ${match[2]}`.trim();
 }
 
+function formatPortionsLabel(count: number): string {
+  if (!count || count <= 0 || !Number.isFinite(count)) return '[УТОЧНИТЬ]';
+  if (count % 10 === 1 && count % 100 !== 11) return `${count} порция`;
+  if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return `${count} порции`;
+  return `${count} порций`;
+}
+
 export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
   const slotType = (
     recipe.cat === 'breakfast' || recipe.cat === 'lunch' ||
@@ -56,6 +63,9 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
     recipe.cat === 'lunch' ? 'Питательный обед для кето-рациона' :
     'Сбалансированный кето-ужин';
 
+  const rawServ = recipe.serv;
+  const baseServ = typeof rawServ === 'number' && rawServ > 0 && Number.isFinite(rawServ) ? rawServ : 0;
+
   return {
     id: recipe.id,
     title: recipe.title,
@@ -69,8 +79,8 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
     artworkCaption: recipe.title,
     portionsVariants: {
       1: {
-        portions: 1,
-        yieldNote: '1 порция',
+        portions: baseServ,
+        yieldNote: baseServ > 0 ? formatPortionsLabel(baseServ) : '[УТОЧНИТЬ]',
         nutritionStatus: '[УТОЧНИТЬ]',
         ingredients: recipe.ing.map(([name, amount]) => ({
           name,
@@ -79,8 +89,8 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
         })),
       },
       2: {
-        portions: 2,
-        yieldNote: '2 порции',
+        portions: baseServ > 0 ? baseServ * 2 : 0,
+        yieldNote: baseServ > 0 ? formatPortionsLabel(baseServ * 2) : '[УТОЧНИТЬ]',
         nutritionStatus: '[УТОЧНИТЬ]',
         ingredients: recipe.ing.map(([name, amount]) => ({
           name,

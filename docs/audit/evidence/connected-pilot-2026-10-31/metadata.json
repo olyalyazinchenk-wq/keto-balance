@@ -1,0 +1,211 @@
+{
+  "reported_backend_suite_count": 23,
+  "sum_backend_counts_in_receipt": 105,
+  "reported_frontend_suite_count": 9,
+  "sum_frontend_counts_in_receipt": 53,
+  "declared_backend_methods_in_listed_suites": 102,
+  "counts_by_suite": [
+    {
+      "suite": "tests.backend.test_import_safety",
+      "reported": 3,
+      "defined_test_methods": 3
+    },
+    {
+      "suite": "tests.backend.test_database",
+      "reported": 4,
+      "defined_test_methods": 4
+    },
+    {
+      "suite": "tests.backend.test_payments_disabled",
+      "reported": 3,
+      "defined_test_methods": 3
+    },
+    {
+      "suite": "tests.backend.test_payment_callbacks",
+      "reported": 4,
+      "defined_test_methods": 4
+    },
+    {
+      "suite": "tests.backend.test_server_security",
+      "reported": 7,
+      "defined_test_methods": 7
+    },
+    {
+      "suite": "tests.backend.test_safety",
+      "reported": 3,
+      "defined_test_methods": 8
+    },
+    {
+      "suite": "tests.backend.test_auth",
+      "reported": 6,
+      "defined_test_methods": 6
+    },
+    {
+      "suite": "tests.backend.test_session_api",
+      "reported": 6,
+      "defined_test_methods": 3
+    },
+    {
+      "suite": "tests.backend.test_app_db",
+      "reported": 7,
+      "defined_test_methods": 6
+    },
+    {
+      "suite": "tests.backend.test_app_models",
+      "reported": 8,
+      "defined_test_methods": 8
+    },
+    {
+      "suite": "tests.backend.test_user_api",
+      "reported": 4,
+      "defined_test_methods": 3
+    },
+    {
+      "suite": "tests.backend.test_data_rights",
+      "reported": 3,
+      "defined_test_methods": 3
+    },
+    {
+      "suite": "tests.backend.test_catalog_api",
+      "reported": 2,
+      "defined_test_methods": 2
+    },
+    {
+      "suite": "tests.backend.test_release_boundaries",
+      "reported": 3,
+      "defined_test_methods": 3
+    },
+    {
+      "suite": "tests.backend.test_support",
+      "reported": 4,
+      "defined_test_methods": 3
+    },
+    {
+      "suite": "tests.backend.test_support_integration",
+      "reported": 6,
+      "defined_test_methods": 7
+    },
+    {
+      "suite": "tests.backend.test_redact_logs",
+      "reported": 2,
+      "defined_test_methods": null,
+      "file_missing": true
+    },
+    {
+      "suite": "tests.backend.test_backup_restore",
+      "reported": 2,
+      "defined_test_methods": 1
+    },
+    {
+      "suite": "tests.backend.test_product_gate_policy",
+      "reported": 7,
+      "defined_test_methods": 7
+    },
+    {
+      "suite": "tests.backend.test_verify_script",
+      "reported": 8,
+      "defined_test_methods": 8
+    },
+    {
+      "suite": "tests.backend.test_pilot_auth_regressions",
+      "reported": 6,
+      "defined_test_methods": 6
+    },
+    {
+      "suite": "tests.backend.test_pilot_harness",
+      "reported": 6,
+      "defined_test_methods": 6
+    },
+    {
+      "suite": "tests.backend.test_pilot_roundtrip",
+      "reported": 1,
+      "defined_test_methods": 1
+    }
+  ],
+  "synthetic_catalog": {
+    "test_only": true,
+    "released_ids": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+    ],
+    "recipe_count": 5,
+    "recipe_titles": [
+      "Сливочная яичница с беконом и шпинатом",
+      "Омлет с сыром и зеленью",
+      "Ленивые сырники в духовке (кето)",
+      "Авокадо-тосты на кето-хлебе",
+      "Яичные маффины с овощами и ветчиной"
+    ],
+    "nutrition_status": "unverified"
+  },
+  "fixture_manifest": {
+    "catalog_id": "synthetic-pilot-v1",
+    "test_only": true,
+    "released_ids": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+    ],
+    "approvals": [
+      {
+        "id": "k1",
+        "approvalRef": "TEST_SYNTHETIC_APPROVAL_K1",
+        "approvalDate": "2026-10-31",
+        "serv": 2,
+        "imageStatus": "verified",
+        "license": "test-synthetic"
+      },
+      {
+        "id": "k2",
+        "approvalRef": "TEST_SYNTHETIC_APPROVAL_K2",
+        "approvalDate": "2026-10-31",
+        "serv": 1,
+        "imageStatus": "verified",
+        "license": "test-synthetic"
+      },
+      {
+        "id": "k3",
+        "approvalRef": "TEST_SYNTHETIC_APPROVAL_K3",
+        "approvalDate": "2026-10-31",
+        "serv": 3,
+        "imageStatus": "verified",
+        "license": "test-synthetic"
+      },
+      {
+        "id": "k4",
+        "approvalRef": "TEST_SYNTHETIC_APPROVAL_K4",
+        "approvalDate": "2026-10-31",
+        "serv": 2,
+        "imageStatus": "verified",
+        "license": "test-synthetic"
+      },
+      {
+        "id": "k5",
+        "approvalRef": "TEST_SYNTHETIC_APPROVAL_K5",
+        "approvalDate": "2026-10-31",
+        "serv": 4,
+        "imageStatus": "verified",
+        "license": "test-synthetic"
+      }
+    ]
+  },
+  "production_artifact_catalog": {
+    "test_only": false,
+    "released_ids": [],
+    "recipe_count": 0
+  },
+  "current_backend_fingerprint": "5b58d3938f4989a9",
+  "claimed_backend_fingerprint": "5b58d3938f4989a9",
+  "unfiltered_bot_copy_sensitive_candidates_NAMES_ONLY": [
+    "bot\\keto_balance.db"
+  ],
+  "unfiltered_bot_copy_cache_file_count": 14,
+  "build_receipt_exists": true,
+  "snapshot_contains_runtime_database_METADATA_ONLY": true,
+  "full_source_manifest_stored_in_build_receipt": false
+}

@@ -24,7 +24,7 @@ export interface PortionIngredientFixture {
 }
 
 export interface PortionVariantFixture {
-  portions: 1 | 2;
+  portions: number;
   yieldNote: string;
   ingredients: PortionIngredientFixture[];
   nutritionStatus: '[УТОЧНИТЬ]';

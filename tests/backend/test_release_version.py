@@ -81,6 +81,16 @@ class TestReleaseVersion(unittest.TestCase):
             response = client.get(path)
             self.assertIn(response.status_code, [403, 404])
 
+    def test_backend_fingerprint_matches_in_process_computation(self):
+        from bot.server import _compute_backend_fingerprint
+        app = create_app(dist_dir=self.dist_path)
+        client = TestClient(app)
+        response = client.get("/api/version")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        expected = _compute_backend_fingerprint()
+        self.assertEqual(data.get("backendFingerprint"), expected)
+
 
 if __name__ == "__main__":
     unittest.main()

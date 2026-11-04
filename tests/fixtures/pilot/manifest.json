@@ -1,0 +1,47 @@
+{
+  "catalog_id": "synthetic-pilot-v1",
+  "test_only": true,
+  "released_ids": ["k1", "k2", "k3", "k4", "k5"],
+  "approvals": [
+    {
+      "id": "k1",
+      "approvalRef": "TEST_SYNTHETIC_APPROVAL_K1",
+      "approvalDate": "2026-10-31",
+      "serv": 2,
+      "imageStatus": "verified",
+      "license": "test-synthetic"
+    },
+    {
+      "id": "k2",
+      "approvalRef": "TEST_SYNTHETIC_APPROVAL_K2",
+      "approvalDate": "2026-10-31",
+      "serv": 1,
+      "imageStatus": "verified",
+      "license": "test-synthetic"
+    },
+    {
+      "id": "k3",
+      "approvalRef": "TEST_SYNTHETIC_APPROVAL_K3",
+      "approvalDate": "2026-10-31",
+      "serv": 3,
+      "imageStatus": "verified",
+      "license": "test-synthetic"
+    },
+    {
+      "id": "k4",
+      "approvalRef": "TEST_SYNTHETIC_APPROVAL_K4",
+      "approvalDate": "2026-10-31",
+      "serv": 2,
+      "imageStatus": "verified",
+      "license": "test-synthetic"
+    },
+    {
+      "id": "k5",
+      "approvalRef": "TEST_SYNTHETIC_APPROVAL_K5",
+      "approvalDate": "2026-10-31",
+      "serv": 4,
+      "imageStatus": "verified",
+      "license": "test-synthetic"
+    }
+  ]
+}

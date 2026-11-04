@@ -1,3 +1,4 @@
+import { DailyTip } from './DailyTip';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ScreenId, UserSettingsDraft, RecipeViewModel } from './contract';
 import type { PilotCatalogV1, PilotProfileV1, PilotStateV1, PilotShoppingItemV1 } from '../../api/pilotTypes';
@@ -368,6 +369,7 @@ export function FoodFirstApp({
       selectedDayIndex={selectedDayIndex}
       selectedDayLabel={selectedDayLabel}
     >
+      <DailyTip showButton={currentScreen === 'more'} />
       <Header
         isPremium={isPremium}
         onOpenPaywall={handleOpenPaywall}

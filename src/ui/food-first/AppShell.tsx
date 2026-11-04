@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Calendar,
   UtensilsCrossed,
@@ -11,6 +11,12 @@ import type {
   ScreenId,
   VisualDirection,
 } from './contract';
+import {
+  setupTelegramApp,
+  bindBackButton,
+  hideBackButton,
+  triggerHaptic,
+} from '../../tma/telegram';
 
 export interface AppShellProps {
   activeScreen: ScreenId;
@@ -49,6 +55,26 @@ export function AppShell({
   shoppingNeedsRefresh,
   children,
 }: AppShellProps) {
+  useEffect(() => {
+    const cleanup = setupTelegramApp();
+    return cleanup;
+  }, []);
+
+  useEffect(() => {
+    const isTopTab = ['today', 'menu', 'shopping', 'diary', 'more'].includes(activeScreen);
+    const shouldShowBackButton = canGoBack || !isTopTab;
+
+    if (shouldShowBackButton && onGoBack) {
+      const cleanup = bindBackButton(() => {
+        triggerHaptic('impact_light');
+        onGoBack();
+      });
+      return cleanup;
+    } else {
+      hideBackButton();
+    }
+  }, [activeScreen, canGoBack, onGoBack]);
+
   const isNavHighlighted = (tabId: ScreenId): boolean => {
     if (activeScreen === tabId) return true;
     if (tabId === 'menu' && activeScreen === 'recipe') return true;
@@ -66,13 +92,20 @@ export function AppShell({
 
   if (['today', 'menu', 'recipe', 'shopping'].includes(activeScreen)) {
     return (
-      <div className="ff-proof" data-testid="food-app-shell">
+      <div
+        className="ff-proof"
+        data-testid="food-app-shell"
+        style={{ paddingBottom: 'calc(72px + var(--kb-safe-bottom, env(safe-area-inset-bottom, 0px)))' }}
+      >
         <header className="ff-proof__header">
           <span className="ff-proof__brand">Кето Баланс</span>
           {canGoBack && activeScreen !== 'today' && (
             <button
               type="button"
-              onClick={onGoBack}
+              onClick={() => {
+                triggerHaptic('impact_light');
+                onGoBack();
+              }}
               className="ff-proof__help-btn"
               aria-label="Вернуться на предыдущий экран"
             >
@@ -83,17 +116,17 @@ export function AppShell({
             <button
               type="button"
               className="ff-proof__help-btn"
-              onClick={onOpenSupport}
+              onClick={() => {
+                triggerHaptic('selection');
+                onOpenSupport();
+              }}
             >
               Помощь
             </button>
           )}
         </header>
-        <aside className="ff-proof__notice">
-          Визуальный макет · синтетические данные · без отправки сообщений
-        </aside>
         {children}
-        <nav className="ff-proof__nav" aria-label="Визуальный пример навигации">
+        <nav className="ff-proof__nav" aria-label="Основная навигация">
           {PRIMARY_NAV.map((item) => {
             const active = isNavHighlighted(item.id);
             return (
@@ -103,7 +136,10 @@ export function AppShell({
                 data-testid={`bottom-nav-${item.id}`}
                 className={`ff-proof__nav-btn ${active ? 'ff-proof__nav-btn--active' : ''}`}
                 aria-current={active ? 'page' : undefined}
-                onClick={() => onNavigate(item.id)}
+                onClick={() => {
+                  triggerHaptic('selection');
+                  onNavigate(item.id);
+                }}
               >
                 {item.label}
                 {item.id === 'shopping' && shoppingNeedsRefresh ? ' •' : ''}
@@ -116,11 +152,24 @@ export function AppShell({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-stone-50 text-stone-900">
-      <header className="p-4 border-b flex items-center justify-between">
+    <div
+      className="min-h-screen flex flex-col bg-stone-50 text-stone-900"
+      style={{ paddingBottom: 'calc(72px + var(--kb-safe-bottom, env(safe-area-inset-bottom, 0px)))' }}
+    >
+      <header
+        className="p-4 border-b flex items-center justify-between"
+        style={{ paddingTop: 'calc(16px + var(--kb-safe-top, env(safe-area-inset-top, 0px)))' }}
+      >
         <span className="font-bold">Кето Баланс</span>
         {canGoBack && (
-          <button type="button" onClick={onGoBack} className="text-sm">
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic('impact_light');
+              onGoBack();
+            }}
+            className="text-sm"
+          >
             Назад
           </button>
         )}

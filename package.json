@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "validate:catalog": "node scripts/validate-catalog.mjs",
-    "build": "node scripts/validate-catalog.mjs && tsc && vite build && node scripts/stamp-release.mjs",
+    "build": "node scripts/validate-catalog.mjs && tsc && vite build && node scripts/export-release-catalog.mjs && node scripts/stamp-release.mjs",
     "preview": "vite preview",
     "test:unit": "node --test --test-reporter=tap tests/frontend/*.test.cjs",
     "typecheck": "tsc --noEmit --incremental false --pretty false",

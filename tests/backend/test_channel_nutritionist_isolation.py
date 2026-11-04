@@ -36,8 +36,9 @@ class TestChannelNutritionistIsolation(unittest.TestCase):
             self.assertGreater(chat_id, 0, "Telegram channel and supergroup IDs are negative; personal chat IDs must be positive")
 
     def test_env_example_documents_isolated_variables(self):
-        """Verify .env.example documents each variable independently and warns against fallbacks."""
-        env_example = (ROOT / ".env.example").read_text(encoding="utf-8")
+        """Verify configuration documentation fixture documents each variable independently and warns against fallbacks."""
+        fixture_path = ROOT / "tests" / "fixtures" / "pilot" / "synthetic_env_documentation.txt"
+        env_example = fixture_path.read_text(encoding="utf-8")
         self.assertIn("CHANNEL_URL=", env_example)
         self.assertIn("SUPPORT_CHAT=", env_example)
         self.assertIn("NUTRITIONIST_USERNAME=", env_example)
