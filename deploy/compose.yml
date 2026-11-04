@@ -1,0 +1,62 @@
+name: keto-balance
+
+x-runtime: &runtime
+  image: keto-balance-runtime:local
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+  env_file:
+    - ../.env.production
+  environment:
+    KETO_LOAD_DOTENV: "0"
+    KETO_DIST_DIR: /app/dist
+    KETO_DB_PATH: /app/data/keto_balance.db
+    PAYMENT_MODE: disabled
+  volumes:
+    - bot_data:/app/data
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  web:
+    <<: *runtime
+    command: ["uvicorn", "bot.server:app", "--host", "0.0.0.0", "--port", "8000"]
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5).close()"]
+      interval: 20s
+      timeout: 8s
+      retries: 3
+      start_period: 20s
+
+  bot:
+    <<: *runtime
+    command: ["python", "-m", "bot.bot"]
+    depends_on:
+      web:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      WEBAPP_DOMAIN: ${WEBAPP_DOMAIN:?Set WEBAPP_DOMAIN in .env.production}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  bot_data:
+  caddy_data:
+  caddy_config:
