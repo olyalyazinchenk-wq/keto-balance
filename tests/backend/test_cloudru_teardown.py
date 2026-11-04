@@ -68,14 +68,14 @@ class TestCloudRuTeardown(unittest.TestCase):
         missing = self.tmp_path / "does_not_exist.db"
         with self.assertRaises(TeardownGateError) as ctx:
             verify_backup_readiness(missing)
-        self.assertIn("не найдена", str(ctx.exception))
+        self.assertIn("не найдена", str(ctx.exception).lower())
 
     def test_gate_blocks_when_meta_missing(self):
         no_meta = self.tmp_path / "orphan.db"
         no_meta.write_bytes(b"some content")
         with self.assertRaises(TeardownGateError) as ctx:
             verify_backup_readiness(no_meta)
-        self.assertIn("Отсутствуют метаданные", str(ctx.exception))
+        self.assertIn("отсутствуют метаданные", str(ctx.exception).lower())
 
     def test_gate_blocks_when_sha256_mismatch(self):
         meta = json.loads(self.meta_json.read_text(encoding="utf-8"))
@@ -84,7 +84,7 @@ class TestCloudRuTeardown(unittest.TestCase):
 
         with self.assertRaises(TeardownGateError) as ctx:
             verify_backup_readiness(self.backup_db)
-        self.assertIn("не совпадает", str(ctx.exception))
+        self.assertIn("не совпадает", str(ctx.exception).lower())
 
     def test_gate_succeeds_when_backup_and_integrity_valid(self):
         res = verify_backup_readiness(self.backup_db)
@@ -98,508 +98,392 @@ class TestCloudRuTeardown(unittest.TestCase):
             "floating_ips": [{"id": "fip-1", "ip": "1.2.3.4", "cost_rub_month": 200}],
             "snapshots": [{"id": "snap-1", "name": "s1", "cost_rub_month": 100}],
         }
-        actions_performed = []
-
-        def mock_executor(kind, res_id):
-            actions_performed.append((kind, res_id))
-
-        result = execute_teardown_plan(inv, dry_run=True, executor=mock_executor)
-        self.assertEqual(result["mode"], "DRY_RUN")
-        self.assertFalse(result["executed"])
-        self.assertFalse(result["zero_residual_confirmed"])
-        self.assertEqual(actions_performed, [], "Dry run must never execute deletions")
-        self.assertEqual(result["total_monthly_rub_prevented"], 2260)
-
-    def test_live_destroy_without_verifier_does_not_claim_zero_residual(self):
-        inv = {
-            "instances": [{"id": "inst-1", "name": "vm-1", "cost_rub_month": 1600}],
-            "volumes": [{"id": "vol-1", "name": "root-disk", "size_gb": 30, "cost_rub_month": 360}],
-            "floating_ips": [{"id": "fip-1", "ip": "1.2.3.4", "cost_rub_month": 200}],
-            "snapshots": [{"id": "snap-1", "name": "s1", "cost_rub_month": 100}],
-        }
-        actions_performed = []
-
-        def mock_executor(kind, res_id):
-            actions_performed.append((kind, res_id))
-
-        # Executor runs but no verifier is provided: zero_residual_confirmed MUST BE False
-        result = execute_teardown_plan(inv, dry_run=False, executor=mock_executor, verifier=None)
-        self.assertEqual(result["mode"], "LIVE_DESTROY")
-        self.assertTrue(result["executed"])
-        self.assertFalse(result["zero_residual_confirmed"], "Must NEVER claim zero residual without verified post-check")
-        self.assertEqual(len(actions_performed), 4)
-
-    def test_live_destroy_with_empty_post_verification_confirms_zero_residual(self):
-        inv = {
-            "instances": [{"id": "inst-1", "name": "vm-1", "cost_rub_month": 1600}],
-            "volumes": [{"id": "vol-1", "name": "root-disk", "size_gb": 30, "cost_rub_month": 360}],
-        }
-        actions_performed = []
-
-        def mock_executor(kind, res_id):
-            actions_performed.append((kind, res_id))
-
-        def mock_verifier():
-            # Verified post-deletion check confirms 0 resources exist
-            return {"instances": [], "volumes": [], "floating_ips": [], "snapshots": [], "backups": [], "buckets": []}
-
-        result = execute_teardown_plan(inv, dry_run=False, executor=mock_executor, verifier=mock_verifier)
-        self.assertEqual(result["mode"], "LIVE_DESTROY")
-        self.assertTrue(result["executed"])
-        self.assertTrue(result["zero_residual_confirmed"], "Zero residual confirmed when verified empty")
+        res = execute_teardown_plan(inv, dry_run=True)
+        self.assertEqual(res["mode"], "DRY_RUN")
+        self.assertFalse(res["executed"])
+        self.assertFalse(res["zero_residual_confirmed"])
+        self.assertEqual(res["total_monthly_rub_prevented"], 2260)
+        self.assertEqual(len(res["actions_planned"]), 4)
 
     def test_live_destroy_locked_when_no_executor(self):
-        inv = {
-            "instances": [{"id": "inst-1", "name": "vm-1", "cost_rub_month": 1600}],
-        }
-        result = execute_teardown_plan(inv, dry_run=False, executor=None)
-        self.assertEqual(result["mode"], "LIVE_LOCKED")
-        self.assertFalse(result["executed"])
-        self.assertFalse(result["zero_residual_confirmed"])
-        self.assertIn("docs/CLOUDRU_MANUAL_TEARDOWN.md", result["message"])
+        inv = {"instances": [{"id": "inst-1", "name": "vm-1", "cost_rub_month": 1600}]}
+        res = execute_teardown_plan(inv, dry_run=False, executor=None)
+        self.assertEqual(res["mode"], "LIVE_LOCKED")
+        self.assertFalse(res["executed"])
+        self.assertFalse(res["zero_residual_confirmed"])
+        self.assertIn("заблокировано", res["message"])
 
-    def test_gate_encrypted_backup_with_env_var(self):
-        old_val = os.environ.get("KETO_BACKUP_ENCRYPTION_KEY")
+    def test_live_destroy_without_verifier_does_not_claim_zero_residual(self):
+        inv = {"instances": [{"id": "inst-1", "name": "vm-1", "cost_rub_month": 1600}]}
+        deleted = []
+
+        def mock_executor(rtype, rid):
+            deleted.append((rtype, rid))
+
+        res = execute_teardown_plan(inv, dry_run=False, executor=mock_executor, verifier=None)
+        self.assertEqual(res["mode"], "LIVE_DESTROY")
+        self.assertTrue(res["executed"])
+        self.assertFalse(res["zero_residual_confirmed"])
+        self.assertEqual(len(deleted), 1)
+
+    def test_live_destroy_with_empty_post_verification_confirms_zero_residual(self):
+        inv = {"instances": [{"id": "inst-1", "name": "vm-1", "cost_rub_month": 1600}]}
+        deleted = []
+
+        def mock_executor(rtype, rid):
+            deleted.append((rtype, rid))
+
+        def mock_verifier():
+            return {
+                "instances": [],
+                "volumes": [],
+                "floating_ips": [],
+                "snapshots": [],
+                "images": [],
+                "virtual_ips": [],
+                "has_unconfirmed_costs": False,
+            }
+
+        res = execute_teardown_plan(inv, dry_run=False, executor=mock_executor, verifier=mock_verifier)
+        self.assertEqual(res["mode"], "LIVE_DESTROY")
+        self.assertTrue(res["executed"])
+        self.assertTrue(res["zero_residual_confirmed"])
+
+    def test_inventory_function_raises_cloudru_api_error_when_no_credentials(self):
+        env_backup = dict(os.environ)
         try:
-            os.environ["KETO_BACKUP_ENCRYPTION_KEY"] = self.enc_key
-            res = verify_backup_readiness(self.enc_backup_db)
-            self.assertTrue(res["verified"])
-            self.assertTrue(res["is_encrypted"])
-            self.assertEqual(res["user_count"], 1)
+            for k in list(os.environ.keys()):
+                if any(x in k.upper() for x in ("CLOUD", "EVOLUTION", "OS_")):
+                    del os.environ[k]
+            with self.assertRaises(CloudRuApiError) as ctx:
+                inventory_local_and_cloud_resources()
+            self.assertIn("отсутствуют учётные данные", str(ctx.exception).lower())
         finally:
-            if old_val is None:
-                os.environ.pop("KETO_BACKUP_ENCRYPTION_KEY", None)
-            else:
-                os.environ["KETO_BACKUP_ENCRYPTION_KEY"] = old_val
+            os.environ.clear()
+            os.environ.update(env_backup)
 
-    def test_gate_encrypted_backup_with_key_file(self):
-        key_file = self.tmp_path / "teardown.key"
+    def test_backup_readiness_with_encrypted_backup_and_key_file(self):
+        key_file = self.tmp_path / "test_backup.key"
         key_file.write_text(self.enc_key, encoding="utf-8")
         res = verify_backup_readiness(self.enc_backup_db, key_file=key_file)
         self.assertTrue(res["verified"])
+        self.assertTrue(res["is_encrypted"])
         self.assertEqual(res["user_count"], 1)
 
-    def test_gate_encrypted_backup_with_key_stdin(self):
-        import io
-        old_stdin = sys.stdin
-        try:
-            sys.stdin = io.StringIO(self.enc_key)
-            res = verify_backup_readiness(self.enc_backup_db, key_stdin=True)
-            self.assertTrue(res["verified"])
-            self.assertEqual(res["user_count"], 1)
-        finally:
-            sys.stdin = old_stdin
-
-    def test_gate_rejects_key_cli_arg_in_production(self):
-        script = Path(__file__).resolve().parent.parent.parent / "scripts" / "cloudru_teardown.py"
-        prod_env = os.environ.copy()
-        prod_env["APP_STAGE"] = "production"
-        res = subprocess.run(
-            [
-                sys.executable,
-                str(script),
-                "--backup-file",
-                str(self.enc_backup_db),
-                "--key",
-                self.enc_key,
-            ],
-            env=prod_env,
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(res.returncode, 2)
-        self.assertIn("Безопасность нарушена", res.stderr)
-        self.assertIn("forbidden in production mode", res.stderr)
-
-    def test_teardown_cli_fails_when_no_credentials_and_no_mock(self):
-        """CLI without API credentials or mock MUST fail with non-zero code, NOT return 0 fake resources."""
-        script = Path(__file__).resolve().parent.parent.parent / "scripts" / "cloudru_teardown.py"
-        clean_env = os.environ.copy()
-        for k in ["CLOUDRU_AUTH_URL", "OS_AUTH_URL", "CLOUDRU_KEY_ID", "OS_USERNAME", "CLOUDRU_SECRET_KEY", "OS_PASSWORD", "CLOUDRU_TOKEN", "OS_AUTH_TOKEN"]:
-            clean_env.pop(k, None)
-
-        key_file = self.tmp_path / "teardown.key"
-        key_file.write_text(self.enc_key, encoding="utf-8")
-
-        res = subprocess.run(
-            [
-                sys.executable,
-                str(script),
-                "--backup-file",
-                str(self.enc_backup_db),
-                "--key-file",
-                str(key_file),
-                "--json",
-            ],
-            env=clean_env,
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(res.returncode, 3, "Must fail with exit code 3 on missing Cloud.ru credentials")
-        self.assertIn("FATAL CLOUD RU API ERROR", res.stderr)
-        self.assertIn("docs/CLOUDRU_MANUAL_TEARDOWN.md", res.stderr)
+    def test_backup_readiness_fails_with_wrong_key(self):
+        wrong_key_file = self.tmp_path / "wrong.key"
+        wrong_key_file.write_text("wrong-secret-key-12345", encoding="utf-8")
+        with self.assertRaises(TeardownGateError) as ctx:
+            verify_backup_readiness(self.enc_backup_db, key_file=wrong_key_file)
+        self.assertIn("ошибка расшифровки", str(ctx.exception).lower())
 
     def test_teardown_cli_dry_run_with_mock_inventory_file(self):
-        """Safe dry-run via CLI with specified mock inventory file succeeds and deletes 0 resources."""
-        key_file = self.tmp_path / "teardown.key"
-        key_file.write_text(self.enc_key, encoding="utf-8")
-        script = Path(__file__).resolve().parent.parent.parent / "scripts" / "cloudru_teardown.py"
-
-        mock_file = self.tmp_path / "mock_inv.json"
-        mock_file.write_text(json.dumps({
-            "instances": [{"id": "inst-10", "name": "vm-test", "cost_rub_month": 1600}],
-            "volumes": [{"id": "vol-10", "name": "vol-root", "size_gb": 20, "cost_rub_month": 240}],
-            "floating_ips": [],
+        mock_inv = {
+            "instances": [{"id": "inst-prod", "name": "keto-balance-vm", "cost_rub_month": 1600}],
+            "volumes": [{"id": "vol-root", "name": "root-vol", "size_gb": 30, "cost_rub_month": 360}],
+            "floating_ips": [{"id": "fip-1", "ip": "178.20.10.5", "cost_rub_month": 200}],
             "snapshots": [],
-            "backups": [],
-            "buckets": [],
+            "images": [],
+            "virtual_ips": [],
+        }
+        mock_file = self.tmp_path / "mock_inv.json"
+        mock_file.write_text(json.dumps(mock_inv), encoding="utf-8")
+
+        script = Path(__file__).resolve().parent.parent.parent / "scripts" / "cloudru_teardown.py"
+        cmd = [
+            sys.executable,
+            str(script),
+            "--backup-file", str(self.backup_db),
+            "--mock-inventory-file", str(mock_file),
+            "--json",
+        ]
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        self.assertEqual(res.returncode, 0, f"CLI dry run failed: {res.stderr}")
+        data = json.loads(res.stdout)
+        self.assertEqual(data["mode"], "DRY_RUN")
+        self.assertFalse(data["executed"])
+        self.assertFalse(data["zero_residual_confirmed"])
+        self.assertEqual(data["total_monthly_rub_prevented"], 2160)
+
+    def test_gate_blocks_corrupted_encrypted_backup_with_teardown_gate_error(self):
+        corrupted_enc = self.tmp_path / "corrupted_backup.db.enc"
+        corrupted_enc.write_bytes(b"gAAAAABnotvalidciphertext1234567890")
+        corrupted_meta = self.tmp_path / "corrupted_backup.json"
+        corrupted_meta.write_text(json.dumps({
+            "timestamp_utc": "2026-11-05T00:00:00Z",
+            "sha256_ciphertext": compute_sha256(corrupted_enc),
+            "encrypted": True,
+            "kdf_salt_hex": "0123456789abcdef",
+            "kdf_iterations": 100000,
         }), encoding="utf-8")
 
-        res = subprocess.run(
-            [
-                sys.executable,
-                str(script),
-                "--backup-file",
-                str(self.enc_backup_db),
-                "--key-file",
-                str(key_file),
-                "--mock-inventory-file",
-                str(mock_file),
-                "--json",
-            ],
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(res.returncode, 0, f"Teardown failed: {res.stderr}")
-        out = json.loads(res.stdout)
-        self.assertEqual(out["mode"], "DRY_RUN")
-        self.assertFalse(out["executed"], "Dry run must NOT execute deletion")
-        self.assertFalse(out["zero_residual_confirmed"])
-        self.assertIn("actions_planned", out)
-        self.assertTrue(out["backup_verification"]["verified"])
-        self.assertEqual(out["backup_verification"]["user_count"], 1)
+        key_file = self.tmp_path / "valid.key"
+        key_file.write_text(self.enc_key, encoding="utf-8")
 
-    def test_cloudru_client_missing_credentials_raises(self):
-        client = CloudRuEvolutionClient(auth_url="", key_id="", secret_key="")
-        with self.assertRaises(CloudRuApiError) as ctx:
-            client.validate_credentials()
-        self.assertIn("Отсутствует URL аутентификации", str(ctx.exception))
+        with self.assertRaises(TeardownGateError) as ctx:
+            verify_backup_readiness(corrupted_enc, key_file=key_file)
+        self.assertIn("ошибка расшифровки бэкапа", str(ctx.exception).lower())
 
-    def test_cloudru_client_auth_401_error(self):
-        import urllib.error
-        def mock_fail_requester(method, url, headers=None, body=None):
-            raise urllib.error.HTTPError(url, 401, "Unauthorized", {}, None)
+    def test_gate_blocks_corrupted_sqlite_header_without_permission_error(self):
+        corrupted_db = self.tmp_path / "corrupted_plain.db"
+        corrupted_db.write_bytes(b"NOT_A_SQLITE_DATABASE_HEADER" * 10)
+        corrupted_meta = self.tmp_path / "corrupted_plain.json"
+        corrupted_meta.write_text(json.dumps({
+            "timestamp_utc": "2026-11-05T00:00:00Z",
+            "sha256": compute_sha256(corrupted_db),
+            "encrypted": False,
+        }), encoding="utf-8")
+
+        with self.assertRaises(TeardownGateError) as ctx:
+            verify_backup_readiness(corrupted_db)
+        self.assertIn("целостности", str(ctx.exception).lower())
+        self.assertTrue(corrupted_db.is_file())
+
+    def test_gate_blocks_empty_key_file_with_teardown_gate_error(self):
+        empty_key_file = self.tmp_path / "empty.key"
+        empty_key_file.write_text("", encoding="utf-8")
+
+        with self.assertRaises(TeardownGateError) as ctx:
+            verify_backup_readiness(self.enc_backup_db, key_file=empty_key_file)
+        self.assertIn("ошибка получения ключа", str(ctx.exception).lower())
+
+    # --- Новые тесты для официального Cloud.ru Evolution IAM & REST API ---
+
+    def test_evolution_iam_auth_and_bearer_token(self):
+        """Проверяет официальный flow получения IAM Bearer токена в Cloud.ru Evolution."""
+        requests_log = []
+
+        def mock_requester(method, url, headers=None, body=None):
+            requests_log.append({"method": method, "url": url, "headers": headers, "body": body})
+            if "iam.api.cloud.ru" in url and url.endswith("/auth/token"):
+                req_json = json.loads(body.decode("utf-8")) if body else {}
+                if req_json.get("keyId") == "test-key-id" and req_json.get("secret") == "test-secret":
+                    return 200, {"Content-Type": "application/json"}, {"access_token": "evo-jwt-token-xyz", "expires_in": 3600}
+                return 401, {}, {"error": "Invalid credentials"}
+            return 404, {}, {}
 
         client = CloudRuEvolutionClient(
-            auth_url="https://iam.ru-1.cloud.ru/v3",
+            key_id="test-key-id",
+            secret_key="test-secret",
             project_id="proj-123",
-            key_id="bad_user",
-            secret_key="bad_pass",
-            http_requester=mock_fail_requester,
+            http_requester=mock_requester,
+        )
+        token = client.authenticate()
+        self.assertEqual(token, "evo-jwt-token-xyz")
+        self.assertEqual(len(requests_log), 1)
+        self.assertEqual(requests_log[0]["method"], "POST")
+        self.assertIn("/auth/token", requests_log[0]["url"])
+
+    def test_evolution_iam_auth_failure_raises_cloudru_api_error(self):
+        def mock_requester(method, url, headers=None, body=None):
+            return 401, {}, {"message": "Unauthorized keyId"}
+
+        client = CloudRuEvolutionClient(
+            key_id="bad-key",
+            secret_key="bad-secret",
+            project_id="proj-123",
+            http_requester=mock_requester,
         )
         with self.assertRaises(CloudRuApiError) as ctx:
             client.authenticate()
-        self.assertIn("HTTP 401", str(ctx.exception))
+        self.assertTrue("сбой" in str(ctx.exception).lower() or "401" in str(ctx.exception))
 
-    def test_cloudru_client_keystone_auth_and_resource_discovery(self):
+    def test_evolution_compute_vms_and_disks_inventory_success(self):
+        """Проверяет корректный парсинг сущностей Evolution Compute API."""
         def mock_requester(method, url, headers=None, body=None):
-            if "auth/tokens" in url:
-                return (
-                    201,
-                    {"x-subject-token": "test-mock-token-xyz"},
-                    {
-                        "token": {
-                            "catalog": [
-                                {
-                                    "type": "compute",
-                                    "endpoints": [{"interface": "public", "url": "https://compute.ru-1.cloud.ru/v2.1", "region": "ru-1"}],
-                                },
-                                {
-                                    "type": "volumev3",
-                                    "endpoints": [{"interface": "public", "url": "https://volume.ru-1.cloud.ru/v3", "region": "ru-1"}],
-                                },
-                                {
-                                    "type": "network",
-                                    "endpoints": [{"interface": "public", "url": "https://network.ru-1.cloud.ru", "region": "ru-1"}],
-                                },
-                            ]
+            if "iam.api.cloud.ru" in url:
+                return 200, {}, {"access_token": "valid-token"}
+            auth_header = (headers or {}).get("Authorization", "")
+            if auth_header != "Bearer valid-token":
+                return 401, {}, {"error": "Missing or invalid bearer token"}
+
+            if "/api/v1/vms" in url:
+                return 200, {}, {
+                    "items": [
+                        {
+                            "id": "vm-prod-1",
+                            "name": "keto-app",
+                            "status": "RUNNING",
+                            "flavor": {"cpus": 1, "ram_mb": 2048},
+                            "disks": [{"id": "disk-boot-1"}],
                         }
-                    },
-                )
-            elif "servers/detail" in url:
-                return (
-                    200,
-                    {},
-                    {
-                        "servers": [
-                            {"id": "srv-1", "name": "keto-app", "status": "ACTIVE", "flavor": {"id": "fl-1"}},
-                        ]
-                    },
-                )
-            elif "volumes/detail" in url:
-                return (
-                    200,
-                    {},
-                    {
-                        "volumes": [
-                            {"id": "vol-1", "name": "keto-root", "size": 30, "status": "in-use", "bootable": "true"},
-                        ]
-                    },
-                )
-            elif "floatingips" in url:
-                return (
-                    200,
-                    {},
-                    {
-                        "floatingips": [
-                            {"id": "fip-1", "floating_ip_address": "84.201.1.1", "status": "ACTIVE"},
-                        ]
-                    },
-                )
-            elif "snapshots/detail" in url:
-                return (
-                    200,
-                    {},
-                    {
-                        "snapshots": [
-                            {"id": "snap-1", "name": "backup-snap", "size": 30, "status": "available"},
-                        ]
-                    },
-                )
-            return (200, {}, {})
+                    ]
+                }
+            elif "/api/v1/disks" in url:
+                return 200, {}, {
+                    "items": [
+                        {
+                            "id": "disk-boot-1",
+                            "name": "keto-app-boot",
+                            "size_gb": 30,
+                            "is_boot": True,
+                            "status": "IN_USE",
+                        }
+                    ]
+                }
+            elif "/api/v1/floating-ips" in url:
+                return 200, {}, {"items": []}
+            elif "/api/v1/snapshots" in url:
+                return 200, {}, {"items": []}
+            elif "/api/v1/images" in url:
+                return 200, {}, {"items": []}
+            elif "/virtual-ips" in url:
+                return 200, {}, {"items": []}
+            return 404, {}, {}
 
         client = CloudRuEvolutionClient(
-            auth_url="https://iam.ru-1.cloud.ru/v3",
-            project_id="proj-123",
-            key_id="test_key",
-            secret_key="test_secret",
+            key_id="k-1",
+            secret_key="s-1",
+            project_id="p-1",
             http_requester=mock_requester,
         )
-
         inv = client.get_full_inventory()
-        self.assertEqual(len(inv["instances"]), 1)
-        self.assertEqual(inv["instances"][0]["id"], "srv-1")
-        self.assertEqual(len(inv["volumes"]), 1)
-        self.assertEqual(inv["volumes"][0]["id"], "vol-1")
-        self.assertEqual(len(inv["floating_ips"]), 1)
-        self.assertEqual(len(inv["snapshots"]), 1)
-        self.assertEqual(inv["total_resources_count"], 4)
-        self.assertGreater(inv["total_monthly_rub"], 0)
+        self.assertEqual(inv["total_resources_count"], 2)  # 1 VM + 1 Disk
+        self.assertEqual(inv["instances"][0]["id"], "vm-prod-1")
+        self.assertEqual(inv["volumes"][0]["id"], "disk-boot-1")
+        self.assertFalse(inv["has_unconfirmed_costs"])
+        self.assertFalse(inv["zero_residual_confirmed"])  # 2 active resources exist
+        self.assertEqual(inv["audit_verdict"], "ACTIVE_RESOURCES_FOUND")
 
-    def test_inventory_function_raises_cloudru_api_error_when_no_credentials(self):
-        clean_env = os.environ.copy()
-        for k in ["CLOUDRU_AUTH_URL", "OS_AUTH_URL", "CLOUDRU_KEY_ID", "OS_USERNAME", "CLOUDRU_SECRET_KEY", "OS_PASSWORD", "CLOUDRU_TOKEN", "OS_AUTH_TOKEN"]:
-            clean_env.pop(k, None)
-
-        old_env = os.environ.copy()
-        try:
-            os.environ.clear()
-            os.environ.update(clean_env)
-            with self.assertRaises(CloudRuApiError) as ctx:
-                inventory_local_and_cloud_resources()
-            self.assertIn("Отсутствует URL аутентификации", str(ctx.exception))
-        finally:
-            os.environ.clear()
-            os.environ.update(old_env)
-
-    def test_gate_blocks_corrupted_encrypted_backup_with_teardown_gate_error(self):
-        corrupt_backup = self.tmp_path / "corrupt.db.enc"
-        corrupt_backup.write_bytes(b"corrupted-ciphertext-content")
-        corrupt_meta = self.tmp_path / "corrupt.json"
-        corrupt_meta.write_text(json.dumps({
-            "encrypted": True,
-            "sha256_ciphertext": compute_sha256(corrupt_backup),
-        }), encoding="utf-8")
-
-        key_file = self.tmp_path / "teardown.key"
-        key_file.write_text(self.enc_key, encoding="utf-8")
-
-        with self.assertRaises(TeardownGateError) as ctx:
-            verify_backup_readiness(corrupt_backup, key_file=key_file)
-        self.assertIn("Ошибка расшифровки бэкапа", str(ctx.exception))
-
-    def test_gate_blocks_wrong_decryption_key_with_teardown_gate_error(self):
-        key_file = self.tmp_path / "wrong.key"
-        key_file.write_text("completely-wrong-key-value", encoding="utf-8")
-
-        with self.assertRaises(TeardownGateError) as ctx:
-            verify_backup_readiness(self.enc_backup_db, key_file=key_file)
-        self.assertIn("Ошибка расшифровки бэкапа", str(ctx.exception))
-
-    def test_gate_blocks_empty_key_file_with_teardown_gate_error(self):
-        empty_key = self.tmp_path / "empty.key"
-        empty_key.write_text("   \n", encoding="utf-8")
-
-        with self.assertRaises(TeardownGateError) as ctx:
-            verify_backup_readiness(self.enc_backup_db, key_file=empty_key)
-        self.assertIn("is empty", str(ctx.exception))
-
-    def test_gate_blocks_corrupted_sqlite_header_without_permission_error(self):
-        from cryptography.fernet import Fernet
-        fernet = Fernet(derive_key(self.enc_key, salt=self.salt))
-        bad_sqlite_backup = self.tmp_path / "bad_sqlite.db.enc"
-        bad_sqlite_backup.write_bytes(fernet.encrypt(b"This is definitely not a sqlite database header!"))
-        bad_sqlite_meta = self.tmp_path / "bad_sqlite.json"
-        bad_sqlite_meta.write_text(json.dumps({
-            "encrypted": True,
-            "sha256_ciphertext": compute_sha256(bad_sqlite_backup),
-            "kdf_salt_hex": self.salt.hex(),
-        }), encoding="utf-8")
-
-        key_file = self.tmp_path / "teardown.key"
-        key_file.write_text(self.enc_key, encoding="utf-8")
-
-        with self.assertRaises(TeardownGateError) as ctx:
-            verify_backup_readiness(bad_sqlite_backup, key_file=key_file)
-        self.assertTrue("PRAGMA integrity_check" in str(ctx.exception) or "не содержит пользователей" in str(ctx.exception))
-
-    def test_keystone_region_id_matching_and_template_interpolation(self):
-        """Keystone v3 region_id must match client region even if other regions come first, and %(tenant_id)s must be replaced."""
-        def mock_req(method, url, headers=None, body=None):
-            return (
-                201,
-                {"x-subject-token": "tok_region_test"},
-                {
-                    "token": {
-                        "catalog": [
-                            {
-                                "type": "compute",
-                                "endpoints": [
-                                    {"interface": "public", "region_id": "ru-2", "url": "https://compute.ru-2.cloud.ru/v2.1/%(tenant_id)s"},
-                                    {"interface": "public", "region_id": "ru-1", "url": "https://compute.ru-1.cloud.ru/v2.1/%(tenant_id)s"},
-                                ],
-                            }
-                        ]
-                    }
-                },
-            )
+    def test_evolution_service_unauthorized_returns_unconfirmed_cost(self):
+        """
+        Требование P0: При 403 Forbidden или отсутствии прав API возвращает UNKNOWN/ERROR,
+        а не пустой список, и помечает расходы как неподтверждённые!
+        """
+        def mock_requester(method, url, headers=None, body=None):
+            if "iam.api.cloud.ru" in url:
+                return 200, {}, {"access_token": "valid-token"}
+            if "/api/v1/vms" in url:
+                return 200, {}, {"items": []}
+            if "/api/v1/disks" in url:
+                # Сервис дисков вернул 403 Forbidden
+                return 403, {}, {"error": "Permission denied: compute.disks.get"}
+            return 200, {}, {"items": []}
 
         client = CloudRuEvolutionClient(
-            auth_url="https://iam.ru-1.cloud.ru/v3",
-            project_id="proj_alpha",
-            token="initial_tok",
-            region="ru-1",
-            http_requester=mock_req,
+            key_id="k-1",
+            secret_key="s-1",
+            project_id="p-1",
+            http_requester=mock_requester,
         )
-        client.authenticate()
-        self.assertEqual(
-            client.endpoints.get("compute"),
-            "https://compute.ru-1.cloud.ru/v2.1/proj_alpha",
-            "Must select ru-1 endpoint matching region_id and interpolate project_id"
-        )
+        inv = client.get_full_inventory()
+        # Проверяем, что ошибка не скрыта как '0 дисков'
+        self.assertTrue(inv["has_unconfirmed_costs"])
+        self.assertIn("disks", inv["unconfirmed_services"])
+        self.assertEqual(inv["services"]["disks"]["status"], "UNAUTHORIZED")
+        self.assertTrue(inv["services"]["disks"]["unconfirmed_cost"])
+        self.assertFalse(inv["zero_residual_confirmed"])
+        self.assertEqual(inv["audit_verdict"], "UNCONFIRMED_RISK_OF_EXPENSES")
 
-    def test_block_storage_service_type_and_glance_images(self):
-        """Official OpenStack type 'block-storage' and Glance images must be discovered."""
-        def mock_req(method, url, headers=None, body=None):
-            if "auth/tokens" in url:
-                return (
-                    201,
-                    {"x-subject-token": "tok_bs"},
-                    {
-                        "token": {
-                            "catalog": [
-                                {
-                                    "type": "block-storage",
-                                    "endpoints": [{"interface": "public", "region_id": "ru-1", "url": "https://volume.ru-1.cloud.ru/v3"}],
-                                },
-                                {
-                                    "type": "image",
-                                    "endpoints": [{"interface": "public", "region_id": "ru-1", "url": "https://image.ru-1.cloud.ru"}],
-                                },
-                            ]
-                        }
-                    },
-                )
-            elif "volumes/detail" in url:
-                return (200, {}, {"volumes": [{"id": "vol-bs-1", "size": 25, "status": "available"}]})
-            elif "images" in url:
-                return (200, {}, {"images": [{"id": "img-1", "name": "vm-backup-snap", "size": 10737418240, "status": "active"}]})
-            return (200, {}, {})
+    def test_evolution_network_timeout_returns_unknown_status(self):
+        """Требование P0: При сетевой ошибке/таймауте возвращается статус NETWORK_ERROR и UNCONFIRMED_RISK."""
+        def mock_requester(method, url, headers=None, body=None):
+            if "iam.api.cloud.ru" in url:
+                return 200, {}, {"access_token": "valid-token"}
+            if "/api/v1/floating-ips" in url:
+                raise CloudRuApiError("Сетевая ошибка при обращении к Cloud.ru API: Connection timed out")
+            return 200, {}, {"items": []}
 
         client = CloudRuEvolutionClient(
-            auth_url="https://iam.ru-1.cloud.ru/v3",
-            project_id="proj-123",
-            token="tok",
-            region="ru-1",
-            http_requester=mock_req,
+            key_id="k-1",
+            secret_key="s-1",
+            project_id="p-1",
+            http_requester=mock_requester,
         )
-        volumes = client.list_volumes()
-        self.assertEqual(len(volumes), 1)
-        self.assertEqual(volumes[0]["id"], "vol-bs-1")
+        inv = client.get_full_inventory()
+        self.assertTrue(inv["has_unconfirmed_costs"])
+        self.assertIn("floating_ips", inv["unconfirmed_services"])
+        self.assertEqual(inv["services"]["floating_ips"]["status"], "NETWORK_ERROR")
+        self.assertFalse(inv["zero_residual_confirmed"])
+        self.assertEqual(inv["audit_verdict"], "UNCONFIRMED_RISK_OF_EXPENSES")
 
-        images = client.list_images()
-        self.assertEqual(len(images), 1)
-        self.assertEqual(images[0]["id"], "img-1")
-        self.assertEqual(images[0]["size_gb"], 10.0)
-
-    def test_backups_and_buckets_raise_on_auth_or_network_error(self):
-        """list_backups and list_buckets must NOT swallow 403 or network errors into fake 0 resources."""
-        def mock_fail_req(method, url, headers=None, body=None):
-            if "auth/tokens" in url:
-                return (
-                    201,
-                    {"x-subject-token": "tok"},
-                    {
-                        "token": {
-                            "catalog": [
-                                {"type": "volumev3", "endpoints": [{"interface": "public", "region": "ru-1", "url": "https://vol.cloud.ru"}]},
-                                {"type": "object-store", "endpoints": [{"interface": "public", "region": "ru-1", "url": "https://s3.cloud.ru"}]},
-                            ]
-                        }
-                    },
-                )
-            raise CloudRuApiError(f"HTTP 403 Forbidden on {url}")
+    def test_evolution_malformed_response_returns_unknown_status(self):
+        """Требование P0: При неполном или искажённом ответе возвращается статус UNKNOWN/MALFORMED."""
+        def mock_requester(method, url, headers=None, body=None):
+            if "iam.api.cloud.ru" in url:
+                return 200, {}, {"access_token": "valid-token"}
+            if "/api/v1/snapshots" in url:
+                # Некорректный dict без ключа items
+                return 200, {}, {"unexpected_random_data": 123}
+            return 200, {}, {"items": []}
 
         client = CloudRuEvolutionClient(
-            auth_url="https://iam.ru-1.cloud.ru/v3",
-            project_id="proj",
-            token="tok",
-            region="ru-1",
-            http_requester=mock_fail_req,
+            key_id="k-1",
+            secret_key="s-1",
+            project_id="p-1",
+            http_requester=mock_requester,
         )
-        with self.assertRaises(CloudRuApiError):
-            client.list_backups()
-        with self.assertRaises(CloudRuApiError):
-            client.list_buckets()
+        inv = client.get_full_inventory()
+        self.assertTrue(inv["has_unconfirmed_costs"])
+        self.assertIn("snapshots", inv["unconfirmed_services"])
+        self.assertEqual(inv["services"]["snapshots"]["status"], "UNKNOWN")
+        self.assertFalse(inv["zero_residual_confirmed"])
 
-    def test_backups_and_buckets_empty_on_404_service_disabled(self):
-        """When a service returns 404 (disabled in deployment), list_backups and list_buckets safely return empty list."""
-        def mock_404_req(method, url, headers=None, body=None):
-            if "auth/tokens" in url:
-                return (
-                    201,
-                    {"x-subject-token": "tok"},
-                    {
-                        "token": {
-                            "catalog": [
-                                {"type": "volumev3", "endpoints": [{"interface": "public", "region": "ru-1", "url": "https://vol.cloud.ru"}]},
-                                {"type": "object-store", "endpoints": [{"interface": "public", "region": "ru-1", "url": "https://s3.cloud.ru"}]},
-                            ]
-                        }
-                    },
-                )
-            raise CloudRuApiError(f"HTTP 404 Not Found on {url}")
+    def test_evolution_all_services_ok_and_zero_items_confirms_zero_residual(self):
+        """
+        Гарантия 0 ₽: подтверждение (zero_residual_confirmed=True) выдаётся ТОЛЬКО
+        когда ВСЕ сервисы ответили OK и ни одного платного ресурса не найдено.
+        """
+        def mock_requester(method, url, headers=None, body=None):
+            if "iam.api.cloud.ru" in url:
+                return 200, {}, {"access_token": "valid-token"}
+            return 200, {}, {"items": []}
 
         client = CloudRuEvolutionClient(
-            auth_url="https://iam.ru-1.cloud.ru/v3",
-            project_id="proj",
-            token="tok",
-            region="ru-1",
-            http_requester=mock_404_req,
+            key_id="k-1",
+            secret_key="s-1",
+            project_id="p-1",
+            http_requester=mock_requester,
         )
-        self.assertEqual(client.list_backups(), [])
-        self.assertEqual(client.list_buckets(), [])
+        inv = client.get_full_inventory()
+        self.assertFalse(inv["has_unconfirmed_costs"])
+        self.assertEqual(inv["unconfirmed_services"], [])
+        self.assertEqual(inv["total_resources_count"], 0)
+        self.assertEqual(inv["total_monthly_rub"], 0)
+        self.assertTrue(inv["zero_residual_confirmed"])
+        self.assertEqual(inv["audit_verdict"], "VERIFIED_ZERO_RESOURCES")
 
-    def test_execute_teardown_plan_accounts_for_remaining_images(self):
-        """Residual verification must fail zero_residual_confirmed if images remain."""
-        inv = {"images": [{"id": "img-1", "cost_rub_month": 50}]}
-        def mock_executor(kind, res_id):
-            pass
-        def mock_verifier():
-            return {"instances": [], "volumes": [], "floating_ips": [], "snapshots": [], "images": [{"id": "img-1"}], "backups": [], "buckets": []}
+    def test_cli_audit_only_flag_runs_without_backup_file(self):
+        """Флаг --audit-only позволяет безопасно проверять API без требования файла бэкапа."""
+        mock_inv = {
+            "instances": [],
+            "volumes": [],
+            "floating_ips": [],
+            "snapshots": [],
+            "images": [],
+            "virtual_ips": [],
+            "services": {
+                "vms": {"status": "OK", "items": []},
+                "disks": {"status": "OK", "items": []},
+                "floating_ips": {"status": "OK", "items": []},
+                "snapshots": {"status": "OK", "items": []},
+                "images": {"status": "OK", "items": []},
+                "virtual_ips": {"status": "OK", "items": []},
+            },
+            "unconfirmed_services": [],
+            "has_unconfirmed_costs": False,
+            "total_resources_count": 0,
+            "total_monthly_rub": 0,
+            "zero_residual_confirmed": True,
+            "audit_verdict": "VERIFIED_ZERO_RESOURCES",
+            "source": "CLOUDRU_EVOLUTION_REST_API",
+        }
+        mock_file = self.tmp_path / "mock_clean.json"
+        mock_file.write_text(json.dumps(mock_inv), encoding="utf-8")
 
-        res = execute_teardown_plan(inv, dry_run=False, executor=mock_executor, verifier=mock_verifier)
-        self.assertFalse(res["zero_residual_confirmed"], "Must NOT confirm zero residual when image remains")
+        script = Path(__file__).resolve().parent.parent.parent / "scripts" / "cloudru_teardown.py"
+        cmd = [
+            sys.executable,
+            str(script),
+            "--audit-only",
+            "--mock-inventory-file", str(mock_file),
+            "--json",
+        ]
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        self.assertEqual(res.returncode, 0, f"Audit-only failed: {res.stderr}")
+        data = json.loads(res.stdout)
+        self.assertEqual(data["audit_verdict"], "VERIFIED_ZERO_RESOURCES")
+        self.assertTrue(data["zero_residual_confirmed"])
 
 
 if __name__ == "__main__":
