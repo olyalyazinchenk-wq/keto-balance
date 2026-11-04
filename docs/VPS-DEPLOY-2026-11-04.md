@@ -2,26 +2,26 @@
 
 One VPS in Russia hosts React Mini App, Python FastAPI, one polling Telegram bot and SQLite. A stable publicly verified HTTPS hostname is required. For long-lived Telegram buttons an independently owned domain is recommended; a provider or free hostname must not be assumed permanent. The current local Terra/Antigravity edits must be reconciled first: public GitHub master is from 27 October and is NOT the latest live app.
 
-## Updated recommendation — 2026-11-04 (PAID VPS, NOT ORDERED)
+## Hosting comparison — November 4, 2026 (no provider chosen, not purchased)
 
-Owner declined further free trials. Official incident notice: Beget suffered a serious attack 2026-11-02 and was still restoring systems on 2026-11-04; exclude Beget. SmartApe sign-up phone verification failed.
+**Corrected shortlist after the owner's challenge:** do NOT default to AdminVPS and do NOT buy a provider before validating the actual order and required data-protection arrangements.
 
-**Best current starting option, conditional on checkout verification:** AdminVPS Russia / 3.6 GHz / Promo: 1 vCPU, 2 GB RAM, 30 GB NVMe. The vendor's indexed price page shows 429 RUB (older cached rate); a November 1 independent price check shows **499 RUB/month**. Budget using the fresher 499 number, not 429. Published terms indicate weekly server snapshots, 3 TB traffic, basic protection and Russian datacentre. Verify the exact amount, public IPv4 inclusion, no recurring panel upsell and availability in the actual order; otherwise decline checkout. Free-trial Telegram-bot prohibition in AdminVPS's terms applies to the **trial**, not a paid VPS, but outbound Telegram Bot API still must be independently verified from the deployed host.
+| Provider/product | Published resources and indicative monthly price | Critical caveats |
+| --- | --- | --- |
+| Selectel **new VDS 2-2-40** | 2 vCPU, 2 GB, 40 GB NVMe; **400 RUB** | IPv4 included, 3 TB external transfer, no automatic backups; **vendor explicitly says this VDS product does not meet 152-FZ**; use only without actual participant/health data |
+| Selectel **new VDS 2-4-50** | 2 vCPU, 4 GB, 50 GB NVMe; **650 RUB** | Best published raw resources per ruble among this shortlist, same compliance and backup caveats |
+| Selectel **Cloud 152-FZ** | Cloud Standard Line from **948.50 RUB/month** for minimum offer, exact project-sized configuration requires calculator quote | Provider has documented 152-FZ infrastructure and can provide processing mandate; 2026-11-03 ru-7 networking incident now reported resolved; inspect chosen pool and actual backup/IP cost |
+| Timeweb **Cloud-40 / Cloud-50** | 2 vCPU, 2 GB, 40 GB **900 RUB**; 2 vCPU, 4 GB, 50 GB **1080 RUB** | Public IPv4 extra; backups 6 RUB per GB per retained backup; separately verify that the **actual product/account** has required 152-FZ legal documents; 2026-10-23 MSK-1 incident resolved; 2026-11-04 MSK servers on status page operational |
+| AdminVPS **Promo** | 1 vCPU, 2 GB, 30 GB NVMe; official page shows **429 RUB**, older/nonidentical indexes may show other rates | Published weekly server backup; verify current checkout price, dedicated IPv4, ability to provide required data protection/legal documents |
+| FirstVDS **Старт SSD** | 1 vCPU, 2 GB, 40 GB SSD; **519 RUB** | IPv4 included; backups extra; no clear advantage over Selectel for synthetic-only pilot |
+| SpaceWeb **Базовый** | 2 vCPU, 2 GB, 30 GB NVMe; current published calculator circa **930 RUB** | Backups and IPv4 to verify; more costly for similar resources |
+| RUVDS **Турбо 1** | 2 vCPU, 4 GB, 40 GB SSD; advertised **1149 RUB/month on a 3-month term** | Compare only like-for-like one-month checkout |
 
-**Backup choice:** FirstVDS Russia "Старт SSD": 1 vCPU, 2 GB RAM, 40 GB SSD, one included IPv4, 519 RUB/month from effective 2026-08 official price list. Backups are **6 RUB/month per billed GB** as a separate paid feature; do not assume full disk necessarily billed.
+**Operational distinction:** The owner needs both a working Telegram Mini App and, eventually, a service storing users' health-related diaries. For synthetic-only staging, Selectel's modern 650 RUB VDS is a strong value candidate. For live client data, assess Selectel Cloud 152-FZ and Timeweb Cloud compliant offering, legal processing agreement, backup and full checkout; the cheap Selectel VDS is NOT an interchangeable compliance-certified alternative. A Russian IP alone is not sufficient legal compliance.
 
-**Premium alternative:** Timeweb Cloud Russia Cloud-40: 2 vCPU, 2 GB RAM, 40 GB NVMe, listed 900 RUB/month; clarify IPv4 and backup in checkout. More CPU but larger monthly cost, not justified for initial Keto Balance usage without measured load.
+**Incident sources (time-sensitive):** https://selectel.live/ (Nov 3 ru-7 incident), https://timeweb.cloud/live (Oct 23 MSK-1 incident, current pool statuses). Vendor sources: https://selectel.ru/services/cloud/vps-vds/ ; https://docs.selectel.ru/vds-servers/about/about-vds-server/ ; https://selectel.ru/services/cloud/servers/152fz/ ; https://timeweb.cloud/services/cloud-servers ; https://timeweb.cloud/solutions/152fz ; https://adminvps.ru/vps/vps_russia.php .
 
-Cost & evidence:
-- https://adminvps.ru/vps/vps_russia.php (older cached 429 figure)
-- https://servercalc.ru/indeks-cen-vps/ (2026-11-01 newer 499 figure)
-- https://firstvds.ru/docs/tariffs.html (official 519, backup 6 RUB/GB)
-- https://timeweb.cloud/services/cloud-servers
-- https://beget.com/ru (incident notice 2026-11-04)
-
-**Risk controls:** initially pay for **one month only**, not an annual discount. Do not add ispmanager, premium admin, extra IPv4 or extra backup services silently. Confirm actual IP/network, ports 80/443, outbound api.telegram.org, TLS and static asset release ID within initial paid period. Only then transfer the production polling bot and cut over Telegram buttons. Preserve clean old server backup and rollback information. Never claim a published service until an Android Telegram acceptance test passes.
-
-**Domain:** owner confirmed there is **no purchased domain**. A stable owned domain is recommended for long-term Telegram buttons and avoids provider-specific and ephemeral tunnel URLs, but requires a separate owner purchase decision. For .RU, registration/renewal require ESIA identity verification since 2026-09-01; R01's published 2026 prices were 635 RUB first year and 1049 RUB renewal, not a guarantee of today's checkout price. Do not purchase a domain without the owner's approval, and do not treat a disposable tunnel/free subdomain as permanent.
+No server, IP, domain, DNS or public Telegram button has been purchased/changed. Preserve uncommitted local Terra changes and do not merge this draft branch over them.
 
 ## Safety prerequisites
 
