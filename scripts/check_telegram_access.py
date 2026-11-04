@@ -176,11 +176,12 @@ def main() -> int:
     if results['proxy_configured']:
         print(f"Proxy URL:          {results['proxy_configured']}")
         p_res = results['proxy_https']
-        print(f"Proxy Connection:   {'SUCCESS' if p_res and p_res['ok'] else 'FAILED'}")
         if p_res and p_res['ok']:
-            print(f"Proxy Latency:      {p_res['elapsed_ms']} ms")
-        elif p_res:
-            print(f"Proxy Error:        {p_res['error']}")
+            print(f"Proxy Status:       VERIFIED (Live connection confirmed: {p_res['elapsed_ms']} ms)")
+        else:
+            err_msg = p_res['error'] if p_res else 'Not tested'
+            print(f"Proxy Status:       UNVERIFIED / FAILED ({err_msg})")
+            print("  [ВАЖНО] Прокси нельзя считать рабочим до подтверждения реальным машинным тестом!")
 
     if results.get("token_verification") and results["token_verification"].get("tested"):
         tv = results["token_verification"]

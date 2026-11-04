@@ -65,3 +65,76 @@ class TestBackupRestoreCLI(unittest.TestCase):
         row_ord = cur.fetchone()
         self.assertEqual(row_ord[0], 1900.0)
         conn.close()
+
+    def test_encrypted_backup_and_restore_cycle(self):
+        backup_script = ROOT / "scripts" / "backup_db.py"
+        restore_script = ROOT / "scripts" / "restore_db.py"
+        enc_backup = self.tmp_path / "backups" / "snap_encrypted.db.enc"
+        enc_restored = self.tmp_path / "restored_enc.db"
+        secret_key = "olga-super-secure-production-passphrase-2026"
+
+        # 1. Run encrypted backup
+        res = subprocess.run(
+            [
+                sys.executable,
+                str(backup_script),
+                "--source",
+                str(self.src_db),
+                "--dest",
+                str(enc_backup),
+                "--encrypt",
+                "--key",
+                secret_key,
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res.returncode, 0, f"Encrypted backup failed: {res.stderr}")
+        self.assertTrue(enc_backup.is_file(), "Encrypted backup file missing")
+        # Verify it is not readable as plain SQLite
+        bad_conn = sqlite3.connect(str(enc_backup))
+        try:
+            with self.assertRaises(sqlite3.DatabaseError):
+                bad_conn.execute("SELECT count(*) FROM users")
+        finally:
+            bad_conn.close()
+
+        # 2. Restore with wrong key must fail safely
+        res_bad = subprocess.run(
+            [
+                sys.executable,
+                str(restore_script),
+                str(enc_backup),
+                "--target",
+                str(enc_restored),
+                "--key",
+                "wrong-key-should-fail",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(res_bad.returncode, 0, "Restore with wrong key must fail")
+
+        # 3. Restore with correct key must succeed
+        res_ok = subprocess.run(
+            [
+                sys.executable,
+                str(restore_script),
+                str(enc_backup),
+                "--target",
+                str(enc_restored),
+                "--key",
+                secret_key,
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res_ok.returncode, 0, f"Encrypted restore failed: {res_ok.stderr}")
+        self.assertTrue(enc_restored.is_file(), "Restored DB file missing")
+
+        # 4. Verify contents in restored DB
+        conn = sqlite3.connect(str(enc_restored))
+        cur = conn.cursor()
+        cur.execute("SELECT username FROM users WHERE user_id = 101")
+        self.assertEqual(cur.fetchone()[0], "tester1")
+        conn.close()
