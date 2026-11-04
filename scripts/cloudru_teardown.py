@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from scripts.restore_db import verify_integrity, find_meta_file, compute_sha256, derive_key
+from scripts.backup_db import resolve_encryption_key, SecurityError
 
 
 CONFIRMATION_PHRASE = "I_CONFIRM_COMPLETE_CLOUD_TEARDOWN"
@@ -33,7 +34,12 @@ class TeardownGateError(RuntimeError):
     pass
 
 
-def verify_backup_readiness(backup_path: Path, encryption_key: str = "") -> Dict[str, Any]:
+def verify_backup_readiness(
+    backup_path: Path,
+    encryption_key: str = "",
+    key_file: Optional[Path] = None,
+    key_stdin: bool = False,
+) -> Dict[str, Any]:
     """
     Проверяет готовность резервной копии к удалению облачной инфраструктуры.
     1. Существование файла бэкапа и метаданных.
@@ -60,7 +66,21 @@ def verify_backup_readiness(backup_path: Path, encryption_key: str = "") -> Dict
         raise TeardownGateError(f"Контрольная сумма SHA256 не совпадает: ожидалось {expected_sha[:12]}, получено {actual_sha[:12]}")
 
     is_encrypted = meta.get("encrypted") or backup_path.name.endswith(".enc")
-    effective_key = encryption_key or os.getenv("KETO_BACKUP_ENCRYPTION_KEY", "")
+    effective_key = ""
+    if is_encrypted:
+        try:
+            effective_key = resolve_encryption_key(
+                key_arg=encryption_key,
+                key_file=key_file,
+                key_stdin=key_stdin,
+            )
+        except SecurityError as sec_err:
+            raise TeardownGateError(f"Безопасность нарушена: {sec_err}")
+        except Exception as exc:
+            raise TeardownGateError(f"Ошибка получения ключа расшифровки: {exc}")
+
+        if not effective_key:
+            raise TeardownGateError("Бэкап зашифрован, но ключ не передан (KETO_BACKUP_ENCRYPTION_KEY, --key-file или --key-stdin)")
 
     # Тестовое восстановление во временную БД
     with tempfile.NamedTemporaryFile(suffix=".teardown_drill.db", delete=False) as tmp:
@@ -68,8 +88,6 @@ def verify_backup_readiness(backup_path: Path, encryption_key: str = "") -> Dict
 
     try:
         if is_encrypted:
-            if not effective_key:
-                raise TeardownGateError("Бэкап зашифрован, но ключ не передан (--key или KETO_BACKUP_ENCRYPTION_KEY)")
             from cryptography.fernet import Fernet
             fernet = Fernet(derive_key(effective_key))
             decrypted = fernet.decrypt(backup_path.read_bytes())
@@ -200,7 +218,9 @@ def execute_teardown_plan(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Zero-residual Cloud.ru teardown utility")
     parser.add_argument("--backup-file", type=Path, required=True, help="Path to verified database backup")
-    parser.add_argument("--key", type=str, default="", help="Decryption key if backup is encrypted")
+    parser.add_argument("--key", type=str, default="", help="Decryption key if backup is encrypted (insecure; prefer --key-file, --key-stdin or KETO_BACKUP_ENCRYPTION_KEY)")
+    parser.add_argument("--key-file", type=Path, default=None, help="Path to file containing decryption key")
+    parser.add_argument("--key-stdin", action="store_true", help="Read decryption key from stdin")
     parser.add_argument("--confirm-destroy", action="store_true", help="Authorize actual destruction of resources")
     parser.add_argument("--confirm-phrase", type=str, default="", help="Must match confirmation phrase")
     parser.add_argument("--json", action="store_true", help="Output machine-readable JSON")
@@ -208,7 +228,12 @@ def main() -> int:
 
     # Защитный барьер 1: Проверка бэкапа и тестовое восстановление
     try:
-        backup_status = verify_backup_readiness(args.backup_file, encryption_key=args.key)
+        backup_status = verify_backup_readiness(
+            args.backup_file,
+            encryption_key=args.key,
+            key_file=args.key_file,
+            key_stdin=args.key_stdin,
+        )
     except TeardownGateError as exc:
         print(f"[FATAL BLOCKED] Удаление запрещено: {exc}", file=sys.stderr)
         return 2

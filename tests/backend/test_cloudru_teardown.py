@@ -1,5 +1,8 @@
 import json
+import os
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,7 +13,7 @@ from scripts.cloudru_teardown import (
     TeardownGateError,
     CONFIRMATION_PHRASE,
 )
-from scripts.backup_db import compute_sha256
+from scripts.backup_db import compute_sha256, derive_key
 
 
 class TestCloudRuTeardown(unittest.TestCase):
@@ -35,6 +38,22 @@ class TestCloudRuTeardown(unittest.TestCase):
             "encrypted": False,
         }
         self.meta_json.write_text(json.dumps(meta), encoding="utf-8")
+
+        # Create encrypted backup fixture
+        from cryptography.fernet import Fernet
+        self.enc_key = "secure-teardown-key-2026"
+        fernet = Fernet(derive_key(self.enc_key))
+        self.enc_backup_db = self.tmp_path / "encrypted_backup.db.enc"
+        self.enc_meta_json = self.tmp_path / "encrypted_backup.json"
+        enc_bytes = fernet.encrypt(self.backup_db.read_bytes())
+        self.enc_backup_db.write_bytes(enc_bytes)
+        enc_sha = compute_sha256(self.enc_backup_db)
+        self.enc_meta_json.write_text(json.dumps({
+            "timestamp_utc": "2026-11-05T00:00:00Z",
+            "sha256_ciphertext": enc_sha,
+            "sha256_plaintext": sha,
+            "encrypted": True,
+        }), encoding="utf-8")
 
     def tearDown(self):
         self.tmp_dir.cleanup()
@@ -106,6 +125,87 @@ class TestCloudRuTeardown(unittest.TestCase):
         self.assertEqual(actions_performed[2], ("floating_ip", "fip-1"))
         self.assertEqual(actions_performed[3], ("snapshot", "snap-1"))
 
+    def test_gate_encrypted_backup_with_env_var(self):
+        old_val = os.environ.get("KETO_BACKUP_ENCRYPTION_KEY")
+        try:
+            os.environ["KETO_BACKUP_ENCRYPTION_KEY"] = self.enc_key
+            res = verify_backup_readiness(self.enc_backup_db)
+            self.assertTrue(res["verified"])
+            self.assertTrue(res["is_encrypted"])
+            self.assertEqual(res["user_count"], 1)
+        finally:
+            if old_val is None:
+                os.environ.pop("KETO_BACKUP_ENCRYPTION_KEY", None)
+            else:
+                os.environ["KETO_BACKUP_ENCRYPTION_KEY"] = old_val
+
+    def test_gate_encrypted_backup_with_key_file(self):
+        key_file = self.tmp_path / "teardown.key"
+        key_file.write_text(self.enc_key, encoding="utf-8")
+        res = verify_backup_readiness(self.enc_backup_db, key_file=key_file)
+        self.assertTrue(res["verified"])
+        self.assertEqual(res["user_count"], 1)
+
+    def test_gate_encrypted_backup_with_key_stdin(self):
+        import io
+        old_stdin = sys.stdin
+        try:
+            sys.stdin = io.StringIO(self.enc_key)
+            res = verify_backup_readiness(self.enc_backup_db, key_stdin=True)
+            self.assertTrue(res["verified"])
+            self.assertEqual(res["user_count"], 1)
+        finally:
+            sys.stdin = old_stdin
+
+    def test_gate_rejects_key_cli_arg_in_production(self):
+        script = Path(__file__).resolve().parent.parent.parent / "scripts" / "cloudru_teardown.py"
+        prod_env = os.environ.copy()
+        prod_env["APP_STAGE"] = "production"
+        res = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "--backup-file",
+                str(self.enc_backup_db),
+                "--key",
+                self.enc_key,
+            ],
+            env=prod_env,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res.returncode, 2)
+        self.assertIn("Безопасность нарушена", res.stderr)
+        self.assertIn("forbidden in production mode", res.stderr)
+
+    def test_teardown_cli_dry_run_with_key_file_deletes_zero_resources(self):
+        key_file = self.tmp_path / "teardown.key"
+        key_file.write_text(self.enc_key, encoding="utf-8")
+        script = Path(__file__).resolve().parent.parent.parent / "scripts" / "cloudru_teardown.py"
+
+        # Safe dry-run via CLI
+        res = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "--backup-file",
+                str(self.enc_backup_db),
+                "--key-file",
+                str(key_file),
+                "--json",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res.returncode, 0, f"Teardown failed: {res.stderr}")
+        out = json.loads(res.stdout)
+        self.assertEqual(out["mode"], "DRY_RUN")
+        self.assertFalse(out["executed"], "Dry run must NOT execute deletion")
+        self.assertIn("actions_planned", out)
+        self.assertTrue(out["backup_verification"]["verified"])
+        self.assertEqual(out["backup_verification"]["user_count"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
+

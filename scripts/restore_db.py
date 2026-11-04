@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from bot.app_db import restore_database, get_settings
+from scripts.backup_db import resolve_encryption_key, SecurityError
 
 
 def derive_key(passphrase_or_key: str) -> bytes:
@@ -66,7 +67,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Restore SQLite database from backup (supports encrypted backups)")
     parser.add_argument("backup_file", type=Path, help="Path to .db or .enc backup file")
     parser.add_argument("--target", type=Path, default=None, help="Target database path to restore into")
-    parser.add_argument("--key", type=str, default="", help="Decryption key or passphrase if backup is encrypted")
+    parser.add_argument("--key", type=str, default="", help="Decryption key or passphrase if backup is encrypted (insecure; prefer --key-file, --key-stdin or KETO_BACKUP_ENCRYPTION_KEY)")
+    parser.add_argument("--key-file", type=Path, default=None, help="Path to file containing decryption key")
+    parser.add_argument("--key-stdin", action="store_true", help="Read decryption key from stdin")
     parser.add_argument("--skip-checksum", action="store_true", help="Skip SHA256 check against meta JSON")
     args = parser.parse_args()
 
@@ -76,7 +79,18 @@ def main() -> int:
         return 1
 
     target_db = args.target if args.target else Path(get_settings().db_path)
-    encryption_key = args.key or os.getenv("KETO_BACKUP_ENCRYPTION_KEY", "")
+    try:
+        encryption_key = resolve_encryption_key(
+            key_arg=args.key,
+            key_file=args.key_file,
+            key_stdin=args.key_stdin,
+        )
+    except SecurityError as err:
+        print(f"[FATAL SECURITY] {err}", file=sys.stderr)
+        return 1
+    except Exception as err:
+        print(f"[ERROR] Failed to resolve decryption key: {err}", file=sys.stderr)
+        return 1
 
     meta_file = find_meta_file(backup_file)
     meta = {}
@@ -99,7 +113,7 @@ def main() -> int:
 
     if is_encrypted:
         if not encryption_key:
-            print("[FATAL] Backup is encrypted, but no decryption key was supplied. Pass --key or KETO_BACKUP_ENCRYPTION_KEY.", file=sys.stderr)
+            print("[FATAL] Backup is encrypted, but no decryption key was supplied. Pass KETO_BACKUP_ENCRYPTION_KEY, --key-file, or --key-stdin.", file=sys.stderr)
             return 1
 
         try:

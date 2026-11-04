@@ -61,12 +61,85 @@ def count_db_stats(db_path: Path) -> dict:
     return stats
 
 
+class SecurityError(RuntimeError):
+    """Исключение при попытке передачи секрета через небезопасный интерфейс в production."""
+    pass
+
+
+def resolve_encryption_key(
+    key_arg: str = "",
+    key_file: Optional[Path] = None,
+    key_stdin: bool = False,
+    env_var_name: str = "KETO_BACKUP_ENCRYPTION_KEY",
+) -> str:
+    """
+    Безопасное получение ключа шифрования/дешифрования.
+    Приоритет:
+    1. --key-stdin (потоковый ввод через stdin)
+    2. --key-file (чтение из отдельного файла)
+    3. Переменная окружения (по умолчанию KETO_BACKUP_ENCRYPTION_KEY)
+    4. --key (CLI аргумент):
+       - В production режиме (APP_STAGE=production/prod или get_settings().is_production):
+         вызывает SecurityError и блокирует выполнение, т.к. аргументы CLI
+         видны всем пользователям в ps aux, Process Explorer и shell history.
+       - В непродовом окружении: выводит предупреждение [SECURITY WARNING] в sys.stderr.
+    """
+    if key_arg:
+        is_prod = False
+        try:
+            from bot.app_settings import get_settings as _get_settings
+            is_prod = _get_settings().is_production
+        except Exception:
+            pass
+        if not is_prod:
+            app_stage = os.getenv("APP_STAGE", "").strip().lower()
+            is_prod = app_stage in {"production", "prod"}
+
+        if is_prod:
+            raise SecurityError(
+                "Passing encryption key via CLI argument '--key' is forbidden in production mode "
+                "because it exposes secrets to process listing and shell history. "
+                f"Use {env_var_name}, --key-file, or --key-stdin instead."
+            )
+
+        print(
+            "[SECURITY WARNING] Passing encryption key via CLI argument '--key' is insecure "
+            "and exposes secrets to process listing and shell history. "
+            f"Prefer {env_var_name}, --key-file, or --key-stdin.",
+            file=sys.stderr,
+        )
+
+    if key_stdin:
+        stdin_key = sys.stdin.read().strip()
+        if stdin_key:
+            return stdin_key
+
+    if key_file:
+        key_path = Path(key_file)
+        if not key_path.is_file():
+            raise FileNotFoundError(f"Key file not found: {key_path}")
+        file_key = key_path.read_text(encoding="utf-8").strip()
+        if file_key:
+            return file_key
+
+    env_key = os.getenv(env_var_name, "").strip()
+    if env_key:
+        return env_key
+
+    if key_arg:
+        return key_arg.strip()
+
+    return ""
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create consistent SQLite backup with optional encryption")
     parser.add_argument("--source", type=Path, default=None, help="Source database file")
     parser.add_argument("--dest", type=Path, default=None, help="Destination directory or file")
     parser.add_argument("--encrypt", action="store_true", help="Encrypt backup using AES-Fernet")
-    parser.add_argument("--key", type=str, default="", help="Encryption key or passphrase")
+    parser.add_argument("--key", type=str, default="", help="Encryption key or passphrase (insecure; prefer --key-file, --key-stdin or KETO_BACKUP_ENCRYPTION_KEY)")
+    parser.add_argument("--key-file", type=Path, default=None, help="Path to file containing encryption key")
+    parser.add_argument("--key-stdin", action="store_true", help="Read encryption key from stdin")
     args = parser.parse_args()
 
     source_db = args.source if args.source else Path(get_settings().db_path)
@@ -74,7 +147,19 @@ def main() -> int:
         print(f"[ERROR] Source database not found: {source_db}", file=sys.stderr)
         return 1
 
-    encryption_key = args.key or os.getenv("KETO_BACKUP_ENCRYPTION_KEY", "")
+    try:
+        encryption_key = resolve_encryption_key(
+            key_arg=args.key,
+            key_file=args.key_file,
+            key_stdin=args.key_stdin,
+        )
+    except SecurityError as err:
+        print(f"[FATAL SECURITY] {err}", file=sys.stderr)
+        return 1
+    except Exception as err:
+        print(f"[ERROR] Failed to resolve encryption key: {err}", file=sys.stderr)
+        return 1
+
     should_encrypt = args.encrypt or bool(encryption_key)
 
     dest_dir = args.dest if args.dest else ROOT / "backups"
@@ -90,7 +175,7 @@ def main() -> int:
 
     if should_encrypt:
         if not encryption_key:
-            print("[ERROR] Encryption requested, but no key provided. Pass via --key or KETO_BACKUP_ENCRYPTION_KEY.", file=sys.stderr)
+            print("[ERROR] Encryption requested, but no key provided. Pass via KETO_BACKUP_ENCRYPTION_KEY, --key-file, or --key-stdin.", file=sys.stderr)
             return 1
         try:
             from cryptography.fernet import Fernet
