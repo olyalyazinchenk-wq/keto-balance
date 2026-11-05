@@ -120,6 +120,19 @@ class TestAgentOps(unittest.TestCase):
         self.assertTrue(guide_file.exists())
         self.assertIn("Yandex Cloud", guide_file.read_text(encoding="utf-8"))
 
+    def test_sync_status_updates_live_status_file(self):
+        """Автоматическая синхронизация статуса обновляет docs/LIVE_STATUS.md."""
+        parser = build_parser()
+        args = parser.parse_args(["sync-status"])
+        from scripts.agent_ops import run_sync_status_action
+        exit_code = run_sync_status_action(args)
+        self.assertEqual(exit_code, 0)
+        live_status = ROOT / "docs" / "LIVE_STATUS.md"
+        self.assertTrue(live_status.exists())
+        content = live_status.read_text(encoding="utf-8")
+        self.assertIn("LIVE STATUS", content)
+        self.assertIn("Machine Evidence", content)
+
 
 if __name__ == "__main__":
     unittest.main()
