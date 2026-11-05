@@ -4,7 +4,7 @@ import { isRecipeAllowed } from '../domain/eligibility';
 import { PREVIEW_RECIPE_IDS } from '../data/releasedRecipeIds';
 
 export const RESTRICTION_MAP: Record<
-  PilotRestrictionToken,
+  string,
   { field: 'allergies' | 'disliked'; value: string; label: string }
 > = {
   exclude_eggs: { field: 'allergies', value: 'яйца', label: 'Исключить яйца' },
@@ -13,6 +13,13 @@ export const RESTRICTION_MAP: Record<
   exclude_nuts: { field: 'allergies', value: 'орехи', label: 'Исключить орехи' },
   exclude_offal: { field: 'disliked', value: 'субпродукты', label: 'Не использовать субпродукты' },
   exclude_mushrooms: { field: 'disliked', value: 'грибы', label: 'Не использовать грибы' },
+  no_eggs: { field: 'allergies', value: 'яйца', label: 'Исключить яйца' },
+  no_dairy: { field: 'allergies', value: 'молочные продукты', label: 'Исключить молочные продукты' },
+  no_fish: { field: 'allergies', value: 'рыба', label: 'Исключить рыбу' },
+  no_nuts: { field: 'allergies', value: 'орехи', label: 'Исключить орехи' },
+  no_offal: { field: 'disliked', value: 'субпродукты', label: 'Не использовать субпродукты' },
+  no_mushrooms: { field: 'disliked', value: 'грибы', label: 'Не использовать грибы' },
+  no_pork: { field: 'disliked', value: 'свинина', label: 'Не использовать свинину' },
 };
 
 export function preferencesToUserProfile(prefs: PilotPreferencesV1 | null): UserProfile {
