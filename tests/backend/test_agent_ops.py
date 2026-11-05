@@ -52,6 +52,19 @@ class TestAgentOps(unittest.TestCase):
     # 1. Биллинг Cloud.ru: запрет ложного 0 ₽
     # --------------------------------------------------------------------------
 
+    def test_local_billing_reports_do_not_prove_spend_or_debt(self):
+        report = {"source": "CLOUDRU_EVOLUTION_REST_API", "audit_verdict": "VERIFIED_ZERO_ALL_SERVICES_AND_BILLING"}
+        audit = self.tmp_path / "test-results" / "latest_cloudru_audit.json"
+        cases = [report, {**report, "total_monthly_rub": 0, "timestamp": "2000-01-01T00:00:00Z"}, {**report, "total_monthly_rub": 0, "timestamp": "2099-01-01T00:00:00Z"}, None]
+        with patch("scripts.agent_ops.ROOT", self.tmp_path), patch("scripts.agent_ops.get_credentials_summary", return_value={"has_credentials": True}):
+            for data in cases:
+                with self.subTest(data=data):
+                    with patch("pathlib.Path.exists", return_value=data is not None), patch("builtins.open", unittest.mock.mock_open(read_data=json.dumps(data))):
+                        status = get_cloudru_billing_status()
+                    self.assertEqual(status["status"], "UNKNOWN")
+                    self.assertIsNone(status["confirmed_spend_rub"])
+                    self.assertFalse(status["zero_debt_confirmed"])
+
     def test_billing_status_without_credentials_returns_unknown(self):
         """P0: При отсутствии ключей API биллинг строго возвращает UNKNOWN, а не 0.00 руб."""
         with patch.dict("os.environ", {}, clear=True), \
