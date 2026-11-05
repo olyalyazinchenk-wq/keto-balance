@@ -9,6 +9,12 @@ import { isRecipeAllowed } from '../../domain/eligibility';
 import { RECIPES } from '../../data/recipes';
 
 export const RESTRICTION_LABELS: Record<string, string> = {
+  exclude_dairy: 'Без молочных продуктов',
+  exclude_eggs: 'Без яиц',
+  exclude_fish: 'Без рыбы и морепродуктов',
+  exclude_nuts: 'Без орехов и семечек',
+  exclude_offal: 'Без субпродуктов',
+  exclude_mushrooms: 'Без грибов',
   no_dairy: 'Без молочных продуктов',
   no_eggs: 'Без яиц',
   no_fish: 'Без рыбы и морепродуктов',
@@ -163,7 +169,8 @@ export function resolveDayMenuSlots(
 export function filterRecipesBySettings(
   recipes: RecipeViewModel[],
   settings: Pick<UserSettingsDraft, 'approach' | 'restrictions' | 'prepTimeMax'>,
-  catalogRecipes?: any[]
+  catalogRecipes?: any[],
+  admittedRecipeIds?: readonly string[]
 ): RecipeViewModel[] {
   const canonProfile = preferencesToUserProfile({
     confirmed18Plus: true,
@@ -175,12 +182,15 @@ export function filterRecipesBySettings(
   });
 
   const recipeMap = new Map<string, any>();
-  const sourceList = (catalogRecipes && catalogRecipes.length > 0) ? catalogRecipes : RECIPES;
+  // An explicitly empty server catalog must never fall back to bundled recipes.
+  const sourceList = catalogRecipes ?? RECIPES;
   for (const r of sourceList) {
     recipeMap.set(r.id, r);
   }
 
+  const admittedIds = admittedRecipeIds === undefined ? null : new Set(admittedRecipeIds);
   return recipes.filter((vm) => {
+    if (admittedIds && !admittedIds.has(vm.id)) return false;
     const r = recipeMap.get(vm.id);
     if (!r) return false;
     if (r.mode !== canonProfile.mode) return false;

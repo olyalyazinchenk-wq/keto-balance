@@ -420,6 +420,7 @@ export function FoodFirstApp({
           onEditSettings={onOpenSettings}
           onRebuildMenu={onRebuildMenu}
           catalogRecipes={catalog.recipes}
+          admittedRecipeIds={effectiveCatalogIds}
         />
       )}
 

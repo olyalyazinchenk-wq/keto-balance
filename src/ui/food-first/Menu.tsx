@@ -38,6 +38,7 @@ export interface MenuScreenProps {
   onEditSettings?: () => void;
   onRebuildMenu?: () => void;
   catalogRecipes?: any[];
+  admittedRecipeIds: readonly string[];
 }
 
 const SLOT_TIMESTAMPS: Record<number, string> = {
@@ -59,6 +60,7 @@ export function MenuScreen({
   onEditSettings,
   onRebuildMenu,
   catalogRecipes,
+  admittedRecipeIds,
 }: MenuScreenProps) {
   const [replacingSlot, setReplacingSlot] = useState<{
     slotKey: string;
@@ -78,7 +80,8 @@ export function MenuScreen({
   const matchingRecipes = filterRecipesBySettings(
     recipes,
     settings,
-    catalogRecipes
+    catalogRecipes,
+    admittedRecipeIds
   );
   const currentDay =
     menu.days.find((day) => day.dayIndex === selectedDayIndex) || menu.days[0];
@@ -146,6 +149,15 @@ export function MenuScreen({
               </button>
             );
           })}
+        </div>
+      )}
+
+      {menu.days.length >= 7 && matchingRecipes.length > 0 && matchingRecipes.length < 7 && (
+        <div className="fm-diversity-alert" role="note" data-testid="menu-diversity-notice">
+          <AlertCircle aria-hidden="true" />
+          <p>
+            <strong>Внимание к разнообразию:</strong> с учётом выбранных ограничений в каталоге найдено {matchingRecipes.length} {matchingRecipes.length === 1 ? 'подходящее блюдо' : matchingRecipes.length < 5 ? 'подходящих блюда' : 'подходящих блюд'}. В 7-дневном меню блюда будут повторяться в течение недели. Для большего разнообразия можно увеличить лимит времени или скорректировать фильтры.
+          </p>
         </div>
       )}
 
