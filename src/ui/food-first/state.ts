@@ -9,6 +9,12 @@ import { isRecipeAllowed } from '../../domain/eligibility';
 import { RECIPES } from '../../data/recipes';
 
 export const RESTRICTION_LABELS: Record<string, string> = {
+  exclude_dairy: 'Без молочных продуктов',
+  exclude_eggs: 'Без яиц',
+  exclude_fish: 'Без рыбы и морепродуктов',
+  exclude_nuts: 'Без орехов и семечек',
+  exclude_offal: 'Без субпродуктов',
+  exclude_mushrooms: 'Без грибов',
   no_dairy: 'Без молочных продуктов',
   no_eggs: 'Без яиц',
   no_fish: 'Без рыбы и морепродуктов',

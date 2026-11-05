@@ -149,6 +149,15 @@ export function MenuScreen({
         </div>
       )}
 
+      {menu.days.length >= 7 && matchingRecipes.length > 0 && matchingRecipes.length < 7 && (
+        <div className="fm-diversity-alert" role="note" data-testid="menu-diversity-notice">
+          <AlertCircle aria-hidden="true" />
+          <p>
+            <strong>Внимание к разнообразию:</strong> с учётом выбранных ограничений в каталоге найдено {matchingRecipes.length} {matchingRecipes.length === 1 ? 'подходящее блюдо' : matchingRecipes.length < 5 ? 'подходящих блюда' : 'подходящих блюд'}. В 7-дневном меню блюда будут повторяться в течение недели. Для большего разнообразия можно увеличить лимит времени или скорректировать фильтры.
+          </p>
+        </div>
+      )}
+
       {!currentDay ? (
         <section className="fm-empty">
           <h2>Нет дней меню</h2>
