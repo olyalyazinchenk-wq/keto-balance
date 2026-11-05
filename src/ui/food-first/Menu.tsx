@@ -14,6 +14,7 @@ import type {
 } from './contract';
 import {
   filterRecipesBySettings,
+  evaluateSevenDayDiversity,
   formatAppliedConditionsSummary,
   resolveDayMenuSlots,
 } from './state';
@@ -89,6 +90,7 @@ export function MenuScreen({
     ? resolveDayMenuSlots(currentDay, recipesById, settings.mealsPerDay)
     : [];
   const appliedConditionsText = formatAppliedConditionsSummary(settings);
+  const diversity = evaluateSevenDayDiversity(matchingRecipes, menu.days.length);
 
   return (
     <div className="fm-menu" data-testid="food-menu-screen">
@@ -152,11 +154,11 @@ export function MenuScreen({
         </div>
       )}
 
-      {menu.days.length >= 7 && matchingRecipes.length > 0 && matchingRecipes.length < 7 && (
+      {diversity.warn && (
         <div className="fm-diversity-alert" role="note" data-testid="menu-diversity-notice">
           <AlertCircle aria-hidden="true" />
           <p>
-            <strong>Внимание к разнообразию:</strong> с учётом выбранных ограничений в каталоге найдено {matchingRecipes.length} {matchingRecipes.length === 1 ? 'подходящее блюдо' : matchingRecipes.length < 5 ? 'подходящих блюда' : 'подходящих блюд'}. В 7-дневном меню блюда будут повторяться в течение недели. Для большего разнообразия можно увеличить лимит времени или скорректировать фильтры.
+            <strong>Внимание к разнообразию:</strong> с учётом ограничений доступно {diversity.totalCount} блюд, из них {diversity.breakfastCount} в категории «Завтрак». На неделе завтраки или другие блюда могут повторяться. Для большего выбора можно увеличить время приготовления. Если ограничения связаны с аллергией, не отменяйте их ради разнообразия.
           </p>
         </div>
       )}

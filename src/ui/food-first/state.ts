@@ -198,6 +198,25 @@ export function filterRecipesBySettings(
   });
 }
 
+/**
+ * Warning only: this is catalog coverage, not a clinical assessment of a menu.
+ * A broad total pool can hide too few recipes for daily breakfast slots.
+ */
+export function evaluateSevenDayDiversity(
+  recipes: readonly Pick<RecipeViewModel, 'slotType'>[],
+  dayCount: number
+): { totalCount: number; breakfastCount: number; warn: boolean } {
+  const totalCount = recipes.length;
+  const breakfastCount = recipes.filter((recipe) => recipe.slotType === 'breakfast').length;
+  return {
+    totalCount,
+    breakfastCount,
+    warn: dayCount >= 7 && totalCount > 0 && (
+      totalCount < dayCount || breakfastCount < dayCount
+    ),
+  };
+}
+
 export function formatAppliedConditionsSummary(
   settings: Pick<UserSettingsDraft, 'approach' | 'restrictions' | 'prepTimeMax' | 'mealsPerDay'>
 ): string {
