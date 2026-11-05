@@ -327,11 +327,16 @@ class TestSessionApi(unittest.TestCase):
         # 3. Клиент пытается повторно сохранить старое меню с k1 при ревизии 2 -> Отклоняется (400 Bad Request)
         resp3 = self.client.put(
             "/api/user",
-            json={"schema_version": 1, "expected_revision": 2, "profile": None, "state": menu_with_dairy},
+            json={"schema_version": 1, "expected_revision": 2, "profile": dairy_free_profile, "state": menu_with_dairy},
             headers=headers,
         )
         self.assertEqual(resp3.status_code, 400)
         self.assertIn("incompatible with user restrictions", resp3.json()["detail"])
+
+        # Проверка отсутствия частичной записи при ошибочном сохранении:
+        get_after_fail = self.client.get("/api/user", headers=headers).json()
+        self.assertEqual(get_after_fail["revision"], 2)
+        self.assertEqual(get_after_fail["profile"]["settings"]["restrictions"], ["exclude_dairy"])
 
         # 4. Клиент сохраняет новое совместимое меню без молочных продуктов (s1) -> Успешно (ревизия 2 -> 3)
         menu_dairy_free = {
@@ -351,11 +356,27 @@ class TestSessionApi(unittest.TestCase):
         }
         resp4 = self.client.put(
             "/api/user",
-            json={"schema_version": 1, "expected_revision": 2, "profile": None, "state": menu_dairy_free},
+            json={"schema_version": 1, "expected_revision": 2, "profile": dairy_free_profile, "state": menu_dairy_free},
             headers=headers,
         )
         self.assertEqual(resp4.status_code, 200)
         self.assertEqual(resp4.json()["revision"], 3)
+
+        # 5. Повторное чтение GET /api/user и полная проверка целостности данных:
+        get_final = self.client.get("/api/user", headers=headers).json()
+        # - Ревизия корректна (3)
+        self.assertEqual(get_final["revision"], 3)
+        # - Профиль и ограничения пользователя действительно сохранены
+        self.assertIsNotNone(get_final["profile"])
+        self.assertEqual(get_final["profile"]["settings"]["restrictions"], ["exclude_dairy"])
+        self.assertTrue(get_final["profile"]["settings"]["confirmed18Plus"])
+        # - Совместимое меню сохранено
+        self.assertIsNotNone(get_final["state"]["menu"])
+        self.assertEqual(get_final["state"]["menu"]["days"][0]["slots"]["breakfast"], "s1")
+        # - Старое запрещённое меню не восстановилось
+        all_recipe_ids = [slot_id for day in get_final["state"]["menu"]["days"] for slot_id in day["slots"].values()]
+        self.assertNotIn("k1", all_recipe_ids)
+        self.assertNotIn("k2", all_recipe_ids)
 
     def test_full_sequential_tma_flow_and_repeat_login(self):
         # Синтетический тестовый пользователь (без реальных ID и персональных данных)

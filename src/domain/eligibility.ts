@@ -48,9 +48,15 @@ const DAIRY_KEYWORDS = [
   "творог",
   "моцарелл",
   "сливочное масло",
+  "сливочн",
   "топленое масло",
   "топлен",
+  "гхи",
   "молок",
+  "молочн",
+  "коровь",
+  "козь",
+  "овечь",
   "лактоз",
   "маскарпон",
   "пармезан",
@@ -60,6 +66,23 @@ const DAIRY_KEYWORDS = [
   "йогурт",
   "кефир",
   "ряженк",
+  "сыворотк",
+  "казеин",
+  "простокваш",
+  "ацидофил",
+  "пахта",
+];
+
+const PLANT_MILK_PATTERNS = [
+  /кокосов[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*|масл[а-яё]*|мук[а-яё]*|стружк[а-яё]*|урбеч[а-яё]*)/g,
+  /миндальн[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*|масл[а-яё]*|мук[а-яё]*|паст[а-яё]*)/g,
+  /растительн[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*|масл[а-яё]*)/g,
+  /соев[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*|масл[а-яё]*)/g,
+  /овсян[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*)/g,
+  /кедров[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*)/g,
+  /фундучн[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*)/g,
+  /маков[а-яё]*\s+(?:молок[а-яё]*)/g,
+  /кунжутн[а-яё]*\s+(?:молок[а-яё]*)/g,
 ];
 
 const FISH_KEYWORDS = [
@@ -98,19 +121,21 @@ function ingredientHasAllergen(ingNorm: string, cat: AllergyCategory): boolean {
   switch (cat) {
     case "eggs":
       return ingNorm.includes("яиц") || ingNorm.includes("яичн") || ingNorm.includes("яйц");
-    case "dairy":
-      if (
-        (ingNorm.includes("кокосов") || ingNorm.includes("миндальн") || ingNorm.includes("растительн")) &&
-        !ingNorm.includes("сливочн") && !ingNorm.includes("сыр") && !ingNorm.includes("творог")
-      ) {
-        return false;
-      }
-      // "сырокопчёный", "сыровяленый", "сырой" содержат корень "сыр" (сырой/необработанный), а не молочный сыр
-      const dairyInspect = ingNorm
-        .replace(/сырокопч[её]н[а-яё]*/g, "")
-        .replace(/сыровял[её]н[а-яё]*/g, "")
+    case "dairy": {
+      // 1. Убираем "сырокопчёный", "сыровяленый", "сырой" (корень "сыр" = сырой/необработанный, а не молочный сыр)
+      let dairyInspect = ingNorm
+        .replace(/сырокопч[её]н[а-яё]*/g, " ")
+        .replace(/сыровял[её]н[а-яё]*/g, " ")
         .replace(/(?:^|\s)сыр(ой|ая|ое|ые|ого|ую|ым|ых|ому)(?=$|\s)/g, " ");
+
+      // 2. Убираем признанные формы чистого растительного молока/сливок/масла/муки
+      for (const pattern of PLANT_MILK_PATTERNS) {
+        dairyInspect = dairyInspect.replace(pattern, " ");
+      }
+
+      // 3. Проверяем остаток на любые молочные компоненты (включая сухое молоко, коровье молоко, сыворотку, казеин)
       return containsAnyKeyword(dairyInspect, DAIRY_KEYWORDS);
+    }
     case "fish":
       return containsAnyKeyword(ingNorm, FISH_KEYWORDS);
     case "nuts":
@@ -249,14 +274,17 @@ export function isRecipeAllowed(recipe: Recipe, profile?: UserProfile | null): b
   for (const [ingName] of recipe.ing) {
     const ingNorm = normalizeStr(ingName);
 
-    // При активных аллергиях непроверенный/неизвестный состав блокирует рекомендацию
+    // При активных аллергиях непроверенный, неуточнённый или неоднозначный состав блокирует рекомендацию
     if (activeCategories.length > 0) {
       if (
         ingNorm.includes("неизвестн") ||
         ingNorm.includes("состав") ||
         ingNorm.includes("непроверен") ||
         ingNorm.includes("не проверен") ||
-        ingNorm.includes("секретн")
+        ingNorm.includes("секретн") ||
+        ingNorm.includes("уточнить") ||
+        ingNorm.includes("уточняется") ||
+        ingNorm.includes("неоднозначн")
       ) {
         return false;
       }

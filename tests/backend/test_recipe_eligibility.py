@@ -81,11 +81,12 @@ class TestRecipeEligibility(unittest.TestCase):
             self.assertIn("dairy", reason)
 
     def test_exclude_dairy_plant_milk_no_false_positive(self):
-        # Растительное молоко (кокосовое, миндальное) НЕ должно блокироваться по exclude_dairy
+        # Чистое растительное молоко (кокосовое, миндальное) НЕ должно блокироваться по exclude_dairy
         plant_milk_recipes = [
             ("r_coco_milk", "Кокосовое молоко 17%"),
             ("r_almond_milk", "Миндальное молоко без сахара"),
             ("r_plant_milk", "Растительное молоко"),
+            ("r_coco_cream", "Кокосовые сливки"),
         ]
         profile = {"settings": {"confirmed18Plus": True, "approach": "keto", "restrictions": ["exclude_dairy"], "prepTimeMax": 30}}
 
@@ -99,6 +100,51 @@ class TestRecipeEligibility(unittest.TestCase):
             }
             allowed, reason = is_recipe_allowed(recipe, profile)
             self.assertTrue(allowed, f"Recipe with '{ing_name}' must be allowed for exclude_dairy (no false positive), reason: {reason}")
+
+    def test_exclude_dairy_compound_plant_milk_with_dairy_additives_blocked(self):
+        # Растительное молоко с молочными добавками (сухое коровье молоко, молочная сыворотка, казеин) ОБЯЗАНО блокироваться
+        forbidden_compound_recipes = [
+            ("r_coco_cow", "Кокосовое молоко с сухим коровьим молоком"),
+            ("r_almond_whey", "Миндальное молоко с молочной сывороткой"),
+            ("r_coco_butter", "Кокосовые сливки со сливочным маслом"),
+            ("r_coco_casein", "Кокосовое молоко с казеинатом натрия"),
+            ("r_plant_whey", "Растительное молоко с молочной сывороткой"),
+            ("r_coco_sour_cream", "Кокосовое молоко со сметаной"),
+        ]
+        profile = {"settings": {"confirmed18Plus": True, "approach": "keto", "restrictions": ["exclude_dairy"], "prepTimeMax": 30}}
+
+        for rid, ing_name in forbidden_compound_recipes:
+            recipe = {
+                "id": rid,
+                "title": f"Блюдо с {ing_name}",
+                "mode": "keto",
+                "time": 10,
+                "ing": [[ing_name, "100 мл"], ["Семена чиа", "30 г"]],
+            }
+            allowed, reason = is_recipe_allowed(recipe, profile)
+            self.assertFalse(allowed, f"Compound ingredient '{ing_name}' must be blocked for exclude_dairy")
+            self.assertIn("dairy", reason)
+
+    def test_ambiguous_composition_blocked_until_clarified(self):
+        # При неоднозначном или неуточнённом составе рецепт блокируется до выяснения
+        ambiguous_recipes = [
+            ("r_ambig_1", "Растительное молоко [уточнить состав]"),
+            ("r_ambig_2", "Кокосовый напиток (неоднозначный состав)"),
+            ("r_ambig_3", "Смесь растительная непроверенная"),
+            ("r_ambig_4", "Молочный напиток (состав уточняется)"),
+        ]
+        profile = {"settings": {"confirmed18Plus": True, "approach": "keto", "restrictions": ["exclude_dairy"], "prepTimeMax": 30}}
+
+        for rid, ing_name in ambiguous_recipes:
+            recipe = {
+                "id": rid,
+                "title": f"Блюдо с {ing_name}",
+                "mode": "keto",
+                "time": 10,
+                "ing": [[ing_name, "100 мл"], ["Орехи", "20 г"]],
+            }
+            allowed, reason = is_recipe_allowed(recipe, profile)
+            self.assertFalse(allowed, f"Ambiguous recipe '{ing_name}' must be blocked until clarified")
 
     def test_exclude_dairy_cured_meat_no_false_positive(self):
         # Сырокопчёное и сыровяленое мясо содержит корень 'сыр', но НЕ является сыром
