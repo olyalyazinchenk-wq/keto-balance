@@ -19,8 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-backend:
-    name: Backend Tests & P0 Security Guard
+  backend-checks:
+    name: Backend Tests, Production Boundaries & P0 Security
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -37,7 +37,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run 227 Backend Tests
+      - name: Run Backend Test Suite (227 tests)
         run: |
           python scripts/run_backend_tests.py
 
@@ -49,8 +49,16 @@ jobs:
         run: |
           python -m unittest tests.backend.test_cloudru_teardown
 
-  test-frontend:
-    name: Frontend Tests & TypeScript Typecheck
+      - name: Verify Production Payment Boundaries
+        run: |
+          python -m unittest tests.backend.test_production_payment_boundaries
+
+      - name: Verify Release Boundaries
+        run: |
+          python -m unittest tests.backend.test_release_boundaries
+
+  frontend-checks:
+    name: Frontend Tests, Typecheck & Production Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -66,10 +74,33 @@ jobs:
         run: |
           npm ci
 
+      - name: Validate Recipe Catalog & Keto-Engine Macros
+        run: |
+          npm run validate:catalog
+
       - name: Run TypeScript Typecheck
         run: |
           npm run typecheck
 
-      - name: Run 195 Frontend Unit Tests
+      - name: Run Frontend Unit Tests (195 tests)
         run: |
           npm run test:unit
+
+      - name: Production Build (Vite, Rollup & Release Stamp)
+        run: |
+          npm run build
+
+  deploy-spec-checks:
+    name: Docker Compose Production Deployment Specs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate Production Docker Compose Specification
+        run: |
+          docker compose --env-file .env.production.example config
+
+      - name: Validate Emergency Migration Docker Compose Specification
+        run: |
+          docker compose -f deploy/docker-compose.migration.yml config

@@ -4,19 +4,22 @@ scripts/agent_ops.py — Инфраструктура Agent-First управле
 
 Обеспечивает воспроизводимое автономное управление проектом:
 1. Автономные действия (Tier: AUTONOMOUS):
-   - status: проверка состояния сервера, локального пилота, изоляции и нулевых расходов.
+   - status: проверка состояния сервера, локального пилота, изоляции и статуса биллинга (строго UNKNOWN без ответа API).
    - diagnose: диагностика сетевой связности Telegram API, Cloud.ru IAM, HTTPS и DNS.
    - cloud-audit: полный аудит 11 сервисов Cloud.ru Evolution и биллинга (scripts/cloudru_teardown.py).
    - backup-drill: неразрушающее тестовое резервное копирование и восстановление синтетических данных.
    - verify: запуск всех тестовых наборов (backend, frontend, TypeScript, Docker Compose).
-   - credentials status|set|clear: безопасное управление учётными данными в изолированном хранилище .secrets/.
+   - credentials status|set|clear: безопасное управление учётными данными (запрет передачи через CLI аргументы).
    - migration-bundle: подготовка независимого пакета миграции на альтернативный хостинг (Yandex Cloud / VPS).
+   - sync-status: динамическая фиксация фактов без статических шаблонов (непроверенное отмечается как UNKNOWN).
 
-2. Охраняемые действия (Tier: GUARDED) — требуют обязательного подтверждения владельца (--owner-approved):
+2. Охраняемые действия (Tier: GUARDED) — защищены клиентским предохранителем (ClientSideSafetyGate):
    - grant-activate: активация гранта и привязка финансовой карты.
    - deploy-live: публикация и развёртывание на внешнем боевом сервере.
    - destroy-cloud: реальный демонтаж облачных ресурсов.
    - publish-app: перевод Telegram-бота в публичный режим с реальными пользователями.
+   Требуют подтверждающей фразы: --confirm-phrase "СОГЛАСОВАНО ОЛЬГОЙ".
+   Внимание: предохранитель защищает от случайного вызова и не является криптографическим подтверждением полномочий.
 
 3. Единый аудит-лог:
    Все действия протоколируются в docs/AGENT_AUDIT_LOG.md с отметкой времени, агента, уровня и результата.
@@ -30,6 +33,7 @@ import enum
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import sqlite3
 import subprocess
@@ -48,6 +52,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SECRETS_DIR = ROOT / ".secrets"
 SECRETS_FILE = SECRETS_DIR / "cloudru_credentials.json"
 AUDIT_LOG_FILE = ROOT / "docs" / "AGENT_AUDIT_LOG.md"
+REQUIRED_CONFIRM_PHRASE = "СОГЛАСОВАНО ОЛЬГОЙ"
 
 
 class ActionTier(str, enum.Enum):
@@ -133,17 +138,114 @@ def check_git_state() -> Dict[str, Any]:
 
 
 def check_nutriok_isolation() -> Dict[str, Any]:
-    """Проверяет изоляцию проекта NutriOK (задача WellnessBot отключена)."""
+    """
+    Проверяет изоляцию проекта NutriOK.
+    Требование P0: Отсутствие задачи, ошибка команды или неподдерживаемая платформа
+    НЕ ДОЛЖНЫ автоматически означать успешную изоляцию.
+    Изоляция считается подтверждённой (isolated=True) ТОЛЬКО если задача WellnessBot
+    найдена в планировщике и явно находится в состоянии 'Disabled'.
+    """
     if sys.platform != "win32":
-        return {"platform": sys.platform, "isolation": "NON_WINDOWS_ASSUMED_SAFE"}
+        return {
+            "platform": sys.platform,
+            "task": "WellnessBot",
+            "state": "UNSUPPORTED_PLATFORM",
+            "isolated": False,
+            "status": "UNKNOWN",
+            "reason": f"Проверка планировщика недоступна на платформе {sys.platform}. Изоляция не подтверждена.",
+        }
     try:
-        cmd = ["powershell.exe", "-NoProfile", "-Command", "Get-ScheduledTask -TaskName 'WellnessBot' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty State"]
-        out = subprocess.check_output(cmd, text=True, errors="replace").strip()
-        if "Disabled" in out:
-            return {"task": "WellnessBot", "state": "Disabled", "isolated": True}
-        return {"task": "WellnessBot", "state": out or "NotFound", "isolated": True}
+        cmd = [
+            "powershell.exe",
+            "-NoProfile",
+            "-Command",
+            "Get-ScheduledTask -TaskName 'WellnessBot' -ErrorAction Stop | Select-Object -ExpandProperty State",
+        ]
+        res = subprocess.run(cmd, capture_output=True, text=True, errors="replace", timeout=10)
+        if res.returncode != 0:
+            return {
+                "task": "WellnessBot",
+                "state": "NOT_FOUND_OR_COMMAND_ERROR",
+                "isolated": False,
+                "status": "UNKNOWN",
+                "reason": f"Не удалось достоверно запросить статус задачи: {res.stderr.strip() or 'Задача отсутствует'}",
+            }
+        out = res.stdout.strip()
+        if out == "Disabled":
+            return {
+                "task": "WellnessBot",
+                "state": "Disabled",
+                "isolated": True,
+                "status": "VERIFIED_ISOLATED",
+                "reason": "Задача WellnessBot найдена и гарантированно отключена (Disabled)",
+            }
+        elif out in ("Ready", "Running"):
+            return {
+                "task": "WellnessBot",
+                "state": out,
+                "isolated": False,
+                "status": "ACTIVE_RISK",
+                "reason": f"Задача WellnessBot активна ({out}), возможен конфликт двойного поллинга Telegram!",
+            }
+        else:
+            return {
+                "task": "WellnessBot",
+                "state": out or "UNKNOWN_STATE",
+                "isolated": False,
+                "status": "UNCONFIRMED",
+                "reason": f"Неопределённое состояние задачи '{out}' не гарантирует изоляцию",
+            }
     except Exception as e:
-        return {"task": "WellnessBot", "error": str(e), "isolated": True}
+        return {
+            "task": "WellnessBot",
+            "state": "ERROR",
+            "isolated": False,
+            "status": "UNKNOWN",
+            "reason": f"Исключение при выполнении проверки: {e}",
+        }
+
+
+def get_cloudru_billing_status() -> Dict[str, Any]:
+    """
+    Возвращает подтверждённый статус расходов Cloud.ru.
+    Требование P0: Запрещено выводить фактические расходы как 0 ₽ без подтверждённого
+    ответа биллинга. Без подтверждённого ответа API выводится статус UNKNOWN.
+    """
+    credentials = get_credentials_summary()
+    if not credentials["has_credentials"]:
+        return {
+            "status": "UNKNOWN",
+            "confirmed_spend_rub": None,
+            "display": "UNKNOWN (учётные данные API отсутствуют, обращение к биллингу не производилось)",
+            "zero_debt_confirmed": False,
+            "reason": "Отсутствуют API-ключи Cloud.ru Evolution",
+        }
+
+    # Если учётные данные есть, проверяем кэш аудита текущей сессии
+    audit_file = ROOT / "test-results" / "latest_cloudru_audit.json"
+    if audit_file.exists():
+        try:
+            with open(audit_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if data.get("source") == "CLOUDRU_EVOLUTION_REST_API" and data.get("audit_verdict") == "VERIFIED_ZERO_ALL_SERVICES_AND_BILLING":
+                    spend = data.get("total_monthly_rub", 0.0)
+                    return {
+                        "status": "VERIFIED_ZERO",
+                        "confirmed_spend_rub": spend,
+                        "display": f"{spend:.2f} руб.",
+                        "zero_debt_confirmed": True,
+                        "timestamp": data.get("timestamp"),
+                    }
+        except Exception:
+            pass
+
+    return {
+        "status": "UNKNOWN",
+        "confirmed_spend_rub": None,
+        "display": "UNKNOWN (требуется cloud-audit с подтверждённым ответом billing API)",
+        "zero_debt_confirmed": False,
+        "reason": "Фактический ответ от billing.api.cloud.ru не подтверждён в текущей сессии",
+    }
 
 
 def run_status_action(args: argparse.Namespace) -> int:
@@ -152,6 +254,7 @@ def run_status_action(args: argparse.Namespace) -> int:
     git = check_git_state()
     nutriok = check_nutriok_isolation()
     credentials = get_credentials_summary()
+    billing = get_cloudru_billing_status()
 
     report = {
         "timestamp": get_current_timestamp_iso(),
@@ -159,7 +262,9 @@ def run_status_action(args: argparse.Namespace) -> int:
         "git": git,
         "nutriok_isolation": nutriok,
         "cloudru_credentials_present": credentials["has_credentials"],
-        "cloud_spend_confirmed_rub": 0.0,
+        "cloud_billing_status": billing["status"],
+        "cloud_spend_confirmed_rub": billing["confirmed_spend_rub"],
+        "cloud_spend_display": billing["display"],
         "action_tier": ActionTier.AUTONOMOUS.value,
     }
 
@@ -170,15 +275,15 @@ def run_status_action(args: argparse.Namespace) -> int:
         print(f"Ветка Git: {git.get('branch')} (коммит: {git.get('commit', '')[:8]})")
         print(f"Чистота рабочего дерева Git: {'Да' if git.get('is_clean') else 'Есть незафиксированные файлы'}")
         print(f"Локальный пилот (порт 18081): {pilot.get('status')}")
-        print(f"Изоляция NutriOK (WellnessBot): {nutriok.get('state', 'OK')}")
+        print(f"Изоляция NutriOK (WellnessBot): {nutriok.get('state')} (Изолирован: {nutriok.get('isolated')})")
         print(f"Учётные данные Cloud.ru в хранилище: {'Да' if credentials['has_credentials'] else 'Отсутствуют'}")
-        print("Фактические облачные расходы: строго 0.00 руб.")
+        print(f"Фактические облачные расходы: {billing['display']}")
 
     log_agent_action(
         "status",
         ActionTier.AUTONOMOUS,
         "SUCCESS",
-        f"Pilot: {pilot.get('status')}, Git: {git.get('branch')}, Spend: 0.00 rub",
+        f"Pilot: {pilot.get('status')}, Git: {git.get('branch')}, NutriOK: {nutriok.get('isolated')}, Billing: {billing['status']}",
     )
     return 0
 
@@ -193,7 +298,6 @@ def check_tcp_or_http(url: str, timeout: int = 5) -> Tuple[bool, str]:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return True, f"HTTP {resp.status}"
     except urllib.error.HTTPError as he:
-        # Для корня Telegram API 404 означает успешную сетевую доставку запроса
         if "api.telegram.org" in url and he.code == 404:
             return True, "HTTP 404 (Endpoint reachable)"
         return True, f"HTTP {he.code}"
@@ -273,7 +377,6 @@ def run_backup_drill_action(args: argparse.Namespace) -> int:
         backup_enc = tmp_path / "synthetic_drill.db.enc"
         restored_db = tmp_path / "synthetic_restored.db"
 
-        # 1. Создаём синтетическую базу
         conn = sqlite3.connect(source_db)
         cursor = conn.cursor()
         cursor.execute("CREATE TABLE pilot_drill (id INTEGER PRIMARY KEY, note TEXT);")
@@ -284,7 +387,6 @@ def run_backup_drill_action(args: argparse.Namespace) -> int:
         drill_passphrase = "SyntheticDrillKey2026!Protected"
         python_bin = sys.executable
 
-        # 2. Выполняем бэкап через scripts/backup_db.py
         env = os.environ.copy()
         env["KETO_BACKUP_ENCRYPTION_KEY"] = drill_passphrase
         env["APP_STAGE"] = "test"
@@ -302,7 +404,6 @@ def run_backup_drill_action(args: argparse.Namespace) -> int:
             print(f"[FAIL] Сбой бэкапа синтетической базы: {res_backup.stderr}")
             return 1
 
-        # 3. Выполняем восстановление через scripts/restore_db.py
         restore_cmd = [
             python_bin,
             str(ROOT / "scripts" / "restore_db.py"),
@@ -315,7 +416,6 @@ def run_backup_drill_action(args: argparse.Namespace) -> int:
             print(f"[FAIL] Сбой восстановления синтетической базы: {res_restore.stderr}")
             return 1
 
-        # 4. Проверяем целостность данных в восстановленной базе
         r_conn = sqlite3.connect(restored_db)
         r_cursor = r_conn.cursor()
         r_cursor.execute("SELECT note FROM pilot_drill WHERE id = 1;")
@@ -397,12 +497,38 @@ def run_credentials_action(args: argparse.Namespace) -> int:
         return 0
 
     elif subcmd == "set":
+        # Требование P0: Запрет передачи секретного ключа через аргументы командной строки
+        if getattr(args, "secret_key", None):
+            print(
+                "[SECURITY ERROR] Передача секретного ключа через аргумент командной строки (--secret-key)\n"
+                "СТРОГО ЗАПРЕЩЕНА: аргументы процессов видны в диспетчере задач и журнале командной оболочки.\n"
+                "Используйте безопасный ввод через stdin (--secret-stdin), файл (--secret-file) или интерактивный ввод.",
+                file=sys.stderr,
+            )
+            return 1
+
         key_id = args.key_id
-        secret_key = args.secret_key
         project_id = args.project_id or ""
+        secret_key = ""
+
+        if getattr(args, "secret_stdin", False):
+            secret_key = sys.stdin.read().strip()
+        elif getattr(args, "secret_file", None):
+            sec_file = Path(args.secret_file)
+            if not sec_file.exists():
+                print(f"[ERROR] Файл секрета не найден: {sec_file}", file=sys.stderr)
+                return 1
+            secret_key = sec_file.read_text(encoding="utf-8").strip()
+        else:
+            import getpass
+            try:
+                secret_key = getpass.getpass("Введите Cloud.ru Secret Key (ввод скрыт): ").strip()
+            except Exception as e:
+                print(f"[ERROR] Не удалось прочитать секрет интерактивно: {e}", file=sys.stderr)
+                return 1
 
         if not key_id or not secret_key:
-            print("[ERROR] Для сохранения требуются --key-id и --secret-key", file=sys.stderr)
+            print("[ERROR] Не указан Key ID или передан пустой Secret Key", file=sys.stderr)
             return 1
 
         SECRETS_DIR.mkdir(parents=True, exist_ok=True)
@@ -415,15 +541,26 @@ def run_credentials_action(args: argparse.Namespace) -> int:
         with open(SECRETS_FILE, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2)
 
-        # Ограничиваем права на файл для POSIX систем
-        try:
-            os.chmod(SECRETS_FILE, 0o600)
-        except Exception:
-            pass
+        # Ограничиваем права на файл
+        if sys.platform != "win32":
+            try:
+                os.chmod(SECRETS_FILE, 0o600)
+            except Exception:
+                pass
+        else:
+            try:
+                username = os.environ.get("USERNAME", "Users")
+                subprocess.run(
+                    ["icacls", str(SECRETS_FILE), "/inheritance:r", "/grant:r", f"{username}:F"],
+                    capture_output=True,
+                    timeout=5,
+                )
+            except Exception:
+                pass
 
         print("[OK] Учётные данные Cloud.ru Evolution безопасно сохранены в .secrets/cloudru_credentials.json.")
-        print("     Файл строго изолирован от Git и Docker Compose.")
-        log_agent_action("credentials-set", ActionTier.AUTONOMOUS, "SUCCESS", f"Key ID: {key_id[:4]}*** saved")
+        print("     Файл строго изолирован от Git и Docker Compose, доступ ограничен текущему пользователю.")
+        log_agent_action("credentials-set", ActionTier.AUTONOMOUS, "SUCCESS", f"Key ID: {key_id[:4]}*** saved via secure input")
         return 0
 
     elif subcmd == "clear":
@@ -569,22 +706,90 @@ services:
 # ==============================================================================
 
 def run_sync_status_action(args: argparse.Namespace) -> int:
-    """Автоматически обновляет docs/LIVE_STATUS.md фактами текущей рабочей сессии."""
+    """
+    Автоматически обновляет docs/LIVE_STATUS.md только реально полученными результатами.
+    Требование P0: Не проставлять PASS, количество тестов и состояние сервисов заранее
+    заданным текстом. Сохранять только реально полученные результаты с источником, временем и SHA.
+    Если проверка не выполнена — указывать статус UNKNOWN.
+    """
     pilot = check_local_pilot()
     git = check_git_state()
     nutriok = check_nutriok_isolation()
     credentials = get_credentials_summary()
+    billing = get_cloudru_billing_status()
     now_str = get_current_timestamp_iso()
 
     branch = git.get("branch", "unknown")
     commit = git.get("commit", "unknown")
     commit_short = commit[:8] if len(commit) >= 8 else commit
 
+    run_tests = getattr(args, "run_tests", False) or getattr(args, "verify", False)
+
+    backend_result_str = f"UNKNOWN (не запускалось для текущего вызова sync-status на коммите {commit_short})"
+    backend_status = "UNKNOWN"
+
+    frontend_result_str = f"UNKNOWN (не запускалось для текущего вызова sync-status на коммите {commit_short})"
+    frontend_status = "UNKNOWN"
+
+    typecheck_result_str = f"UNKNOWN (не запускалось для текущего вызова sync-status на коммите {commit_short})"
+    typecheck_status = "UNKNOWN"
+
+    docker_spec_str = "UNKNOWN (не проверялось в текущем вызове sync-status)"
+    docker_status = "UNKNOWN"
+
+    if run_tests:
+        print("[SYNC-STATUS] Выполняется реальный запуск тестов для фиксации фактов...")
+        b_res = subprocess.run([sys.executable, str(ROOT / "scripts" / "run_backend_tests.py")], capture_output=True, text=True, errors="replace")
+        b_match = re.search(r"BACKEND_RESULT tests=(\d+) failures=(\d+) errors=(\d+) skipped=(\d+)", b_res.stdout)
+        if b_match:
+            t, f, e, s = b_match.groups()
+            backend_result_str = f"{t} passed, {f} failed, {e} errors, {s} skipped"
+            backend_status = "PASS" if b_res.returncode == 0 else "FAIL"
+        else:
+            backend_result_str = f"Exit code {b_res.returncode}"
+            backend_status = "PASS" if b_res.returncode == 0 else "FAIL"
+
+        node_path = r"C:\Users\HP\AppData\Local\hermes\tools\node-26.12.1-win32-x64"
+        env = os.environ.copy()
+        if os.path.exists(node_path):
+            env["PATH"] = node_path + ";" + env.get("PATH", "")
+
+        tc_res = subprocess.run("npm.cmd run typecheck" if sys.platform == "win32" else "npm run typecheck", shell=True, capture_output=True, text=True, errors="replace", env=env)
+        if tc_res.returncode == 0:
+            typecheck_result_str = "0 diagnostic errors"
+            typecheck_status = "PASS"
+        else:
+            typecheck_result_str = f"Failed with code {tc_res.returncode}"
+            typecheck_status = "FAIL"
+
+        fe_res = subprocess.run("npm.cmd run test:unit" if sys.platform == "win32" else "npm run test:unit", shell=True, capture_output=True, text=True, errors="replace", env=env)
+        fe_match = re.search(r"# tests (\d+)\s+# suites \d+\s+# pass (\d+)\s+# fail (\d+)", fe_res.stdout)
+        if fe_match:
+            total_t, pass_t, fail_t = fe_match.groups()
+            frontend_result_str = f"{pass_t} passed, {fail_t} failed (из {total_t})"
+            frontend_status = "PASS" if fe_res.returncode == 0 and fail_t == "0" else "FAIL"
+        else:
+            frontend_result_str = f"Exit code {fe_res.returncode}"
+            frontend_status = "PASS" if fe_res.returncode == 0 else "FAIL"
+
+        doc_res = subprocess.run(["docker", "compose", "--env-file", ".env.production.example", "config"], capture_output=True, text=True, errors="replace", cwd=str(ROOT))
+        if doc_res.returncode == 0:
+            docker_spec_str = "Конфигурация 1 vCPU / 2 ГБ RAM валидна"
+            docker_status = "PASS"
+        else:
+            docker_spec_str = f"Ошибка валидации: {doc_res.stderr.strip()}"
+            docker_status = "FAIL"
+
+    nutriok_status_label = "PASS" if nutriok.get("isolated") else "UNKNOWN"
+    pilot_status_label = "PASS" if pilot.get("status") == "RUNNING" else "UNKNOWN"
+
     live_status_content = f"""# LIVE STATUS — Кето Баланс (Agent-First Operations)
 
 > **Единая точка оперативной правды для всех агентов и разработчиков.**
 > Обновляется автоматически утилитой `python scripts/agent_ops.py sync-status`.
-> **Последнее автоматическое обновление**: {now_str} · Antigravity
+> **Дата последнего обновления**: {now_str}
+> **Инициатор обновления**: Antigravity
+> **Проверенный SHA**: `{commit}` (ветка `{branch}`)
 
 ---
 
@@ -594,39 +799,38 @@ def run_sync_status_action(args: argparse.Namespace) -> int:
 - **Канонический репозиторий**: `https://github.com/olyalyazinchenk-wq/keto-balance`
 - **Текущая ветка**: `{branch}`
 - **HEAD коммит**: `{commit_short}` ({commit})
-- **Автоматический CI**: `.github/workflows/ci.yml` (активен для всех push и pull request).
+- **Автоматический CI в GitHub Actions**: `.github/workflows/ci.yml` (активен на каждый push/PR).
 - **Домашний показ (Home Pilot)**:
   - Порт сервера: строго **`127.0.0.1:18081`** (`http://127.0.0.1:18081/api/health` -> {pilot.get('status')}).
   - Служба: `KetoBalanceHomePilot` в Windows Task Scheduler.
 - **Изоляция проекта NutriOK («Новая папка»)**:
-  - Служба `WellnessBot`: статус `{nutriok.get('state', 'Disabled')}` (полная изоляция, 0 конфликтов поллинга).
-- **Финансовый статус**:
-  - Расходы в Cloud.ru: строго **0.00 руб.**
-  - Грант: не активирован, банковские карты не привязаны.
-  - Учётные данные Cloud.ru в хранилище `.secrets/`: {'Настроены' if credentials['has_credentials'] else 'Отсутствуют'}.
+  - Задача `WellnessBot`: `{nutriok.get('state')}` (Изоляция: **{'ПОДТВЕРЖДЕНА' if nutriok.get('isolated') else 'НЕ ПОДТВЕРЖДЕНА'}**, причина: {nutriok.get('reason')}).
+- **Финансовый статус Cloud.ru**:
+  - Фактические расходы: **{billing.get('display')}**
+  - Подтверждение нулевого остатка (zero_debt_confirmed): **{'ДА' if billing.get('zero_debt_confirmed') else 'НЕТ (UNKNOWN)'}**
+  - Учётные данные Cloud.ru в хранилище `.secrets/`: {'Настроены' if credentials['has_credentials'] else 'Отсутствуют'}
 
 ---
 
-## 2. Подтверждённые факты и верификация (Machine Evidence)
+## 2. Реально проверенные факты (Machine Evidence для SHA {commit_short})
 
 | Проверка / Компонент | Команда | Результат | Статус |
 |---|---|---|:---:|
-| **Backend Test Suite & Guards** | `python scripts/run_backend_tests.py` | **227 passed, 0 failed, 0 errors, 0 skipped** | **PASS** |
-| **Frontend Unit Tests** | `npm run test:unit` | **195 passed, 0 failed** (68 тестовых файлов, TAP v13) | **PASS** |
-| **TypeScript Typecheck** | `npm run typecheck` | `tsc --noEmit` код 0, **0 диагностических ошибок** | **PASS** |
-| **Docker Compose Config** | `docker compose --env-file .env.production.example config` | Конфигурация 1 vCPU / 2 ГБ RAM валидна | **PASS** |
-| **Agent Ops Infrastructure** | `python -m unittest tests.backend.test_agent_ops` | **6 passed, 0 failed** (P0-блокировки, бэкап-дрилл) | **PASS** |
-| **Cloud.ru 11-Service Audit** | `python -m unittest tests.backend.test_cloudru_teardown` | **23 passed, 0 failed** (защита от ложного нуля) | **PASS** |
-| **Non-Destructive Backup Drill** | `python scripts/agent_ops.py backup-drill` | Шифрование AES-256-GCM + PBKDF2, 100% целостность | **PASS** |
-| **Emergency Migration Bundle** | `deploy/docker-compose.migration.yml` | Сформирован для переноса на Yandex Cloud / VPS | **PASS** |
+| **Локальный Home Pilot (порт 18081)** | `curl http://127.0.0.1:18081/api/health` | {pilot.get('status')} (код {pilot.get('http_code', 'N/A')}) | **{pilot_status_label}** |
+| **Изоляция NutriOK (Task Scheduler)** | `Get-ScheduledTask WellnessBot` | {nutriok.get('reason')} | **{nutriok_status_label}** |
+| **Backend Test Suite** | `python scripts/run_backend_tests.py` | {backend_result_str} | **{backend_status}** |
+| **Frontend Unit Tests** | `npm run test:unit` | {frontend_result_str} | **{frontend_status}** |
+| **TypeScript Typecheck** | `npm run typecheck` | {typecheck_result_str} | **{typecheck_status}** |
+| **Docker Compose Config** | `docker compose --env-file .env.production.example config` | {docker_spec_str} | **{docker_status}** |
+| **Облачный биллинг Cloud.ru** | `scripts/cloudru_teardown.py --audit-only` | {billing.get('display')} | **{'PASS' if billing.get('zero_debt_confirmed') else 'UNKNOWN'}** |
 
 ---
 
 ## 3. Регламент взаимодействия агентов (Agent-First)
 
-- **Быстрый старт**: вход через [`PROJECT_CONTEXT.md`](../PROJECT_CONTEXT.md) и [`AGENTS.md`](../AGENTS.md).
+- **Единый вход**: [`PROJECT_CONTEXT.md`](../PROJECT_CONTEXT.md) и [`AGENTS.md`](../AGENTS.md).
 - **Принцип работы**: 1 задача = 1 исполнитель, без лишней бюрократии и повторных аудитов.
-- **Охраняемые действия (GUARDED)**: любое действие с финансовыми обязательствами или публичным релизом требует явного подтверждения владельца (`--owner-approved`).
+- **Охраняемые действия (GUARDED)**: требуют подтверждения владельца (`--confirm-phrase "СОГЛАСОВАНО ОЛЬГОЙ"`).
 """
     live_status_path = ROOT / "docs" / "LIVE_STATUS.md"
     live_status_path.parent.mkdir(parents=True, exist_ok=True)
@@ -636,7 +840,9 @@ def run_sync_status_action(args: argparse.Namespace) -> int:
     print("=== АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ СТАТУСА ===")
     print(f"[OK] Файл актуализирован: {live_status_path}")
     print(f"     Ветка: {branch}, Коммит: {commit_short}, Пилот: {pilot.get('status')}")
-    log_agent_action("sync-status", ActionTier.AUTONOMOUS, "SUCCESS", f"LIVE_STATUS.md updated for {commit_short}")
+    print(f"     Изоляция NutriOK: {'OK' if nutriok.get('isolated') else 'UNKNOWN'}")
+    print(f"     Биллинг Cloud.ru: {billing.get('display')}")
+    log_agent_action("sync-status", ActionTier.AUTONOMOUS, "SUCCESS", f"LIVE_STATUS.md updated for {commit_short} (tests_run={run_tests})")
     return 0
 
 
@@ -645,16 +851,37 @@ def run_sync_status_action(args: argparse.Namespace) -> int:
 # ==============================================================================
 
 def check_owner_approval_or_block(action_name: str, args: argparse.Namespace) -> bool:
-    """Проверяет наличие флага --owner-approved для охраняемых действий."""
-    if not getattr(args, "owner_approved", False):
+    """
+    Проверяет согласие владельца для охраняемых действий.
+
+    ПРЕДОСТЕРЕЖЕНИЕ (Safety Disclosure):
+    CLI-флаг или фраза подтверждения являются клиентским предохранителем (Client-Side Safety Gate),
+    предотвращающим случайный или несогласованный вызов из скриптов и агентов.
+    Они НЕ ЯВЛЯЮТСЯ криптографическим доказательством подлинности или электронной подписью владельца.
+    Любое охраняемое действие должно предварительно согласовываться с Ольгой лично.
+    """
+    phrase = getattr(args, "confirm_phrase", "") or ""
+    has_phrase = phrase.strip() == REQUIRED_CONFIRM_PHRASE
+    has_token = getattr(args, "approval_token", None) == "CONFIRMED_BY_OLGA"
+    has_legacy_flag = getattr(args, "owner_approved", False)
+
+    if not (has_phrase or has_token or has_legacy_flag):
         msg = (
-            f"[BLOCKED P0] Действие '{action_name}' относится к категории GUARDED.\n"
+            f"[BLOCKED P0] Действие '{action_name}' относится к категории GUARDED (ОХРАНЯЕМОЕ).\n"
             f"Оно несёт финансовые обязательства, изменение боевой среды или работу с реальными данными.\n"
-            f"Автономное выполнение ЗАБЛОКИРОВАНО. Требуется явное решение владельца (Ольга).\n"
-            f"Для запуска передайте параметр: --owner-approved"
+            f"Автономное выполнение СТРОГО ЗАБЛОКИРОВАНО. Требуется явное решение владельца проекта (Ольга).\n\n"
+            f"Для снятия клиентского предохранителя необходимо передать параметр:\n"
+            f"  --confirm-phrase \"{REQUIRED_CONFIRM_PHRASE}\"\n\n"
+            f"ВНИМАНИЕ: Данный флаг является лишь защитой от непреднамеренного вызова и не подтверждает\n"
+            f"полномочия криптографически. Действия с затратами или боевым сервером требуют диалога с владельцем."
         )
         print(msg, file=sys.stderr)
-        log_agent_action(action_name, ActionTier.GUARDED, "BLOCKED", "Execution blocked: missing owner approval")
+        log_agent_action(
+            action_name,
+            ActionTier.GUARDED,
+            "BLOCKED",
+            "Execution blocked by ClientSideSafetyGate (missing owner confirmation phrase)",
+        )
         return False
     return True
 
@@ -664,8 +891,9 @@ def run_guarded_action(action_name: str, args: argparse.Namespace) -> int:
     if not check_owner_approval_or_block(action_name, args):
         return 2
 
-    print(f"[GUARDED-APPROVED] Выполняется подтверждённая операция: {action_name}")
-    log_agent_action(action_name, ActionTier.GUARDED, "MANUAL_DISPATCH", "Approved by owner")
+    print(f"[GUARDED-APPROVED] Клиентский предохранитель снят для операции: {action_name}")
+    print("[ВНИМАНИЕ] Действие выполняется по подтверждению владельца.")
+    log_agent_action(action_name, ActionTier.GUARDED, "MANUAL_DISPATCH", "Unlocked via ClientSideSafetyGate")
     return 0
 
 
@@ -696,9 +924,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_cred = subparsers.add_parser("credentials", help="Управление учётными данными в .secrets/")
     cred_subs = p_cred.add_subparsers(dest="cred_command", required=True)
     cred_subs.add_parser("status", help="Проверка наличия учётных данных")
-    p_set = cred_subs.add_parser("set", help="Сохранить учётные данные Cloud.ru")
+    p_set = cred_subs.add_parser("set", help="Безопасно сохранить учётные данные Cloud.ru")
     p_set.add_argument("--key-id", required=True, help="Cloud.ru API Key ID")
-    p_set.add_argument("--secret-key", required=True, help="Cloud.ru API Secret Key")
+    p_set.add_argument("--secret-key", help=argparse.SUPPRESS)  # Для перехвата и выдачи ошибки безопасности
+    p_set.add_argument("--secret-stdin", action="store_true", help="Безопасно прочитать Secret Key из stdin")
+    p_set.add_argument("--secret-file", help="Безопасно прочитать Secret Key из локального файла")
     p_set.add_argument("--project-id", default="", help="Cloud.ru Project ID (опционально)")
     cred_subs.add_parser("clear", help="Удалить сохранённые учётные данные")
 
@@ -706,20 +936,15 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("migration-bundle", help="Подготовить пакет миграции на другой хостинг")
 
     # 7. sync-status
-    subparsers.add_parser("sync-status", help="Автоматическая синхронизация docs/LIVE_STATUS.md")
+    p_sync = subparsers.add_parser("sync-status", help="Автоматическая синхронизация docs/LIVE_STATUS.md")
+    p_sync.add_argument("--run-tests", action="store_true", help="Запустить реальные тесты и зафиксировать факты")
 
     # 8. Guarded commands
-    p_grant = subparsers.add_parser("grant-activate", help="GUARDED: Активация гранта Cloud.ru")
-    p_grant.add_argument("--owner-approved", action="store_true", help="Подтверждение владельца")
-
-    p_deploy = subparsers.add_parser("deploy-live", help="GUARDED: Развёртывание на боевом сервере")
-    p_deploy.add_argument("--owner-approved", action="store_true", help="Подтверждение владельца")
-
-    p_destroy = subparsers.add_parser("destroy-cloud", help="GUARDED: Демонтаж облачных ресурсов")
-    p_destroy.add_argument("--owner-approved", action="store_true", help="Подтверждение владельца")
-
-    p_pub = subparsers.add_parser("publish-app", help="GUARDED: Публикация бота для широкой аудитории")
-    p_pub.add_argument("--owner-approved", action="store_true", help="Подтверждение владельца")
+    for guarded_cmd in ("grant-activate", "deploy-live", "destroy-cloud", "publish-app"):
+        p_g = subparsers.add_parser(guarded_cmd, help=f"GUARDED: {guarded_cmd}")
+        p_g.add_argument("--confirm-phrase", help="Фраза подтверждения владельца")
+        p_g.add_argument("--approval-token", help="Токен подтверждения")
+        p_g.add_argument("--owner-approved", action="store_true", help=argparse.SUPPRESS)
 
     return parser
 
