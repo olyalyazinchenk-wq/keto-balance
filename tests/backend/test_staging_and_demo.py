@@ -62,6 +62,51 @@ class TestStagingAndDemo(unittest.TestCase):
         conn.close()
         self.assertIsNone(row, "Non-owner ID must NOT exist in the users table")
 
+    def test_staging_disables_docs_and_openapi_without_affecting_other_stages(self):
+        # Create dummy index.html in dist_dir to test SPA serving
+        (self.dist_dir / "index.html").write_text("<!DOCTYPE html><html><body>MiniApp</body></html>", encoding="utf-8")
+
+        # 1. Staging stage: docs, redoc, openapi.json MUST return 404
+        settings_staging = AppSettings(
+            app_stage="staging",
+            telegram_bot_token=TEST_TOKEN,
+            owner_allowlist=frozenset([OWNER_ID]),
+            allow_demo_auth=False,
+            db_path=self.db_path,
+            dist_dir=self.dist_dir,
+        )
+        app_staging = create_app(dist_dir=self.dist_dir, db_path=self.db_path, settings=settings_staging)
+        client_staging = TestClient(app_staging)
+
+        for path in ("/docs", "/docs/", "/redoc", "/redoc/", "/openapi.json"):
+            resp = client_staging.get(path)
+            self.assertEqual(resp.status_code, 404, f"Staging route {path} must return 404, got {resp.status_code}")
+
+        # Mini App SPA serving continues to work in staging
+        spa_resp = client_staging.get("/")
+        self.assertEqual(spa_resp.status_code, 200)
+        self.assertIn("MiniApp", spa_resp.text)
+
+        # /api/session continues to work in staging
+        owner_data = {"id": OWNER_ID, "first_name": "Ольга"}
+        owner_init = generate_telegram_init_data(owner_data, TEST_TOKEN)
+        session_resp = client_staging.post("/api/session", json={"init_data": owner_init})
+        self.assertEqual(session_resp.status_code, 200)
+        self.assertIn("session_token", session_resp.json())
+
+        # 2. Working / non-staging environment (pilot): docs remain available
+        settings_pilot = AppSettings(
+            app_stage="pilot",
+            telegram_bot_token=TEST_TOKEN,
+            db_path=self.db_path,
+            dist_dir=self.dist_dir,
+        )
+        app_pilot = create_app(dist_dir=self.dist_dir, db_path=self.db_path, settings=settings_pilot)
+        client_pilot = TestClient(app_pilot)
+
+        self.assertEqual(client_pilot.get("/docs").status_code, 200)
+        self.assertEqual(client_pilot.get("/openapi.json").status_code, 200)
+
     def test_demo_session_endpoint_active_only_when_allowed_in_test_stage(self):
         # 1. Test stage with allow_demo_auth=True
         settings_test = AppSettings(

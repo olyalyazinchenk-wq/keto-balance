@@ -2,9 +2,9 @@
 
 > **Единая точка оперативной правды для всех агентов и разработчиков.**
 > Обновляется автоматически утилитой `python scripts/agent_ops.py sync-status`.
-> **Дата последнего обновления**: 2026-11-05 07:55:52 RTZ 2 (зима)
+> **Дата последнего обновления**: 2026-11-05 17:04:56 RTZ 2 (зима)
 > **Инициатор обновления**: Antigravity
-> **Проверенный SHA**: `448194b0748b97b8f738d2f0d8288630f5a1f4f8` (ветка `feat/cloudru-real-teardown-and-backup-hardening`)
+> **Проверенный SHA**: `0a25df4ccb5dec6062598e6d004ffb86f9e1b4f0` (ветка `feat/telegram-miniapp-launch-safety-20261105`)
 
 ---
 
@@ -12,8 +12,8 @@
 
 - **Проект**: Keto-Balance (Премиум Telegram Mini App + Бот).
 - **Канонический репозиторий**: `https://github.com/olyalyazinchenk-wq/keto-balance`
-- **Текущая ветка**: `feat/cloudru-real-teardown-and-backup-hardening`
-- **HEAD коммит**: `448194b0` (448194b0748b97b8f738d2f0d8288630f5a1f4f8)
+- **Текущая ветка**: `feat/telegram-miniapp-launch-safety-20261105`
+- **HEAD коммит**: `0a25df4c` (0a25df4ccb5dec6062598e6d004ffb86f9e1b4f0)
 - **Автоматический CI в GitHub Actions**: `.github/workflows/ci.yml` (активен на каждый push/PR).
 - **Домашний показ (Home Pilot)**:
   - Порт сервера: строго **`127.0.0.1:18081`** (`http://127.0.0.1:18081/api/health` -> RUNNING).
@@ -27,15 +27,15 @@
 
 ---
 
-## 2. Реально проверенные факты (Machine Evidence для SHA 448194b0)
+## 2. Реально проверенные факты (Machine Evidence для SHA 0a25df4c)
 
 | Проверка / Компонент | Команда | Результат | Статус |
 |---|---|---|:---:|
 | **Локальный Home Pilot (порт 18081)** | `curl http://127.0.0.1:18081/api/health` | RUNNING (код 200) | **PASS** |
 | **Изоляция NutriOK (Task Scheduler)** | `Get-ScheduledTask WellnessBot` | Задача WellnessBot найдена и гарантированно отключена (Disabled) | **PASS** |
-| **Backend Test Suite** | `python scripts/run_backend_tests.py` | UNKNOWN (не запускалось для текущего вызова sync-status на коммите 448194b0) | **UNKNOWN** |
-| **Frontend Unit Tests** | `npm run test:unit` | UNKNOWN (не запускалось для текущего вызова sync-status на коммите 448194b0) | **UNKNOWN** |
-| **TypeScript Typecheck** | `npm run typecheck` | UNKNOWN (не запускалось для текущего вызова sync-status на коммите 448194b0) | **UNKNOWN** |
+| **Backend Test Suite** | `python scripts/run_backend_tests.py` | UNKNOWN (не запускалось для текущего вызова sync-status на коммите 0a25df4c) | **UNKNOWN** |
+| **Frontend Unit Tests** | `npm run test:unit` | UNKNOWN (не запускалось для текущего вызова sync-status на коммите 0a25df4c) | **UNKNOWN** |
+| **TypeScript Typecheck** | `npm run typecheck` | UNKNOWN (не запускалось для текущего вызова sync-status на коммите 0a25df4c) | **UNKNOWN** |
 | **Docker Compose Config** | `docker compose --env-file .env.production.example config` | UNKNOWN (не проверялось в текущем вызове sync-status) | **UNKNOWN** |
 | **Облачный биллинг Cloud.ru** | `scripts/cloudru_teardown.py --audit-only` | UNKNOWN (учётные данные API отсутствуют, обращение к биллингу не производилось) | **UNKNOWN** |
 
