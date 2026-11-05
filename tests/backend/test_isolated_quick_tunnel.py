@@ -57,8 +57,10 @@ class TestIsolatedQuickTunnel(unittest.TestCase):
             s._proc = proc
 
         start_time = time.time()
-        # Быстрый опрос раз в 0.2 секунды
-        watchdog = s._watchdog_loop(start_time, health_check_interval=0.2)
+        # Быстрый опрос раз в 0.2 секунды в фоновом потоке
+        import threading
+        watchdog = threading.Thread(target=s._watchdog_loop, args=(start_time, 0.2), daemon=True)
+        watchdog.start()
 
         time.sleep(1.0)
         # Сервер 19999 не отвечает -> 3 проверки не пройдены -> автоостановка
@@ -84,9 +86,12 @@ class TestIsolatedQuickTunnel(unittest.TestCase):
         self.assertIsNone(s.child_pid)
 
     def test_windows_job_object_crash_resilience(self):
-        """На Windows: при закрытии Job Object ядро ОС мгновенно уничтожает дочерний процесс."""
+        """На Windows: при закрытии Job Object ядро ОС мгновенно уничтожает дочерний процесс. На non-Windows: безопасный no-op."""
         if sys.platform != "win32":
-            self.skipTest("Тест актуален для Windows Job Objects")
+            job = create_kill_on_close_job()
+            self.assertIsNone(job, "На non-Windows job должен возвращать None")
+            self.assertFalse(assign_proc_to_job(None, None))
+            return
 
         import ctypes
         job = create_kill_on_close_job()
