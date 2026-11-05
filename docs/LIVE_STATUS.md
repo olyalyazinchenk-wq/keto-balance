@@ -2,7 +2,7 @@
 
 > **Единая точка оперативной правды для всех агентов и разработчиков.**
 > Обновляется автоматически утилитой `python scripts/agent_ops.py sync-status`.
-> **Последнее автоматическое обновление**: 2026-11-05 04:09:14 RTZ 2 (зима) · Antigravity
+> **Последнее автоматическое обновление**: 2026-11-05 04:09:42 RTZ 2 (зима) · Antigravity
 
 ---
 
@@ -11,7 +11,7 @@
 - **Проект**: Keto-Balance (Премиум Telegram Mini App + Бот).
 - **Канонический репозиторий**: `https://github.com/olyalyazinchenk-wq/keto-balance`
 - **Текущая ветка**: `feat/cloudru-real-teardown-and-backup-hardening`
-- **HEAD коммит**: `42bd2311` (42bd23112a4fbf03a78445403c2838a6d2611279)
+- **HEAD коммит**: `23bf9d0b` (23bf9d0b5435efe8e702773140a09845b046e711)
 - **Автоматический CI**: `.github/workflows/ci.yml` (активен для всех push и pull request).
 - **Домашний показ (Home Pilot)**:
   - Порт сервера: строго **`127.0.0.1:18081`** (`http://127.0.0.1:18081/api/health` -> RUNNING).
