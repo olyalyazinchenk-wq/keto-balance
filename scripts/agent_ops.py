@@ -221,23 +221,7 @@ def get_cloudru_billing_status() -> Dict[str, Any]:
             "reason": "Отсутствуют API-ключи Cloud.ru Evolution",
         }
 
-    # Если учётные данные есть, проверяем кэш аудита текущей сессии
-    audit_file = ROOT / "test-results" / "latest_cloudru_audit.json"
-    if audit_file.exists():
-        try:
-            with open(audit_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if data.get("source") == "CLOUDRU_EVOLUTION_REST_API" and data.get("audit_verdict") == "VERIFIED_ZERO_ALL_SERVICES_AND_BILLING":
-                    spend = data.get("total_monthly_rub", 0.0)
-                    return {
-                        "status": "VERIFIED_ZERO",
-                        "confirmed_spend_rub": spend,
-                        "display": f"{spend:.2f} руб.",
-                        "zero_debt_confirmed": True,
-                        "timestamp": data.get("timestamp"),
-                    }
-        except Exception:
-            pass
+    # A local audit file cannot prove the authenticity or freshness of an API response.
 
     return {
         "status": "UNKNOWN",
