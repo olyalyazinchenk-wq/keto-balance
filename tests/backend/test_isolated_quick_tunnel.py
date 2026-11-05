@@ -1,10 +1,13 @@
+import json
 import os
 import signal
 import subprocess
 import sys
+import threading
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
@@ -12,8 +15,12 @@ sys.path.insert(0, str(ROOT))
 from scripts.isolated_quick_tunnel import (
     IsolatedTunnelSupervisor,
     FORBIDDEN_PORTS,
+    DEFAULT_TARGET_PORT,
+    EXPECTED_BOT_ID,
+    EXPECTED_BOT_USERNAME,
     create_kill_on_close_job,
     assign_proc_to_job,
+    close_job_handle,
     verify_telegram_bot_identity,
     resolve_staging_bot_token,
 )
@@ -43,7 +50,6 @@ class TestIsolatedQuickTunnel(unittest.TestCase):
 
     def test_supervisor_auto_stops_when_staging_server_unreachable(self):
         """Супервизор останавливает туннель, если локальный staging-сервер не отвечает."""
-        # Используем неактивный порт для имитации упавшего сервера
         DEAD_PORT = 19999
         s = IsolatedTunnelSupervisor(target_port=DEAD_PORT, max_lifetime_seconds=60)
 
@@ -57,13 +63,18 @@ class TestIsolatedQuickTunnel(unittest.TestCase):
             s._proc = proc
 
         start_time = time.time()
-        # Быстрый опрос раз в 0.2 секунды в фоновом потоке
-        import threading
-        watchdog = threading.Thread(target=s._watchdog_loop, args=(start_time, 0.2), daemon=True)
-        watchdog.start()
+        # Быстрый опрос раз в 0.1 секунды в фоновом потоке с фиксацией недоступности сервера
+        with patch("scripts.isolated_quick_tunnel.check_staging_health", return_value=(False, "Connection refused")):
+            watchdog = threading.Thread(target=s._watchdog_loop, args=(start_time, 0.1), daemon=True)
+            watchdog.start()
 
-        time.sleep(1.0)
-        # Сервер 19999 не отвечает -> 3 проверки не пройдены -> автоостановка
+            # Ждем автоматической остановки (до 3 секунд)
+            for _ in range(50):
+                if not s.is_running:
+                    break
+                time.sleep(0.05)
+
+        # Сервер не отвечает -> 3 проверки не пройдены -> автоостановка
         self.assertFalse(s.is_running, "Супервизор должен завершить процесс при недоступности сервера")
         self.assertIsNotNone(proc.poll(), "Дочерний процесс должен быть завершён")
         s.stop()
@@ -128,6 +139,58 @@ class TestIsolatedQuickTunnel(unittest.TestCase):
             self.assertEqual(env_file.stat().st_mtime, mtime_env, ".env не должен изменяться")
         if url_file.exists():
             self.assertEqual(url_file.stat().st_mtime, mtime_url, "current_tunnel_url.txt не должен изменяться")
+
+    def test_job_object_creation_failure_aborts_supervisor(self):
+        """Невозможность создать Job Object на Windows строго прерывает инициализацию супервизора."""
+        with patch("scripts.isolated_quick_tunnel.create_kill_on_close_job", return_value=None):
+            with patch("scripts.isolated_quick_tunnel.sys.platform", "win32"):
+                with self.assertRaises(RuntimeError) as ctx:
+                    IsolatedTunnelSupervisor(target_port=18081)
+                self.assertIn("Job Object", str(ctx.exception))
+
+    def test_job_object_assignment_failure_terminates_child_process(self):
+        """Невозможность подключить дочерний процесс к Job Object немедленно убивает созданный дочерний процесс."""
+        s = IsolatedTunnelSupervisor(target_port=18081, max_lifetime_seconds=5)
+        with patch("scripts.isolated_quick_tunnel.assign_proc_to_job", return_value=False):
+            with patch("scripts.isolated_quick_tunnel.sys.platform", "win32"):
+                with self.assertRaises(RuntimeError) as ctx:
+                    s.run_lifecycle_test(test_duration_seconds=1.0)
+                self.assertIn("не удалось подключить", str(ctx.exception).lower())
+                self.assertFalse(s.is_running)
+
+    def test_verify_bot_identity_rejects_wrong_id_or_username(self):
+        """Проверка getMe строго отклоняет бота с чужим ID или username."""
+        def make_fake_opener(result_payload):
+            mock_resp = MagicMock()
+            mock_resp.read.return_value = json.dumps({"ok": True, "result": result_payload}).encode("utf-8")
+            mock_opener = MagicMock()
+            mock_opener.open.return_value.__enter__.return_value = mock_resp
+            return mock_opener
+
+        # 1. Чужой bot ID
+        with patch("urllib.request.build_opener", return_value=make_fake_opener({"id": 12345678, "username": EXPECTED_BOT_USERNAME})):
+            with self.assertRaises(ValueError) as ctx:
+                verify_telegram_bot_identity(token="fake:token", proxy="")
+            self.assertIn("12345678", str(ctx.exception))
+
+        # 2. Чужой bot username
+        with patch("urllib.request.build_opener", return_value=make_fake_opener({"id": EXPECTED_BOT_ID, "username": "imposter_bot"})):
+            with self.assertRaises(ValueError) as ctx:
+                verify_telegram_bot_identity(token="fake:token", proxy="")
+            self.assertIn("imposter_bot", str(ctx.exception))
+
+        # 3. Полное совпадение утверждённого бота
+        with patch("urllib.request.build_opener", return_value=make_fake_opener({"id": EXPECTED_BOT_ID, "username": EXPECTED_BOT_USERNAME, "is_bot": True})):
+            info = verify_telegram_bot_identity(token="fake:token", proxy="")
+            self.assertEqual(info["id"], EXPECTED_BOT_ID)
+            self.assertEqual(info["username"], EXPECTED_BOT_USERNAME)
+
+    def test_launch_rejects_any_port_other_than_18081(self):
+        """Для реального запуска туннеля разрешён исключительно целевой порт 18081."""
+        s = IsolatedTunnelSupervisor(target_port=18082, max_lifetime_seconds=5)
+        with self.assertRaises(ValueError) as ctx:
+            s.launch_quick_tunnel(verify_bot=False)
+        self.assertIn(str(DEFAULT_TARGET_PORT), str(ctx.exception))
 
 
 if __name__ == "__main__":

@@ -33,6 +33,40 @@ CLOUDFLARED_BIN = ROOT / "tools" / "cloudflared.exe"
 FORBIDDEN_PORTS = {8000, 4387, 8090, 10808, 10809}
 DEFAULT_TARGET_PORT = 18081
 MAX_ALLOWED_LIFETIME = 3600
+EXPECTED_BOT_ID = 8945795049
+EXPECTED_BOT_USERNAME = "keto_balance_userbot"
+
+
+def get_kernel32():
+    """Возвращает WinDLL kernel32 с настроенными 64-битными типами дескрипторов Windows API."""
+    if sys.platform != "win32":
+        return None
+    import ctypes
+    from ctypes import wintypes
+
+    k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+
+    k32.CreateJobObjectW.restype = wintypes.HANDLE
+    k32.CreateJobObjectW.argtypes = [ctypes.c_void_p, wintypes.LPCWSTR]
+
+    k32.SetInformationJobObject.restype = wintypes.BOOL
+    k32.SetInformationJobObject.argtypes = [
+        wintypes.HANDLE,
+        ctypes.c_int,
+        ctypes.c_void_p,
+        wintypes.DWORD,
+    ]
+
+    k32.AssignProcessToJobObject.restype = wintypes.BOOL
+    k32.AssignProcessToJobObject.argtypes = [
+        wintypes.HANDLE,
+        wintypes.HANDLE,
+    ]
+
+    k32.CloseHandle.restype = wintypes.BOOL
+    k32.CloseHandle.argtypes = [wintypes.HANDLE]
+
+    return k32
 
 
 def create_kill_on_close_job():
@@ -42,6 +76,7 @@ def create_kill_on_close_job():
     try:
         import ctypes
         from ctypes import wintypes
+        k32 = get_kernel32()
 
         class IO_COUNTERS(ctypes.Structure):
             _fields_ = [
@@ -79,19 +114,19 @@ def create_kill_on_close_job():
         JobObjectExtendedLimitInformation = 9
         JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x2000
 
-        job = ctypes.windll.kernel32.CreateJobObjectW(None, None)
+        job = k32.CreateJobObjectW(None, None)
         if not job:
             return None
         info = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
         info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-        res = ctypes.windll.kernel32.SetInformationJobObject(
-            job,
+        res = k32.SetInformationJobObject(
+            wintypes.HANDLE(job),
             JobObjectExtendedLimitInformation,
             ctypes.byref(info),
             ctypes.sizeof(info),
         )
         if not res:
-            ctypes.windll.kernel32.CloseHandle(job)
+            k32.CloseHandle(wintypes.HANDLE(job))
             return None
         return job
     except Exception:
@@ -99,12 +134,32 @@ def create_kill_on_close_job():
 
 
 def assign_proc_to_job(job_handle, proc) -> bool:
-    """Привязывает дескриптор дочернего процесса к Job Object."""
-    if not job_handle or sys.platform != "win32" or not hasattr(proc, "_handle"):
+    """Привязывает дескриптор дочернего процесса к Job Object с проверкой 64-битного дескриптора."""
+    if sys.platform != "win32":
+        return False
+    if not job_handle or not hasattr(proc, "_handle") or proc._handle is None:
         return False
     try:
-        import ctypes
-        res = ctypes.windll.kernel32.AssignProcessToJobObject(job_handle, int(proc._handle))
+        from ctypes import wintypes
+        k32 = get_kernel32()
+        handle_val = int(proc._handle)
+        res = k32.AssignProcessToJobObject(
+            wintypes.HANDLE(job_handle),
+            wintypes.HANDLE(handle_val),
+        )
+        return bool(res)
+    except Exception:
+        return False
+
+
+def close_job_handle(job_handle) -> bool:
+    """Безопасно закрывает дескриптор Windows Job Object."""
+    if sys.platform != "win32" or not job_handle:
+        return False
+    try:
+        from ctypes import wintypes
+        k32 = get_kernel32()
+        res = k32.CloseHandle(wintypes.HANDLE(job_handle))
         return bool(res)
     except Exception:
         return False
@@ -130,8 +185,16 @@ def resolve_staging_bot_token() -> Tuple[str, str]:
     return token, proxy
 
 
-def verify_telegram_bot_identity(token: str, proxy: str = "") -> Dict[str, Any]:
-    """Сверяет getMe через Telegram API, подтверждая идентичность бота."""
+def verify_telegram_bot_identity(
+    token: str,
+    proxy: str = "",
+    expected_id: int = EXPECTED_BOT_ID,
+    expected_username: str = EXPECTED_BOT_USERNAME,
+) -> Dict[str, Any]:
+    """Сверяет getMe через Telegram API, подтверждая идентичность бота.
+    
+    Строго проверяет соответствие ID и username бота утверждённому тестовому боту.
+    """
     if not token:
         raise ValueError("Токен бота не найден в конфигурации staging.")
 
@@ -148,13 +211,29 @@ def verify_telegram_bot_identity(token: str, proxy: str = "") -> Dict[str, Any]:
             if not data.get("ok"):
                 raise RuntimeError(f"Telegram API getMe вернул ошибку: {data}")
             res = data.get("result", {})
+            bot_id = res.get("id")
+            username = res.get("username")
+
+            if bot_id != expected_id:
+                raise ValueError(
+                    f"Идентификатор бота {bot_id} не совпадает с ожидаемым {expected_id}. "
+                    "Использование другого бота категорически запрещено."
+                )
+            if username != expected_username:
+                raise ValueError(
+                    f"Имя пользователя бота @{username} не совпадает с ожидаемым @{expected_username}. "
+                    "Использование другого бота категорически запрещено."
+                )
+
             return {
                 "ok": True,
-                "id": res.get("id"),
+                "id": bot_id,
                 "is_bot": res.get("is_bot"),
-                "username": res.get("username"),
+                "username": username,
                 "first_name": res.get("first_name"),
             }
+    except ValueError:
+        raise
     except Exception as exc:
         raise RuntimeError(f"Ошибка проверки getMe для токена staging: {exc}") from exc
 
@@ -211,7 +290,12 @@ class IsolatedTunnelSupervisor:
         self._watchdog_thread: Optional[threading.Thread] = None
         self._discovered_url: Optional[str] = None
         self._url_event = threading.Event()
-        self._job_handle = create_kill_on_close_job()
+        if sys.platform == "win32":
+            self._job_handle = create_kill_on_close_job()
+            if not self._job_handle:
+                raise RuntimeError("На Windows невозможно создать Job Object с ограничением KILL_ON_JOB_CLOSE. Запуск прерван.")
+        else:
+            self._job_handle = None
 
         # Регистрация безопасной очистки только своего процесса
         atexit.register(self.stop, reason="Process exit (atexit)")
@@ -245,11 +329,7 @@ class IsolatedTunnelSupervisor:
                 self._proc = None
 
             if self._job_handle:
-                try:
-                    import ctypes
-                    ctypes.windll.kernel32.CloseHandle(self._job_handle)
-                except Exception:
-                    pass
+                close_job_handle(self._job_handle)
                 self._job_handle = None
 
     def _watchdog_loop(self, start_time: float, health_check_interval: float = 2.0):
@@ -282,13 +362,29 @@ class IsolatedTunnelSupervisor:
 
     def run_lifecycle_test(self, test_duration_seconds: float = 3.0) -> Dict[str, Any]:
         """Безопасная проверка запуска, слежения и остановки на фиктивном дочернем процессе."""
+        if sys.platform == "win32":
+            if not self._job_handle:
+                self._job_handle = create_kill_on_close_job()
+                if not self._job_handle:
+                    raise RuntimeError("На Windows невозможно создать Job Object для жизненного теста.")
+
         dummy_cmd = [sys.executable, "-c", "import time; time.sleep(120)"]
         self._stop_event.clear()
         start_time = time.time()
 
         proc = subprocess.Popen(dummy_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        if self._job_handle:
-            assign_proc_to_job(self._job_handle, proc)
+        if sys.platform == "win32":
+            assigned = assign_proc_to_job(self._job_handle, proc)
+            if not assigned:
+                try:
+                    proc.kill()
+                    proc.wait(timeout=2.0)
+                except Exception:
+                    pass
+                raise RuntimeError(
+                    "На Windows не удалось подключить тестовый процесс к Job Object. "
+                    "Процесс был немедленно принудительно завершён."
+                )
 
         with self._proc_lock:
             self._proc = proc
@@ -313,15 +409,36 @@ class IsolatedTunnelSupervisor:
             "poll_code": proc.poll(),
         }
 
-    def launch_quick_tunnel(self, startup_timeout: float = 25.0) -> Optional[str]:
+    def launch_quick_tunnel(self, startup_timeout: float = 25.0, verify_bot: bool = True) -> Optional[str]:
         """Запускает Cloudflare Quick Tunnel к 127.0.0.1:{target_port}.
 
         Вызывается ТОЛЬКО после явного разрешения владельца.
         """
+        # 1. Строгое ограничение: для реального запуска разрешён исключительно порт 18081
+        if self.target_port != DEFAULT_TARGET_PORT:
+            raise ValueError(
+                f"Для реального запуска туннеля разрешён исключительно целевой порт {DEFAULT_TARGET_PORT} (127.0.0.1:18081). "
+                f"Запрошен порт: {self.target_port}"
+            )
+
         if not self.cloudflared_path.is_file():
             raise FileNotFoundError(f"Исполняемый файл cloudflared не найден: {self.cloudflared_path}")
 
-        # Проверка staging перед стартом
+        # 2. Обязательная проверка соответствия бота (ID 8945795049, @keto_balance_userbot)
+        if verify_bot:
+            token, proxy = resolve_staging_bot_token()
+            if not token:
+                raise RuntimeError("Токен бота не найден в конфигурации staging перед запуском туннеля.")
+            verify_telegram_bot_identity(token, proxy)
+
+        # 3. На Windows: обязательное наличие Job Object до старта
+        if sys.platform == "win32":
+            if not self._job_handle:
+                self._job_handle = create_kill_on_close_job()
+                if not self._job_handle:
+                    raise RuntimeError("На Windows невозможно создать Job Object. Запуск туннеля прерван.")
+
+        # 4. Проверка staging перед стартом
         healthy, h_msg = check_staging_health(self.target_port)
         if not healthy:
             raise RuntimeError(f"Staging сервер на 127.0.0.1:{self.target_port} недоступен: {h_msg}")
@@ -346,8 +463,20 @@ class IsolatedTunnelSupervisor:
             errors="replace",
             bufsize=1,
         )
-        if self._job_handle:
-            assign_proc_to_job(self._job_handle, proc)
+
+        # 5. На Windows: подключение к Job Object. При неудаче - немедленно завершить именно созданный процесс
+        if sys.platform == "win32":
+            assigned = assign_proc_to_job(self._job_handle, proc)
+            if not assigned:
+                try:
+                    proc.kill()
+                    proc.wait(timeout=2.0)
+                except Exception:
+                    pass
+                raise RuntimeError(
+                    "На Windows не удалось подключить дочерний процесс cloudflared к Job Object. "
+                    "Процесс был немедленно принудительно завершён."
+                )
 
         with self._proc_lock:
             self._proc = proc
@@ -390,18 +519,35 @@ def main():
 
     lifetime = min(max(args.lifetime, 10), MAX_ALLOWED_LIFETIME)
 
-    # 1. Сверка инвариантов портов
+    # 1. Проверка порта для --launch: разрешён исключительно порт 18081
+    if args.launch:
+        if args.port != DEFAULT_TARGET_PORT:
+            print(
+                f"[FATAL] Для реального запуска (--launch) разрешён исключительно целевой порт {DEFAULT_TARGET_PORT} (127.0.0.1:18081). "
+                f"Указан порт: {args.port}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+    # Сверка инвариантов портов
     if args.port in FORBIDDEN_PORTS:
         print(f"[FATAL] Порт {args.port} входит в список запрещённых боевых портов {FORBIDDEN_PORTS}", file=sys.stderr)
         sys.exit(1)
 
-    # 2. Проверка токена и getMe
+    # 2. Проверка токена и сверка getMe (ID 8945795049, @keto_balance_userbot)
     token, proxy = resolve_staging_bot_token()
     if not token:
         print("[FATAL] Токен бота не найден в конфигурации staging.", file=sys.stderr)
         sys.exit(1)
 
-    bot_info = verify_telegram_bot_identity(token, proxy)
+    try:
+        bot_info = verify_telegram_bot_identity(token, proxy)
+    except ValueError as val_err:
+        print(f"[FATAL] Проверка идентичности бота отклонена: {val_err}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as exc:
+        print(f"[FATAL] Ошибка сверки getMe: {exc}", file=sys.stderr)
+        sys.exit(1)
 
     # 3. Проверка staging сервера
     staging_ok, staging_msg = check_staging_health(args.port)
