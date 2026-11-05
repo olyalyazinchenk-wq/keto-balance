@@ -12,7 +12,15 @@ PilotRestrictionToken = Literal[
     'exclude_fish',
     'exclude_nuts',
     'exclude_offal',
-    'exclude_mushrooms'
+    'exclude_mushrooms',
+    'exclude_pork',
+    'no_eggs',
+    'no_dairy',
+    'no_fish',
+    'no_nuts',
+    'no_offal',
+    'no_mushrooms',
+    'no_pork'
 ]
 
 class StrictBaseModel(BaseModel):

@@ -13,6 +13,7 @@ export const RESTRICTION_MAP: Record<
   exclude_nuts: { field: 'allergies', value: 'орехи', label: 'Исключить орехи' },
   exclude_offal: { field: 'disliked', value: 'субпродукты', label: 'Не использовать субпродукты' },
   exclude_mushrooms: { field: 'disliked', value: 'грибы', label: 'Не использовать грибы' },
+  exclude_pork: { field: 'disliked', value: 'свинина', label: 'Не использовать свинину' },
   no_eggs: { field: 'allergies', value: 'яйца', label: 'Исключить яйца' },
   no_dairy: { field: 'allergies', value: 'молочные продукты', label: 'Исключить молочные продукты' },
   no_fish: { field: 'allergies', value: 'рыба', label: 'Исключить рыбу' },

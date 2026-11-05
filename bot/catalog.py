@@ -8,6 +8,13 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
+from bot.recipe_eligibility import (
+    is_recipe_allowed,
+    is_menu_compatible_with_profile,
+    RESTRICTION_MAP,
+    KNOWN_ALLERGY_MAP,
+)
+
 CatalogProvider = Callable[[], Dict[str, Any]]
 
 EMPTY_CATALOG: Dict[str, Any] = {

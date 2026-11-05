@@ -132,7 +132,12 @@ from bot.app_db import (
     get_user_consents,
 )
 from bot.safety import evaluate_contraindications
-from bot.catalog import CatalogService, CatalogProvider, is_shopping_consistent_with_menu
+from bot.catalog import (
+    CatalogService,
+    CatalogProvider,
+    is_shopping_consistent_with_menu,
+    is_menu_compatible_with_profile,
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_DIST_DIR = Path(os.getenv("KETO_DIST_DIR", str(BASE_DIR / "dist"))).resolve()
@@ -703,15 +708,22 @@ def create_app(
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
         if payload.state and payload.state.menu:
-            admitted_recipes = catalog_service.get_released_recipes()
-            admitted_ids = {r.get("id") for r in admitted_recipes if r.get("id")}
-            for day in payload.state.menu.days:
-                for slot_key, r_id in day.slots.items():
-                    if r_id not in admitted_ids:
-                        raise HTTPException(
-                            status_code=400,
-                            detail=f"Menu contains unreleased or unknown recipe ID: '{r_id}'"
-                        )
+            # 1. Resolve effective profile (from payload or existing DB record)
+            effective_profile = payload.profile
+            if effective_profile is None or (hasattr(effective_profile, "settings") and effective_profile.settings is None):
+                existing_user = get_pilot_user(target_uid, db_path=active_db)
+                if existing_user and existing_user.get("profile"):
+                    effective_profile = existing_user["profile"]
+
+            # 2. Check menu compatibility with profile restrictions and admitted catalog
+            compatible, reason = is_menu_compatible_with_profile(
+                payload.state.menu,
+                effective_profile,
+                catalog_service
+            )
+            if not compatible:
+                raise HTTPException(status_code=400, detail=reason)
+
             shopping_data = get_pilot_shopping(target_uid, db_path=active_db)
             has_shopping_record = bool(shopping_data.get("revision", 0) > 0)
             if has_shopping_record:
