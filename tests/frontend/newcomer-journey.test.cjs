@@ -251,9 +251,9 @@ test('Product Walkthrough: Newcomer Journey (First 2 Minutes)', async (t) => {
       }
     }
 
-    // Fail-closed guard: when restrictions leave fewer recipes than meals per day,
-    // the system refuses to invent recipes or serve forbidden dishes!
-    const impossiblePrefs = {
+    // Profile C: Keto with BOTH eggs and dairy excluded, and prep time <= 30 min
+    // Previously failed due to lack of recipes; now fully satisfied by k27, k28, k29, k30, k7!
+    const userPrefsNoEggsNoDairy = {
       confirmed18Plus: true,
       approach: 'keto',
       restrictions: ['exclude_eggs', 'exclude_dairy'],
@@ -262,12 +262,44 @@ test('Product Walkthrough: Newcomer Journey (First 2 Minutes)', async (t) => {
       planDays: 3,
       preferenceNote: '',
     };
+    const userProfileNoEggsNoDairy = preferencesToUserProfile(userPrefsNoEggsNoDairy);
+    const menuNoEggsNoDairy = controller.createUserMenu({
+      numDays: 3,
+      meals: 3,
+      profile: userProfileNoEggsNoDairy,
+      mode: 'keto',
+    });
+    assert.equal(menuNoEggsNoDairy.days.length, 3);
+    assert.equal(menuNoEggsNoDairy.meals, 3);
+    for (const day of menuNoEggsNoDairy.days) {
+      assert.ok(day.slots.breakfast, 'Breakfast slot filled');
+      assert.ok(day.slots.lunch, 'Lunch slot filled');
+      assert.ok(day.slots.dinner, 'Dinner slot filled');
+      for (const [slot, recipeId] of Object.entries(day.slots)) {
+        const recipe = RECIPES.find((r) => r.id === recipeId);
+        assert.ok(recipe, `Recipe ${recipeId} exists`);
+        assert.equal(isRecipeAllowed(recipe, userProfileNoEggsNoDairy), true, `${recipe.title} allowed`);
+        assert.ok(recipe.time <= 30, `Recipe time <= 30 min`);
+      }
+    }
+
+    // Fail-closed guard: when extreme restrictions leave fewer recipes than meals per day,
+    // the system refuses to invent recipes or serve forbidden dishes!
+    const impossiblePrefs = {
+      confirmed18Plus: true,
+      approach: 'keto',
+      restrictions: ['exclude_eggs', 'exclude_dairy', 'exclude_fish', 'exclude_mushrooms'],
+      prepTimeMax: 30,
+      mealsPerDay: 4, // 4 meals per day but only 2 recipes left (k27 turkey, k28 chicken)
+      planDays: 3,
+      preferenceNote: '',
+    };
     const impossibleProfile = preferencesToUserProfile(impossiblePrefs);
     assert.throws(
       () => {
         controller.createUserMenu({
           numDays: 3,
-          meals: 3,
+          meals: 4,
           profile: impossibleProfile,
           mode: 'keto',
         });

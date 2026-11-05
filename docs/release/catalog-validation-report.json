@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-11-05T02:34:05.775Z",
+  "timestamp": "2026-11-05T02:45:19.767Z",
   "engine": "src/core/keto-engine",
   "catalogPath": "src/data/recipes.ts",
   "botDataPath": null,
   "summary": {
-    "totalRecipes": 42,
-    "passedCount": 42,
+    "totalRecipes": 46,
+    "passedCount": 46,
     "warningCount": 0,
     "errorCount": 0,
     "botSyncErrors": 0,
     "maxCalorieDiscrepancy": 26,
-    "avgCalorieDiscrepancy": 13.2,
+    "avgCalorieDiscrepancy": 12,
     "status": "PASSED"
   },
   "discrepancies": [],
@@ -1271,6 +1271,126 @@
       "discrepancy": {
         "kcalDiff": 12,
         "pctDiff": 3.8
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k27",
+      "title": "Индейка со шпинатом на сковороде",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 304,
+        "p": 38,
+        "f": 16,
+        "nc": 2
+      },
+      "calculated": {
+        "kcal": 304,
+        "ratios": {
+          "proteinPct": 50,
+          "fatPct": 47.4,
+          "carbsPct": 2.6,
+          "proteinCalories": 152,
+          "fatCalories": 144,
+          "carbsCalories": 8,
+          "totalCalories": 304
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k28",
+      "title": "Курица с кабачком и зеленью",
+      "mode": "keto",
+      "cat": "lunch",
+      "declared": {
+        "kcal": 370,
+        "p": 48,
+        "f": 18,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 370,
+        "ratios": {
+          "proteinPct": 51.9,
+          "fatPct": 43.8,
+          "carbsPct": 4.3,
+          "proteinCalories": 192,
+          "fatCalories": 162,
+          "carbsCalories": 16,
+          "totalCalories": 370
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k29",
+      "title": "Говядина с шампиньонами на сковороде",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 434,
+        "p": 46,
+        "f": 26,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 434,
+        "ratios": {
+          "proteinPct": 42.4,
+          "fatPct": 53.9,
+          "carbsPct": 3.7,
+          "proteinCalories": 184,
+          "fatCalories": 234,
+          "carbsCalories": 16,
+          "totalCalories": 434
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k30",
+      "title": "Белая рыба с брокколи и лимоном",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 293,
+        "p": 40,
+        "f": 13,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 293,
+        "ratios": {
+          "proteinPct": 54.6,
+          "fatPct": 39.9,
+          "carbsPct": 5.5,
+          "proteinCalories": 160,
+          "fatCalories": 117,
+          "carbsCalories": 16,
+          "totalCalories": 293
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
       },
       "status": "PASS",
       "issues": []

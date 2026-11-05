@@ -7,9 +7,10 @@ function inferDepartment(name: string): PortionIngredientFixture['department'] {
   if (
     n.includes('мясо') || n.includes('фарш') || n.includes('бекон') ||
     n.includes('свинина') || n.includes('говядина') || n.includes('стейк') ||
-    n.includes('куриц') || n.includes('индейк') || n.includes('утка') ||
+    n.includes('кури') || n.includes('индей') || n.includes('птиц') || n.includes('филе') || n.includes('утка') ||
     n.includes('рыба') || n.includes('лосос') || n.includes('тунец') ||
     n.includes('горбуш') || n.includes('скумбри') || n.includes('сёмг') ||
+    n.includes('треск') || n.includes('минтай') || n.includes('судак') ||
     n.includes('креветк') || n.includes('сердеч') || n.includes('печен')
   ) {
     return 'Мясо, птица и рыба';
@@ -26,6 +27,7 @@ function inferDepartment(name: string): PortionIngredientFixture['department'] {
     n.includes('огур') || n.includes('помидор') || n.includes('шампиньон') ||
     n.includes('гриб') || n.includes('авокадо') || n.includes('перец') ||
     n.includes('лук') || n.includes('шпинат') || n.includes('зелень') ||
+    n.includes('чеснок') || n.includes('лимон') || n.includes('лайм') ||
     n.includes('укроп') || n.includes('петрушк')
   ) {
     return 'Овощи и зелень';
