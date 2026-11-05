@@ -90,6 +90,20 @@ class CloudRuEvolutionClient:
         "billing",
     ]
 
+    @staticmethod
+    def load_stored_credentials() -> Dict[str, str]:
+        """Загружает сохранённые учётные данные из защищённого локального хранилища .secrets/cloudru_credentials.json."""
+        secrets_file = Path(__file__).resolve().parent.parent / ".secrets" / "cloudru_credentials.json"
+        if secrets_file.exists():
+            try:
+                with open(secrets_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        return data
+            except Exception:
+                return {}
+        return {}
+
     def __init__(
         self,
         iam_url: Optional[str] = None,
@@ -108,6 +122,7 @@ class CloudRuEvolutionClient:
         http_requester: Optional[Callable[[str, str, Optional[Dict[str, str]], Optional[bytes]], Tuple[int, Dict[str, str], Any]]] = None,
         timeout: int = 15,
     ):
+        stored = self.load_stored_credentials()
         self.iam_url = (iam_url or os.getenv("CLOUDRU_IAM_URL") or self.DEFAULT_IAM_URL).rstrip("/")
         self.compute_url = (compute_url or os.getenv("CLOUDRU_COMPUTE_URL") or self.DEFAULT_COMPUTE_URL).rstrip("/")
         self.vpc_url = (vpc_url or os.getenv("CLOUDRU_VPC_URL") or self.DEFAULT_VPC_URL).rstrip("/")
@@ -119,21 +134,21 @@ class CloudRuEvolutionClient:
             project_id
             or os.getenv("CLOUDRU_PROJECT_ID")
             or os.getenv("OS_PROJECT_ID")
-            or ""
+            or stored.get("project_id", "")
         )
         self.key_id = (
             key_id
             or os.getenv("CLOUDRU_KEY_ID")
             or os.getenv("CLOUDRU_CLIENT_ID")
             or os.getenv("OS_USERNAME")
-            or ""
+            or stored.get("key_id", "")
         )
         self.secret_key = (
             secret_key
             or os.getenv("CLOUDRU_SECRET_KEY")
             or os.getenv("CLOUDRU_SECRET")
             or os.getenv("OS_PASSWORD")
-            or ""
+            or stored.get("secret_key", "")
         )
         self.token = (
             token
@@ -141,7 +156,7 @@ class CloudRuEvolutionClient:
             or os.getenv("CLOUDRU_IAM_TOKEN")
             or os.getenv("OS_AUTH_TOKEN")
             or os.getenv("OS_TOKEN")
-            or ""
+            or stored.get("token", "")
         )
         self.region = region or os.getenv("CLOUDRU_REGION_NAME") or os.getenv("OS_REGION_NAME") or "ru-1"
         self.auth_url = (auth_url or os.getenv("CLOUDRU_AUTH_URL") or os.getenv("OS_AUTH_URL") or "").rstrip("/")

@@ -28,6 +28,10 @@ data/
 releases/
 scratch/
 *.backup*
+.secrets/
+*.credentials*
+*.key.enc
+
 
 # артефакты и бинарники — не публикуем в репозиторий
 media/
