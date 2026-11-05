@@ -15,6 +15,7 @@ playwright-report/
 
 
 *.log
+logs/
 *.lock
 run_tunnel.lock
 .tunnel_cache.json

@@ -179,9 +179,15 @@ def create_app(
     settings: Optional[AppSettings] = None,
     catalog_provider: Optional[CatalogProvider] = None,
 ) -> FastAPI:
-    app = FastAPI(title="Кето Баланс API & Mini App Server")
-    resolved_dist = Path(dist_dir).resolve() if dist_dir is not None else DEFAULT_DIST_DIR
     active_settings = settings if settings is not None else get_settings()
+    disable_docs = active_settings.is_staging
+    app = FastAPI(
+        title="Кето Баланс API & Mini App Server",
+        docs_url=None if disable_docs else "/docs",
+        redoc_url=None if disable_docs else "/redoc",
+        openapi_url=None if disable_docs else "/openapi.json",
+    )
+    resolved_dist = Path(dist_dir).resolve() if dist_dir is not None else DEFAULT_DIST_DIR
     active_db = db_path if db_path is not None else active_settings.db_path
     catalog_service = CatalogService(dist_dir=resolved_dist, provider=catalog_provider, app_stage=active_settings.app_stage)
     startup_backend_fingerprint = _compute_backend_fingerprint()
@@ -900,6 +906,13 @@ def create_app(
         rel_path = urllib.parse.unquote(full_path).strip("/")
         if rel_path == "api" or rel_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="API endpoint not found")
+
+        if active_settings.is_staging and (
+            rel_path in ("docs", "redoc", "openapi.json")
+            or rel_path.startswith("docs/")
+            or rel_path.startswith("redoc/")
+        ):
+            raise HTTPException(status_code=404, detail="Not Found")
 
         resolved = resolve_safe_path(resolved_dist, full_path)
 

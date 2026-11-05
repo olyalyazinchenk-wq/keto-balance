@@ -77,6 +77,14 @@ def main():
         bot_token = args.token.strip()
     if not bot_token:
         bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", os.environ.get("KETO_BOT_TOKEN", "")).strip()
+    if not bot_token:
+        env_file = ROOT / ".env"
+        if env_file.is_file():
+            for line in env_file.read_text(encoding="utf-8").splitlines():
+                if line.startswith("KETO_BOT_TOKEN=") or line.startswith("TELEGRAM_BOT_TOKEN="):
+                    bot_token = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    if bot_token:
+                        break
 
     if not bot_token:
         print("[ERROR] Telegram bot token is required for staging mode.", file=sys.stderr)
@@ -211,7 +219,7 @@ def main():
             pass
 
     timer = None
-    if not args.persistent and args.lifetime and args.lifetime > 0:
+    if args.lifetime and args.lifetime > 0:
         def shutdown_server():
             print(f"\n[STAGING] Maximum lifetime of {args.lifetime}s expired. Shutting down cleanly...", flush=True)
             server.should_exit = True
@@ -219,8 +227,10 @@ def main():
         timer = threading.Timer(float(args.lifetime), shutdown_server)
         timer.daemon = True
         timer.start()
+        mode_str = "with persistent DB" if args.persistent else "ephemeral run"
+        print(f"[STAGING] Auto-shutdown timer active: {args.lifetime}s ({mode_str}).", flush=True)
     else:
-        print("[STAGING] Persistent mode enabled: 3600s auto-shutdown is disabled.", flush=True)
+        print("[STAGING] Auto-shutdown timer is disabled.", flush=True)
 
     def sig_handler(sig, frame):
         print(f"\n[STAGING] Received signal {sig}. Terminating...", flush=True)
@@ -253,10 +263,11 @@ def main():
     print(f"  Owner Allowlist:[{args.owner_id}] (non-owners will get HTTP 403)", flush=True)
     print(f"  Payments:       DISABLED", flush=True)
     print(f"  Demo Auth:      DISABLED", flush=True)
-    if args.persistent:
-        print(f"  Auto-Shutdown:  DISABLED (--persistent mode)", flush=True)
+    if args.lifetime and args.lifetime > 0:
+        db_mode = "with persistent DB" if args.persistent else "ephemeral DB"
+        print(f"  Auto-Shutdown:  {args.lifetime} seconds ({db_mode})", flush=True)
     else:
-        print(f"  Auto-Shutdown:  {args.lifetime} seconds (1 hour)", flush=True)
+        print(f"  Auto-Shutdown:  DISABLED", flush=True)
     print(f"  Dist Dir:       {dist_path} ({release_info})", flush=True)
     print(f"  Catalog:        {catalog_info}", flush=True)
     print(f"  Database:       {db_path}", flush=True)
