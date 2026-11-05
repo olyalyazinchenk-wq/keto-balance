@@ -4,9 +4,7 @@ import PilotApp from './PilotApp'
 import { setupTelegramApp } from './tma/telegram'
 import './index.css'
 
-// Telegram WebApp initialization and theme setup
-setupTelegramApp();
-
+// Telegram bridge initializes once per mounted app; the effect owns cleanup.
 function RootApp() {
   useEffect(() => {
     const cleanup = setupTelegramApp();

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { KetoClient, ApiError, ConflictError, UnauthorizedError } from './api/ketoClient';
+import { resolveTelegramLaunchAuth } from './tma/launchAuth';
 import type {
   PilotCatalogV1,
   PilotPreferencesV1,
@@ -131,35 +132,20 @@ export default function PilotApp() {
     };
 
     let initData = '';
-    let demoUserParam: string | null = null;
+    let demoUserId: number | null = null;
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      demoUserParam = params.get('demo_user');
-      const tg = (window as any).Telegram?.WebApp;
-      if (tg) {
-        try {
-          tg.ready();
-          tg.expand();
-        } catch {}
-        if (tg.initData) {
-          initData = tg.initData;
-        }
-      }
-      if (!initData) {
-        initData = params.get('init_data') || '';
-      }
-      if (!initData && window.location.hash) {
-        const hashParams = new URLSearchParams(window.location.hash.replace(/^#\/?/, ''));
-        initData = hashParams.get('tgWebAppData') || '';
-        if (!demoUserParam) {
-          demoUserParam = hashParams.get('demo_user');
-        }
-      }
+      const launch = resolveTelegramLaunchAuth(
+        window.Telegram?.WebApp?.initData,
+        window.location.search,
+        window.location.hash
+      );
+      initData = launch.initData;
+      demoUserId = launch.demoUserId;
     }
 
-    if (!initData && !demoUserParam) {
+    if (!initData && demoUserId === null) {
       setPhase('unauthorized');
-      setErrorMessage('Ожидание авторизации Telegram. Запустите приложение через кнопку в @KetoBalanceBot.');
+      setErrorMessage('Ожидание авторизации Telegram. Откройте приложение через кнопку в боте «КетоБаланс».');
       return;
     }
 
@@ -169,9 +155,9 @@ export default function PilotApp() {
     (async () => {
       try {
         let session;
-        if (demoUserParam) {
-          const parsedUid = parseInt(demoUserParam, 10) || 1084557944;
-          session = await client.createDemoSession(parsedUid);
+        if (demoUserId !== null) {
+          // The API permits demo auth only in the isolated test stage.
+          session = await client.createDemoSession(demoUserId);
         } else {
           session = await client.createSession(initData);
         }
