@@ -20,10 +20,10 @@
 
 | Проверка | Роль | Доказательство |
 |---|---|---|
-| CI актуального SHA | Инженер | backend, frontend/typecheck/build, Docker — SUCCESS по точному SHA PR |
-| Синтетический Telegram bridge | QA | отсутствие bridge/пустая подпись, native signed > demo, hash-route, invalid demo, повторное монтирование, BackButton/theme/viewport |
-| Серверная безопасность | Инженер | отрицательные сценарии: отсутствует `init_data`, плохой HMAC, истёкший `auth_date`, вне allowlist, попытка чужих данных, продакшен без демо-доступа |
-| Кнопки бота | QA | `webapp_button` использует HTTPS WebAppInfo; при отсутствии HTTPS нет ложной «Открыть приложение» |
+| CI актуального SHA | Инженер | backend (240 тестов), frontend (236 тестов), typecheck, build, Docker — SUCCESS |
+| Синтетический Telegram bridge | QA | отсутствие bridge/пустая подпись, native signed > demo, hash-route, invalid demo, ?tgWebAppData= в query с trim, повторное монтирование, BackButton/theme/viewport (telegram-launch-auth.test.cjs) |
+| Серверная безопасность | Инженер | отрицательные сценарии: отсутствует init_data (401), плохой HMAC (401), истёкший auth_date (401), подделка данных (401), вне allowlist (403), сохранение профиля/меню/покупок и повторный вход (test_session_api.py) |
+| Кнопки бота | QA | webapp_button использует HTTPS WebAppInfo; при отсутствии HTTPS (localhost/http) переключается на безопасный open_app_local без ложного WebAppInfo |
 | Реальный Telegram на устройстве | Владелец + QA | на **отдельном разрешённом тестовом боте и HTTPS-стенде**, только вымышленные данные, Android + Telegram Desktop или iOS, первый/повторный вход, авторизация, разрешения, списки, BackButton, 401/409 |
 | Подготовка к публичному запуску | Владелец | отдельно одобренные DNS/HTTPS, privacy/152-ФЗ, стоимость, backup/restore, переключение обеих кнопок бота, план отката |
 

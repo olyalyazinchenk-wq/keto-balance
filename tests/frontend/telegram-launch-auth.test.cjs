@@ -64,3 +64,13 @@ test('bootstrap uses signed launch preference and mounts bridge with cleanup onl
   assert.match(main, /useEffect\(\(\) => \{[\s\S]*?setupTelegramApp\(\);[\s\S]*?return cleanup/);
   assert.equal((main.match(/setupTelegramApp\(\)/g) || []).length, 1);
 });
+
+test('URL query tgWebAppData is supported and trimmed', () => {
+  const raw = 'auth_date=100&hash=query-tg-data';
+  const result = resolveTelegramLaunchAuth(
+    undefined,
+    '?tgWebAppData=' + encodeURIComponent('  ' + raw + '  '),
+    '',
+  );
+  assert.deepEqual(result, { initData: raw, demoUserId: null });
+});
