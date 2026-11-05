@@ -151,6 +151,8 @@ class TestIsolatedQuickTunnel(unittest.TestCase):
     def test_job_object_assignment_failure_terminates_child_process(self):
         """Невозможность подключить дочерний процесс к Job Object немедленно убивает созданный дочерний процесс."""
         s = IsolatedTunnelSupervisor(target_port=18081, max_lifetime_seconds=5)
+        # Устанавливаем фиктивный дескриптор для платформонезависимого моделирования Job Object
+        s._job_handle = 999999
         with patch("scripts.isolated_quick_tunnel.assign_proc_to_job", return_value=False):
             with patch("scripts.isolated_quick_tunnel.sys.platform", "win32"):
                 with self.assertRaises(RuntimeError) as ctx:
