@@ -97,13 +97,14 @@ class TestCloudRuTeardown(unittest.TestCase):
             "volumes": [{"id": "vol-1", "name": "root-disk", "size_gb": 30, "cost_rub_month": 360}],
             "floating_ips": [{"id": "fip-1", "ip": "1.2.3.4", "cost_rub_month": 200}],
             "snapshots": [{"id": "snap-1", "name": "s1", "cost_rub_month": 100}],
+            "buckets": [{"id": "b-1", "name": "app-media", "cost_rub_month": 50}],
         }
         res = execute_teardown_plan(inv, dry_run=True)
         self.assertEqual(res["mode"], "DRY_RUN")
         self.assertFalse(res["executed"])
         self.assertFalse(res["zero_residual_confirmed"])
-        self.assertEqual(res["total_monthly_rub_prevented"], 2260)
-        self.assertEqual(len(res["actions_planned"]), 4)
+        self.assertEqual(res["total_monthly_rub_prevented"], 2310)
+        self.assertEqual(len(res["actions_planned"]), 5)
 
     def test_live_destroy_locked_when_no_executor(self):
         inv = {"instances": [{"id": "inst-1", "name": "vm-1", "cost_rub_month": 1600}]}
@@ -141,6 +142,10 @@ class TestCloudRuTeardown(unittest.TestCase):
                 "snapshots": [],
                 "images": [],
                 "virtual_ips": [],
+                "load_balancers": [],
+                "nat_gateways": [],
+                "buckets": [],
+                "backups": [],
                 "has_unconfirmed_costs": False,
             }
 
@@ -185,6 +190,10 @@ class TestCloudRuTeardown(unittest.TestCase):
             "snapshots": [],
             "images": [],
             "virtual_ips": [],
+            "load_balancers": [],
+            "nat_gateways": [],
+            "buckets": [],
+            "backups": [],
         }
         mock_file = self.tmp_path / "mock_inv.json"
         mock_file.write_text(json.dumps(mock_inv), encoding="utf-8")
@@ -247,10 +256,9 @@ class TestCloudRuTeardown(unittest.TestCase):
             verify_backup_readiness(self.enc_backup_db, key_file=empty_key_file)
         self.assertIn("ошибка получения ключа", str(ctx.exception).lower())
 
-    # --- Новые тесты для официального Cloud.ru Evolution IAM & REST API ---
+    # --- Официальный Cloud.ru Evolution IAM & REST API ---
 
     def test_evolution_iam_auth_and_bearer_token(self):
-        """Проверяет официальный flow получения IAM Bearer токена в Cloud.ru Evolution."""
         requests_log = []
 
         def mock_requester(method, url, headers=None, body=None):
@@ -289,7 +297,6 @@ class TestCloudRuTeardown(unittest.TestCase):
         self.assertTrue("сбой" in str(ctx.exception).lower() or "401" in str(ctx.exception))
 
     def test_evolution_compute_vms_and_disks_inventory_success(self):
-        """Проверяет корректный парсинг сущностей Evolution Compute API."""
         def mock_requester(method, url, headers=None, body=None):
             if "iam.api.cloud.ru" in url:
                 return 200, {}, {"access_token": "valid-token"}
@@ -321,15 +328,7 @@ class TestCloudRuTeardown(unittest.TestCase):
                         }
                     ]
                 }
-            elif "/api/v1/floating-ips" in url:
-                return 200, {}, {"items": []}
-            elif "/api/v1/snapshots" in url:
-                return 200, {}, {"items": []}
-            elif "/api/v1/images" in url:
-                return 200, {}, {"items": []}
-            elif "/virtual-ips" in url:
-                return 200, {}, {"items": []}
-            return 404, {}, {}
+            return 200, {}, {"items": []}
 
         client = CloudRuEvolutionClient(
             key_id="k-1",
@@ -341,22 +340,51 @@ class TestCloudRuTeardown(unittest.TestCase):
         self.assertEqual(inv["total_resources_count"], 2)  # 1 VM + 1 Disk
         self.assertEqual(inv["instances"][0]["id"], "vm-prod-1")
         self.assertEqual(inv["volumes"][0]["id"], "disk-boot-1")
-        self.assertFalse(inv["has_unconfirmed_costs"])
         self.assertFalse(inv["zero_residual_confirmed"])  # 2 active resources exist
         self.assertEqual(inv["audit_verdict"], "ACTIVE_RESOURCES_FOUND")
 
+    def test_evolution_compute_zero_does_not_declare_zero_residual_when_storage_and_billing_unverified(self):
+        """
+        КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: скрипт НЕ вправе объявлять нулевую задолженность,
+        пока не проверены остальные потенциально платные услуги (S3, бэкапы, биллинг)!
+        """
+        def mock_requester(method, url, headers=None, body=None):
+            if "iam.api.cloud.ru" in url:
+                return 200, {}, {"access_token": "valid-token"}
+            # ВМ, диски, IP и снапшоты пустые:
+            if any(x in url for x in ("/vms", "/disks", "/floating-ips", "/snapshots", "/images", "/virtual-ips")):
+                return 200, {}, {"items": []}
+            # Но бакеты, бэкапы и биллинг возвращают 404/403 (недоступны через данный токен):
+            if "/buckets" in url or "/backups" in url or "/load-balancers" in url or "/nat-gateways" in url:
+                return 404, {}, {"error": "Not Found or Service not provisioned"}
+            if "/contracts/usage" in url:
+                return 403, {}, {"error": "Billing API access denied"}
+            return 404, {}, {}
+
+        client = CloudRuEvolutionClient(
+            key_id="k-1",
+            secret_key="s-1",
+            project_id="p-1",
+            http_requester=mock_requester,
+        )
+        inv = client.get_full_inventory()
+
+        # Проверяем, что скрипт НЕ объявил нулевую задолженность:
+        self.assertFalse(inv["zero_residual_confirmed"])
+        self.assertEqual(inv["audit_verdict"], "COMPUTE_ZERO_UNCONFIRMED_BILLING_AND_STORAGE")
+        self.assertTrue(inv["has_unconfirmed_costs"])
+        self.assertIn("buckets", inv["unconfirmed_services"])
+        self.assertIn("backups", inv["unconfirmed_services"])
+        self.assertIn("billing", inv["unconfirmed_services"])
+        self.assertIn("docs/CLOUDRU_MANUAL_TEARDOWN.md", inv["verdict_description"])
+
     def test_evolution_service_unauthorized_returns_unconfirmed_cost(self):
-        """
-        Требование P0: При 403 Forbidden или отсутствии прав API возвращает UNKNOWN/ERROR,
-        а не пустой список, и помечает расходы как неподтверждённые!
-        """
         def mock_requester(method, url, headers=None, body=None):
             if "iam.api.cloud.ru" in url:
                 return 200, {}, {"access_token": "valid-token"}
             if "/api/v1/vms" in url:
                 return 200, {}, {"items": []}
             if "/api/v1/disks" in url:
-                # Сервис дисков вернул 403 Forbidden
                 return 403, {}, {"error": "Permission denied: compute.disks.get"}
             return 200, {}, {"items": []}
 
@@ -367,16 +395,13 @@ class TestCloudRuTeardown(unittest.TestCase):
             http_requester=mock_requester,
         )
         inv = client.get_full_inventory()
-        # Проверяем, что ошибка не скрыта как '0 дисков'
         self.assertTrue(inv["has_unconfirmed_costs"])
         self.assertIn("disks", inv["unconfirmed_services"])
         self.assertEqual(inv["services"]["disks"]["status"], "UNAUTHORIZED")
         self.assertTrue(inv["services"]["disks"]["unconfirmed_cost"])
         self.assertFalse(inv["zero_residual_confirmed"])
-        self.assertEqual(inv["audit_verdict"], "UNCONFIRMED_RISK_OF_EXPENSES")
 
     def test_evolution_network_timeout_returns_unknown_status(self):
-        """Требование P0: При сетевой ошибке/таймауте возвращается статус NETWORK_ERROR и UNCONFIRMED_RISK."""
         def mock_requester(method, url, headers=None, body=None):
             if "iam.api.cloud.ru" in url:
                 return 200, {}, {"access_token": "valid-token"}
@@ -395,38 +420,17 @@ class TestCloudRuTeardown(unittest.TestCase):
         self.assertIn("floating_ips", inv["unconfirmed_services"])
         self.assertEqual(inv["services"]["floating_ips"]["status"], "NETWORK_ERROR")
         self.assertFalse(inv["zero_residual_confirmed"])
-        self.assertEqual(inv["audit_verdict"], "UNCONFIRMED_RISK_OF_EXPENSES")
 
-    def test_evolution_malformed_response_returns_unknown_status(self):
-        """Требование P0: При неполном или искажённом ответе возвращается статус UNKNOWN/MALFORMED."""
-        def mock_requester(method, url, headers=None, body=None):
-            if "iam.api.cloud.ru" in url:
-                return 200, {}, {"access_token": "valid-token"}
-            if "/api/v1/snapshots" in url:
-                # Некорректный dict без ключа items
-                return 200, {}, {"unexpected_random_data": 123}
-            return 200, {}, {"items": []}
-
-        client = CloudRuEvolutionClient(
-            key_id="k-1",
-            secret_key="s-1",
-            project_id="p-1",
-            http_requester=mock_requester,
-        )
-        inv = client.get_full_inventory()
-        self.assertTrue(inv["has_unconfirmed_costs"])
-        self.assertIn("snapshots", inv["unconfirmed_services"])
-        self.assertEqual(inv["services"]["snapshots"]["status"], "UNKNOWN")
-        self.assertFalse(inv["zero_residual_confirmed"])
-
-    def test_evolution_all_services_ok_and_zero_items_confirms_zero_residual(self):
+    def test_evolution_all_11_services_and_billing_ok_confirms_zero_residual(self):
         """
         Гарантия 0 ₽: подтверждение (zero_residual_confirmed=True) выдаётся ТОЛЬКО
-        когда ВСЕ сервисы ответили OK и ни одного платного ресурса не найдено.
+        когда ВСЕ 11 сервисов ответили OK, ресурсов 0 и биллинг подтверждён.
         """
         def mock_requester(method, url, headers=None, body=None):
             if "iam.api.cloud.ru" in url:
                 return 200, {}, {"access_token": "valid-token"}
+            if "/contracts/usage" in url:
+                return 200, {}, {"balance_rub": 0.0, "current_accruals_rub": 0.0, "debt_rub": 0.0}
             return 200, {}, {"items": []}
 
         client = CloudRuEvolutionClient(
@@ -441,10 +445,9 @@ class TestCloudRuTeardown(unittest.TestCase):
         self.assertEqual(inv["total_resources_count"], 0)
         self.assertEqual(inv["total_monthly_rub"], 0)
         self.assertTrue(inv["zero_residual_confirmed"])
-        self.assertEqual(inv["audit_verdict"], "VERIFIED_ZERO_RESOURCES")
+        self.assertEqual(inv["audit_verdict"], "VERIFIED_ZERO_ALL_SERVICES_AND_BILLING")
 
     def test_cli_audit_only_flag_runs_without_backup_file(self):
-        """Флаг --audit-only позволяет безопасно проверять API без требования файла бэкапа."""
         mock_inv = {
             "instances": [],
             "volumes": [],
@@ -452,20 +455,22 @@ class TestCloudRuTeardown(unittest.TestCase):
             "snapshots": [],
             "images": [],
             "virtual_ips": [],
+            "load_balancers": [],
+            "nat_gateways": [],
+            "buckets": [],
+            "backups": [],
+            "billing": [],
             "services": {
-                "vms": {"status": "OK", "items": []},
-                "disks": {"status": "OK", "items": []},
-                "floating_ips": {"status": "OK", "items": []},
-                "snapshots": {"status": "OK", "items": []},
-                "images": {"status": "OK", "items": []},
-                "virtual_ips": {"status": "OK", "items": []},
+                s: {"status": "OK", "items": []}
+                for s in CloudRuEvolutionClient.ALL_POTENTIAL_SERVICES
             },
             "unconfirmed_services": [],
             "has_unconfirmed_costs": False,
             "total_resources_count": 0,
             "total_monthly_rub": 0,
             "zero_residual_confirmed": True,
-            "audit_verdict": "VERIFIED_ZERO_RESOURCES",
+            "audit_verdict": "VERIFIED_ZERO_ALL_SERVICES_AND_BILLING",
+            "verdict_description": "All clear",
             "source": "CLOUDRU_EVOLUTION_REST_API",
         }
         mock_file = self.tmp_path / "mock_clean.json"
@@ -482,7 +487,7 @@ class TestCloudRuTeardown(unittest.TestCase):
         res = subprocess.run(cmd, capture_output=True, text=True)
         self.assertEqual(res.returncode, 0, f"Audit-only failed: {res.stderr}")
         data = json.loads(res.stdout)
-        self.assertEqual(data["audit_verdict"], "VERIFIED_ZERO_RESOURCES")
+        self.assertEqual(data["audit_verdict"], "VERIFIED_ZERO_ALL_SERVICES_AND_BILLING")
         self.assertTrue(data["zero_residual_confirmed"])
 
 

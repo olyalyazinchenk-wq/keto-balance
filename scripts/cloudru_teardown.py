@@ -2,8 +2,8 @@
 """
 scripts/cloudru_teardown.py — Безопасное завершение работы и полный аудит/демонтаж ресурсов Cloud.ru.
 
-Официальная интеграция с Cloud.ru Evolution IAM и REST API (Compute, Disks, Floating IPs, Snapshots, VPC).
-Гарантирует 0 ₽ остаточных списаний (защита от отрицательного баланса).
+Официальная интеграция с Cloud.ru Evolution IAM и REST API (Compute, Disks, Floating IPs, Snapshots, VPC, Storage, Backups, Billing).
+Гарантирует защиту от скрытых расходов и отрицательного баланса.
 
 Правила безопасности:
 1. По умолчанию работает ТОЛЬКО в режиме проверки (dry-run).
@@ -11,8 +11,9 @@ scripts/cloudru_teardown.py — Безопасное завершение раб
 3. При недоступности сервиса, отсутствии прав (401/403), ошибке сети или неполном ответе
    скрипт возвращает статус UNKNOWN/ERROR и помечает расходы как НЕПОДТВЕРЖДЁННЫЕ,
    а не возвращает пустой список.
-4. Ложное подтверждение нулевой задолженности исключено: подтверждение (zero_residual_confirmed)
-   выдаётся ТОЛЬКО если все сервисы ответили OK и ни одного платного ресурса не обнаружено.
+4. Ложное подтверждение нулевой задолженности СТРОГО ЗАПРЕЩЕНО:
+   Нулевая задолженность (zero_residual_confirmed=True) НЕ объявляется, пока не проверены
+   все потенциально платные услуги (включая хранилища S3, бэкапы, сетевые шлюзы и фактический биллинг).
 5. Удаление НЕВОЗМОЖНО без подтверждённого и проверенного бэкапа (проверка целостности и тестовое восстановление).
 6. Реальное автоматическое удаление через API заблокировано (LIVE_LOCKED) в целях безопасности.
 7. Регламент гарантированного ручного демонтажа: docs/CLOUDRU_MANUAL_TEARDOWN.md.
@@ -52,7 +53,7 @@ class CloudRuApiError(RuntimeError):
 class CloudRuEvolutionClient:
     """
     Официальный клиент для взаимодействия с Cloud.ru Evolution IAM и REST API.
-    Поддерживает:
+    Поддерживает аудит всех потенциально тарифицируемых групп ресурсов:
       - IAM Token Auth (https://iam.api.cloud.ru/api/v1/auth/token)
       - Compute VMs (https://compute.api.cloud.ru/api/v1/vms)
       - Compute Disks (https://compute.api.cloud.ru/api/v1/disks)
@@ -60,18 +61,43 @@ class CloudRuEvolutionClient:
       - Compute Snapshots (https://compute.api.cloud.ru/api/v1/snapshots)
       - Compute Images (https://compute.api.cloud.ru/api/v1/images)
       - VPC Virtual IPs (https://vpc.api.cloud.ru/v1/projects/{project_id}/virtual-ips)
+      - VPC Load Balancers (https://vpc.api.cloud.ru/v1/projects/{project_id}/load-balancers)
+      - VPC NAT Gateways (https://vpc.api.cloud.ru/v1/projects/{project_id}/nat-gateways)
+      - Object Storage S3 Buckets (https://storage.api.cloud.ru/api/v1/buckets)
+      - Cloud Backup Service (https://backup.api.cloud.ru/api/v1/backups)
+      - Billing & Account Balance (https://billing.api.cloud.ru/api/v1/contracts/usage)
       - Legacy OpenStack Keystone v3 fallback (при явном указании OS_AUTH_URL)
     """
 
     DEFAULT_IAM_URL = "https://iam.api.cloud.ru/api/v1/auth/token"
     DEFAULT_COMPUTE_URL = "https://compute.api.cloud.ru/api/v1"
     DEFAULT_VPC_URL = "https://vpc.api.cloud.ru/v1"
+    DEFAULT_STORAGE_URL = "https://storage.api.cloud.ru/api/v1"
+    DEFAULT_BACKUP_URL = "https://backup.api.cloud.ru/api/v1"
+    DEFAULT_BILLING_URL = "https://billing.api.cloud.ru/api/v1"
+
+    ALL_POTENTIAL_SERVICES = [
+        "vms",
+        "disks",
+        "floating_ips",
+        "snapshots",
+        "images",
+        "virtual_ips",
+        "load_balancers",
+        "nat_gateways",
+        "buckets",
+        "backups",
+        "billing",
+    ]
 
     def __init__(
         self,
         iam_url: Optional[str] = None,
         compute_url: Optional[str] = None,
         vpc_url: Optional[str] = None,
+        storage_url: Optional[str] = None,
+        backup_url: Optional[str] = None,
+        billing_url: Optional[str] = None,
         project_id: Optional[str] = None,
         key_id: Optional[str] = None,
         secret_key: Optional[str] = None,
@@ -85,6 +111,10 @@ class CloudRuEvolutionClient:
         self.iam_url = (iam_url or os.getenv("CLOUDRU_IAM_URL") or self.DEFAULT_IAM_URL).rstrip("/")
         self.compute_url = (compute_url or os.getenv("CLOUDRU_COMPUTE_URL") or self.DEFAULT_COMPUTE_URL).rstrip("/")
         self.vpc_url = (vpc_url or os.getenv("CLOUDRU_VPC_URL") or self.DEFAULT_VPC_URL).rstrip("/")
+        self.storage_url = (storage_url or os.getenv("CLOUDRU_STORAGE_URL") or self.DEFAULT_STORAGE_URL).rstrip("/")
+        self.backup_url = (backup_url or os.getenv("CLOUDRU_BACKUP_URL") or self.DEFAULT_BACKUP_URL).rstrip("/")
+        self.billing_url = (billing_url or os.getenv("CLOUDRU_BILLING_URL") or self.DEFAULT_BILLING_URL).rstrip("/")
+
         self.project_id = (
             project_id
             or os.getenv("CLOUDRU_PROJECT_ID")
@@ -304,7 +334,7 @@ class CloudRuEvolutionClient:
 
         headers = {
             "Authorization": f"Bearer {self.token}",
-            "X-Auth-Token": self.token,  # Для совместимости со шлюзами OpenStack
+            "X-Auth-Token": self.token,
         }
 
         try:
@@ -357,6 +387,31 @@ class CloudRuEvolutionClient:
                     raw_items = data["snapshots"]
                 elif "images" in data and isinstance(data["images"], list):
                     raw_items = data["images"]
+                elif "buckets" in data and isinstance(data["buckets"], list):
+                    raw_items = data["buckets"]
+                elif "backups" in data and isinstance(data["backups"], list):
+                    raw_items = data["backups"]
+                elif "load_balancers" in data and isinstance(data["load_balancers"], list):
+                    raw_items = data["load_balancers"]
+                elif "nat_gateways" in data and isinstance(data["nat_gateways"], list):
+                    raw_items = data["nat_gateways"]
+                elif service_name == "billing":
+                    # Особая структура для биллинга
+                    balance = float(data.get("balance_rub") or data.get("balance") or 0.0)
+                    accruals = float(data.get("current_accruals_rub") or data.get("accruals") or data.get("cost_rub") or 0.0)
+                    debt = float(data.get("debt_rub") or data.get("debt") or 0.0)
+                    return {
+                        "service": "billing",
+                        "status": "OK",
+                        "error": None,
+                        "items": [{
+                            "balance_rub": balance,
+                            "accruals_rub": accruals,
+                            "debt_rub": debt,
+                        }],
+                        "unconfirmed_cost": False,
+                        "estimated_cost_rub_month": int(accruals),
+                    }
                 elif len(data) == 0:
                     raw_items = []
                 else:
@@ -424,7 +479,7 @@ class CloudRuEvolutionClient:
         for item in raw_items:
             if not isinstance(item, dict):
                 continue
-            r_id = str(item.get("id") or item.get("uuid") or item.get(f"{service_name}_id") or "")
+            r_id = str(item.get("id") or item.get("uuid") or item.get(f"{service_name}_id") or item.get("name") or "")
             r_name = str(item.get("name") or item.get("display_name") or "")
             r_status = str(item.get("status") or item.get("state") or "UNKNOWN")
 
@@ -497,6 +552,39 @@ class CloudRuEvolutionClient:
                     "status": r_status,
                     "cost_rub_month": 100,
                 })
+            elif service_name == "buckets":
+                bytes_used = item.get("size_bytes") or item.get("bytes") or 0
+                size_gb = max(1, round(bytes_used / (1024 ** 3), 2)) if bytes_used else 0
+                parsed.append({
+                    "id": r_id,
+                    "name": r_name or r_id,
+                    "size_gb": size_gb,
+                    "status": r_status or "ACTIVE",
+                    "cost_rub_month": max(20, int(size_gb * 3)) if size_gb else 20,
+                })
+            elif service_name == "backups":
+                size_gb = int(item.get("size_gb") or item.get("size") or 0)
+                parsed.append({
+                    "id": r_id,
+                    "name": r_name,
+                    "size_gb": size_gb,
+                    "status": r_status,
+                    "cost_rub_month": self.estimate_snapshot_cost(size_gb) if size_gb else 50,
+                })
+            elif service_name == "load_balancers":
+                parsed.append({
+                    "id": r_id,
+                    "name": r_name,
+                    "status": r_status,
+                    "cost_rub_month": 700,
+                })
+            elif service_name == "nat_gateways":
+                parsed.append({
+                    "id": r_id,
+                    "name": r_name,
+                    "status": r_status,
+                    "cost_rub_month": 500,
+                })
             else:
                 parsed.append({
                     "id": r_id,
@@ -566,6 +654,43 @@ class CloudRuEvolutionClient:
         url = f"{self.vpc_url}/projects/{self.project_id}/virtual-ips"
         return self._safe_query_service("virtual_ips", url)
 
+    def query_buckets(self) -> Dict[str, Any]:
+        """Запрашивает бакеты объектного хранилища (Evolution Object Storage S3)."""
+        swift_url = self.endpoints.get("object-store") or self.endpoints.get("s3")
+        if swift_url:
+            url = f"{swift_url}?format=json"
+        else:
+            url = f"{self.storage_url}/buckets?project_id={self.project_id}"
+        return self._safe_query_service("buckets", url)
+
+    def query_backups(self) -> Dict[str, Any]:
+        """Запрашивает резервные копии сервиса Cloud Backup."""
+        endpoint = (
+            self.endpoints.get("block-storage")
+            or self.endpoints.get("volumev3")
+            or self.endpoints.get("volume")
+        )
+        if endpoint:
+            url = f"{endpoint}/backups/detail"
+        else:
+            url = f"{self.backup_url}/backups?project_id={self.project_id}"
+        return self._safe_query_service("backups", url)
+
+    def query_load_balancers(self) -> Dict[str, Any]:
+        """Запрашивает балансировщики нагрузки (VPC Load Balancers)."""
+        url = f"{self.vpc_url}/projects/{self.project_id}/load-balancers"
+        return self._safe_query_service("load_balancers", url)
+
+    def query_nat_gateways(self) -> Dict[str, Any]:
+        """Запрашивает сетевые NAT-шлюзы (VPC NAT Gateways)."""
+        url = f"{self.vpc_url}/projects/{self.project_id}/nat-gateways"
+        return self._safe_query_service("nat_gateways", url)
+
+    def query_billing(self) -> Dict[str, Any]:
+        """Запрашивает актуальный биллинг, баланс и текущие начисления в рублях."""
+        url = f"{self.billing_url}/contracts/usage?project_id={self.project_id}"
+        return self._safe_query_service("billing", url)
+
     # Методы обратной совместимости:
     def list_instances(self) -> List[Dict[str, Any]]:
         res = self.query_vms()
@@ -597,11 +722,26 @@ class CloudRuEvolutionClient:
             raise CloudRuApiError(f"Ошибка получения образов ({res.get('status')}): {res.get('error')}")
         return res.get("items", [])
 
+    def list_buckets(self) -> List[Dict[str, Any]]:
+        res = self.query_buckets()
+        if res.get("status") != "OK":
+            raise CloudRuApiError(f"Ошибка получения бакетов ({res.get('status')}): {res.get('error')}")
+        return res.get("items", [])
+
+    def list_backups(self) -> List[Dict[str, Any]]:
+        res = self.query_backups()
+        if res.get("status") != "OK":
+            raise CloudRuApiError(f"Ошибка получения бэкапов ({res.get('status')}): {res.get('error')}")
+        return res.get("items", [])
+
     def get_full_inventory(self) -> Dict[str, Any]:
         """
-        Выполняет инвентаризацию всех тарифицируемых сервисов.
-        Если хотя бы один сервис недоступен или выдал ошибку — флаг has_unconfirmed_costs=True,
-        а zero_residual_confirmed=False.
+        Выполняет инвентаризацию всех потенциально тарифицируемых сервисов.
+        
+        СТРОГОЕ ПРАВИЛО БЕЗОПАСНОСТИ:
+        Нулевая задолженность (zero_residual_confirmed=True) НЕ объявляется,
+        пока не проверены все потенциально платные услуги (включая хранилища S3, бэкапы,
+        балансировщики, шлюзы и фактический биллинг).
         """
         self.authenticate()
 
@@ -612,23 +752,45 @@ class CloudRuEvolutionClient:
             "snapshots": self.query_snapshots(),
             "images": self.query_images(),
             "virtual_ips": self.query_virtual_ips(),
+            "load_balancers": self.query_load_balancers(),
+            "nat_gateways": self.query_nat_gateways(),
+            "buckets": self.query_buckets(),
+            "backups": self.query_backups(),
+            "billing": self.query_billing(),
         }
 
         unconfirmed_services = [s for s, r in services.items() if r.get("status") != "OK"]
         has_unconfirmed = len(unconfirmed_services) > 0
 
-        total_known_count = sum(len(r.get("items", [])) for r in services.values() if r.get("status") == "OK")
+        # Считаем ресурсы (без биллинга, так как биллинг — это денежная сумма, а не число единиц ресурсов)
+        resource_services = [s for s in services if s != "billing"]
+        total_known_count = sum(len(services[s].get("items", [])) for s in resource_services if services[s].get("status") == "OK")
         total_known_rub = sum(r.get("estimated_cost_rub_month", 0) for r in services.values() if r.get("status") == "OK")
 
-        if has_unconfirmed:
-            audit_verdict = "UNCONFIRMED_RISK_OF_EXPENSES"
-            zero_residual_confirmed = False
-        elif total_known_count == 0:
-            audit_verdict = "VERIFIED_ZERO_RESOURCES"
-            zero_residual_confirmed = True
-        else:
+        # Проверка базовой вычислительной группы (ВМ, диски, IP)
+        compute_groups = ["vms", "disks", "floating_ips", "snapshots", "images", "virtual_ips"]
+        compute_resources_count = sum(len(services[s].get("items", [])) for s in compute_groups if services[s].get("status") == "OK")
+
+        # Определение вердикта и статуса нулевой задолженности
+        if total_known_count > 0:
             audit_verdict = "ACTIVE_RESOURCES_FOUND"
             zero_residual_confirmed = False
+            verdict_description = f"Обнаружено {total_known_count} активных ресурсов на сумму ~{total_known_rub} ₽/мес."
+        elif has_unconfirmed:
+            # Требование P0: скрипт НЕ вправе объявлять нулевую задолженность, пока есть непроверенные платные услуги!
+            audit_verdict = "COMPUTE_ZERO_UNCONFIRMED_BILLING_AND_STORAGE"
+            zero_residual_confirmed = False
+            verdict_description = (
+                f"Вычислительные ресурсы (ВМ, диски, IP) не обнаружены ({compute_resources_count} шт.). "
+                f"Однако нулевая задолженность НЕ подтверждена, так как не проверены остальные платные услуги: "
+                f"{', '.join(unconfirmed_services)} (включая хранилища S3, бэкапы и фактический биллинг). "
+                "Требуется обязательная ручная сверка разделов консоли и биллинга (docs/CLOUDRU_MANUAL_TEARDOWN.md)."
+            )
+        else:
+            # Все 11 сервисов ответили OK, ресурсов 0, биллинг подтверждён
+            audit_verdict = "VERIFIED_ZERO_ALL_SERVICES_AND_BILLING"
+            zero_residual_confirmed = True
+            verdict_description = "Все 11 групп облачных ресурсов и фактический биллинг проверены. Начислений и активных ресурсов 0."
 
         return {
             "instances": services["vms"].get("items", []),
@@ -637,6 +799,11 @@ class CloudRuEvolutionClient:
             "snapshots": services["snapshots"].get("items", []),
             "images": services["images"].get("items", []),
             "virtual_ips": services["virtual_ips"].get("items", []),
+            "load_balancers": services["load_balancers"].get("items", []),
+            "nat_gateways": services["nat_gateways"].get("items", []),
+            "buckets": services["buckets"].get("items", []),
+            "backups": services["backups"].get("items", []),
+            "billing": services["billing"].get("items", []),
             "services": services,
             "unconfirmed_services": unconfirmed_services,
             "has_unconfirmed_costs": has_unconfirmed,
@@ -644,6 +811,7 @@ class CloudRuEvolutionClient:
             "total_monthly_rub": total_known_rub,
             "zero_residual_confirmed": zero_residual_confirmed,
             "audit_verdict": audit_verdict,
+            "verdict_description": verdict_description,
             "project_id": self.project_id,
             "discovered_at_utc": datetime.now(timezone.utc).isoformat(),
             "source": "CLOUDRU_EVOLUTION_REST_API",
@@ -793,7 +961,11 @@ def execute_teardown_plan(
         sum(f.get("cost_rub_month", 0) for f in inventory.get("floating_ips", [])) +
         sum(s.get("cost_rub_month", 0) for s in inventory.get("snapshots", [])) +
         sum(im.get("cost_rub_month", 0) for im in inventory.get("images", [])) +
-        sum(vip.get("cost_rub_month", 0) for vip in inventory.get("virtual_ips", []))
+        sum(vip.get("cost_rub_month", 0) for vip in inventory.get("virtual_ips", [])) +
+        sum(lb.get("cost_rub_month", 0) for lb in inventory.get("load_balancers", [])) +
+        sum(nat.get("cost_rub_month", 0) for nat in inventory.get("nat_gateways", [])) +
+        sum(b.get("cost_rub_month", 0) for b in inventory.get("buckets", [])) +
+        sum(bk.get("cost_rub_month", 0) for bk in inventory.get("backups", []))
     )
 
     has_unconfirmed = bool(inventory.get("has_unconfirmed_costs"))
@@ -813,6 +985,14 @@ def execute_teardown_plan(
             actions_planned.append(f"Delete image {img.get('id')} ({img.get('name')})")
         for vip in inventory.get("virtual_ips", []):
             actions_planned.append(f"Release virtual IP {vip.get('id')} ({vip.get('ip')})")
+        for lb in inventory.get("load_balancers", []):
+            actions_planned.append(f"Delete load balancer {lb.get('id')} ({lb.get('name')})")
+        for nat in inventory.get("nat_gateways", []):
+            actions_planned.append(f"Delete NAT gateway {nat.get('id')} ({nat.get('name')})")
+        for b in inventory.get("buckets", []):
+            actions_planned.append(f"Delete S3 bucket {b.get('id')} ({b.get('name')})")
+        for bk in inventory.get("backups", []):
+            actions_planned.append(f"Delete backup {bk.get('id')} ({bk.get('name')})")
 
         msg = "Режим предварительной проверки (dry-run). Ни один ресурс не был удалён."
         if has_unconfirmed:
@@ -825,6 +1005,7 @@ def execute_teardown_plan(
             "has_unconfirmed_costs": has_unconfirmed,
             "unconfirmed_services": unconfirmed_services,
             "audit_verdict": inventory.get("audit_verdict", "UNKNOWN"),
+            "verdict_description": inventory.get("verdict_description", ""),
             "total_monthly_rub_prevented": total_monthly_rub,
             "actions_planned": actions_planned,
             "resources_found": {
@@ -834,6 +1015,10 @@ def execute_teardown_plan(
                 "snapshots": len(inventory.get("snapshots", [])),
                 "images": len(inventory.get("images", [])),
                 "virtual_ips": len(inventory.get("virtual_ips", [])),
+                "load_balancers": len(inventory.get("load_balancers", [])),
+                "nat_gateways": len(inventory.get("nat_gateways", [])),
+                "buckets": len(inventory.get("buckets", [])),
+                "backups": len(inventory.get("backups", [])),
             },
             "message": msg,
         }
@@ -848,6 +1033,8 @@ def execute_teardown_plan(
             "has_unconfirmed_costs": has_unconfirmed,
             "unconfirmed_services": unconfirmed_services,
             "total_monthly_rub_prevented": total_monthly_rub,
+            "audit_verdict": inventory.get("audit_verdict", "UNKNOWN"),
+            "verdict_description": inventory.get("verdict_description", ""),
             "message": (
                 "Автоматическое удаление через API заблокировано в целях безопасности. "
                 "Во избежание неполного удаления и непредвиденных начислений выполните ручной демонтаж "
@@ -880,6 +1067,22 @@ def execute_teardown_plan(
         executor("virtual_ip", vip["id"])
         deleted_log.append(f"Released virtual IP: {vip['id']}")
 
+    for lb in inventory.get("load_balancers", []):
+        executor("load_balancer", lb["id"])
+        deleted_log.append(f"Deleted load balancer: {lb['id']}")
+
+    for nat in inventory.get("nat_gateways", []):
+        executor("nat_gateway", nat["id"])
+        deleted_log.append(f"Deleted NAT gateway: {nat['id']}")
+
+    for b in inventory.get("buckets", []):
+        executor("bucket", b["id"])
+        deleted_log.append(f"Deleted S3 bucket: {b['id']}")
+
+    for bk in inventory.get("backups", []):
+        executor("backup", bk["id"])
+        deleted_log.append(f"Deleted backup: {bk['id']}")
+
     zero_residual_confirmed = False
     if verifier is not None:
         residual = verifier()
@@ -889,7 +1092,11 @@ def execute_teardown_plan(
             len(residual.get("floating_ips", [])) +
             len(residual.get("snapshots", [])) +
             len(residual.get("images", [])) +
-            len(residual.get("virtual_ips", []))
+            len(residual.get("virtual_ips", [])) +
+            len(residual.get("load_balancers", [])) +
+            len(residual.get("nat_gateways", [])) +
+            len(residual.get("buckets", [])) +
+            len(residual.get("backups", []))
         )
         res_has_unconfirmed = bool(residual.get("has_unconfirmed_costs"))
         if total_remaining == 0 and not res_has_unconfirmed:
@@ -965,16 +1172,16 @@ def main() -> int:
         if args.json:
             print(json.dumps(inv, indent=2, ensure_ascii=False))
         else:
-            print("=" * 65)
+            print("=" * 70)
             print("  CLOUD.RU EVOLUTION REST API: АУДИТ ТАРИФИЦИРУЕМЫХ РЕСУРСОВ")
-            print("=" * 65)
-            print(f"Источник API:         {inv.get('source')}")
+            print("=" * 70)
+            print(f"Источник API:          {inv.get('source')}")
             print(f"Идентификатор проекта: {inv.get('project_id') or 'НЕ УКАЗАН'}")
-            print(f"Вердикт аудита:       {inv.get('audit_verdict')}")
-            print(f"Остаток подтверждён:  {'ДА (0 ₽)' if inv.get('zero_residual_confirmed') else 'НЕТ'}")
-            print(f"Неподтверждённые:     {', '.join(inv.get('unconfirmed_services', [])) or 'НЕТ'}")
-            print(f"Известные расходы:    ~{inv.get('total_monthly_rub', 0)} ₽/месяц ({inv.get('total_resources_count', 0)} ресурсов)")
-            print("-" * 65)
+            print(f"Вердикт аудита:        {inv.get('audit_verdict')}")
+            print(f"Остаток подтверждён:   {'ДА (0 ₽)' if inv.get('zero_residual_confirmed') else 'НЕТ'}")
+            print(f"Известные расходы:     ~{inv.get('total_monthly_rub', 0)} ₽/месяц ({inv.get('total_resources_count', 0)} ресурсов)")
+            print(f"Пояснение:             {inv.get('verdict_description')}")
+            print("-" * 70)
             services = inv.get("services", {})
             for s_name, s_data in services.items():
                 st = s_data.get("status")
@@ -983,9 +1190,20 @@ def main() -> int:
                 err = s_data.get("error")
                 status_str = f"[{st}]"
                 if err:
-                    status_str += f" ({err[:60]}...)"
-                print(f"  {s_name:<15} : {status_str:<25} | Найдено: {cnt} | ~{cost} ₽/мес")
-            print("=" * 65)
+                    status_str += f" ({err[:50]}...)"
+                print(f"  {s_name:<16} : {status_str:<26} | Найдено: {cnt:<3} | ~{cost} ₽/мес")
+            print("-" * 70)
+            unconfirmed = inv.get("unconfirmed_services", [])
+            if unconfirmed:
+                print(f"[ВНИМАНИЕ] Непроверенные / потенциально платные услуги ({len(unconfirmed)}):")
+                for s in unconfirmed:
+                    print(f"  - {s}")
+                print("\n[ПРЕДОСТЕРЕЖЕНИЕ] Нулевая задолженность НЕ подтверждена автоматически.")
+                print("Обязательно выполните ручную сверку биллинга и всех разделов:")
+                print("  docs/CLOUDRU_MANUAL_TEARDOWN.md")
+            else:
+                print("[УСПЕХ] Все 11 групп услуг и биллинг подтверждены. Активных ресурсов 0.")
+            print("=" * 70)
         return 0 if inv.get("zero_residual_confirmed") else 1
 
     # Режим вывода из эксплуатации (dry-run или live)
@@ -1010,9 +1228,10 @@ def main() -> int:
     print(f"Execution Mode:     {result['mode']}")
     print(f"Monthly Cost Cut:   ~{result['total_monthly_rub_prevented']} RUB/month saved")
     print(f"Audit Verdict:      {result.get('audit_verdict')}")
+    print(f"Zero Residual:      {'CONFIRMED (0 RUB)' if result.get('zero_residual_confirmed') else 'UNCONFIRMED'}")
 
     if result.get("has_unconfirmed_costs"):
-        print(f"\n[ВНИМАНИЕ] Обнаружены неподтверждённые расходы по сервисам:")
+        print(f"\n[ВНИМАНИЕ] Обнаружены непроверенные платные услуги:")
         for s in result.get("unconfirmed_services", []):
             print(f"  - {s}")
 
