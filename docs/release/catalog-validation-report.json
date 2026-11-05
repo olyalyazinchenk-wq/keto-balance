@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-11-05T04:19:02.177Z",
+  "timestamp": "2026-11-05T04:54:24.331Z",
   "engine": "src/core/keto-engine",
   "catalogPath": "src/data/recipes.ts",
   "botDataPath": null,
   "summary": {
-    "totalRecipes": 46,
-    "passedCount": 46,
+    "totalRecipes": 50,
+    "passedCount": 50,
     "warningCount": 0,
     "errorCount": 0,
     "botSyncErrors": 0,
     "maxCalorieDiscrepancy": 26,
-    "avgCalorieDiscrepancy": 12,
+    "avgCalorieDiscrepancy": 11.1,
     "status": "PASSED"
   },
   "discrepancies": [],
@@ -1386,6 +1386,126 @@
           "fatCalories": 117,
           "carbsCalories": 16,
           "totalCalories": 293
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k31",
+      "title": "Салат с курицей, авокадо и огурцом",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 365,
+        "p": 39,
+        "f": 21,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 361,
+        "ratios": {
+          "proteinPct": 43.2,
+          "fatPct": 52.4,
+          "carbsPct": 4.4,
+          "proteinCalories": 156,
+          "fatCalories": 189,
+          "carbsCalories": 16,
+          "totalCalories": 361
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 4,
+        "pctDiff": 1.1
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k32",
+      "title": "Говяжьи мини-бифштексы с рукколой",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 412,
+        "p": 37,
+        "f": 28,
+        "nc": 3
+      },
+      "calculated": {
+        "kcal": 412,
+        "ratios": {
+          "proteinPct": 35.9,
+          "fatPct": 61.2,
+          "carbsPct": 2.9,
+          "proteinCalories": 148,
+          "fatCalories": 252,
+          "carbsCalories": 12,
+          "totalCalories": 412
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k33",
+      "title": "Тёплый салат с беконом и авокадо",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 406,
+        "p": 20,
+        "f": 34,
+        "nc": 5
+      },
+      "calculated": {
+        "kcal": 406,
+        "ratios": {
+          "proteinPct": 19.7,
+          "fatPct": 75.4,
+          "carbsPct": 4.9,
+          "proteinCalories": 80,
+          "fatCalories": 306,
+          "carbsCalories": 20,
+          "totalCalories": 406
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k34",
+      "title": "Кокосовый чиа-пудинг с малиной",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 264,
+        "p": 6,
+        "f": 24,
+        "nc": 6
+      },
+      "calculated": {
+        "kcal": 264,
+        "ratios": {
+          "proteinPct": 9.1,
+          "fatPct": 81.8,
+          "carbsPct": 9.1,
+          "proteinCalories": 24,
+          "fatCalories": 216,
+          "carbsCalories": 24,
+          "totalCalories": 264
         }
       },
       "discrepancy": {

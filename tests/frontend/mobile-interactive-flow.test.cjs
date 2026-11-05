@@ -82,8 +82,11 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
                   !norm.includes('яйц') && !norm.includes('яичн') && !norm.includes('яйцо'),
                   `Candidate ${cand.id} contains egg: ${ingName}`
                 );
+                const normDairy = norm
+                  .replace(/сырокопч[её]н[а-яё]*/g, '')
+                  .replace(/сыровял[её]н[а-яё]*/g, '');
                 assert.ok(
-                  !norm.includes('сыр') && !norm.includes('сливк') && !norm.includes('творог') &&
+                  !normDairy.includes('сыр') && !norm.includes('сливк') && !norm.includes('творог') &&
                   !norm.includes('сметан') && !norm.includes('моцарелл') && !norm.includes('масло сливочное'),
                   `Candidate ${cand.id} contains dairy: ${ingName}`
                 );
@@ -259,11 +262,11 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
   // 5. SEVEN-DAY MENU DIVERSITY EVALUATION & TRUTH IN REPORTING
   await t.test('5. Evaluation of 7-day menu diversity under various restriction profiles', async (st) => {
     const ketoRecipes = RECIPES.filter((r) => r.mode === 'keto');
-    assert.equal(ketoRecipes.length, 30, 'Total keto recipes pool must be 30');
+    assert.equal(ketoRecipes.length, 34, 'Total keto recipes pool must be 34 (30 base + 4 quick breakfasts)');
 
     // Case A: No restrictions
     const noRestrictionsPool = ketoRecipes;
-    assert.equal(noRestrictionsPool.length, 30);
+    assert.equal(noRestrictionsPool.length, 34);
     let seedA = 12345;
     const prngA = () => {
       seedA = (seedA * 16807) % 2147483647;
@@ -296,13 +299,15 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
       RECIPES
     );
 
-    // Verified matching recipes: k7 (pork), k27 (turkey), k28 (chicken), k29 (beef), k30 (fish)
-    assert.equal(matchingDairyEggFree.length, 5, 'Must find exactly 5 matching recipes');
+    // Verified matching recipes: 10 total (5 breakfasts: k27, k31, k32, k33, k34; 1 soup: k24; 2 lunches: k7, k28; 2 dinners: k29, k30)
+    assert.equal(matchingDairyEggFree.length, 10, 'Must find exactly 10 matching recipes');
     const matchingIds = matchingDairyEggFree.map((r) => r.id).sort();
-    assert.deepEqual(matchingIds, ['k27', 'k28', 'k29', 'k30', 'k7']);
+    assert.deepEqual(matchingIds, ['k24', 'k27', 'k28', 'k29', 'k30', 'k31', 'k32', 'k33', 'k34', 'k7']);
+
+    const breakfastMatches = matchingDairyEggFree.filter((r) => r.slotType === 'breakfast');
+    assert.equal(breakfastMatches.length, 5, 'Must have 5 distinct dairy/egg-free breakfasts');
 
     // Across 7 days * 3 meals = 21 slots:
-    // With 5 recipes, each recipe must repeat at least 3 times!
     let seedB = 67890;
     const prngB = () => {
       seedB = (seedB * 16807) % 2147483647;
@@ -333,22 +338,20 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
     for (const [id, count] of Object.entries(counts)) {
       countedSlots += count;
       assert.ok(
-        count >= 2 && count <= 7,
+        count >= 1 && count <= 7,
         `Recipe ${id} repeated ${count} times across 7 days`
       );
     }
     assert.equal(countedSlots, totalSlots);
-    // Structural catalog boundaries under dairy-free & egg-free filter:
-    // - 1 breakfast recipe available (k27): repeats 7 times
-    // - 2 lunch recipes available (k7, k28): sum to 7 lunches
-    // - 2 dinner recipes available (k29, k30): sum to 7 dinners
-    assert.equal(counts['k27'], 7, 'Single available breakfast repeats 7 times across 7 days');
-    assert.equal(counts['k7'] + counts['k28'], 7, 'Lunches split between k7 and k28');
-    assert.equal(counts['k29'] + counts['k30'], 7, 'Dinners split between k29 and k30');
+    // 7 breakfasts are now distributed among 5 breakfasts instead of repeating the same single one 7 times!
+    const breakfastUsedIds = Object.keys(counts).filter((id) =>
+      ['k27', 'k31', 'k32', 'k33', 'k34'].includes(id)
+    );
+    assert.ok(breakfastUsedIds.length >= 4, 'At least 4 distinct breakfasts utilized');
 
     // Case C: No eggs + no dairy + no fish (prepTime <= 30 min)
-    // Note: k7 is baked mackerel (fish) and k30 is white fish (fish).
-    // Therefore, excluding fish leaves exactly 3 recipes: k27 (turkey), k28 (chicken), k29 (beef)!
+    // Note: k7 (mackerel) and k30 (cod) contain fish and are excluded.
+    // 7 safe recipes remain: 5 breakfasts (k27, k31, k32, k33, k34) + 1 lunch (k28) + 1 dinner (k29)
     const dairyEggFishFreeSettings = {
       approach: 'keto',
       restrictions: ['no_dairy', 'no_eggs', 'no_fish'],
@@ -360,12 +363,12 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
       dairyEggFishFreeSettings,
       RECIPES
     );
-    assert.equal(matchingNoFish.length, 3, 'Must find exactly 3 matching recipes: k27 (turkey), k28 (chicken), k29 (beef)');
+    assert.equal(matchingNoFish.length, 7, 'Must find exactly 7 matching recipes without fish');
     const matchingNoFishIds = matchingNoFish.map((r) => r.id).sort();
-    assert.deepEqual(matchingNoFishIds, ['k27', 'k28', 'k29']);
+    assert.deepEqual(matchingNoFishIds, ['k27', 'k28', 'k29', 'k31', 'k32', 'k33', 'k34']);
 
     // Case D: No eggs + no dairy + no fish + no pork (prepTime <= 30 min)
-    // k27 is turkey, k28 is chicken, k29 is beef — none contain pork, so all 3 remain.
+    // k33 has bacon (pork), so it is excluded, leaving 6 recipes.
     const strictFourSettings = {
       approach: 'keto',
       restrictions: ['no_dairy', 'no_eggs', 'no_fish', 'no_pork'],
@@ -377,7 +380,9 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
       strictFourSettings,
       RECIPES
     );
-    assert.equal(matchingStrictFour.length, 3, 'Must find exactly 3 matching recipes: k27, k28, k29');
+    assert.equal(matchingStrictFour.length, 6, 'Must find exactly 6 matching recipes without pork');
+    const matchingStrictFourIds = matchingStrictFour.map((r) => r.id).sort();
+    assert.deepEqual(matchingStrictFourIds, ['k27', 'k28', 'k29', 'k31', 'k32', 'k34']);
     // With 3 meals/day and exactly 3 recipes, each recipe appears exactly 7 times (every day)
   });
 });

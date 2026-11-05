@@ -99,7 +99,18 @@ function ingredientHasAllergen(ingNorm: string, cat: AllergyCategory): boolean {
     case "eggs":
       return ingNorm.includes("яиц") || ingNorm.includes("яичн") || ingNorm.includes("яйц");
     case "dairy":
-      return containsAnyKeyword(ingNorm, DAIRY_KEYWORDS);
+      if (
+        (ingNorm.includes("кокосов") || ingNorm.includes("миндальн") || ingNorm.includes("растительн")) &&
+        !ingNorm.includes("сливочн") && !ingNorm.includes("сыр") && !ingNorm.includes("творог")
+      ) {
+        return false;
+      }
+      // "сырокопчёный", "сыровяленый", "сырой" содержат корень "сыр" (сырой/необработанный), а не молочный сыр
+      const dairyInspect = ingNorm
+        .replace(/сырокопч[её]н[а-яё]*/g, "")
+        .replace(/сыровял[её]н[а-яё]*/g, "")
+        .replace(/(?:^|\s)сыр(ой|ая|ое|ые|ого|ую|ым|ых|ому)(?=$|\s)/g, " ");
+      return containsAnyKeyword(dairyInspect, DAIRY_KEYWORDS);
     case "fish":
       return containsAnyKeyword(ingNorm, FISH_KEYWORDS);
     case "nuts":
@@ -142,6 +153,16 @@ function ingredientHasDisliked(ingNorm: string, disNorm: string): boolean {
       ingNorm.includes("осьминог") ||
       ingNorm.includes("гребешк") ||
       ingNorm.includes("морепродукт")
+    );
+  }
+  if (disNorm === "свинина" || disNorm === "свиной") {
+    return (
+      ingNorm.includes("свинин") ||
+      ingNorm.includes("свин") ||
+      ingNorm.includes("бекон") ||
+      ingNorm.includes("сало") ||
+      ingNorm.includes("ветчин") ||
+      ingNorm.includes("грудинк")
     );
   }
   // Для прочих пользовательских продуктов

@@ -5,11 +5,11 @@ const { loadTs } = require('../helpers/load-ts.cjs');
 test('Catalog integrity baseline (P05)', async (t) => {
   const { RECIPES } = loadTs('src/data/recipes.ts');
 
-  await t.test('has exactly 46 recipes: 30 keto and 16 carnivore', () => {
-    assert.equal(RECIPES.length, 46);
+  await t.test('has exactly 50 recipes: 34 keto and 16 carnivore', () => {
+    assert.equal(RECIPES.length, 50);
     const keto = RECIPES.filter(r => r.mode === 'keto');
     const carnivore = RECIPES.filter(r => r.mode === 'carnivore');
-    assert.equal(keto.length, 30);
+    assert.equal(keto.length, 34);
     assert.equal(carnivore.length, 16);
   });
 
@@ -65,7 +65,7 @@ test('Catalog integrity baseline (P05)', async (t) => {
     assert.equal(report.summary.status, 'PASSED');
     assert.equal(report.summary.errorCount, 0, 'No calculation errors in catalog');
     assert.equal(report.summary.botSyncErrors, 0, 'Zero bot data sync errors');
-    assert.equal(report.summary.totalRecipes, 46);
+    assert.equal(report.summary.totalRecipes, 50);
     assert.ok(report.summary.maxCalorieDiscrepancy < 60, 'Max discrepancy within tolerance');
   });
 

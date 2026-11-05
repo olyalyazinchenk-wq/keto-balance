@@ -288,9 +288,9 @@ test('Product Walkthrough: Newcomer Journey (First 2 Minutes)', async (t) => {
     const impossiblePrefs = {
       confirmed18Plus: true,
       approach: 'keto',
-      restrictions: ['exclude_eggs', 'exclude_dairy', 'exclude_fish', 'exclude_mushrooms'],
-      prepTimeMax: 30,
-      mealsPerDay: 4, // 4 meals per day but only 2 recipes left (k27 turkey, k28 chicken)
+      restrictions: ['exclude_eggs', 'exclude_dairy', 'exclude_fish', 'exclude_mushrooms', 'no_pork'],
+      prepTimeMax: 15,
+      mealsPerDay: 4, // 4 meals per day but only 3 recipes left under 15 min without pork (k27 turkey, k31 chicken, k34 chia)
       planDays: 3,
       preferenceNote: '',
     };

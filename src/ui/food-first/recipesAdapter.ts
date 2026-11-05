@@ -16,9 +16,11 @@ function inferDepartment(name: string): PortionIngredientFixture['department'] {
     return 'Мясо, птица и рыба';
   }
   if (
-    n.includes('яйц') || n.includes('сыр') || n.includes('сливк') ||
-    n.includes('сметан') || n.includes('творог') || n.includes('моцарелл') ||
-    n.includes('молок')
+    !n.includes('кокос') && !n.includes('миндаль') && !n.includes('растительн') && (
+      n.includes('яйц') || n.includes('сыр') || n.includes('сливк') ||
+      n.includes('сметан') || n.includes('творог') || n.includes('моцарелл') ||
+      n.includes('молок')
+    )
   ) {
     return 'Яйца и молочное';
   }
@@ -28,7 +30,8 @@ function inferDepartment(name: string): PortionIngredientFixture['department'] {
     n.includes('гриб') || n.includes('авокадо') || n.includes('перец') ||
     n.includes('лук') || n.includes('шпинат') || n.includes('зелень') ||
     n.includes('чеснок') || n.includes('лимон') || n.includes('лайм') ||
-    n.includes('укроп') || n.includes('петрушк')
+    n.includes('укроп') || n.includes('петрушк') || n.includes('руккол') ||
+    n.includes('салат') || n.includes('малин') || n.includes('ягод')
   ) {
     return 'Овощи и зелень';
   }
