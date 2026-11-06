@@ -3,6 +3,7 @@
  * Frontend subscription & monetization API client for Keto-balance Mini App.
  */
 
+import { fetchWithTimeout } from '../api/fetchWithTimeout';
 import type {
   SubscriptionState,
   PurchaseInitResponse,
@@ -39,7 +40,7 @@ export async function fetchSubscription(
 
   let response: Response;
   try {
-    response = await fetch(url, {
+    response = await fetchWithTimeout(url, {
       method: 'GET',
       headers,
     });
@@ -89,7 +90,7 @@ export async function purchaseSubscription(
 
   let response: Response;
   try {
-    response = await fetch(url, {
+    response = await fetchWithTimeout(url, {
       method: 'POST',
       headers,
       body: JSON.stringify({ product_id: productId, provider }),
@@ -139,7 +140,7 @@ export async function confirmDemoPayment(
 
   let response: Response;
   try {
-    response = await fetch(url, {
+    response = await fetchWithTimeout(url, {
       method: 'POST',
       headers,
       body: JSON.stringify({ order_id: orderId }),

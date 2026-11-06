@@ -166,20 +166,16 @@ export default function PilotApp() {
         setSessionToken(session.session_token);
         setPhase('loading');
 
-        const [catData, userData, shopData, subData] = await Promise.all([
+        void fetchSubscription(session.session_token).then((data) => {
+          if (isMounted) setSubscription(data);
+        }).catch(() => { /* Keep access unknown; subscription service does not block meals. */ });
+        const [catData, userData, shopData] = await Promise.all([
           client.getCatalog(),
           client.getUser(),
           client.getShopping(),
-          fetchSubscription(session.session_token).catch((err) => {
-            console.warn('[PilotApp] Failed to fetch subscription on init:', err);
-            return null;
-          }),
         ]);
 
         if (!isMounted) return;
-        if (subData) {
-          setSubscription(subData);
-        }
         setCatalog(catData);
         userRevisionRef.current = userData.revision;
         shoppingRevisionRef.current = shopData.revision;

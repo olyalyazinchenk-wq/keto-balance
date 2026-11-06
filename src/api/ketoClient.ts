@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from './fetchWithTimeout';
 import type {
   PilotCatalogV1,
   PilotSaveResultV1,
@@ -80,7 +81,7 @@ export class KetoClient {
 
     let response: Response;
     try {
-      response = await fetch(url, { ...options, headers });
+      response = await fetchWithTimeout(url, { ...options, headers });
     } catch (err: any) {
       throw new ApiError(0, `Network failure requesting ${path}: ${err?.message || err}`);
     }
