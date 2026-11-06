@@ -132,7 +132,7 @@ export function RecipeScreen({
               <span>
                 <span className="text-[var(--kb-text-3)]">Выход: </span>
                 <strong className="font-semibold text-[var(--kb-text-1)] tabular-nums">
-                  {portions === 1 ? '1 порция' : '2 порции'}
+                  {variant.yieldNote}
                 </strong>
               </span>
               <span className="text-[var(--kb-border)]" aria-hidden="true">|</span>
@@ -184,7 +184,7 @@ export function RecipeScreen({
                           : 'text-[var(--kb-text-3)] hover:text-[var(--kb-text-1)]'
                       }`}
                     >
-                      {p}× {p === 1 ? 'порция' : 'порции'}
+                      {recipe.portionsVariants[p].yieldNote}
                     </button>
                   );
                 })}
@@ -217,7 +217,7 @@ export function RecipeScreen({
               id="recipe-ingredients-heading"
               className="kb-eyebrow text-[var(--kb-text-3)] tabular-nums"
             >
-              ИНГРЕДИЕНТЫ · НА {portions} {portions === 1 ? 'ПОРЦИЮ' : 'ПОРЦИИ'}
+              ИНГРЕДИЕНТЫ · ВЫХОД: {variant.yieldNote.toUpperCase()}
             </h2>
             <span className="text-[11px] text-[var(--kb-text-4)] tabular-nums shrink-0">
               {checkedIngredientsCount}/{variant.ingredients.length} поз.
