@@ -103,6 +103,16 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
           department: inferDepartment(name),
         })),
       },
+      4: {
+        portions: baseServ > 0 ? baseServ * 4 : 0,
+        yieldNote: baseServ > 0 ? formatPortionsLabel(baseServ * 4) : '[УТОЧНИТЬ]',
+        nutritionStatus: '[УТОЧНИТЬ]',
+        ingredients: recipe.ing.map(([name, amount]) => ({
+          name,
+          amountLabel: scaleAmount(amount, 4),
+          department: inferDepartment(name),
+        })),
+      },
     },
     steps: recipe.steps,
     substitutions: Object.entries(recipe.subs || {}).map(([k, v]) => `${k} → ${v}`),

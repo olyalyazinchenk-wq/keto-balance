@@ -145,18 +145,25 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
       );
     });
 
-    await st.test('all catalog recipes provide verified portionsVariants for 1 and 2 portions', () => {
+    await st.test('all catalog recipes provide verified portionsVariants for 1, 2, and 4 portions', () => {
       for (const recipe of RECIPES) {
         const vm = recipesMap[recipe.id];
         assert.ok(vm.portionsVariants[1], `Recipe ${recipe.id} must have 1-portion variant`);
         assert.ok(vm.portionsVariants[2], `Recipe ${recipe.id} must have 2-portion variant`);
+        assert.ok(vm.portionsVariants[4], `Recipe ${recipe.id} must have 4-portion variant`);
 
         const v1Ings = vm.portionsVariants[1].ingredients;
         const v2Ings = vm.portionsVariants[2].ingredients;
+        const v4Ings = vm.portionsVariants[4].ingredients;
         assert.equal(
           v1Ings.length,
           v2Ings.length,
-          `Recipe ${recipe.id} ingredients count must match across variants`
+          `Recipe ${recipe.id} ingredients count must match across variants 1 and 2`
+        );
+        assert.equal(
+          v1Ings.length,
+          v4Ings.length,
+          `Recipe ${recipe.id} ingredients count must match across variants 1 and 4`
         );
       }
     });
@@ -217,6 +224,28 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
       const foundCustom = rebuilt.find((i) => i.id === custom.id);
       assert.ok(foundCustom, 'Custom item must be retained across shopping rebuild');
       assert.equal(foundCustom.name, 'Кокосовое молоко 200 мл');
+    });
+
+    await st.test('scaling shopping list to 4 portions multiplies ingredient quantities by 4 while preserving custom items', () => {
+      const sampleMenu = {
+        days: [
+          { slots: { lunch: 'k28' } },
+        ],
+      };
+
+      const custom = createCustomShoppingItem('Морская соль', '1 пачка', 'Масла и бакалея');
+      const shopping1 = rebuildShoppingFromMenu(sampleMenu, recipesMap, [custom], 1);
+      const shopping4 = rebuildShoppingFromMenu(sampleMenu, recipesMap, shopping1, 4);
+
+      const chicken1 = shopping1.find((i) => i.name.toLowerCase().includes('кури'));
+      const chicken4 = shopping4.find((i) => i.name.toLowerCase().includes('кури'));
+      assert.ok(chicken1 && chicken4);
+      assert.equal(chicken1.amountLabel, '400 г');
+      assert.equal(chicken4.amountLabel, '1600 г');
+
+      const foundCustom = shopping4.find((i) => i.id === custom.id);
+      assert.ok(foundCustom, 'Custom item must be preserved when scaling to 4 portions');
+      assert.equal(foundCustom.name, 'Морская соль');
     });
 
     await st.test('calculateShoppingProgress accurately calculates completed and remaining items', () => {

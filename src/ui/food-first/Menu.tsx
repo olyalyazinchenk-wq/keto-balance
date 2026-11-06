@@ -330,9 +330,33 @@ export function MenuScreen({
             </div>
             <p className="fm-dialog__conditions">{appliedConditionsText}</p>
             {matchingRecipes.length === 0 ? (
-              <p>Подходящих блюд не найдено. Измените ограничения в настройках.</p>
+              <div
+                className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-900 dark:text-amber-200 text-sm space-y-1.5"
+                role="alert"
+                data-testid="no-replacement-candidates-alert"
+              >
+                <p className="font-semibold">Нет подходящих блюд для замены</p>
+                <p className="text-xs text-amber-800 dark:text-amber-300">
+                  С учётом ваших ограничений и аллергенов в каталоге не найдено подходящих альтернатив. Несовместимые рецепты исключены для вашей безопасности. Вы можете изменить ограничения в параметрах.
+                </p>
+              </div>
             ) : (
               <div className="fm-candidates">
+                {matchingRecipes.every(
+                  (c) =>
+                    c.id === replacingSlot.currentRecipeId ||
+                    resolvedSlots.some(
+                      (s) => s.slotKey !== replacingSlot.slotKey && s.recipe?.id === c.id
+                    )
+                ) && (
+                  <div
+                    className="p-3 mb-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-900 dark:text-amber-200 text-xs"
+                    role="status"
+                    data-testid="all-candidates-used-notice"
+                  >
+                    Все совместимые с вашими ограничениями блюда уже выбраны в меню на этот день.
+                  </div>
+                )}
                 {matchingRecipes.map((candidate) => {
                   const isCurrent = candidate.id === replacingSlot.currentRecipeId;
                   const isAlreadyUsedToday = resolvedSlots.some(

@@ -173,6 +173,9 @@ test('PilotState and SerializedSaveQueue Unit Tests', async (t) => {
     assert.match(vm.portionsVariants[1].yieldNote, /2 порци/, 'yieldNote for batch 1 must be 2 порции');
     assert.equal(vm.portionsVariants[2].portions, 4, 'Batch 2 portions must equal recipe.serv * 2 (4)');
     assert.match(vm.portionsVariants[2].yieldNote, /4 порци/, 'yieldNote for batch 2 must be 4 порции');
+    assert.equal(vm.portionsVariants[4].portions, 8, 'Batch 4 portions must equal recipe.serv * 4 (8)');
+    assert.match(vm.portionsVariants[4].yieldNote, /8 порци/, 'yieldNote for batch 4 must be 8 порций');
+    assert.equal(vm.portionsVariants[4].ingredients[0].amountLabel, '16 шт.', 'Ingredients scaled x4');
   });
 
   await t.test('recipesAdapter handles unverified or missing serv as [УТОЧНИТЬ] and portions 0', () => {
@@ -192,6 +195,8 @@ test('PilotState and SerializedSaveQueue Unit Tests', async (t) => {
     assert.equal(vm.portionsVariants[1].yieldNote, '[УТОЧНИТЬ]', 'Unverified serv must yield [УТОЧНИТЬ]');
     assert.equal(vm.portionsVariants[2].portions, 0, 'Batch 2 unverified serv must yield portions 0');
     assert.equal(vm.portionsVariants[2].yieldNote, '[УТОЧНИТЬ]', 'Batch 2 unverified serv must yield [УТОЧНИТЬ]');
+    assert.equal(vm.portionsVariants[4].portions, 0, 'Batch 4 unverified serv must yield portions 0');
+    assert.equal(vm.portionsVariants[4].yieldNote, '[УТОЧНИТЬ]', 'Batch 4 unverified serv must yield [УТОЧНИТЬ]');
   });
 
   await t.test('isMenuCompatibleWithProfile strictly validates mode and admitted pool', () => {

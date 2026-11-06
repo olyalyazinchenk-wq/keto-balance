@@ -34,7 +34,7 @@ export function RecipeScreen({
   onLogCookedMealToDiary,
   onGoBack,
 }: RecipeScreenProps) {
-  const [portions, setPortions] = useState<1 | 2>(1);
+  const [portions, setPortions] = useState<1 | 2 | 4>(1);
   const variant = recipe.portionsVariants[portions] || recipe.portionsVariants[1];
 
   // Встроенный кухонный таймер для шагов рецепта
@@ -167,8 +167,10 @@ export function RecipeScreen({
                 aria-label="Выбор числа порций"
                 className="inline-flex items-center border border-[var(--kb-border)] bg-[var(--kb-surface)] p-0.5"
               >
-                {([1, 2] as const).map((p) => {
+                {([1, 2, 4] as const).map((p) => {
                   const active = portions === p;
+                  const pVariant = recipe.portionsVariants[p];
+                  const label = pVariant ? pVariant.yieldNote : `${p}×`;
                   return (
                     <button
                       key={p}
@@ -177,6 +179,7 @@ export function RecipeScreen({
                         triggerHaptic('selection');
                         setPortions(p);
                       }}
+                      data-testid={`recipe-portions-${p}x`}
                       aria-pressed={active}
                       className={`min-h-[38px] px-2.5 sm:px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] tabular-nums kb-focus-ring kb-transition-scale ${
                         active
@@ -184,7 +187,7 @@ export function RecipeScreen({
                           : 'text-[var(--kb-text-3)] hover:text-[var(--kb-text-1)]'
                       }`}
                     >
-                      {recipe.portionsVariants[p].yieldNote}
+                      {label}
                     </button>
                   );
                 })}

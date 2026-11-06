@@ -713,7 +713,7 @@ export default function PilotApp() {
   );
 
   const handleChangeBatches = useCallback(
-    (batches: 1 | 2) => {
+    (batches: 1 | 2 | 4) => {
       const currentState = stateRef.current;
       if (!currentState || !currentState.menu) return;
       const currentItems = shoppingItemsRef.current;

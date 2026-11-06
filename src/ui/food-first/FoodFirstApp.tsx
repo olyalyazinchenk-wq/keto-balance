@@ -30,7 +30,7 @@ export interface FoodFirstAppProps {
   onRebuildMenu: () => Promise<void>;
   onToggleIngredient: (key: string) => void;
   onToggleStep: (key: string) => void;
-  onChangeBatches: (batches: 1 | 2) => void;
+  onChangeBatches: (batches: 1 | 2 | 4) => void;
   onRefreshShopping: () => void;
   onToggleCheckedInStore: (id: string) => void;
   onToggleAlreadyHave: (id: string) => void;

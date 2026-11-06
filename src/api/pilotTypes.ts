@@ -43,7 +43,7 @@ export interface PilotStateV1 {
   selected_date: string | null;
   checked_ingredients: Record<string, boolean>;
   checked_steps: Record<string, boolean>;
-  shopping_batches: 1 | 2;
+  shopping_batches: 1 | 2 | 4;
   shopping_stale: boolean;
 }
 

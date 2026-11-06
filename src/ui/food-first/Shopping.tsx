@@ -26,8 +26,8 @@ export interface ShoppingScreenProps {
   onToggleCheckedInStore: (id: string) => void;
   onToggleAlreadyHave: (id: string) => void;
   onAddCustomItem?: (item: PilotShoppingItemV1) => void;
-  portionsMultiplier?: 1 | 2;
-  onChangePortionsMultiplier?: (multiplier: 1 | 2) => void;
+  portionsMultiplier?: 1 | 2 | 4;
+  onChangePortionsMultiplier?: (multiplier: 1 | 2 | 4) => void;
 }
 
 const DEPARTMENTS: ShoppingFixtureItem['department'][] = [
@@ -128,7 +128,7 @@ export function ShoppingScreen({
                 aria-label="Выбор числа порций для списка покупок"
                 className="mt-2.5 inline-flex items-center border border-[var(--kb-border)] bg-[var(--kb-surface)] p-0.5 rounded-lg"
               >
-                {([1, 2] as const).map((p) => {
+                {([1, 2, 4] as const).map((p) => {
                   const active = portionsMultiplier === p;
                   return (
                     <button

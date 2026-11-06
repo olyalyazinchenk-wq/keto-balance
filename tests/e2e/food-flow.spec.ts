@@ -72,10 +72,21 @@ test.describe('E1: Food-First End-to-End User Flow', () => {
     // Verify unverified nutrient status
     await expect(recipeScreen).toContainText('КБЖУ');
 
+    // Test 4-portion scaling in recipe
+    const portion4Btn = recipeScreen.locator('[data-testid="recipe-portions-4x"]');
+    await expect(portion4Btn).toBeVisible();
+    await portion4Btn.click();
+    await expect(recipeScreen).toContainText('4');
+
     // 8. Navigate to Shopping
     await page.locator('[data-testid="bottom-nav-shopping"]').click();
     const shoppingScreen = page.locator('[data-testid="food-shopping-screen"]');
     await expect(shoppingScreen).toBeVisible();
+
+    // Scale shopping to 4 portions
+    const shop4Btn = shoppingScreen.locator('[data-testid="shopping-portions-4x"]');
+    await expect(shop4Btn).toBeVisible();
+    await shop4Btn.click();
 
     // Shopping items are displayed
     const items = shoppingScreen.locator('[data-testid^="shopping-item-row-"]');
