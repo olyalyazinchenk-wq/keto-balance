@@ -157,7 +157,7 @@ def _seed_admin_recipes_if_empty(conn: sqlite3.Connection) -> None:
                         rid,
                         title,
                         json.dumps(r, ensure_ascii=False),
-                        json.dumps({"approved": True, "approved_by": "Ольга", "source": "Клинический протокол КетоБаланс"}, ensure_ascii=False),
+                        json.dumps({"approved": False, "approved_by": None, "source": None, "notes": "Seed recipe - pending verification"}, ensure_ascii=False),
                     )
                 )
             cur.execute(
