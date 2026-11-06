@@ -64,9 +64,14 @@ class TestInfraVerification(unittest.TestCase):
         cache_control = resp.headers.get("cache-control", "")
         self.assertIn("no-store", cache_control)
 
-    # --- DOCKER COMPOSE RESOURCE LIMITS & PROTECTED PORTS ---
+    # --- DOCKER COMPOSE STATIC CONFIGURATION VERIFICATION (DECOUPLED FROM LOAD TESTING) ---
 
     def test_docker_compose_resource_limits_and_ports(self):
+        """
+        Static configuration verification for docker-compose.yml (CPU limits, RAM limits, protected ports).
+        Note: Real concurrent load testing is completely decoupled and executed via scripts/run_load_test.py
+        and tests/backend/test_load_concurrency.py.
+        """
         compose_file = PROJECT_ROOT / "docker-compose.yml"
         self.assertTrue(compose_file.is_file(), "docker-compose.yml must exist in project root")
 

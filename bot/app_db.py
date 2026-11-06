@@ -17,10 +17,10 @@ from bot.app_settings import get_settings
 def get_db_connection(db_path: Optional[Path] = None):
     target = db_path if db_path is not None else get_settings().db_path
     target.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(target), timeout=10.0)
+    conn = sqlite3.connect(str(target), timeout=30.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA busy_timeout = 30000")
     try:
         yield conn
     except Exception:
@@ -183,6 +183,7 @@ def init_db(db_path: Optional[Path] = None, force: bool = False) -> None:
     if not force and target_key in _INITIALIZED_DBS and target.is_file():
         return
     with get_db_connection(db_path) as conn:
+        conn.execute("PRAGMA journal_mode = WAL")
         cur = conn.cursor()
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
