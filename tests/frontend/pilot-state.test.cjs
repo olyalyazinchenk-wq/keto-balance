@@ -156,7 +156,7 @@ test('PilotState and SerializedSaveQueue Unit Tests', async (t) => {
     assert.equal(list2[0].checkedInStore, false, 'checkedInStore must reset when amount changes');
   });
 
-  await t.test('recipesAdapter preserves Recipe.serv in portionsVariants and yieldNote', () => {
+  await t.test('recipesAdapter preserves Recipe.serv and scales portionsVariants to exact portions', () => {
     const { toRecipeViewModel } = loadTs(path.join(ROOT, 'src/ui/food-first/recipesAdapter.ts'));
     const k1Source = {
       id: 'k1',
@@ -169,13 +169,16 @@ test('PilotState and SerializedSaveQueue Unit Tests', async (t) => {
     };
 
     const vm = toRecipeViewModel(k1Source);
-    assert.equal(vm.portionsVariants[1].portions, 2, 'Batch 1 portions must equal recipe.serv (2)');
-    assert.match(vm.portionsVariants[1].yieldNote, /2 порци/, 'yieldNote for batch 1 must be 2 порции');
-    assert.equal(vm.portionsVariants[2].portions, 4, 'Batch 2 portions must equal recipe.serv * 2 (4)');
-    assert.match(vm.portionsVariants[2].yieldNote, /4 порци/, 'yieldNote for batch 2 must be 4 порции');
-    assert.equal(vm.portionsVariants[4].portions, 8, 'Batch 4 portions must equal recipe.serv * 4 (8)');
-    assert.match(vm.portionsVariants[4].yieldNote, /8 порци/, 'yieldNote for batch 4 must be 8 порций');
-    assert.equal(vm.portionsVariants[4].ingredients[0].amountLabel, '16 шт.', 'Ingredients scaled x4');
+    assert.equal(vm.basePortions, 2, 'basePortions must equal recipe.serv (2)');
+    assert.equal(vm.portionsVariants[1].portions, 1, 'Target portion 1 must equal 1');
+    assert.match(vm.portionsVariants[1].yieldNote, /1 порци/, 'yieldNote for 1 portion must be 1 порция');
+    assert.equal(vm.portionsVariants[1].ingredients[0].amountLabel, '2 шт.', 'Ingredients for 1 portion must be 2 шт. (4 / 2)');
+    assert.equal(vm.portionsVariants[2].portions, 2, 'Target portion 2 must equal 2');
+    assert.match(vm.portionsVariants[2].yieldNote, /2 порци/, 'yieldNote for 2 portions must be 2 порции');
+    assert.equal(vm.portionsVariants[2].ingredients[0].amountLabel, '4 шт.', 'Ingredients for 2 portions must be 4 шт. (4 * 2 / 2)');
+    assert.equal(vm.portionsVariants[4].portions, 4, 'Target portion 4 must equal 4');
+    assert.match(vm.portionsVariants[4].yieldNote, /4 порци/, 'yieldNote for 4 portions must be 4 порции');
+    assert.equal(vm.portionsVariants[4].ingredients[0].amountLabel, '8 шт.', 'Ingredients for 4 portions must be 8 шт. (4 * 4 / 2 = 8, NOT 16)');
   });
 
   await t.test('recipesAdapter handles unverified or missing serv as [УТОЧНИТЬ] and portions 0', () => {

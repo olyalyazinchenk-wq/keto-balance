@@ -335,10 +335,11 @@ test('Product Walkthrough: Newcomer Journey (First 2 Minutes)', async (t) => {
       assert.ok(item.linkedRecipeTitles.length > 0);
     }
 
-    // Find eggs in shopping: k1 has 4 eggs, k5 has 6 eggs -> 10 eggs/day * 2 days = 20 eggs for 1x
+    // Find eggs in shopping: k1 has 4 eggs (serv: 2 -> 2 eggs/portion), k5 has 6 eggs (serv: 4 -> 1.5 eggs/portion)
+    // 3.5 eggs/day for 1 portion * 2 days = 7 eggs for 1 portion
     const eggsItem1x = shopping1x.find((it) => it.name.toLowerCase().includes('яйц'));
     assert.ok(eggsItem1x, 'Eggs item found in shopping');
-    assert.equal(eggsItem1x.amountLabel, '20 шт.');
+    assert.equal(eggsItem1x.amountLabel, '7 шт.', '7 eggs for 1 portion across 2 days');
 
     // Add a custom user item to the list
     const customItem = {
@@ -352,7 +353,7 @@ test('Product Walkthrough: Newcomer Journey (First 2 Minutes)', async (t) => {
     };
     const listWithCustom = [...shopping1x, customItem];
 
-    // Scale portions to 2x (e.g., cooking for two: 20 eggs * 2 = 40 eggs)
+    // Scale portions to 2 portions (e.g., cooking for two: 7 eggs * 2 = 14 eggs)
     const shopping2x = rebuildShoppingFromMenu(sampleMenu, recipesMap, listWithCustom, 2);
 
     // Custom item must be preserved
@@ -363,6 +364,6 @@ test('Product Walkthrough: Newcomer Journey (First 2 Minutes)', async (t) => {
     // Verify ingredient scaling:
     const eggsItem2x = shopping2x.find((it) => it.name.toLowerCase().includes('яйц'));
     assert.ok(eggsItem2x, 'Eggs item in 2x shopping');
-    assert.equal(eggsItem2x.amountLabel, '40 шт.', 'Eggs amount must scale from 20 to 40 pcs');
+    assert.equal(eggsItem2x.amountLabel, '14 шт.', 'Eggs amount must scale from 7 to 14 pcs for 2 portions');
   });
 });

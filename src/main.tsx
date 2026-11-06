@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import PilotApp from './PilotApp'
-import { setupTelegramApp } from './tma/telegram'
+import { setupTelegramApp, handleLateTelegramSDK } from './tma/telegram'
 import './index.css'
 
 // Telegram bridge initializes once per mounted app; the effect owns cleanup.
@@ -18,12 +18,39 @@ async function loadTelegramSDK() {
   if (window.Telegram?.WebApp) return;
   await new Promise<void>((resolve) => {
     const script = document.createElement('script');
-    const timer = window.setTimeout(done, 5000);
-    function done() { window.clearTimeout(timer); resolve(); }
+    let timedOut = false;
+    let fallbackTimer: number | null = window.setTimeout(() => {
+      fallbackTimer = null;
+      timedOut = true;
+      resolve();
+    }, 5000);
+
+    const onScriptLoaded = () => {
+      if (fallbackTimer !== null) {
+        window.clearTimeout(fallbackTimer);
+        fallbackTimer = null;
+      }
+      if (timedOut) {
+        handleLateTelegramSDK(window.Telegram?.WebApp);
+      } else {
+        resolve();
+      }
+    };
+
+    const onScriptError = () => {
+      if (fallbackTimer !== null) {
+        window.clearTimeout(fallbackTimer);
+        fallbackTimer = null;
+      }
+      if (!timedOut) {
+        resolve();
+      }
+    };
+
     script.async = true;
     script.src = 'https://telegram.org/js/telegram-web-app.js';
-    script.onload = done;
-    script.onerror = done;
+    script.onload = onScriptLoaded;
+    script.onerror = onScriptError;
     document.head.appendChild(script);
   });
 }

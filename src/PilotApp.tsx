@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { KetoClient, ApiError, ConflictError, UnauthorizedError } from './api/ketoClient';
 import { resolveTelegramLaunchAuth } from './tma/launchAuth';
+import { onLateTelegramSDK } from './tma/telegram';
 import type {
   PilotCatalogV1,
   PilotPreferencesV1,
@@ -94,6 +95,7 @@ export default function PilotApp() {
   const stateRef = useRef<PilotStateV1 | null>(null);
   const shoppingItemsRef = useRef<PilotShoppingItemV1[]>([]);
   const stickyErrorRef = useRef<'conflict' | 'error' | null>(null);
+  const authDispatchedRef = useRef<boolean>(false);
 
   useEffect(() => {
     userRevisionRef.current = userRevision;
@@ -131,28 +133,10 @@ export default function PilotApp() {
       setErrorMessage('Сессия завершена или недействительна. Пожалуйста, откройте бот заново.');
     };
 
-    let initData = '';
-    let demoUserId: number | null = null;
-    if (typeof window !== 'undefined') {
-      const launch = resolveTelegramLaunchAuth(
-        window.Telegram?.WebApp?.initData,
-        window.location.search,
-        window.location.hash
-      );
-      initData = launch.initData;
-      demoUserId = launch.demoUserId;
-    }
-
-    if (!initData && demoUserId === null) {
-      setPhase('unauthorized');
-      setErrorMessage('Ожидание авторизации Telegram. Откройте приложение через кнопку в боте «КетоБаланс».');
-      return;
-    }
-
     let isMounted = true;
-    setPhase('authenticating');
 
-    (async () => {
+    const startBootstrap = async (initData: string, demoUserId: number | null) => {
+      setPhase('authenticating');
       try {
         let session;
         if (demoUserId !== null) {
@@ -351,10 +335,47 @@ export default function PilotApp() {
           setErrorMessage(err.message || 'Ошибка загрузки данных с сервера.');
         }
       }
-    })();
+    };
+
+    let initData = '';
+    let demoUserId: number | null = null;
+    if (typeof window !== 'undefined') {
+      const launch = resolveTelegramLaunchAuth(
+        window.Telegram?.WebApp?.initData,
+        window.location.search,
+        window.location.hash
+      );
+      initData = launch.initData;
+      demoUserId = launch.demoUserId;
+    }
+
+    if (initData || demoUserId !== null) {
+      authDispatchedRef.current = true;
+      void startBootstrap(initData, demoUserId);
+    } else {
+      setPhase('unauthorized');
+      setErrorMessage('Ожидание авторизации Telegram. Откройте приложение через кнопку в боте «КетоБаланс».');
+    }
+
+    // Subscribe to late Telegram SDK appearance (>5s fallback timeout)
+    const unsubscribeLateSDK = onLateTelegramSDK((lateTg) => {
+      if (authDispatchedRef.current) return;
+      if (typeof window !== 'undefined') {
+        const lateLaunch = resolveTelegramLaunchAuth(
+          lateTg?.initData || window.Telegram?.WebApp?.initData,
+          window.location.search,
+          window.location.hash
+        );
+        if (lateLaunch.initData || lateLaunch.demoUserId !== null) {
+          authDispatchedRef.current = true;
+          void startBootstrap(lateLaunch.initData, lateLaunch.demoUserId);
+        }
+      }
+    });
 
     return () => {
       isMounted = false;
+      unsubscribeLateSDK();
     };
   }, [client]);
 

@@ -85,12 +85,13 @@ interface AggregatedGroup {
 
 export interface RebuildShoppingOptions {
   portionsMultiplier?: number;
+  targetPortions?: number;
 }
 
 /**
  * Rebuild shopping list from menu with smart aggregation:
  * - Aggregates duplicate ingredients across meals and days
- * - Scales quantities by portionsMultiplier (default 1)
+ * - Scales quantities by ratio: target_portions / base_portions
  * - Preserves checkedInStore and alreadyHave states across rebuilds and scaling
  * - Retains custom added items
  */
@@ -100,20 +101,37 @@ export function rebuildShoppingFromMenu(
   previous: (ShoppingFixtureItem | PilotShoppingItemV1)[],
   optionsOrPortions: number | RebuildShoppingOptions = 1,
 ): PilotShoppingItemV1[] {
-  const multiplier =
+  const targetPortions =
     typeof optionsOrPortions === 'number'
       ? optionsOrPortions
-      : optionsOrPortions?.portionsMultiplier ?? 1;
+      : (optionsOrPortions?.targetPortions ?? optionsOrPortions?.portionsMultiplier ?? 1);
 
   const groups = new Map<string, AggregatedGroup>();
 
   for (const day of menu.days) {
     for (const [slot, recipeId] of Object.entries(day.slots)) {
       const recipe = recipes[recipeId];
-      if (!recipe || !recipe.portionsVariants?.[1]?.ingredients) {
+      if (!recipe) {
         throw new Error('Recipe ingredients unavailable');
       }
-      for (const ingredient of recipe.portionsVariants[1].ingredients) {
+
+      // Check for precalculated target variant (from recipesAdapter) or base variant
+      const targetVariant = recipe.portionsVariants?.[targetPortions];
+      const baseVariant = recipe.portionsVariants?.[1];
+      const ingredients = targetVariant?.ingredients || baseVariant?.ingredients;
+      if (!ingredients) {
+        throw new Error('Recipe ingredients unavailable');
+      }
+
+      // If target variant already computed for targetPortions, itemFactor is 1.
+      // Otherwise scale from base variant: targetPortions / base_portions.
+      let itemFactor = 1;
+      if (!targetVariant) {
+        const baseServ = recipe.basePortions ?? baseVariant?.portions ?? 1;
+        itemFactor = targetPortions / (baseServ > 0 ? baseServ : 1);
+      }
+
+      for (const ingredient of ingredients) {
         if (!ingredient.name.trim() || !ingredient.amountLabel.trim()) {
           throw new Error('Ingredient incomplete');
         }
@@ -136,7 +154,7 @@ export function rebuildShoppingFromMenu(
         }
 
         const g = groups.get(groupKey)!;
-        g.totalValue += parsed.value;
+        g.totalValue += parsed.value * itemFactor;
         if (!g.linkedRecipeTitles.includes(recipe.title)) {
           g.linkedRecipeTitles.push(recipe.title);
         }
@@ -150,8 +168,7 @@ export function rebuildShoppingFromMenu(
   const result: PilotShoppingItemV1[] = [];
 
   for (const group of groups.values()) {
-    const scaledTotal = group.totalValue * multiplier;
-    const amountLabel = formatAmount(scaledTotal, group.baseUnit, group.unitType, group.textLabel);
+    const amountLabel = formatAmount(group.totalValue, group.baseUnit, group.unitType, group.textLabel);
 
     // Match previous item by id or canonical name
     const prevItem = previous.find(

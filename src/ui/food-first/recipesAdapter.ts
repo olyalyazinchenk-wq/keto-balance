@@ -38,11 +38,26 @@ function inferDepartment(name: string): PortionIngredientFixture['department'] {
   return 'Масла и бакалея';
 }
 
-function scaleAmount(amount: string, factor: number): string {
-  const match = amount.match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);
+export function scaleAmount(amount: string, factor: number): string {
+  const trimmed = amount.trim();
+  if (factor === 1) return trimmed;
+
+  const frac = trimmed.match(/^(\d+)\/(\d+)\s*(.*)$/);
+  if (frac) {
+    const val = (parseInt(frac[1], 10) / parseInt(frac[2], 10)) * factor;
+    const rounded = Math.round(val * 100) / 100;
+    const strVal = Number.isInteger(rounded) ? String(rounded) : String(rounded);
+    return `${strVal} ${frac[3]}`.trim();
+  }
+
+  const match = trimmed.match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);
   if (!match) return amount;
-  const num = parseFloat(match[1].replace(',', '.')) * factor;
-  return `${num} ${match[2]}`.trim();
+
+  const rawNum = parseFloat(match[1].replace(',', '.'));
+  const val = rawNum * factor;
+  const rounded = Math.round(val * 100) / 100;
+  const strVal = Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  return `${strVal} ${match[2]}`.trim();
 }
 
 function formatPortionsLabel(count: number): string {
@@ -71,6 +86,32 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
   const rawServ = recipe.serv;
   const baseServ = typeof rawServ === 'number' && rawServ > 0 && Number.isFinite(rawServ) ? rawServ : 0;
 
+  const buildPortionVariant = (targetPortions: 1 | 2 | 4) => {
+    if (baseServ <= 0) {
+      return {
+        portions: 0,
+        yieldNote: '[УТОЧНИТЬ]',
+        nutritionStatus: '[УТОЧНИТЬ]' as const,
+        ingredients: recipe.ing.map(([name, amount]) => ({
+          name,
+          amountLabel: amount,
+          department: inferDepartment(name),
+        })),
+      };
+    }
+    const factor = targetPortions / baseServ;
+    return {
+      portions: targetPortions,
+      yieldNote: formatPortionsLabel(targetPortions),
+      nutritionStatus: '[УТОЧНИТЬ]' as const,
+      ingredients: recipe.ing.map(([name, amount]) => ({
+        name,
+        amountLabel: scaleAmount(amount, factor),
+        department: inferDepartment(name),
+      })),
+    };
+  };
+
   return {
     id: recipe.id,
     title: recipe.title,
@@ -82,37 +123,11 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
     avoids: recipe.tags || [],
     artworkKey: recipe.id === 'k1' ? 'eggs_avocado' : undefined,
     artworkCaption: recipe.title,
+    basePortions: baseServ > 0 ? baseServ : undefined,
     portionsVariants: {
-      1: {
-        portions: baseServ,
-        yieldNote: baseServ > 0 ? formatPortionsLabel(baseServ) : '[УТОЧНИТЬ]',
-        nutritionStatus: '[УТОЧНИТЬ]',
-        ingredients: recipe.ing.map(([name, amount]) => ({
-          name,
-          amountLabel: amount,
-          department: inferDepartment(name),
-        })),
-      },
-      2: {
-        portions: baseServ > 0 ? baseServ * 2 : 0,
-        yieldNote: baseServ > 0 ? formatPortionsLabel(baseServ * 2) : '[УТОЧНИТЬ]',
-        nutritionStatus: '[УТОЧНИТЬ]',
-        ingredients: recipe.ing.map(([name, amount]) => ({
-          name,
-          amountLabel: scaleAmount(amount, 2),
-          department: inferDepartment(name),
-        })),
-      },
-      4: {
-        portions: baseServ > 0 ? baseServ * 4 : 0,
-        yieldNote: baseServ > 0 ? formatPortionsLabel(baseServ * 4) : '[УТОЧНИТЬ]',
-        nutritionStatus: '[УТОЧНИТЬ]',
-        ingredients: recipe.ing.map(([name, amount]) => ({
-          name,
-          amountLabel: scaleAmount(amount, 4),
-          department: inferDepartment(name),
-        })),
-      },
+      1: buildPortionVariant(1),
+      2: buildPortionVariant(2),
+      4: buildPortionVariant(4),
     },
     steps: recipe.steps,
     substitutions: Object.entries(recipe.subs || {}).map(([k, v]) => `${k} → ${v}`),

@@ -41,6 +41,7 @@ export interface RecipeViewModel {
   avoids: string[];
   artworkKey?: string;
   artworkCaption?: string;
+  basePortions?: number;
   portionsVariants: Record<number, PortionVariantFixture>;
   steps: string[];
   substitutions: string[];

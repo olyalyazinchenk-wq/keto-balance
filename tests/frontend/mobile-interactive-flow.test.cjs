@@ -123,19 +123,19 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
       const chicken1x = list1x.find((i) => i.name.toLowerCase().includes('кури'));
       assert.ok(turkey1x, 'Turkey item must exist');
       assert.ok(chicken1x, 'Chicken item must exist');
-      assert.equal(turkey1x.amountLabel, '300 г');
-      assert.equal(chicken1x.amountLabel, '400 г');
+      assert.equal(turkey1x.amountLabel, '150 г', '1 portion of k27 (300g base / 2 serv) = 150g');
+      assert.equal(chicken1x.amountLabel, '200 г', '1 portion of k28 (400g base / 2 serv) = 200g');
 
       // Mark turkey as bought in 1x
       turkey1x.checkedInStore = true;
 
-      // Scale to 2x portions
+      // Scale to 2 portions
       const list2x = rebuildShoppingFromMenu(singleDayMenu, recipesMap, list1x, 2);
       const turkey2x = list2x.find((i) => i.name.toLowerCase().includes('индей'));
       const chicken2x = list2x.find((i) => i.name.toLowerCase().includes('кури'));
 
-      assert.equal(turkey2x.amountLabel, '600 г', '300g * 2 = 600g');
-      assert.equal(chicken2x.amountLabel, '800 г', '400g * 2 = 800g');
+      assert.equal(turkey2x.amountLabel, '300 г', '2 portions of k27 (300g base / 2 serv * 2) = 300g');
+      assert.equal(chicken2x.amountLabel, '400 г', '2 portions of k28 (400g base / 2 serv * 2) = 400g');
 
       // Crucial safety check: turkey checkmark MUST reset because amount changed
       assert.equal(
@@ -182,7 +182,7 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
       const shopping = rebuildShoppingFromMenu(multiDayMenu, recipesMap, [], 1);
       const chickenItems = shopping.filter((i) => i.name.toLowerCase().includes('кури'));
       assert.equal(chickenItems.length, 1, 'Duplicate ingredients must aggregate into 1 row');
-      assert.equal(chickenItems[0].amountLabel, '800 г', '400g + 400g = 800g');
+      assert.equal(chickenItems[0].amountLabel, '400 г', '200g + 200g = 400g (1 portion per day for 2-serving recipe)');
       assert.equal(chickenItems[0].linkedRecipeTitles.length, 1);
     });
 
@@ -226,7 +226,7 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
       assert.equal(foundCustom.name, 'Кокосовое молоко 200 мл');
     });
 
-    await st.test('scaling shopping list to 4 portions multiplies ingredient quantities by 4 while preserving custom items', () => {
+    await st.test('scaling shopping list to 4 portions scales ingredient quantities to exact 4 portions while preserving custom items', () => {
       const sampleMenu = {
         days: [
           { slots: { lunch: 'k28' } },
@@ -240,8 +240,8 @@ test('Mobile Interactive Flow & 7-Day Menu Validation Suite', async (t) => {
       const chicken1 = shopping1.find((i) => i.name.toLowerCase().includes('кури'));
       const chicken4 = shopping4.find((i) => i.name.toLowerCase().includes('кури'));
       assert.ok(chicken1 && chicken4);
-      assert.equal(chicken1.amountLabel, '400 г');
-      assert.equal(chicken4.amountLabel, '1600 г');
+      assert.equal(chicken1.amountLabel, '200 г', '1 portion of 2-serving recipe (400g base) = 200g');
+      assert.equal(chicken4.amountLabel, '800 г', '4 portions of 2-serving recipe (400g base) = 800g');
 
       const foundCustom = shopping4.find((i) => i.id === custom.id);
       assert.ok(foundCustom, 'Custom item must be preserved when scaling to 4 portions');

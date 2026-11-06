@@ -210,37 +210,117 @@ export function applyTelegramTheme(
   return scheme;
 }
 
+type LateListener = (tg: MiniApp, root: any) => void;
+const lateListeners: Set<LateListener> = new Set();
+
+export function onLateTelegramSDK(listener: LateListener): () => void {
+  lateListeners.add(listener);
+  return () => {
+    lateListeners.delete(listener);
+  };
+}
+
+export function handleLateTelegramSDK(
+  tg: MiniApp | undefined = getMiniApp(),
+  root: any = typeof document !== 'undefined'
+    ? document.documentElement
+    : { style: { setProperty: () => {}, removeProperty: () => {} } }
+): void {
+  const activeTg = tg || getMiniApp();
+  if (!activeTg) return;
+
+  applyTelegramTheme(activeTg, root);
+
+  const height = activeTg.viewportStableHeight || activeTg.viewportHeight;
+  if (typeof height === 'number' && Number.isFinite(height) && height > 0) {
+    root.style?.setProperty?.('--kb-viewport-height', `${height}px`);
+  }
+  for (const edge of ['top', 'bottom', 'left', 'right'] as const) {
+    const safe = Math.max(0, Number(activeTg.safeAreaInset?.[edge]) || 0);
+    const content = Math.max(0, Number(activeTg.contentSafeAreaInset?.[edge]) || 0);
+    root.style?.setProperty?.(`--kb-safe-${edge}`, `${safe}px`);
+    root.style?.setProperty?.(`--kb-content-${edge}`, `${content}px`);
+  }
+
+  if (lateListeners.size > 0) {
+    for (const listener of Array.from(lateListeners)) {
+      try {
+        listener(activeTg, root);
+      } catch {
+        // Ignore listener error
+      }
+    }
+  } else {
+    // If no setupTelegramApp was mounted, still invoke ready and expand
+    try {
+      activeTg.ready?.();
+      activeTg.expand?.();
+    } catch {
+      // Ignore
+    }
+  }
+
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+    try {
+      window.dispatchEvent(new CustomEvent('telegram:sdk_ready', { detail: { tg: activeTg } }));
+    } catch {
+      // Ignore
+    }
+  }
+}
+
 export function setupTelegramApp(
   tg: MiniApp | undefined = getMiniApp(),
   root: any = typeof document !== 'undefined'
     ? document.documentElement
     : { style: { setProperty: () => {}, removeProperty: () => {} } }
 ): () => void {
-  const cleanupInit = initTelegram(tg, root);
-  applyTelegramTheme(tg, root);
+  let activeTg = tg || getMiniApp();
+  let cleanupInit: (() => void) | null = null;
+  let handleTheme: (() => void) | null = null;
+  let handleViewport: (() => void) | null = null;
 
-  const handleTheme = () => {
-    applyTelegramTheme(tg, root);
+  const bindTg = (instance: MiniApp) => {
+    activeTg = instance;
+    cleanupInit = initTelegram(activeTg, root);
+    applyTelegramTheme(activeTg, root);
+
+    handleTheme = () => {
+      applyTelegramTheme(activeTg, root);
+    };
+
+    handleViewport = () => {
+      const scheme: 'light' | 'dark' = activeTg?.colorScheme === 'dark' ? 'dark' : 'light';
+      const bg = scheme === 'dark' ? '#0B1410' : '#F4F8F5';
+      const card = scheme === 'dark' ? '#12201A' : '#FFFFFF';
+      syncNativeColors(activeTg, bg, card);
+    };
+
+    activeTg.onEvent?.('themeChanged', handleTheme);
+    activeTg.onEvent?.('viewportChanged', handleViewport);
+    activeTg.onEvent?.('safeAreaChanged', handleViewport);
+    activeTg.onEvent?.('contentSafeAreaChanged', handleViewport);
   };
 
-  const handleViewport = () => {
-    const scheme: 'light' | 'dark' = tg?.colorScheme === 'dark' ? 'dark' : 'light';
-    const bg = scheme === 'dark' ? '#0B1410' : '#F4F8F5';
-    const card = scheme === 'dark' ? '#12201A' : '#FFFFFF';
-    syncNativeColors(tg, bg, card);
-  };
+  if (activeTg) {
+    bindTg(activeTg);
+  }
 
-  tg?.onEvent?.('themeChanged', handleTheme);
-  tg?.onEvent?.('viewportChanged', handleViewport);
-  tg?.onEvent?.('safeAreaChanged', handleViewport);
-  tg?.onEvent?.('contentSafeAreaChanged', handleViewport);
+  const unsubscribeLate = onLateTelegramSDK((lateInstance) => {
+    if (!activeTg) {
+      bindTg(lateInstance);
+    }
+  });
 
   return () => {
-    cleanupInit();
-    tg?.offEvent?.('themeChanged', handleTheme);
-    tg?.offEvent?.('viewportChanged', handleViewport);
-    tg?.offEvent?.('safeAreaChanged', handleViewport);
-    tg?.offEvent?.('contentSafeAreaChanged', handleViewport);
+    unsubscribeLate();
+    if (cleanupInit) cleanupInit();
+    if (activeTg && handleTheme && handleViewport) {
+      activeTg.offEvent?.('themeChanged', handleTheme);
+      activeTg.offEvent?.('viewportChanged', handleViewport);
+      activeTg.offEvent?.('safeAreaChanged', handleViewport);
+      activeTg.offEvent?.('contentSafeAreaChanged', handleViewport);
+    }
   };
 }
 
