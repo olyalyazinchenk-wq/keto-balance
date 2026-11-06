@@ -29,6 +29,7 @@ from telegram.ext import (
     CommandHandler,
     CallbackQueryHandler,
     MessageHandler,
+    PreCheckoutQueryHandler,
     ContextTypes,
     filters,
 )
@@ -520,6 +521,10 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             show_alert=True
         )
         return
+
+    elif data == "paysupport_cb":
+        await paysupport_cmd(update, context)
+        return
         
     elif data == "to_main":
         cancel_question(context)
@@ -859,6 +864,116 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
             pass
 
 
+# --- TELEGRAM STARS POLLING EVENT HANDLERS ---
+
+async def pre_checkout_handler(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    db_path: Optional[Path | str] = None,
+):
+    """Обработка pre_checkout_query напрямую в polling-процессе."""
+    query = update.pre_checkout_query
+    if not query:
+        return
+    order_id = query.invoice_payload
+    if not order_id:
+        await query.answer(ok=False, error_message="Отсутствует идентификатор заказа")
+        return
+
+    from bot.app_settings import get_settings
+    actual_db = Path(db_path) if db_path is not None else get_settings().db_path
+
+    from bot.app_db import get_order
+    order = get_order(db_path=actual_db, order_id=order_id)
+    if not order:
+        await query.answer(ok=False, error_message="Заказ не найден")
+        return
+
+    from bot.server import PRODUCT_STARS
+    expected_stars = PRODUCT_STARS.get(order.get("product_id"), 1000)
+    if query.currency != "XTR" or query.total_amount != expected_stars:
+        await query.answer(ok=False, error_message="Неверная сумма или валюта")
+        return
+
+    user_id = query.from_user.id if query.from_user else None
+    if not user_id or user_id != order.get("user_id"):
+        await query.answer(ok=False, error_message="Несовпадение пользователя заказа")
+        return
+
+    await query.answer(ok=True)
+    logger.info("Pre-checkout query %s approved for order %s", query.id, order_id)
+
+
+async def successful_payment_handler(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    db_path: Optional[Path | str] = None,
+):
+    """Обработка успешной оплаты Telegram Stars напрямую в polling-процессе."""
+    msg = update.message
+    if not msg or not msg.successful_payment:
+        return
+
+    succ = msg.successful_payment
+    order_id = succ.invoice_payload
+    if not order_id:
+        logger.warning("Successful payment missing invoice_payload")
+        return
+
+    from bot.app_settings import get_settings
+    actual_db = Path(db_path) if db_path is not None else get_settings().db_path
+
+    from bot.app_db import get_order, complete_order, get_user_subscription
+    from bot.server import PRODUCT_STARS
+
+    order = get_order(db_path=actual_db, order_id=order_id)
+    if not order:
+        logger.error("Order %s not found for successful payment", order_id)
+        await msg.reply_html(
+            "⚠️ <b>Заказ не найден в базе данных</b>\n"
+            "Пожалуйста, свяжитесь со службой поддержки через команду /paysupport."
+        )
+        return
+
+    if succ.currency != "XTR":
+        logger.error("Invalid currency %s for order %s", succ.currency, order_id)
+        return
+
+    expected_stars = PRODUCT_STARS.get(order.get("product_id"), 1000)
+    if succ.total_amount != expected_stars:
+        logger.error("Amount mismatch: got %s, expected %s", succ.total_amount, expected_stars)
+        return
+
+    sender_id = msg.from_user.id if msg.from_user else None
+    if not sender_id or sender_id != order.get("user_id"):
+        logger.error("User mismatch: got %s, expected %s", sender_id, order.get("user_id"))
+        return
+
+    if order.get("status") == "completed":
+        sub = get_user_subscription(db_path=actual_db, user_id=order["user_id"])
+        logger.info("Order %s was already completed, idempotent handling", order_id)
+    else:
+        completed = complete_order(db_path=actual_db, order_id=order_id)
+        sub = completed.get("subscription")
+        logger.info("Order %s completed and subscription activated for user %s", order_id, sender_id)
+
+    expires_str = ""
+    if sub and sub.get("expires_at"):
+        expires_str = f"\nПодписка активна до: {sub['expires_at']}"
+
+    kb = InlineKeyboardMarkup([
+        [webapp_button("📱 Открыть Кето Баланс")],
+        [InlineKeyboardButton("💳 Условия и возврат", callback_data="paysupport_cb")],
+    ])
+    await msg.reply_html(
+        "🎉 <b>Оплата успешно получена!</b>\n\n"
+        "Благодарим за поддержку проекта «Кето Баланс»! "
+        f"Ваш доступ к Premium-функциям успешно активирован.{expires_str}\n\n"
+        "Вы можете сразу открыть приложение и продолжить работу со своим меню.",
+        reply_markup=kb,
+    )
+
+
 def main():
     if not BOT_TOKEN:
         print("[ERROR] Токен Telegram-бота не задан. Укажите KETO_BOT_TOKEN в .env файле.", file=sys.stderr)
@@ -886,6 +1001,8 @@ def main():
     app.add_handler(CommandHandler("sos", sos_cmd))
     app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(CallbackQueryHandler(callback_handler))
+    app.add_handler(PreCheckoutQueryHandler(pre_checkout_handler))
+    app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_message_handler))
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.ATTACHMENT, reject_pending_attachment))
     

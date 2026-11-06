@@ -74,7 +74,7 @@ from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 import uvicorn
 
-from bot.config import PRODUCTS, ALL_PRODUCTS
+from bot.config import PRODUCTS, ALL_PRODUCTS, ADMIN_ID
 from bot.app_settings import AppSettings, get_settings
 from bot.auth import parse_and_validate_init_data, AuthError, TokenExpiredError, InvalidSignatureError
 from bot.app_models import (
@@ -130,6 +130,13 @@ from bot.app_db import (
     complete_order,
     record_user_consent,
     get_user_consents,
+    get_admin_catalog_version,
+    get_admin_recipes,
+    get_admin_recipe,
+    save_recipe_draft,
+    publish_recipe_draft,
+    get_catalog_snapshot,
+    get_admin_status,
 )
 from bot.safety import evaluate_contraindications
 from bot.catalog import (
@@ -238,6 +245,13 @@ def create_app(
             with open(release_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             data["backendFingerprint"] = startup_backend_fingerprint
+            data["version"] = data.get("version", "1.0.0")
+            data["appStage"] = active_settings.app_stage
+            cat_file = resolved_dist / "released-catalog.json"
+            if cat_file.is_file():
+                data["catalogHash"] = hashlib.sha256(cat_file.read_bytes()).hexdigest()[:16]
+            else:
+                data["catalogHash"] = data.get("catalogHash", "synthetic-catalog")
             return JSONResponse(
                 content=data,
                 headers={"Cache-Control": "no-store, no-cache, must-revalidate"}
@@ -890,6 +904,96 @@ def create_app(
             return {"guides": guides, "count": len(guides)}
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to read educational guides: {e}")
+
+    # --- CLOSED SERVER ADMIN API ---
+
+    def extract_admin_user_id(authorization: Optional[str] = Header(None)) -> int:
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Authentication required: provide Bearer session token")
+
+        token = authorization.split(" ", 1)[1].strip()
+        if not token:
+            raise HTTPException(status_code=401, detail="Authentication required: provide Bearer session token")
+
+        session_info = get_session_user(token, db_path=active_db)
+        if not session_info:
+            raise HTTPException(status_code=401, detail="Invalid or expired session token")
+
+        session_user_id = session_info["user_id"]
+
+        allowed_admin_ids = {ADMIN_ID}
+        if active_settings.owner_allowlist is not None:
+            allowed_admin_ids.update(active_settings.owner_allowlist)
+
+        if session_user_id not in allowed_admin_ids:
+            raise HTTPException(status_code=403, detail="Forbidden: admin access required")
+
+        return session_user_id
+
+    @app.get("/api/admin/recipes")
+    def admin_list_recipes(authorization: Optional[str] = Header(None)):
+        extract_admin_user_id(authorization)
+        recipes = get_admin_recipes(db_path=active_db)
+        cat_ver = get_admin_catalog_version(db_path=active_db)
+        return {
+            "catalog_version": cat_ver,
+            "recipes": recipes,
+            "total": len(recipes),
+        }
+
+    @app.post("/api/admin/recipes")
+    async def admin_save_recipe_draft(request: Request, authorization: Optional[str] = Header(None)):
+        extract_admin_user_id(authorization)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+        recipe_id = body.get("recipe_id") or body.get("id")
+        if not recipe_id or not str(recipe_id).strip():
+            raise HTTPException(status_code=400, detail="recipe_id is required")
+
+        recipe_id = str(recipe_id).strip()
+        draft_data = body.get("recipe_data")
+        if draft_data is None:
+            draft_data = {k: v for k, v in body.items() if k not in ("recipe_id", "approval_marks")}
+        if "id" not in draft_data:
+            draft_data["id"] = recipe_id
+        if "title" not in draft_data and "title" in body:
+            draft_data["title"] = body["title"]
+
+        approval_marks = body.get("approval_marks")
+        result = save_recipe_draft(
+            recipe_id=recipe_id,
+            draft_data=draft_data,
+            approval_marks=approval_marks,
+            db_path=active_db,
+        )
+        return result
+
+    @app.post("/api/admin/recipes/{recipe_id}/publish")
+    def admin_publish_recipe(recipe_id: str, authorization: Optional[str] = Header(None)):
+        admin_uid = extract_admin_user_id(authorization)
+        try:
+            result = publish_recipe_draft(recipe_id=recipe_id, admin_user_id=admin_uid, db_path=active_db)
+            return result
+        except KeyError:
+            raise HTTPException(status_code=404, detail=f"Recipe '{recipe_id}' not found")
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+    @app.get("/api/admin/status")
+    def admin_status(authorization: Optional[str] = Header(None)):
+        extract_admin_user_id(authorization)
+        status_info = get_admin_status(db_path=active_db)
+        from bot.payments import is_payments_enabled
+        status_info.update({
+            "app_stage": active_settings.app_stage,
+            "admin_id": ADMIN_ID,
+            "payments_enabled": is_payments_enabled(),
+            "server_time": datetime.now(timezone.utc).isoformat(),
+        })
+        return status_info
 
     # --- CATCH-ALL API ROUTES ---
 

@@ -102,6 +102,75 @@ def _migrate_schema_if_needed(conn: sqlite3.Connection) -> None:
         """)
         cur.execute("CREATE INDEX IF NOT EXISTS idx_user_consents_uid ON user_consents(user_id)")
 
+    # 6. admin_recipes table
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='admin_recipes'")
+    if not cur.fetchone():
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS admin_recipes (
+                recipe_id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                version INTEGER NOT NULL DEFAULT 1,
+                status TEXT NOT NULL DEFAULT 'published',
+                published_payload_json TEXT DEFAULT NULL,
+                draft_payload_json TEXT DEFAULT NULL,
+                approval_marks_json TEXT DEFAULT '{}',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+    # 7. admin_catalog_versions table
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='admin_catalog_versions'")
+    if not cur.fetchone():
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS admin_catalog_versions (
+                version INTEGER PRIMARY KEY,
+                published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                published_by INTEGER,
+                recipes_count INTEGER DEFAULT 0,
+                snapshot_json TEXT DEFAULT '[]'
+            )
+        """)
+
+def _seed_admin_recipes_if_empty(conn: sqlite3.Connection) -> None:
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as cnt FROM admin_recipes")
+    row = cur.fetchone()
+    if row and row["cnt"] > 0:
+        return
+
+    fixture_path = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "pilot" / "catalog.json"
+    if fixture_path.is_file():
+        try:
+            cat_data = json.loads(fixture_path.read_text(encoding="utf-8"))
+            recipes = cat_data.get("recipes", [])
+            for r in recipes:
+                rid = r.get("id")
+                title = r.get("title", rid)
+                cur.execute(
+                    """
+                    INSERT OR IGNORE INTO admin_recipes
+                    (recipe_id, title, version, status, published_payload_json, draft_payload_json, approval_marks_json)
+                    VALUES (?, ?, 1, 'published', ?, NULL, ?)
+                    """,
+                    (
+                        rid,
+                        title,
+                        json.dumps(r, ensure_ascii=False),
+                        json.dumps({"approved": True, "approved_by": "Ольга", "source": "Клинический протокол КетоБаланс"}, ensure_ascii=False),
+                    )
+                )
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO admin_catalog_versions
+                (version, published_by, recipes_count, snapshot_json)
+                VALUES (1, 1084557944, ?, ?)
+                """,
+                (len(recipes), json.dumps(recipes, ensure_ascii=False)),
+            )
+        except Exception:
+            pass
+
 _INITIALIZED_DBS: set = set()
 
 def init_db(db_path: Optional[Path] = None, force: bool = False) -> None:
@@ -213,8 +282,31 @@ def init_db(db_path: Optional[Path] = None, force: bool = False) -> None:
                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             )
         """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS admin_recipes (
+                recipe_id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                version INTEGER NOT NULL DEFAULT 1,
+                status TEXT NOT NULL DEFAULT 'published',
+                published_payload_json TEXT DEFAULT NULL,
+                draft_payload_json TEXT DEFAULT NULL,
+                approval_marks_json TEXT DEFAULT '{}',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS admin_catalog_versions (
+                version INTEGER PRIMARY KEY,
+                published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                published_by INTEGER,
+                recipes_count INTEGER DEFAULT 0,
+                snapshot_json TEXT DEFAULT '[]'
+            )
+        """)
         cur.execute("CREATE INDEX IF NOT EXISTS idx_user_consents_uid ON user_consents(user_id)")
         _migrate_schema_if_needed(conn)
+        _seed_admin_recipes_if_empty(conn)
     _INITIALIZED_DBS.add(target_key)
 
 def create_or_get_user(
@@ -995,3 +1087,233 @@ def restore_database(backup_path: Path, target_db_path: Path) -> None:
     finally:
         dst_conn.close()
         src_conn.close()
+
+# --- ADMIN RECIPES & CATALOG VERSIONING ---
+
+def get_admin_catalog_version(db_path: Optional[Path | str] = None) -> int:
+    actual_db = Path(db_path) if db_path is not None else None
+    init_db(actual_db)
+    with get_db_connection(actual_db) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT MAX(version) as max_v FROM admin_catalog_versions")
+        row = cur.fetchone()
+        if row and row["max_v"] is not None:
+            return int(row["max_v"])
+        return 1
+
+def get_admin_recipes(db_path: Optional[Path | str] = None) -> List[Dict[str, Any]]:
+    actual_db = Path(db_path) if db_path is not None else None
+    init_db(actual_db)
+    with get_db_connection(actual_db) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM admin_recipes ORDER BY recipe_id ASC")
+        rows = cur.fetchall()
+        result = []
+        for r in rows:
+            draft_raw = r["draft_payload_json"]
+            pub_raw = r["published_payload_json"]
+            app_raw = r["approval_marks_json"]
+            has_draft = draft_raw is not None
+            result.append({
+                "recipe_id": r["recipe_id"],
+                "title": r["title"],
+                "version": r["version"],
+                "status": "draft" if (r["status"] == "draft" or has_draft) else r["status"],
+                "has_draft": has_draft,
+                "draft": json.loads(draft_raw) if draft_raw else None,
+                "published": json.loads(pub_raw) if pub_raw else None,
+                "approval_marks": json.loads(app_raw) if app_raw else {},
+                "created_at": r["created_at"],
+                "updated_at": r["updated_at"],
+            })
+        return result
+
+def get_admin_recipe(recipe_id: str, db_path: Optional[Path | str] = None) -> Optional[Dict[str, Any]]:
+    actual_db = Path(db_path) if db_path is not None else None
+    init_db(actual_db)
+    with get_db_connection(actual_db) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM admin_recipes WHERE recipe_id = ?", (recipe_id,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        draft_raw = row["draft_payload_json"]
+        pub_raw = row["published_payload_json"]
+        app_raw = row["approval_marks_json"]
+        has_draft = draft_raw is not None
+        return {
+            "recipe_id": row["recipe_id"],
+            "title": row["title"],
+            "version": row["version"],
+            "status": "draft" if (row["status"] == "draft" or has_draft) else row["status"],
+            "has_draft": has_draft,
+            "draft": json.loads(draft_raw) if draft_raw else None,
+            "published": json.loads(pub_raw) if pub_raw else None,
+            "approval_marks": json.loads(app_raw) if app_raw else {},
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"],
+        }
+
+def save_recipe_draft(
+    recipe_id: str,
+    draft_data: Dict[str, Any],
+    approval_marks: Optional[Dict[str, Any]] = None,
+    db_path: Optional[Path | str] = None,
+) -> Dict[str, Any]:
+    actual_db = Path(db_path) if db_path is not None else None
+    init_db(actual_db)
+    title = draft_data.get("title") or recipe_id
+    draft_json = json.dumps(draft_data, ensure_ascii=False)
+    with get_db_connection(actual_db) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM admin_recipes WHERE recipe_id = ?", (recipe_id,))
+        row = cur.fetchone()
+        if row:
+            existing_approvals = json.loads(row["approval_marks_json"] or "{}")
+            if approval_marks:
+                existing_approvals.update(approval_marks)
+            cur.execute(
+                """
+                UPDATE admin_recipes
+                SET draft_payload_json = ?, approval_marks_json = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE recipe_id = ?
+                """,
+                (draft_json, json.dumps(existing_approvals, ensure_ascii=False), recipe_id),
+            )
+            cur.execute("SELECT * FROM admin_recipes WHERE recipe_id = ?", (recipe_id,))
+            updated_row = cur.fetchone()
+            return {
+                "recipe_id": recipe_id,
+                "title": updated_row["title"],
+                "version": updated_row["version"],
+                "has_draft": True,
+                "draft": draft_data,
+                "published": json.loads(updated_row["published_payload_json"]) if updated_row["published_payload_json"] else None,
+                "approval_marks": json.loads(updated_row["approval_marks_json"] or "{}"),
+                "status": "draft_pending" if updated_row["published_payload_json"] else "draft",
+            }
+        else:
+            app_marks = approval_marks or {"approved": False, "notes": "New draft"}
+            cur.execute(
+                """
+                INSERT INTO admin_recipes
+                (recipe_id, title, version, status, published_payload_json, draft_payload_json, approval_marks_json)
+                VALUES (?, ?, 1, 'draft', NULL, ?, ?)
+                """,
+                (recipe_id, title, draft_json, json.dumps(app_marks, ensure_ascii=False)),
+            )
+            return {
+                "recipe_id": recipe_id,
+                "title": title,
+                "version": 1,
+                "has_draft": True,
+                "draft": draft_data,
+                "published": None,
+                "approval_marks": app_marks,
+                "status": "draft",
+            }
+
+def publish_recipe_draft(
+    recipe_id: str,
+    admin_user_id: int = 1084557944,
+    db_path: Optional[Path | str] = None,
+) -> Dict[str, Any]:
+    actual_db = Path(db_path) if db_path is not None else None
+    init_db(actual_db)
+    with get_db_connection(actual_db) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM admin_recipes WHERE recipe_id = ?", (recipe_id,))
+        row = cur.fetchone()
+        if not row:
+            raise KeyError(f"Recipe '{recipe_id}' not found")
+        if not row["draft_payload_json"]:
+            raise ValueError(f"No draft to publish for recipe '{recipe_id}'")
+
+        draft_content = json.loads(row["draft_payload_json"])
+        new_title = draft_content.get("title", row["title"])
+        curr_ver = row["version"]
+        new_recipe_version = (curr_ver + 1) if row["published_payload_json"] else curr_ver
+
+        cur.execute(
+            """
+            UPDATE admin_recipes
+            SET title = ?, version = ?, status = 'published',
+                published_payload_json = draft_payload_json,
+                draft_payload_json = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE recipe_id = ?
+            """,
+            (new_title, new_recipe_version, recipe_id),
+        )
+
+        cur.execute("SELECT MAX(version) as max_v FROM admin_catalog_versions")
+        v_row = cur.fetchone()
+        curr_cat_ver = int(v_row["max_v"]) if (v_row and v_row["max_v"] is not None) else 0
+        new_cat_ver = curr_cat_ver + 1
+
+        cur.execute("SELECT published_payload_json FROM admin_recipes WHERE status = 'published' AND published_payload_json IS NOT NULL")
+        all_pub_rows = cur.fetchall()
+        snapshot = [json.loads(pr["published_payload_json"]) for pr in all_pub_rows]
+
+        cur.execute(
+            """
+            INSERT INTO admin_catalog_versions
+            (version, published_by, recipes_count, snapshot_json)
+            VALUES (?, ?, ?, ?)
+            """,
+            (new_cat_ver, admin_user_id, len(snapshot), json.dumps(snapshot, ensure_ascii=False)),
+        )
+
+        return {
+            "status": "published",
+            "recipe_id": recipe_id,
+            "recipe_version": new_recipe_version,
+            "catalog_version": new_cat_ver,
+            "recipes_count": len(snapshot),
+        }
+
+def get_catalog_snapshot(version: int, db_path: Optional[Path | str] = None) -> Optional[List[Dict[str, Any]]]:
+    actual_db = Path(db_path) if db_path is not None else None
+    init_db(actual_db)
+    with get_db_connection(actual_db) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT snapshot_json FROM admin_catalog_versions WHERE version = ?", (version,))
+        row = cur.fetchone()
+        if not row or not row["snapshot_json"]:
+            return None
+        return json.loads(row["snapshot_json"])
+
+def get_admin_status(db_path: Optional[Path | str] = None) -> Dict[str, Any]:
+    actual_db = Path(db_path) if db_path is not None else None
+    init_db(actual_db)
+    with get_db_connection(actual_db) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) as cnt FROM admin_recipes")
+        total_recipes = cur.fetchone()["cnt"]
+
+        cur.execute("SELECT COUNT(*) as cnt FROM admin_recipes WHERE published_payload_json IS NOT NULL")
+        published_recipes = cur.fetchone()["cnt"]
+
+        cur.execute("SELECT COUNT(*) as cnt FROM admin_recipes WHERE draft_payload_json IS NOT NULL")
+        draft_recipes = cur.fetchone()["cnt"]
+
+        cur.execute("SELECT MAX(version) as max_v FROM admin_catalog_versions")
+        v_row = cur.fetchone()
+        catalog_version = int(v_row["max_v"]) if (v_row and v_row["max_v"] is not None) else 1
+
+        cur.execute("SELECT COUNT(*) as cnt FROM users")
+        active_users = cur.fetchone()["cnt"]
+
+        cur.execute("SELECT COUNT(*) as cnt FROM subscriptions WHERE status = 'active'")
+        active_subscriptions = cur.fetchone()["cnt"]
+
+        return {
+            "status": "ok",
+            "catalog_version": catalog_version,
+            "total_recipes": total_recipes,
+            "published_recipes": published_recipes,
+            "draft_recipes": draft_recipes,
+            "active_users": active_users,
+            "active_subscriptions": active_subscriptions,
+        }
