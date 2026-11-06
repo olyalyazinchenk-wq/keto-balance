@@ -44,6 +44,12 @@ class TestAgentOps(unittest.TestCase):
     def setUp(self):
         self.tmp_dir = tempfile.mkdtemp(prefix="agent_ops_test_")
         self.tmp_path = Path(self.tmp_dir)
+        audit_patch = patch("scripts.agent_ops.AUDIT_LOG_FILE", self.tmp_path / "audit.md")
+        audit_patch.start()
+        self.addCleanup(audit_patch.stop)
+        pilot_patch = patch("scripts.agent_ops.check_local_pilot", return_value={"status": "STOPPED_OR_UNREACHABLE", "http_code": None})
+        pilot_patch.start()
+        self.addCleanup(pilot_patch.stop)
 
     def tearDown(self):
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
@@ -204,7 +210,8 @@ class TestAgentOps(unittest.TestCase):
         """Генерация пакета независимой миграции создаёт корректные файлы."""
         parser = build_parser()
         args = parser.parse_args(["migration-bundle"])
-        exit_code = run_migration_bundle_action(args)
+        with patch("scripts.agent_ops.ROOT", self.tmp_path):
+            exit_code = run_migration_bundle_action(args)
         self.assertEqual(exit_code, 0)
 
 
