@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-05T14:04:25.787Z",
+  "timestamp": "2026-11-06T22:03:43.162Z",
   "engine": "src/core/keto-engine",
   "catalogPath": "src/data/recipes.ts",
   "botDataPath": null,
@@ -137,7 +137,7 @@
     },
     {
       "id": "k5",
-      "title": "Яичные маффины с овощами и ветчиной",
+      "title": "Яичные маффины с овощами и сыром",
       "mode": "keto",
       "cat": "breakfast",
       "declared": {
