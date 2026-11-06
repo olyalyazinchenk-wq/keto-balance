@@ -1244,6 +1244,11 @@ def publish_recipe_draft(
             raise RecipePublicationValidationError(
                 f"Cannot publish recipe '{recipe_id}': recipe is not approved (approval_marks.approved must be True)"
             )
+        approved_by = str(approval_marks.get("approved_by") or "").strip()
+        if not approved_by:
+            raise RecipePublicationValidationError(
+                f"Cannot publish recipe '{recipe_id}': recipe is approved but 'approved_by' author is missing or empty"
+            )
         if (
             approval_marks.get("status") == "unverified"
             or draft_content.get("status") == "unverified"
@@ -1262,6 +1267,17 @@ def publish_recipe_draft(
             raise RecipePublicationValidationError(
                 f"Cannot publish recipe '{recipe_id}': ingredients ('ing') are missing or empty"
             )
+        for idx, item in enumerate(ing):
+            if not isinstance(item, (list, tuple)) or len(item) < 2:
+                raise RecipePublicationValidationError(
+                    f"Cannot publish recipe '{recipe_id}': ingredient #{idx} must be [name, quantity] with quantity present"
+                )
+            name = str(item[0] or "").strip()
+            qty = str(item[1] or "").strip()
+            if not name or not qty:
+                raise RecipePublicationValidationError(
+                    f"Cannot publish recipe '{recipe_id}': ingredient #{idx} has empty or whitespace-only name/quantity"
+                )
 
         # 3. Preparation steps validation
         steps = draft_content.get("steps")
@@ -1272,6 +1288,12 @@ def publish_recipe_draft(
             raise RecipePublicationValidationError(
                 f"Cannot publish recipe '{recipe_id}': preparation steps ('steps') are missing or empty"
             )
+        for idx, step in enumerate(steps):
+            step_str = str(step or "").strip()
+            if not step_str:
+                raise RecipePublicationValidationError(
+                    f"Cannot publish recipe '{recipe_id}': preparation step #{idx} is empty or whitespace-only"
+                )
 
         new_title = draft_content.get("title", row["title"])
         curr_ver = row["version"]
