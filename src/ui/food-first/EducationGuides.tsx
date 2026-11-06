@@ -62,8 +62,8 @@ export function EducationGuides() {
   if (loading) {
     return (
       <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm text-center py-8">
-        <div className="inline-block animate-spin text-stone-400 text-xl mb-2">⏳</div>
-        <p className="text-xs text-stone-500 font-medium">Загрузка проверенных руководств...</p>
+        <div className="inline-block animate-spin text-stone-400 text-xl mb-2"></div>
+        <p className="text-xs text-stone-500 font-medium">Загрузка материалов...</p>
       </div>
     );
   }
@@ -82,10 +82,10 @@ export function EducationGuides() {
       <div className="flex items-center justify-between border-b border-stone-100 pb-3">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
-            Экспертная база
+            Материалы о питании
           </span>
           <h3 className="text-base font-bold text-stone-900 mt-0.5">
-            📚 Обучение и микро-гайды
+            Обучение и микро-гайды
           </h3>
         </div>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">

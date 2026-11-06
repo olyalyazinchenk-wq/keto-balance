@@ -929,7 +929,7 @@ export default function PilotApp() {
   // Render by Phase
   if (phase === 'init' || phase === 'authenticating' || phase === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-[#F7F2E9] text-[#2B2620]">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--kb-bg)] text-[var(--kb-text-1)]">
         <div className="max-w-md w-full p-8 bg-white rounded-2xl shadow-sm border border-[#E5DECF] text-center space-y-4">
           <div className="w-10 h-10 border-4 border-[#5F7161] border-t-transparent rounded-full animate-spin mx-auto" />
           <h2 className="text-xl font-bold">
@@ -945,10 +945,10 @@ export default function PilotApp() {
 
   if (phase === 'unauthorized' || phase === 'error' || phase === 'conflict') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-[#F7F2E9] text-[#2B2620]">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--kb-bg)] text-[var(--kb-text-1)]">
         <div className="max-w-md w-full p-8 bg-white rounded-2xl shadow-sm border border-[#E5DECF] space-y-5">
           <div className="text-center">
-            <span className="text-3xl">⚠️</span>
+
             <h2 className="text-xl font-bold mt-2">
               {phase === 'unauthorized'
                 ? 'Требуется авторизация'
@@ -959,10 +959,11 @@ export default function PilotApp() {
             <p className="text-sm text-stone-600 mt-2">{errorMessage}</p>
           </div>
           <div className="pt-2 flex flex-col gap-2">
+            {phase === 'unauthorized' && <a className="ff-action" href="https://t.me/keto_balance_userbot">Открыть в Telegram</a>}
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="w-full py-2.5 px-4 bg-[#5F7161] text-white rounded-xl font-semibold text-sm hover:bg-[#4E5E50] transition-colors"
+              className="ff-proof__help-btn"
             >
               Перезагрузить страницу
             </button>
@@ -978,7 +979,7 @@ export default function PilotApp() {
   if (phase === 'needs_settings') {
     if (showSupport) {
       return (
-        <div className="min-h-screen py-8 px-4 bg-[#F7F2E9] text-[#2B2620]">
+        <div className="min-h-screen py-8 px-4 bg-[var(--kb-bg)] text-[var(--kb-text-1)]">
           <div className="max-w-lg mx-auto bg-white rounded-2xl border border-[#E5DECF] p-6 sm:p-8 space-y-4 shadow-sm">
             <button
               type="button"
@@ -1032,7 +1033,7 @@ export default function PilotApp() {
     }
 
     return (
-      <div className="min-h-screen py-8 px-4 bg-[#F7F2E9] text-[#2B2620]">
+      <div className="min-h-screen py-8 px-4 bg-[var(--kb-bg)] text-[var(--kb-text-1)]">
         <div className="max-w-lg mx-auto bg-white rounded-2xl border border-[#E5DECF] p-6 sm:p-8 space-y-6 shadow-sm">
           <div className="border-b border-stone-200 pb-4 flex items-start justify-between gap-4">
             <div>
@@ -1041,7 +1042,7 @@ export default function PilotApp() {
               </span>
               <h1 className="text-2xl font-bold text-stone-900 mt-1">Настройки питания</h1>
               <p className="text-sm text-stone-600 mt-1">
-                Укажи свои предпочтения, чтобы составить безопасное и вкусное меню.
+                Укажи свои предпочтения, чтобы подобрать блюда и собрать покупки.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -1057,9 +1058,9 @@ export default function PilotApp() {
                   type="button"
                   data-testid="more-open-paywall-btn"
                   onClick={() => setShowPaywall(true)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm hover:from-amber-600 active:scale-95 transition-all cursor-pointer"
+                  className="ff-proof__help-btn"
                 >
-                  ⭐ Premium
+                  Условия доступа
                 </button>
               )}
               <button

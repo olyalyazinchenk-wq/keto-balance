@@ -46,3 +46,17 @@
 .fm-diversity-alert p { margin:0; }
 @media (min-width:768px) { .fm-menu { padding:28px; } .fm-card:has(.fm-card__photo) { display:grid; grid-template-columns:1fr 1fr; } .fm-card__photo { height:100%; min-height:240px; } .fm-dialog { border-radius:22px; } .fm-overlay { align-items:center; padding:20px; } }
 @media (max-width:360px) { .fm-menu { padding:16px; } .fm-card__body { padding:16px; } .fm-card__actions { flex-wrap:wrap; } .fm-card__actions .fm-primary { flex-basis:100%; } }
+
+.fm-menu {font-size:16px}
+.fm-card {border:0;border-radius:0;border-bottom:1px solid var(--fm-line);background:transparent;padding-bottom:20px;margin-bottom:20px}
+.fm-card__body {padding:12px 0 0}
+.fm-card__photo {border-radius:16px;max-height:220px;aspect-ratio:16/9}
+.fm-card h3 {font-size:22px}
+.fm-shopping {border:0;background:var(--kb-surface-muted);border-radius:16px}
+.fm-days {scrollbar-width:thin}
+.fm-days button {flex-basis:120px}
+.fm-days span,.fm-dialog__conditions,.fm-dialog__heading p,.fm-candidate p {font-size:14px}
+.fm-candidate {flex-wrap:wrap}
+.fm-candidate > div {flex:1 1 200px}
+.fm-dialog {padding-bottom:calc(24px + var(--kb-safe-bottom,0px))}
+@media(min-width:768px){.fm-card:has(.fm-card__photo){grid-template-columns:200px minmax(0,1fr);gap:24px}.fm-card__photo{min-height:0;height:160px}.fm-card__body{padding:0}}

@@ -18,9 +18,15 @@ type Source = {
 };
 
 export function photoForRecipe(recipeId: string): string | null {
-  if (recipeId === 'kb-rec-eggs-avocado' || recipeId === 'k1') {
-    return '/media/food-first/hero.webp';
-  }
+  const images: Record<string, string> = {
+    'kb-rec-eggs-avocado': '/media/food-first/hero.webp',
+    k1: '/media/food-first/eggs-bacon-spinach.webp',
+    k2: '/media/food-first/omelet-cheese-herbs.webp',
+    k3: '/media/food-first/baked-cottage-cheese.webp',
+    k4: '/media/food-first/avocado-flatbread.webp',
+    k5: '/media/food-first/egg-muffins.webp',
+  };
+  if (images[recipeId]) return images[recipeId];
   return null;
 }
 

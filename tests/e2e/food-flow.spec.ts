@@ -37,9 +37,6 @@ test.describe('E1: Food-First End-to-End User Flow', () => {
     // 3. Today screen appears
     const todayScreen = page.locator('[data-testid="food-today"]');
     await expect(todayScreen).toBeVisible();
-    const tipDialog = page.getByRole('dialog', { name: 'Совет дня' });
-    await expect(tipDialog).toBeVisible();
-    await tipDialog.getByRole('button', { name: 'Понятно, закрыть' }).click();
 
     // 4. Navigate to Menu
     await page.locator('[data-testid="bottom-nav-menu"]').click();

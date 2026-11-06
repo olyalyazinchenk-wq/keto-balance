@@ -4,7 +4,7 @@ import type { ScreenId, UserSettingsDraft, RecipeViewModel } from './contract';
 import type { PilotCatalogV1, PilotProfileV1, PilotStateV1, PilotShoppingItemV1 } from '../../api/pilotTypes';
 import type { SubscriptionState } from '../../types/subscription';
 import { AppShell } from './AppShell';
-import { Header } from './Header';
+
 import { PaywallModal } from './PaywallModal';
 import { FoodToday } from './Today';
 import { MenuScreen } from './Menu';
@@ -296,7 +296,7 @@ export function FoodFirstApp({
           title: s.recipe!.title,
           time: s.recipe!.prepMinutes,
           serv,
-        });
+        }, photoForRecipe(s.recipe!.id));
       })
       .filter((c): c is NonNullable<typeof c> => c !== null);
   }, [resolvedSlots, catalog.recipes, effectiveCatalogIds, canonProfile]);
@@ -318,7 +318,7 @@ export function FoodFirstApp({
     if (catalog.test_only) {
       return 'Тестовый каталог · синтетические данные';
     }
-    return 'Кето Баланс · Пилотный выпуск';
+    return '';
   }, [catalog.test_only, syncStatus, state.shopping_stale]);
 
   // View settings draft for MenuScreen
@@ -369,19 +369,10 @@ export function FoodFirstApp({
       selectedDayIndex={selectedDayIndex}
       selectedDayLabel={selectedDayLabel}
     >
-      <DailyTip showButton={currentScreen === 'more'} />
-      <Header
-        isPremium={isPremium}
-        onOpenPaywall={handleOpenPaywall}
-        canGoBack={navStack.length > 1}
-        onGoBack={navigateBack}
-        onOpenSupport={() => navigateTo('support')}
-      />
-
       {/* Notice header */}
-      <aside className="ff-proof__notice" data-testid="pilot-sync-banner">
+      {noticeText && <aside className="ff-proof__notice" data-testid="pilot-sync-banner" role="status" aria-live="polite">
         {noticeText}
-      </aside>
+      </aside>}
 
       {currentScreen === 'today' && (
         <FoodToday
@@ -480,105 +471,22 @@ export function FoodFirstApp({
         </div>
       )}
 
-      {currentScreen === 'more' && (
-        <div className="p-4 sm:p-6 max-w-xl mx-auto space-y-5" data-testid="more-screen">
-          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                  Аккаунт и доступ
-                </span>
-                <h2 className="text-lg font-bold text-stone-900 mt-0.5">
-                  {isPremium ? '👑 Кето Баланс Premium' : 'Базовый доступ (Free)'}
-                </h2>
-              </div>
-              <div>
-                {isPremium ? (
-                  <span
-                    data-testid="more-premium-badge"
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300"
-                  >
-                    👑 Premium
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-600">
-                    Free
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {isPremium ? (
-              <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60 text-xs text-amber-900 space-y-1">
-                <div className="font-semibold">✓ Ваша подписка активна</div>
-                <div className="text-stone-600">
-                  {localSubscription?.expires_at
-                    ? `Срок действия: до ${new Date(localSubscription.expires_at).toLocaleDateString('ru-RU')}`
-                    : 'Неограниченный премиум доступ'}
-                </div>
-              </div>
-            ) : (
-              <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200/60 text-xs text-emerald-950 space-y-1">
-                <div className="font-semibold">🥑 Откройте полный потенциал программы</div>
-                <div className="text-stone-600">
-                  37+ авторских блюд, меню на 7 дней, умный автосписок покупок и авторское ведение.
-                </div>
-              </div>
-            )}
-
-            <button
-              type="button"
-              data-testid="more-open-paywall-btn"
-              onClick={handleOpenPaywall}
-              className={`w-full py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
-                isPremium
-                  ? 'bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300'
-                  : 'bg-[#255c48] hover:bg-[#1d4939] text-white'
-              }`}
-            >
-              {isPremium ? '💎 Управление подпиской и тарифами' : '⭐ Оформить Premium доступ'}
-            </button>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm space-y-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
-              Настройки и помощь
-            </div>
-            {onOpenSettings && (
-              <button
-                type="button"
-                onClick={onOpenSettings}
-                className="w-full py-2.5 px-3 rounded-xl border border-stone-200 text-left text-xs sm:text-sm font-semibold text-stone-700 hover:bg-stone-50 flex items-center justify-between transition-all cursor-pointer"
-              >
-                <span>⚙️ Настройки питания и аллергены</span>
-                <span className="text-stone-400">→</span>
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => navigateTo('support')}
-              className="w-full py-2.5 px-3 rounded-xl border border-stone-200 text-left text-xs sm:text-sm font-semibold text-stone-700 hover:bg-stone-50 flex items-center justify-between transition-all cursor-pointer"
-            >
-              <span>💬 Связаться с нутрициологом Ольгой</span>
-              <span className="text-stone-400">→</span>
-            </button>
-          </div>
-
-          {/* Educational Guides Section */}
-          <EducationGuides />
-        </div>
-      )}
-
-      {currentScreen === 'diary' && (
-        <div className="p-4 sm:p-6 max-w-xl mx-auto space-y-5" data-testid="diary-screen">
-          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3 text-center">
-            <div className="text-3xl">🌿</div>
-            <h2 className="text-lg font-bold text-stone-900">Раздел «Дневник и База знаний»</h2>
-            <p className="text-xs text-stone-600 leading-relaxed">
-              Отслеживание самочувствия будет доступно в следующем цикле. Сейчас вы можете изучить проверенные клинические руководства по кето и карнивор рационам:
-            </p>
-          </div>
+      {(currentScreen === 'more' || currentScreen === 'diary') && (
+        <div className="ff-more" data-testid={currentScreen === 'diary' ? 'diary-screen' : 'more-screen'}>
+          <h1>{currentScreen === 'diary' ? 'Дневник' : 'Ещё'}</h1>
+          <section aria-label="Настройки и помощь">
+            <h2>Твоё питание</h2>
+            {onOpenSettings && <button type="button" className="ff-more-link" onClick={onOpenSettings}>Настройки питания и ограничения<span aria-hidden="true">→</span></button>}
+            <DailyTip showButton={true} />
+            <button type="button" className="ff-more-link" onClick={() => navigateTo('support')}>Помощь и личный вопрос Ольге<span aria-hidden="true">→</span></button>
+          </section>
+          <section className="ff-access" aria-label="Аккаунт и доступ">
+            <p className="ff-kicker">Аккаунт и доступ</p>
+            <h2>{isPremium ? 'Подписка активна' : 'Базовый доступ'}</h2>
+            {isPremium && localSubscription?.expires_at && <p>Действует до {new Date(localSubscription.expires_at).toLocaleDateString('ru-RU')}</p>}
+            <button type="button" className="ff-action" data-testid="more-open-paywall-btn" onClick={handleOpenPaywall}>Условия доступа и подписка</button>
+          </section>
+          <section><h2>Дневник появится позже</h2><p>Личные записи пока недоступны. Сейчас здесь можно найти материалы о питании.</p></section>
           <EducationGuides />
         </div>
       )}

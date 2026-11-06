@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   RefreshCw,
   ShoppingBag,
@@ -68,6 +68,14 @@ export function MenuScreen({
     slotLabel: string;
     currentRecipeId: string;
   } | null>(null);
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!replacingSlot) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    dialogRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    return () => previousFocus?.focus();
+  }, [replacingSlot]);
 
   useEffect(() => {
     if (!replacingSlot) return;
@@ -279,6 +287,7 @@ export function MenuScreen({
       {replacingSlot && (
         <div
           className="fm-overlay"
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="replace-modal-title"
@@ -289,6 +298,12 @@ export function MenuScreen({
             }
           }}
           onKeyDown={(event) => {
+            if (event.key === 'Tab') {
+              const buttons = Array.from(dialogRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') || []);
+              const first = buttons[0], last = buttons[buttons.length - 1];
+              if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+              if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+            }
             if (event.key === 'Escape') {
               triggerHaptic('selection');
               setReplacingSlot(null);

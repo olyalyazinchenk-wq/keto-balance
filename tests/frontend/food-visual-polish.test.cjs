@@ -24,7 +24,7 @@ test('recipe uses the same reviewed photo as the menu; unknown photos retain fal
   }));
   assert.ok(render('k1').includes(`src="${photoForRecipe('k1')}"`));
   assert.ok(!render('k1').includes('Фото блюда пока не подключено'));
-  assert.ok(render('k7').includes('Фото блюда пока не подключено'));
+  assert.ok(!render('k7').includes('<img'));
 });
 
 const { FoodToday } = require('../../src/ui/food-first/Today.tsx');

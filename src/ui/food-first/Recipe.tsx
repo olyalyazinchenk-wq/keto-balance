@@ -344,7 +344,8 @@ export function RecipeScreen({
                       }}
                       aria-pressed={isChecked}
                       data-testid={`recipe-step-toggle-${idx}`}
-                      className={`mt-0.5 w-6 h-6 rounded-md border flex items-center justify-center shrink-0 ${
+                      aria-label={`Шаг ${idx + 1}: ${isChecked ? 'готово' : 'отметить готовым'}`}
+                      className={`mt-0.5 w-11 h-11 rounded-md border flex items-center justify-center shrink-0 ${
                         isChecked
                           ? 'bg-emerald-600 border-emerald-600 text-white'
                           : 'border-stone-300 bg-white dark:bg-stone-800 dark:border-stone-600'

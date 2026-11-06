@@ -18,7 +18,7 @@ export function RecipeArtwork({ caption, imageUrl, prepMinutes, className = '' }
     {imageUrl && !failed ? (
       <img src={imageUrl} alt={`Фотоиллюстрация: ${caption}`} width="640" height="440" onError={() => setFailed(true)} />
     ) : (
-      <div className="text-sm text-[var(--kb-text-2)]">Фото блюда пока не подключено</div>
+      <div className="text-sm text-[var(--kb-text-2)]">Фотоиллюстрация недоступна</div>
     )}
     {prepMinutes != null && <figcaption className="food-artwork__time">◷ {prepMinutes} мин · у плиты</figcaption>}
   </figure>;

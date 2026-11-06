@@ -27,8 +27,8 @@ interface TariffConfig {
 const DEFAULT_TARIFFS: TariffConfig[] = [
   {
     id: 'sub_month',
-    badge: '👑 ЕДИНЫЙ ТАРИФ · ПОЛНЫЙ ДОСТУП',
-    title: '👑 Кето Баланс Premium',
+    badge: 'ЕДИНЫЙ ТАРИФ · ПОЛНЫЙ ДОСТУП',
+    title: 'Кето Баланс Premium',
     price: 1900,
     periodLabel: '1 900 ₽ / месяц',
     description: 'Полный доступ ко всем возможностям приложения на 30 дней',
@@ -171,7 +171,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
           : [
               {
                 id: 'sub_month',
-                title: '👑 Кето Баланс Premium (1 месяц)',
+                title: 'Кето Баланс Premium (1 месяц)',
                 price_rub: 1900,
                 period: 'month',
               },
@@ -350,7 +350,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
           {/* Transparent Commercial Information */}
           <div className="grid grid-cols-2 gap-2 text-[11px] text-stone-500 py-1">
             <div className="flex items-center gap-1.5 justify-center p-2 rounded-xl bg-stone-100/70 border border-stone-200/60 text-center">
-              <span>⭐️</span>
+
               <span>Оплата Telegram Stars</span>
             </div>
             <div className="flex items-center gap-1.5 justify-center p-2 rounded-xl bg-stone-100/70 border border-stone-200/60 text-center">

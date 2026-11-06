@@ -1,3 +1,4 @@
+@font-face { font-family: 'Golos Text'; src: url('/fonts/GolosText-Variable.ttf') format('truetype'); font-style: normal; font-weight: 400 900; font-display: swap; }
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,16 +6,16 @@
 :root,
 [data-kb-theme="light"] {
   /* Солнечная, свежая велнес-палитра с высокой читаемостью и приятной глубиной */
-  --kb-bg: #F4F8F5;
+  --kb-bg: #F5F7F3;
   --kb-surface: #FFFFFF;
   --kb-surface-muted: #E8F2EC;
-  --kb-border: #D2E3DA;
+  --kb-border: #DCE4DD;
   --kb-rule-strong: #0D6E4B;
 
   /* 4 уровня текста с высоким контрастом */
-  --kb-text-1: #0F1E18;
+  --kb-text-1: #1C2821;
   --kb-text-2: #263D34;
-  --kb-text-3: #456156;
+  --kb-text-3: #526159;
   --kb-text-4: #5C786C;
 
   --kb-ink: var(--kb-text-1);
@@ -22,15 +23,15 @@
   --kb-faint: var(--kb-text-4);
 
   /* Сочный изумрудный акцент и живые состояния */
-  --kb-primary: #0D7A52;
-  --kb-primary-hover: #095E3E;
+  --kb-primary: #255C48;
+  --kb-primary-hover: #1E4E3B;
   --kb-on-primary: #FFFFFF;
-  --kb-secondary: #0F1E18;
+  --kb-secondary: #1C2821;
 
   --kb-day-active-bg: #DFF3EA;
   --kb-day-active-ink: #0B3B28;
   --kb-day-active-sub: #1E5C43;
-  --kb-day-active-border: #0D7A52;
+  --kb-day-active-border: #255C48;
 
   /* Солнечный студийный фон под тарелку блюда */
   --kb-photo-tone: #EDF5F0;
@@ -47,8 +48,8 @@
   --kb-danger-border: #F5B5B0;
 
   /* Выразительная пара шрифтов */
-  --kb-font-serif: Georgia, 'New York', 'Times New Roman', serif;
-  --kb-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --kb-font-serif: 'Golos Text', 'Segoe UI', Arial, sans-serif;
+  --kb-font-sans: 'Golos Text', 'Segoe UI', Arial, sans-serif;
   --kb-font-display: var(--kb-font-serif);
   --kb-font-body: var(--kb-font-sans);
   --kb-font-mono: var(--kb-font-sans);
@@ -336,7 +337,7 @@ body {
   min-height: 48px;
   padding: 12px 24px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #109463 0%, var(--kb-primary) 100%);
+  background: var(--kb-primary);
   color: var(--kb-on-primary);
   font-size: 13px;
   font-weight: 700;

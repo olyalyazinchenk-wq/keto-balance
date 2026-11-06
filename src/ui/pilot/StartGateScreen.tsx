@@ -105,13 +105,13 @@ export function StartGateScreen({
           <header className="flex items-center justify-between gap-4 border-b border-[#EAE5D9] pb-5">
             <div className="flex items-center gap-3">
               <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0F3526] font-serif text-xl font-black text-white"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0F3526] font-sans text-xl font-black text-white"
                 aria-hidden="true"
               >
                 КБ
               </div>
               <div>
-                <div className="font-serif text-[21px] font-black leading-none text-[#0F3526] sm:text-[23px]">
+                <div className="font-sans text-[21px] font-black leading-none text-[#0F3526] sm:text-[23px]">
                   Кето Баланс
                 </div>
                 <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#6E7B74]">
@@ -137,7 +137,7 @@ export function StartGateScreen({
 
           {/* Title & Introduction */}
           <div className="space-y-3">
-            <h1 className="font-serif text-[30px] font-black leading-[1.08] tracking-tight text-[#0F3526] sm:text-[42px]">
+            <h1 className="font-sans text-[30px] font-black leading-[1.08] tracking-tight text-[#0F3526] sm:text-[42px]">
               Знакомство с кето и карнивор
             </h1>
             <p className="text-[15px] leading-relaxed text-[#4A5750] sm:text-[16px]">
@@ -173,7 +173,7 @@ export function StartGateScreen({
               />
               <span className="block p-5 text-left sm:p-6">
                 <span className="flex items-start justify-between gap-2">
-                  <span className="font-serif text-[21px] font-black leading-tight text-[#0F3526] sm:text-[23px]">
+                  <span className="font-sans text-[21px] font-black leading-tight text-[#0F3526] sm:text-[23px]">
                     Кето-рацион{' '}
                     <span className="text-[17px] font-semibold text-[#3A5245]">
                       (Keto)
@@ -217,7 +217,7 @@ export function StartGateScreen({
               />
               <span className="block p-5 text-left sm:p-6">
                 <span className="flex items-start justify-between gap-2">
-                  <span className="font-serif text-[21px] font-black leading-tight text-[#0F3526] sm:text-[23px]">
+                  <span className="font-sans text-[21px] font-black leading-tight text-[#0F3526] sm:text-[23px]">
                     Карнивор{' '}
                     <span className="text-[17px] font-semibold text-[#3A5245]">
                       (Carnivore)

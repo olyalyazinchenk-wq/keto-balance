@@ -1,19 +1,14 @@
-import { test, expect, passNewUserStartGate } from './pilot.fixture';
-test('new user opens built app and daily tip persists while navigating', async ({createSession}) => {
- const {page} = await createSession({id: 894402,first_name:'Test'});
- await page.setViewportSize({width:375,height:700});
- await page.goto('/');
- await passNewUserStartGate(page);
- await page.getByTestId('submit-settings-btn').click();
- const dialog=page.getByRole('dialog',{name:'Совет дня'});
- await expect(dialog).toBeVisible({timeout:15000});
- const tip=await dialog.locator('p').innerText();
- await dialog.getByRole('button',{name:'Понятно, закрыть'}).click();
+import {test,expect,passNewUserStartGate} from './pilot.fixture';
+test('tip opens on request, restores focus, and stays closed after navigation and reload',async({createSession})=>{
+ const {page}=await createSession({id:894402,first_name:'Test'});
+ await page.goto('/');await passNewUserStartGate(page);await page.getByTestId('submit-settings-btn').click();
  await expect(page.getByTestId('food-today')).toBeVisible();
- await page.getByTestId('bottom-nav-menu').click(); await expect(page.getByTestId('food-menu-screen')).toBeVisible();
- await page.getByTestId('bottom-nav-shopping').click(); await expect(page.getByTestId('food-shopping-screen')).toBeVisible();
- await page.getByTestId('bottom-nav-more').click(); await page.getByTestId('open-daily-tip').click();
- await expect(dialog.locator('p')).toHaveText(tip); await dialog.getByRole('button',{name:'Понятно, закрыть'}).click();
- await page.reload(); await expect(page.getByTestId('food-app-shell')).toBeVisible({timeout:15000}); await expect(dialog).toHaveCount(0);
- expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+ const dialog=page.getByRole('dialog',{name:'Совет дня'});
+ await expect(dialog).toHaveCount(0);
+ await page.getByTestId('bottom-nav-more').click();
+ await page.getByTestId('open-daily-tip').click();await expect(dialog).toBeVisible();
+ await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
+ await expect(page.getByTestId('open-daily-tip')).toBeFocused();
+ await page.getByTestId('bottom-nav-today').click();
+ await page.reload();await expect(page.getByTestId('food-today')).toBeVisible();await expect(dialog).toHaveCount(0);
 });

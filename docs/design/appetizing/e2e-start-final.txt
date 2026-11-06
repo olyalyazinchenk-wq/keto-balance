@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:9244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\start-gate.spec.ts:4:3 › E0: Start Gate Screen and Consent Flow › Start Gate enforces age and PD consent checkboxes (0/2, 1/2, 2/2, uncheck) (1.3s)
+  ok 2 [chromium] › tests\e2e\start-gate.spec.ts:82:3 › E0: Start Gate Screen and Consent Flow › Choosing carnivore approach carries over to settings form and returning user bypasses gate (1.3s)
+  ok 3 [chromium] › tests\e2e\start-gate.spec.ts:146:3 › E0: Start Gate Screen and Consent Flow › Support button opens support screen; clicking "← Вернуться назад" returns to Start Gate with button disabled (740ms)
+
+  3 passed (1.5m)

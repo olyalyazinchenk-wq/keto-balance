@@ -19,7 +19,6 @@ test.describe('E2: Server-Side State Persistence Across Contexts', () => {
     ]);
 
     await expect(page1.locator('[data-testid="food-today"]')).toBeVisible();
-    await page1.getByRole('dialog', { name: 'Совет дня' }).getByRole('button', { name: 'Понятно, закрыть' }).click();
 
     // Select Day 2 in Menu
     await page1.locator('[data-testid="bottom-nav-menu"]').click();
@@ -72,7 +71,6 @@ test.describe('E2: Server-Side State Persistence Across Contexts', () => {
     await expect(page2.locator('[data-testid="start-gate-screen"]')).not.toBeVisible();
     await expect(page2.locator('[data-testid="pilot-settings-form"]')).not.toBeVisible();
     await expect(page2.locator('[data-testid="food-today"]')).toBeVisible();
-    await page2.getByRole('dialog', { name: 'Совет дня' }).getByRole('button', { name: 'Понятно, закрыть' }).click();
 
     // Verify selected day restored
     await page2.locator('[data-testid="bottom-nav-menu"]').click();
