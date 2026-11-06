@@ -124,11 +124,10 @@ export function rebuildShoppingFromMenu(
       }
 
       // If target variant already computed for targetPortions, itemFactor is 1.
-      // Otherwise scale from base variant: targetPortions / base_portions.
+      // Otherwise scale from base variant (already normalized to 1 portion): itemFactor = targetPortions.
       let itemFactor = 1;
       if (!targetVariant) {
-        const baseServ = recipe.basePortions ?? baseVariant?.portions ?? 1;
-        itemFactor = targetPortions / (baseServ > 0 ? baseServ : 1);
+        itemFactor = targetPortions;
       }
 
       for (const ingredient of ingredients) {

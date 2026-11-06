@@ -221,4 +221,51 @@ test('Portion Math & Exact Grammage (Stream B Remediation)', async (t) => {
       assert.equal(baconItem.amountLabel, '160 г', 'Bacon must be 160g for 4 portions of k1');
     }
   );
+
+  await t.test(
+    'rebuildShoppingFromMenu scales baseVariant for arbitrary portions (e.g. 3) without double division',
+    () => {
+      // k28 has serv: 2, 400g chicken base yield
+      // 1 portion = 200g chicken
+      // For 3 portions, targetVariant (portionsVariants[3]) is undefined.
+      // Shopping fallback must scale baseVariant (1 portion) by 3 -> 600g (1.5x base), NOT 300g (0.75x)!
+      const menuK28 = {
+        days: [
+          { slots: { lunch: 'k28' } },
+        ],
+      };
+
+      const shop3Number = rebuildShoppingFromMenu(menuK28, recipesById, [], 3);
+      const ch3Number = shop3Number.find((i) => i.name.toLowerCase().includes('кури'));
+      assert.ok(ch3Number, 'Chicken item must exist');
+      assert.equal(
+        ch3Number.amountLabel,
+        '600 г',
+        '3 portions of 2-serv recipe (400g base) must be 600g (3 * 200g), NOT 300g double-divided'
+      );
+
+      // Verify passing options object { targetPortions: 3 } produces identical correct scaling
+      const shop3Options = rebuildShoppingFromMenu(menuK28, recipesById, [], { targetPortions: 3 });
+      const ch3Options = shop3Options.find((i) => i.name.toLowerCase().includes('кури'));
+      assert.ok(ch3Options);
+      assert.equal(ch3Options.amountLabel, '600 г', 'Options object with targetPortions: 3 must also yield 600g');
+
+      // Also verify 4-serving recipe: k14 has serv: 4, 600g beef base (1 portion = 150g)
+      // For 3 portions: 3 * 150g = 450g (NOT 150 * (3/4) = 112.5g)
+      const menuK14 = {
+        days: [
+          { slots: { dinner: 'k14' } },
+        ],
+      };
+      const shopK14 = rebuildShoppingFromMenu(menuK14, recipesById, [], 3);
+      const beef3 = shopK14.find((i) => i.name.toLowerCase().includes('говяд'));
+      assert.ok(beef3, 'Beef item must exist');
+      assert.equal(
+        beef3.amountLabel,
+        '450 г',
+        '3 portions of 4-serv recipe (600g base) must be 450g (3 * 150g)'
+      );
+    }
+  );
 });
+
