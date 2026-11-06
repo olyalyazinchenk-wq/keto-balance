@@ -72,7 +72,7 @@ class PilotStateV1(StrictBaseModel):
     selected_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
     checked_ingredients: Dict[str, bool] = Field(default_factory=dict)
     checked_steps: Dict[str, bool] = Field(default_factory=dict)
-    shopping_batches: Literal[1, 2] = 1
+    shopping_batches: Literal[1, 2, 4] = 1
     shopping_stale: bool = Field(default=False, strict=True)
 
     @model_validator(mode="after")
