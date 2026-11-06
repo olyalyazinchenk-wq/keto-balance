@@ -219,12 +219,20 @@ def is_shopping_consistent_with_menu(
                         "unit_type": parsed.unit_type,
                         "base_unit": parsed.base_unit,
                         "total_value": 0.0,
+                        "total_value_legacy": 0.0,
                         "is_text": parsed.is_text,
                         "text_label": parsed.text_label,
                         "linked_titles": set(),
                     }
                 g = expected_groups[group_key]
-                g["total_value"] += parsed.value
+                serv_raw = r.get("serv")
+                try:
+                    serv = float(serv_raw) if serv_raw is not None else 1.0
+                except (ValueError, TypeError):
+                    serv = 1.0
+                portion_yield = parsed.value / (serv if serv > 0 else 1.0)
+                g["total_value"] += portion_yield
+                g["total_value_legacy"] += parsed.value
                 if title:
                     g["linked_titles"].add(title)
                 if parsed.text_label and not g.get("text_label"):
@@ -249,6 +257,8 @@ def is_shopping_consistent_with_menu(
         return False
 
     matched_group_keys: set[str] = set()
+    portion_consistent = True
+    legacy_consistent = True
 
     for it in canonical_items:
         it_name = str(it.get("name", "")).strip().lower()
@@ -268,16 +278,17 @@ def is_shopping_consistent_with_menu(
 
         g = expected_groups[matched_key]
         scaled_expected = g["total_value"] * multiplier
+        scaled_expected_legacy = g["total_value_legacy"] * multiplier
 
-        if g["is_text"]:
-            pass
-        else:
+        if not g["is_text"]:
             if abs(parsed_it.value - scaled_expected) > 0.15:
-                return False
+                portion_consistent = False
+            if abs(parsed_it.value - scaled_expected_legacy) > 0.15:
+                legacy_consistent = False
 
         matched_group_keys.add(matched_key)
 
     if len(matched_group_keys) != len(expected_groups):
         return False
 
-    return True
+    return portion_consistent or legacy_consistent
