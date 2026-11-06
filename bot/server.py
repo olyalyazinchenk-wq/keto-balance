@@ -137,6 +137,7 @@ from bot.app_db import (
     publish_recipe_draft,
     get_catalog_snapshot,
     get_admin_status,
+    RecipePublicationValidationError,
 )
 from bot.safety import evaluate_contraindications
 from bot.catalog import (
@@ -196,7 +197,7 @@ def create_app(
     )
     resolved_dist = Path(dist_dir).resolve() if dist_dir is not None else DEFAULT_DIST_DIR
     active_db = db_path if db_path is not None else active_settings.db_path
-    catalog_service = CatalogService(dist_dir=resolved_dist, provider=catalog_provider, app_stage=active_settings.app_stage)
+    catalog_service = CatalogService(dist_dir=resolved_dist, provider=catalog_provider, app_stage=active_settings.app_stage, db_path=db_path)
     startup_backend_fingerprint = _compute_backend_fingerprint()
 
     def extract_authenticated_user_id(
@@ -976,9 +977,13 @@ def create_app(
         admin_uid = extract_admin_user_id(authorization)
         try:
             result = publish_recipe_draft(recipe_id=recipe_id, admin_user_id=admin_uid, db_path=active_db)
+            catalog_service.db_path = active_db
+            catalog_service.invalidate_cache()
             return result
         except KeyError:
             raise HTTPException(status_code=404, detail=f"Recipe '{recipe_id}' not found")
+        except RecipePublicationValidationError as e:
+            raise HTTPException(status_code=422, detail=str(e))
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 

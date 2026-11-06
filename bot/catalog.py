@@ -41,15 +41,55 @@ def load_static_catalog(dist_dir: Path, app_stage: str = "prod") -> Dict[str, An
         return dict(EMPTY_CATALOG)
 
 class CatalogService:
-    def __init__(self, dist_dir: Path, provider: Optional[CatalogProvider] = None, app_stage: str = "prod"):
+    def __init__(
+        self,
+        dist_dir: Path,
+        provider: Optional[CatalogProvider] = None,
+        app_stage: str = "prod",
+        db_path: Optional[Path] = None,
+    ):
         self.dist_dir = dist_dir
         self.provider = provider
         self.app_stage = app_stage
+        self.db_path = db_path
+        self._cached_catalog: Optional[Dict[str, Any]] = None
+
+    def invalidate_cache(self) -> None:
+        self._cached_catalog = None
 
     def get_catalog_data(self) -> Dict[str, Any]:
+        if self._cached_catalog is not None:
+            return self._cached_catalog
+
         if self.provider is not None:
-            return self.provider()
-        return load_static_catalog(self.dist_dir, self.app_stage)
+            data = self.provider()
+            self._cached_catalog = data
+            return data
+
+        if self.db_path is not None and Path(self.db_path).is_file():
+            try:
+                from bot.app_db import get_admin_catalog_version, get_catalog_snapshot
+                ver = get_admin_catalog_version(self.db_path)
+                snapshot = get_catalog_snapshot(ver, self.db_path)
+                if snapshot is not None and len(snapshot) > 0:
+                    released_ids = [r.get("id") for r in snapshot if r.get("id")]
+                    data = {
+                        "schema_version": 1,
+                        "catalog_id": f"admin-catalog-v{ver}",
+                        "catalog_version": ver,
+                        "test_only": self.app_stage == "test",
+                        "released_ids": released_ids,
+                        "recipes": snapshot,
+                        "nutrition_status": "verified",
+                    }
+                    self._cached_catalog = data
+                    return data
+            except Exception:
+                pass
+
+        data = load_static_catalog(self.dist_dir, self.app_stage)
+        self._cached_catalog = data
+        return data
 
     def get_released_recipes(self) -> List[Dict[str, Any]]:
         data = self.get_catalog_data()

@@ -247,6 +247,8 @@ class TestAdminApi(unittest.TestCase):
                 "title": "Стейк рибай с розмариновым маслом",
                 "kcal": 680,
                 "mode": "carnivore",
+                "ing": [["Стейк говяжий", "300 г"], ["Масло розмариновое", "20 г"]],
+                "steps": ["Обжарьте стейк до готовности.", "Подавайте с маслом."],
             },
             "approval_marks": {
                 "approved": True,

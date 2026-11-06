@@ -156,6 +156,8 @@ class TestStreamAAdversarialAdminAuth(unittest.TestCase):
                 "title": "Adversarial Test Recipe",
                 "kcal": 500,
                 "mode": "keto",
+                "ing": [["Говядина", "250 г"], ["Сливочное масло", "25 г"]],
+                "steps": ["Нарежьте мясо.", "Обжарьте на сливочном масле."],
             },
             "approval_marks": {
                 "approved": True,
@@ -204,7 +206,11 @@ class TestStreamAAdversarialAdminAuth(unittest.TestCase):
         # Revision 1
         self.client.post(
             "/api/admin/recipes",
-            json={"recipe_id": "k1", "recipe_data": {"id": "k1", "title": "Revision 1", "kcal": 601}},
+            json={
+                "recipe_id": "k1",
+                "recipe_data": {"id": "k1", "title": "Revision 1", "kcal": 601},
+                "approval_marks": {"approved": True, "approved_by": "Olga", "source": "Audit Revision 1"},
+            },
             headers=headers,
         )
         self.client.post("/api/admin/recipes/k1/publish", headers=headers)
@@ -214,7 +220,11 @@ class TestStreamAAdversarialAdminAuth(unittest.TestCase):
         # Revision 2
         self.client.post(
             "/api/admin/recipes",
-            json={"recipe_id": "k1", "recipe_data": {"id": "k1", "title": "Revision 2", "kcal": 602}},
+            json={
+                "recipe_id": "k1",
+                "recipe_data": {"id": "k1", "title": "Revision 2", "kcal": 602},
+                "approval_marks": {"approved": True, "approved_by": "Olga", "source": "Audit Revision 2"},
+            },
             headers=headers,
         )
         self.client.post("/api/admin/recipes/k1/publish", headers=headers)

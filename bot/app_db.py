@@ -35,6 +35,10 @@ class StaleRevisionError(Exception):
     """Возникает при несовпадении expected_revision с текущей ревизией в БД (CAS)."""
     pass
 
+class RecipePublicationValidationError(ValueError):
+    """Возникает при попытке публикации неполного или непроверенного рецепта."""
+    pass
+
 def _migrate_schema_if_needed(conn: sqlite3.Connection) -> None:
     cur = conn.cursor()
     # 1. user_profiles -> settings_json
@@ -1231,6 +1235,43 @@ def publish_recipe_draft(
             raise ValueError(f"No draft to publish for recipe '{recipe_id}'")
 
         draft_content = json.loads(row["draft_payload_json"])
+        published_content = json.loads(row["published_payload_json"]) if row["published_payload_json"] else {}
+        approval_marks = json.loads(row["approval_marks_json"] or "{}")
+
+        # 1. Verification of Approval Status
+        if not approval_marks.get("approved"):
+            raise RecipePublicationValidationError(
+                f"Cannot publish recipe '{recipe_id}': recipe is not approved (approval_marks.approved must be True)"
+            )
+        if (
+            approval_marks.get("status") == "unverified"
+            or draft_content.get("status") == "unverified"
+            or draft_content.get("nutrition_status") == "unverified"
+        ):
+            raise RecipePublicationValidationError(
+                f"Cannot publish recipe '{recipe_id}': recipe status is unverified"
+            )
+
+        # 2. Ingredients validation
+        ing = draft_content.get("ing")
+        if ing is None and published_content.get("ing"):
+            ing = published_content.get("ing")
+            draft_content["ing"] = ing
+        if not ing or not isinstance(ing, list) or len(ing) == 0:
+            raise RecipePublicationValidationError(
+                f"Cannot publish recipe '{recipe_id}': ingredients ('ing') are missing or empty"
+            )
+
+        # 3. Preparation steps validation
+        steps = draft_content.get("steps")
+        if steps is None and published_content.get("steps"):
+            steps = published_content.get("steps")
+            draft_content["steps"] = steps
+        if not steps or not isinstance(steps, list) or len(steps) == 0:
+            raise RecipePublicationValidationError(
+                f"Cannot publish recipe '{recipe_id}': preparation steps ('steps') are missing or empty"
+            )
+
         new_title = draft_content.get("title", row["title"])
         curr_ver = row["version"]
         new_recipe_version = (curr_ver + 1) if row["published_payload_json"] else curr_ver
@@ -1239,12 +1280,12 @@ def publish_recipe_draft(
             """
             UPDATE admin_recipes
             SET title = ?, version = ?, status = 'published',
-                published_payload_json = draft_payload_json,
+                published_payload_json = ?,
                 draft_payload_json = NULL,
                 updated_at = CURRENT_TIMESTAMP
             WHERE recipe_id = ?
             """,
-            (new_title, new_recipe_version, recipe_id),
+            (new_title, new_recipe_version, json.dumps(draft_content, ensure_ascii=False), recipe_id),
         )
 
         cur.execute("SELECT MAX(version) as max_v FROM admin_catalog_versions")
