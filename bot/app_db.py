@@ -143,10 +143,12 @@ def _seed_admin_recipes_if_empty(conn: sqlite3.Connection) -> None:
     if row and row["cnt"] > 0:
         return
 
+    released_path = Path(__file__).resolve().parent.parent / "dist" / "released-catalog.json"
     fixture_path = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "pilot" / "catalog.json"
-    if fixture_path.is_file():
+    cat_path = released_path if released_path.is_file() else fixture_path
+    if cat_path.is_file():
         try:
-            cat_data = json.loads(fixture_path.read_text(encoding="utf-8"))
+            cat_data = json.loads(cat_path.read_text(encoding="utf-8"))
             recipes = cat_data.get("recipes", [])
             for r in recipes:
                 rid = r.get("id")

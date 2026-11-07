@@ -133,9 +133,17 @@ def main():
             except Exception:
                 pass
     if catalog_path is None:
-        fixture_cat = ROOT / "tests" / "fixtures" / "pilot" / "catalog.json"
-        if fixture_cat.is_file():
-            catalog_path = fixture_cat
+        released_cat = dist_path / "released-catalog.json"
+        if released_cat.is_file():
+            catalog_path = released_cat
+        else:
+            released_root = ROOT / "dist" / "released-catalog.json"
+            if released_root.is_file():
+                catalog_path = released_root
+            else:
+                fixture_cat = ROOT / "tests" / "fixtures" / "pilot" / "catalog.json"
+                if fixture_cat.is_file():
+                    catalog_path = fixture_cat
 
     catalog_info = "standard (empty production allowlist)"
     if catalog_path and catalog_path.is_file():
@@ -198,6 +206,21 @@ def main():
         settings=settings,
         catalog_provider=catalog_provider,
     )
+
+    from starlette.responses import JSONResponse
+    from bot.app_db import get_session_user
+
+    @app.middleware("http")
+    async def private_preview_guard(request, call_next):
+        path = request.url.path
+        if path in ("/api/catalog", "/released-catalog.json") or path.startswith("/api/catalog/"):
+            authorization = request.headers.get("authorization", "")
+            if not authorization.startswith("Bearer "):
+                return JSONResponse({"detail": "Owner session required"}, status_code=401)
+            session = get_session_user(authorization[7:].strip(), db_path=db_path)
+            if not session or session.get("user_id") != args.owner_id:
+                return JSONResponse({"detail": "Owner session required"}, status_code=401)
+        return await call_next(request)
 
     config = uvicorn.Config(
         app,

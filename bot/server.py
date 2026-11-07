@@ -487,6 +487,15 @@ def create_app(
         user_id: Optional[int] = Query(None),
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+        if active_settings.owner_allowlist is not None and target_uid in active_settings.owner_allowlist:
+            return SubscriptionReadV1(
+                is_premium=True,
+                tier="owner",
+                status="active",
+                expires_at=None,
+                available_products=[],
+                user_id=target_uid,
+            )
         sub = get_user_subscription(active_db, target_uid)
         is_premium = False
         tier = None
@@ -1022,6 +1031,9 @@ def create_app(
             or rel_path.startswith("redoc/")
         ):
             raise HTTPException(status_code=404, detail="Not Found")
+
+        if rel_path in ("released-catalog.json", "catalog.json") or rel_path.endswith("-catalog.json"):
+            raise HTTPException(status_code=401, detail="Owner session required")
 
         resolved = resolve_safe_path(resolved_dist, full_path)
 

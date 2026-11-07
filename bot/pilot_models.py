@@ -64,6 +64,7 @@ class GeneratedMenuModel(StrictBaseModel):
     portion: int = Field(default=1, ge=1, le=10, strict=True)
     saved: bool = Field(default=False, strict=True)
     created: int = Field(..., strict=True)
+    catalog_id: Optional[str] = Field(default=None, max_length=100)
     days: List[DayMenuModel] = Field(default_factory=list)
 
 class PilotStateV1(StrictBaseModel):

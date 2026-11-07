@@ -73,6 +73,8 @@ export class KetoClient {
         throw new UnauthorizedError('No authentication token available');
       }
       headers.set('Authorization', `Bearer ${this.token}`);
+    } else if (this.token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${this.token}`);
     }
 
     if (options.body && !headers.has('Content-Type')) {
