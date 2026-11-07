@@ -27,10 +27,6 @@ sudo docker run -d \
     --net=host \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
-    --health-cmd "/usr/local/bin/xray run -test -c /etc/xray/config.json" \
-    --health-interval 30s \
-    --health-timeout 5s \
-    --health-retries 3 \
     -v "$CONFIG_FILE:/etc/xray/config.json:ro" \
     "$XRAY_IMAGE" run -c /etc/xray/config.json
 
@@ -59,6 +55,7 @@ sudo docker run -d \
     --health-retries 3 \
     --health-start-period 20s \
     -v ketobalance_owner_data:/app/data \
+    -v /home/user1/keto-balance/bot/bot.py:/app/bot/bot.py:ro \
     -e APP_STAGE=staging \
     -e WEBAPP_DOMAIN=84.54.56.73.nip.io \
     -e WEBAPP_URL=https://84.54.56.73.nip.io/ \
