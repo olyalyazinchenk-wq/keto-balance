@@ -3,7 +3,7 @@
 > **Единая точка оперативной правды для всех агентов и разработчиков.**
 > **Дата последнего обновления**: 2026-11-07 18:55:00 RTZ 2
 > **Инициатор обновления**: Antigravity
-> **Проверенный SHA**: `6b99d476b404eaca4c3d66b9e4e6a67af47fdfb2` (ветка `feat/owner-private-acceptance-20261107`)
+> **Проверенный SHA**: `cc06a6597282710313531b2649ea9df099cefd00` (ветка `feat/owner-private-acceptance-20261107`)
 
 ---
 
@@ -12,7 +12,7 @@
 - **Проект**: Keto-Balance (Премиум Telegram Mini App + Бот).
 - **Канонический репозиторий**: `https://github.com/olyalyazinchenk-wq/keto-balance`
 - **Текущая ветка**: `feat/owner-private-acceptance-20261107`
-- **HEAD коммит**: `6b99d47` (6b99d476b404eaca4c3d66b9e4e6a67af47fdfb2)
+- **HEAD коммит**: `cc06a65` (cc06a6597282710313531b2649ea9df099cefd00)
 - **Облачный статус (Cloud.ru ВМ 84.54.56.73)**:
   - Веб-приложение: `ketobalance-owner-app` (образ `ketobalance-owner-private:v4`, `buildId: a32499d38a5f766a`, `dirty: false`, порт `18183 -> 18081`).
   - HTTPS: `ketobalance-https` (`https://84.54.56.73.nip.io/`).
@@ -30,7 +30,7 @@
 
 | Проверка / Компонент | Команда | Результат | Статус |
 |---|---|---|:---:|
-| **Облачный Web App (84.54.56.73)** | `curl -k https://84.54.56.73.nip.io/api/version` | HTTP 200, buildId `a32499d38a5f766a`, gitSha `6b99d47...`, dirty: false | **PASS** |
+| **Облачный Web App (84.54.56.73)** | `curl -k https://84.54.56.73.nip.io/api/version` | HTTP 200, buildId `a32499d38a5f766a`, gitSha `cc06a65...`, dirty: false | **PASS** |
 | **Защита каталога от обхода** | `curl https://84.54.56.73.nip.io/released-catalog.json/.` | HTTP 401 Unauthorized (обход закрыт) | **PASS** |
 | **Автономный Telegram API выход** | `curl -I --socks5-hostname 127.0.0.1:10808 https://api.telegram.org/` | HTTP 302, TLSv1.3 handshake OK | **PASS** |
 | **Верификация бота без токена в логах** | `getMe` via `socks5://127.0.0.1:10808` | `ok: True, username: keto_balance_userbot` | **PASS** |
