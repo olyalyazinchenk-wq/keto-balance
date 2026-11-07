@@ -47,6 +47,7 @@ export interface RecipeViewModel {
   substitutions: string[];
   storageRule: string;
   sourceStatus: string;
+  editorial_status?: 'approved' | 'review' | 'candidate' | string;
 }
 
 export interface DayMenu {
@@ -60,6 +61,9 @@ export interface GeneratedMenu {
   id?: string;
   created: number;
   title: string;
+  month?: string;
+  numDays?: number;
+  mode?: string;
   days: DayMenu[];
 }
 

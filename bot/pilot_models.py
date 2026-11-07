@@ -33,6 +33,7 @@ class PilotPreferencesV1(StrictBaseModel):
     prepTimeMax: int = Field(..., ge=0, le=240, strict=True)
     mealsPerDay: Literal[2, 3, 4]
     planDays: Optional[int] = Field(default=3, ge=1, le=31)
+    month: Optional[str] = Field(None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
     preferenceNote: Literal['', 'simple_daily'] = ''
 
 class PilotProfileV1(StrictBaseModel):
@@ -65,12 +66,14 @@ class GeneratedMenuModel(StrictBaseModel):
     saved: bool = Field(default=False, strict=True)
     created: int = Field(..., strict=True)
     catalog_id: Optional[str] = Field(default=None, max_length=100)
+    month: Optional[str] = Field(None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
     days: List[DayMenuModel] = Field(default_factory=list)
 
 class PilotStateV1(StrictBaseModel):
     schema_version: Literal[1] = 1
     menu: Optional[GeneratedMenuModel] = None
     selected_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    month: Optional[str] = Field(None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
     checked_ingredients: Dict[str, bool] = Field(default_factory=dict)
     checked_steps: Dict[str, bool] = Field(default_factory=dict)
     shopping_batches: Literal[1, 2, 4] = 1

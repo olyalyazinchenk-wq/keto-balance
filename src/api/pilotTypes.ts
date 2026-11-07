@@ -23,6 +23,7 @@ export interface PilotPreferencesV1 {
   prepTimeMax: number;
   mealsPerDay: 2 | 3 | 4;
   planDays?: 1 | 3 | 7 | 28 | 29 | 30 | 31;
+  month?: string;
   preferenceNote: '' | 'simple_daily';
 }
 
@@ -41,6 +42,7 @@ export interface PilotStateV1 {
   schema_version: 1;
   menu: GeneratedMenu | null;
   selected_date: string | null;
+  month?: string | null;
   checked_ingredients: Record<string, boolean>;
   checked_steps: Record<string, boolean>;
   shopping_batches: 1 | 2 | 4;

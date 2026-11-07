@@ -8,6 +8,8 @@ export interface GenerateMenuOptions {
   profile?: UserProfile | null;
   catalogId?: string;
   today?: Date;
+  startDate?: Date;
+  month?: string;
   random?: () => number;
 }
 
@@ -24,6 +26,7 @@ export interface GeneratedMenu {
   saved: boolean;
   created: number;
   catalog_id?: string;
+  month?: string;
   days: DayMenu[];
 }
 
@@ -76,11 +79,42 @@ export function generateMenu(
     );
   }
 
+  let startYear: number;
+  let startMonthIdx: number;
+  let startDayNum: number;
+  let targetDays = numDays;
+
+  if (opts.month && /^\d{4}-(0[1-9]|1[0-2])$/.test(opts.month)) {
+    const [yStr, mStr] = opts.month.split('-');
+    startYear = parseInt(yStr, 10);
+    startMonthIdx = parseInt(mStr, 10) - 1;
+    startDayNum = 1;
+    const daysInMonth = new Date(startYear, startMonthIdx + 1, 0).getDate();
+    targetDays = daysInMonth;
+  } else if (opts.startDate) {
+    startYear = opts.startDate.getFullYear();
+    startMonthIdx = opts.startDate.getMonth();
+    startDayNum = opts.startDate.getDate();
+    targetDays = numDays;
+  } else if (numDays >= 28) {
+    const ref = opts.today || new Date();
+    startYear = ref.getFullYear();
+    startMonthIdx = ref.getMonth();
+    startDayNum = 1;
+    targetDays = numDays;
+  } else {
+    const ref = opts.today || new Date();
+    startYear = ref.getFullYear();
+    startMonthIdx = ref.getMonth();
+    startDayNum = ref.getDate();
+    targetDays = numDays;
+  }
+
   const days: DayMenu[] = [];
   const recentDaysHistory: string[] = [];
 
-  for (let dayIdx = 0; dayIdx < numDays; dayIdx++) {
-    const dayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + dayIdx);
+  for (let dayIdx = 0; dayIdx < targetDays; dayIdx++) {
+    const dayDate = new Date(startYear, startMonthIdx, startDayNum + dayIdx);
     const dateStr = formatLocalDateISO(dayDate);
     const usedTodayIds = new Set<string>();
     const slots: Record<string, string> = {};
@@ -120,14 +154,16 @@ export function generateMenu(
     days.push({ date: dateStr, slots });
   }
 
+  const computedMonth = `${startYear}-${String(startMonthIdx + 1).padStart(2, "0")}`;
   return {
     mode,
-    numDays,
+    numDays: targetDays,
     meals,
     portion: 1,
     saved: false,
     created: today ? today.getTime() : Date.now(),
-    catalog_id: opts.catalogId || "released-catalog-v1",
+    catalog_id: opts.catalogId || "released-catalog-202611-v1",
+    month: computedMonth,
     days,
   };
 }

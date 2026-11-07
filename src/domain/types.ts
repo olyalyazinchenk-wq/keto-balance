@@ -24,6 +24,8 @@ export interface Recipe {
   steps: string[];
   subs: Record<string, string>;
   store: string;
+  sourceStatus?: 'approved' | 'review' | 'candidate' | string;
+  editorial_status?: 'approved' | 'review' | 'candidate' | string;
 }
 
 export interface DayMenu {
@@ -39,6 +41,7 @@ export interface GeneratedMenu {
   saved: boolean;
   created: number;
   catalog_id?: string;
+  month?: string;
   days: DayMenu[];
 }
 
