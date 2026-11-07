@@ -78,7 +78,7 @@ export default function PilotApp() {
   const [draftRestrictions, setDraftRestrictions] = useState<PilotRestrictionToken[]>([]);
   const [draftPrepTime, setDraftPrepTime] = useState<number>(35);
   const [draftMealsPerDay, setDraftMealsPerDay] = useState<2 | 3 | 4>(3);
-  const [draftPlanDays, setDraftPlanDays] = useState<1 | 3 | 7>(3);
+  const [draftPlanDays, setDraftPlanDays] = useState<1 | 3 | 7 | 28 | 29 | 30 | 31>(30);
   const [showSupport, setShowSupport] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
@@ -209,11 +209,11 @@ export default function PilotApp() {
             const controller = createMenuController(catData.recipes, catData.released_ids, {
               isPreview: catData.test_only,
             });
-            const validNumDays = (currentProfile.settings.planDays === 1 || currentProfile.settings.planDays === 7
+            const validNumDays = (currentProfile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(currentProfile.settings.planDays as any))
               ? currentProfile.settings.planDays
-              : (currentState.menu.days?.length === 1 || currentState.menu.days?.length === 7
+              : (currentState.menu.days?.length && [1, 3, 7, 28, 29, 30, 31].includes(currentState.menu.days.length as any)
                 ? currentState.menu.days.length
-                : 3)) as 1 | 3 | 7;
+                : 3) as any;
             try {
               const rebuiltMenu = controller.createUserMenu({
                 numDays: validNumDays,
@@ -272,7 +272,7 @@ export default function PilotApp() {
           const controller = createMenuController(catData.recipes, catData.released_ids, {
             isPreview: catData.test_only,
           });
-          const planDays = (currentProfile.settings.planDays === 1 || currentProfile.settings.planDays === 7)
+          const planDays = (currentProfile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(currentProfile.settings.planDays as any))
             ? currentProfile.settings.planDays
             : 3;
           let genMenu;
@@ -674,11 +674,11 @@ export default function PilotApp() {
         isPreview: catalog.test_only,
       });
 
-      const daysCount = (profile.settings.planDays === 1 || profile.settings.planDays === 7
+      const daysCount = (profile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(profile.settings.planDays as any))
         ? profile.settings.planDays
-        : (currentState.menu?.days?.length === 1 || currentState.menu?.days?.length === 7
+        : (currentState.menu?.days?.length && [1, 3, 7, 28, 29, 30, 31].includes(currentState.menu.days.length as any)
           ? currentState.menu.days.length
-          : 3)) as 1 | 3 | 7;
+          : 3) as any;
       const newMenu = controller.createUserMenu({
         numDays: daysCount,
         meals: profile.settings.mealsPerDay,
@@ -935,7 +935,7 @@ export default function PilotApp() {
       setDraftRestrictions(profile.settings.restrictions || []);
       setDraftPrepTime(profile.settings.prepTimeMax ?? 0);
       setDraftMealsPerDay((profile.settings.mealsPerDay as any) || 3);
-      setDraftPlanDays((profile.settings.planDays as any) || (state?.menu?.days?.length as any) || 3);
+      setDraftPlanDays((profile.settings.planDays as any) || (state?.menu?.days?.length as any) || 30);
       if (profile.settings.confirmed18Plus) {
         setGatePassed(true);
       }
@@ -1188,21 +1188,27 @@ export default function PilotApp() {
                 Максимум времени у плиты: {draftPrepTime > 0 ? `${draftPrepTime} мин` : 'Без ограничений'}
               </label>
               <div className="flex flex-wrap gap-2">
-                {[15, 30, 45, 60, 0].map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    data-testid={`settings-time-${t}`}
-                    onClick={() => setDraftPrepTime(t)}
-                    className={`px-3.5 py-2 text-xs font-semibold rounded-xl border transition-all ${
-                      draftPrepTime === t
-                        ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
-                        : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
-                    }`}
-                  >
-                    {t > 0 ? `${t} мин` : 'Без лимита'}
-                  </button>
-                ))}
+                {(() => {
+                  const standardTimes = [15, 30, 45, 60, 0];
+                  const times = (draftPrepTime > 0 && !standardTimes.includes(draftPrepTime))
+                    ? [...standardTimes.filter((x) => x !== 0), draftPrepTime, 0].sort((a, b) => (a === 0 ? 1 : b === 0 ? -1 : a - b))
+                    : standardTimes;
+                  return times.map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      data-testid={`settings-time-${t}`}
+                      onClick={() => setDraftPrepTime(t)}
+                      className={`px-3.5 py-2 text-xs font-semibold rounded-xl border transition-all ${
+                        draftPrepTime === t
+                          ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
+                          : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                      }`}
+                    >
+                      {t > 0 ? `${t} мин` : 'Без лимита'}
+                    </button>
+                  ));
+                })()}
               </div>
             </div>
 
@@ -1235,14 +1241,14 @@ export default function PilotApp() {
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
                 Срок меню
               </label>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {([1, 3, 7] as const).map((d) => (
                   <button
                     key={d}
                     type="button"
                     data-testid={`settings-days-${d}`}
                     onClick={() => setDraftPlanDays(d)}
-                    className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition-all ${
+                    className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
                       draftPlanDays === d
                         ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
                         : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
@@ -1251,8 +1257,63 @@ export default function PilotApp() {
                     {d === 1 ? '1 день' : d === 3 ? '3 дня' : '7 дней'}
                   </button>
                 ))}
+                {(() => {
+                  const now = new Date();
+                  const monthDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                  const isMonthSelected = draftPlanDays >= 28 && draftPlanDays <= 31;
+                  return (
+                    <button
+                      type="button"
+                      data-testid="settings-days-month"
+                      onClick={() => setDraftPlanDays(monthDays as 1 | 3 | 7 | 28 | 29 | 30 | 31)}
+                      className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
+                        isMonthSelected
+                          ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
+                          : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                      }`}
+                    >
+                      Месяц ({monthDays} дн.)
+                    </button>
+                  );
+                })()}
               </div>
             </div>
+
+            {/* Carnivore conflict pre-submit check */}
+            {(() => {
+              if (draftApproach !== 'carnivore') return null;
+              const canon = preferencesToUserProfile({
+                confirmed18Plus: draftConfirmed18,
+                approach: 'carnivore',
+                restrictions: draftRestrictions,
+                prepTimeMax: draftPrepTime,
+                mealsPerDay: draftMealsPerDay,
+                planDays: draftPlanDays,
+                preferenceNote: '',
+              });
+              const pool = catalog.recipes.filter(
+                (r) =>
+                  (catalog.released_ids.length > 0 ? catalog.released_ids.includes(r.id) : true) &&
+                  r.mode === 'carnivore' &&
+                  isRecipeAllowed(r, canon)
+              );
+              if (pool.length < draftMealsPerDay) {
+                return (
+                  <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 space-y-1" data-testid="carnivore-conflict-warning">
+                    <p className="font-bold">⚠️ Недостаточно карнивор-блюд для выбранных ограничений</p>
+                    <p>
+                      {pool.length === 0
+                        ? `Карнивор-рецепты для этой комбинации ограничений ещё готовятся. Доступно 0 блюд из ${draftMealsPerDay} требуемых на день.`
+                        : `С выбранными ограничениями доступно только ${pool.length} блюд, а требуется минимум ${draftMealsPerDay} на день.`}
+                    </p>
+                    <p className="text-[11px] text-amber-800">
+                      Пожалуйста, снимите часть ограничений или выберите режим «Кето».
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             <button
               type="submit"

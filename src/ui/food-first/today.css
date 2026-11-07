@@ -67,6 +67,206 @@
 .ff-access .ff-action {margin-top:16px}
 .ff-tip-dialog > p {margin:16px 0 22px}
 .ff-tip-dialog {padding-bottom:calc(24px + var(--kb-safe-bottom,0px))}
+
+/* Home Page Enhancement (Month & Food-First) */
+.ff-hero {
+  padding: 24px 20px;
+  background: var(--ff-surface);
+  border: 1px solid var(--ff-line);
+  border-radius: 20px;
+  margin-bottom: 24px;
+}
+.ff-hero__tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ff-green);
+  background: #edf1e6;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+.ff-hero h1 {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 800;
+  margin: 0 0 10px;
+  letter-spacing: -0.03em;
+  color: var(--ff-ink);
+}
+.ff-hero__desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ff-muted);
+  margin: 0 0 18px;
+}
+.ff-hero__cta {
+  width: 100%;
+}
+
+.ff-today-section {
+  margin-bottom: 32px;
+}
+.ff-today-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+.ff-today-section__header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ff-section-title {
+  margin-bottom: 14px;
+}
+.ff-section-title h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ff-how-it-works, .ff-approaches, .ff-home-guides, .ff-home-footer-nav {
+  margin-bottom: 32px;
+}
+
+.ff-steps-grid {
+  display: grid;
+  gap: 12px;
+}
+.ff-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--ff-surface);
+  border: 1px solid var(--ff-line);
+  border-radius: 14px;
+}
+.ff-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ff-green);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  margin-top: 2px;
+}
+.ff-step-item h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--ff-ink);
+}
+.ff-step-item p {
+  font-size: 13px;
+  color: var(--ff-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ff-approaches__intro {
+  font-size: 14px;
+  color: var(--ff-muted);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+.ff-approaches-grid {
+  display: grid;
+  gap: 16px;
+}
+.ff-approach-card {
+  padding: 18px;
+  background: var(--ff-surface);
+  border: 1px solid var(--ff-line);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.ff-approach-card__badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e4e3b;
+  background: #edf7f2;
+  border: 1px solid #bce3d4;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+.ff-approach-card__badge--carnivore {
+  color: #8c3b1e;
+  background: #fdf2ed;
+  border-color: #f7d0c0;
+}
+.ff-approach-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+.ff-approach-card p {
+  font-size: 13px;
+  color: var(--ff-muted);
+  line-height: 1.45;
+  margin: 0 0 16px;
+  flex: 1;
+}
+.ff-approach-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--ff-line);
+  border-radius: 10px;
+  background: #f9fbf8;
+  color: var(--ff-green);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ff-approach-btn:hover {
+  background: #edf1e6;
+  border-color: var(--ff-green);
+}
+
+.ff-diary-teaser {
+  margin-top: 18px;
+  padding: 16px;
+  background: #fdfbf7;
+  border: 1px dashed #ded8cc;
+  border-radius: 14px;
+}
+.ff-diary-teaser h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: #7a6e5b;
+}
+.ff-diary-teaser p {
+  font-size: 12px;
+  color: #8a7e6d;
+  margin: 0;
+  line-height: 1.45;
+}
+
+@media(min-width: 640px) {
+  .ff-approaches-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media(max-width:360px) {
  .ff-proof__header {padding-left:16px;padding-right:16px}
  .ff-today,.ff-more {padding:16px}

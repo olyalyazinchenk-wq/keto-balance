@@ -388,9 +388,15 @@ export function FoodFirstApp({
                 recipe.steps.every((_, idx) => state.checked_steps[`${recipe.id}:step:${idx}`])
             ),
           }))}
+          hasMenu={Boolean(state.menu && state.menu.days && state.menu.days.length > 0)}
           onOpenRecipe={handleOpenRecipe}
           onChooseMenu={() => navigateTo('menu')}
           onOpenSettings={onOpenSettings}
+          onOpenPaywall={handleOpenPaywall}
+          isPremium={isPremium}
+          localSubscription={localSubscription}
+          onNavigateToSupport={() => navigateTo('support')}
+          onSelectApproach={onOpenSettings}
         />
       )}
 
@@ -455,6 +461,8 @@ export function FoodFirstApp({
           onToggleCheckedInStore={onToggleCheckedInStore}
           onToggleAlreadyHave={onToggleAlreadyHave}
           onAddCustomItem={onAddCustomItem}
+          menuDays={state.menu?.days}
+          recipesById={recipesById}
         />
       )}
 

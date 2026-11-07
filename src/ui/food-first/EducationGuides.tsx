@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 export interface EducationGuide {
   id: string;
@@ -19,41 +19,61 @@ export function EducationGuides() {
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  useEffect(() => {
-    let isMounted = true;
-    fetch('/api/education/guides')
+  const loadGuides = useCallback(() => {
+    setLoading(true);
+    setError(null);
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => {
+      controller.abort();
+    }, 5000);
+
+    fetch('/api/education/guides', { signal: controller.signal })
       .then((res) => {
+        window.clearTimeout(timeoutId);
         if (!res.ok) throw new Error('Не удалось загрузить руководства');
         return res.json();
       })
       .then((data) => {
-        if (isMounted) {
-          setGuides(data.guides || []);
-          setLoading(false);
-        }
+        setGuides(data.guides || []);
+        setLoading(false);
       })
       .catch((err) => {
-        if (isMounted) {
-          setError(err.message || 'Ошибка загрузки');
-          setLoading(false);
+        window.clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+          setError('Превышено время ожидания ответа (5 сек). Проверьте интернет-соединение.');
+        } else {
+          setError(err.message || 'Ошибка загрузки материалов');
         }
+        setLoading(false);
       });
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
-  const categories = React.useMemo(() => {
+  useEffect(() => {
+    loadGuides();
+  }, [loadGuides]);
+
+  const categories = useMemo(() => {
     const set = new Set<string>();
     guides.forEach((g) => set.add(g.category));
     return ['all', ...Array.from(set)];
   }, [guides]);
 
-  const filteredGuides = React.useMemo(() => {
-    if (selectedCategory === 'all') return guides;
-    return guides.filter((g) => g.category === selectedCategory);
-  }, [guides, selectedCategory]);
+  const filteredGuides = useMemo(() => {
+    return guides.filter((g) => {
+      const matchCat = selectedCategory === 'all' || g.category === selectedCategory;
+      const q = searchQuery.trim().toLowerCase();
+      const matchSearch =
+        !q ||
+        g.title.toLowerCase().includes(q) ||
+        g.summary.toLowerCase().includes(q) ||
+        g.category.toLowerCase().includes(q) ||
+        g.content.toLowerCase().includes(q);
+      return matchCat && matchSearch;
+    });
+  }, [guides, selectedCategory, searchQuery]);
 
   const toggleExpand = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -62,17 +82,27 @@ export function EducationGuides() {
   if (loading) {
     return (
       <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm text-center py-8">
-        <div className="inline-block animate-spin text-stone-400 text-xl mb-2"></div>
-        <p className="text-xs text-stone-500 font-medium">Загрузка материалов...</p>
+        <div className="w-6 h-6 border-2 border-emerald-700 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+        <p className="text-xs text-stone-500 font-medium">Загрузка материалов о питании...</p>
       </div>
     );
   }
 
   if (error && guides.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-5 border border-red-200 shadow-sm text-center py-6">
-        <p className="text-xs text-red-600 font-semibold mb-1">Не удалось загрузить руководства</p>
-        <p className="text-[11px] text-stone-500">{error}</p>
+      <div className="bg-white rounded-2xl p-5 border border-red-200 shadow-sm text-center py-6 space-y-3" data-testid="guides-error-container">
+        <div>
+          <p className="text-xs text-red-600 font-semibold mb-1">Не удалось загрузить руководства</p>
+          <p className="text-[11px] text-stone-500">{error}</p>
+        </div>
+        <button
+          type="button"
+          onClick={loadGuides}
+          data-testid="guides-retry-btn"
+          className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-sm"
+        >
+          Повторить попытку
+        </button>
       </div>
     );
   }
@@ -93,6 +123,27 @@ export function EducationGuides() {
         </span>
       </div>
 
+      {/* Search Input */}
+      <div className="relative">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Поиск по статьям и руководствам..."
+          data-testid="guides-search-input"
+          className="w-full px-3 py-2 text-xs rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:border-emerald-600 transition-colors"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-stone-400 hover:text-stone-600"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
       {/* Category Pills */}
       <div className="flex flex-wrap gap-1.5 pb-1">
         {categories.map((cat) => (
@@ -110,6 +161,25 @@ export function EducationGuides() {
           </button>
         ))}
       </div>
+
+      {/* Empty State */}
+      {filteredGuides.length === 0 && (
+        <div className="text-center py-6 text-stone-500 text-xs space-y-2">
+          <p>По вашему запросу руководств не найдено.</p>
+          {(selectedCategory !== 'all' || searchQuery) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategory('all');
+                setSearchQuery('');
+              }}
+              className="text-[11px] text-emerald-700 font-semibold underline"
+            >
+              Сбросить фильтры
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Guide Cards */}
       <div className="space-y-3">
