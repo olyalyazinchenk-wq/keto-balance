@@ -17,7 +17,7 @@ export interface ReplacementRequest {
 export function createMenuController(
   catalog: readonly Recipe[],
   releasedIds: readonly string[],
-  options?: { isPreview?: boolean; previewPool?: readonly string[] }
+  options?: { isPreview?: boolean; previewPool?: readonly string[]; catalogId?: string }
 ) {
   const getEffectiveIds = () => {
     if (releasedIds.length > 0) return releasedIds;
@@ -31,7 +31,10 @@ export function createMenuController(
   return {
     getReleasedRecipes,
     createUserMenu(opts: GenerateMenuOptions) {
-      return generateMenu(getReleasedRecipes(), { ...opts, catalogId: opts.catalogId || "released-catalog-v1" });
+      return generateMenu(getReleasedRecipes(), {
+        ...opts,
+        catalogId: opts.catalogId || options?.catalogId || "released-catalog-202611-v1",
+      });
     },
     createUserReplacementCandidates(request: ReplacementRequest) {
       const recipes = getReleasedRecipes();

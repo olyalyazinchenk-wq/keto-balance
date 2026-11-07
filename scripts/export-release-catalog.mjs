@@ -144,6 +144,10 @@ export function exportReleaseCatalog(options = {}) {
   }
 
   fs.writeFileSync(outputPath, JSON.stringify(catalogArtifact, null, 2), 'utf-8');
+  if (catalogArtifact.catalog_id && !catalogArtifact.catalog_id.startsWith('synthetic-')) {
+    const versionedPath = path.join(outputDir, `${catalogArtifact.catalog_id}.json`);
+    fs.writeFileSync(versionedPath, JSON.stringify(catalogArtifact, null, 2), 'utf-8');
+  }
 
   return {
     status: 'ok',

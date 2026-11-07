@@ -70,7 +70,7 @@ def create_star_invoice_link(
         logger.warning(f"Failed to create Stars invoice link: {type(e).__name__}")
     return None
 
-from fastapi import FastAPI, Header, HTTPException, Query, Request
+from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 import uvicorn
 
@@ -696,12 +696,14 @@ def create_app(
         user_id: Optional[int] = Query(None),
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+        is_owner = bool(active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist)
         user_data = get_pilot_user(target_uid, db_path=active_db)
         state = user_data.get("state")
         if state and isinstance(state, dict):
             menu = state.get("menu")
             if menu and isinstance(menu, dict):
-                admitted_recipes = catalog_service.get_released_recipes()
+                cat_id = menu.get("catalog_id")
+                admitted_recipes = catalog_service.get_released_recipes(catalog_id=cat_id, is_owner=is_owner)
                 admitted_ids = {r.get("id") for r in admitted_recipes if r.get("id")}
                 has_revoked = False
                 days = menu.get("days") or []
@@ -724,7 +726,7 @@ def create_app(
                     if has_shopping_record:
                         shopping_items = shopping_data.get("items") or []
                         is_consistent = is_shopping_consistent_with_menu(
-                            menu, state.get("shopping_batches", 1), shopping_items, catalog_service
+                            menu, state.get("shopping_batches", 1), shopping_items, catalog_service, is_owner=is_owner
                         )
                         state["shopping_stale"] = not is_consistent
         return user_data
@@ -801,11 +803,14 @@ def create_app(
 
     @app.get("/api/catalog")
     def get_catalog(
+        response: Response,
         authorization: Optional[str] = Header(None),
         x_user_id: Optional[int] = Header(None),
         user_id: Optional[int] = Query(None),
         catalog_id: Optional[str] = Query(None),
     ):
+        response.headers["Cache-Control"] = "private, no-cache"
+        response.headers["Vary"] = "Authorization, Cookie, X-User-Id"
         is_owner = False
         target_uid = None
         try:
@@ -825,19 +830,29 @@ def create_app(
             is_owner = True
 
         if catalog_id:
-            snap = catalog_service.get_catalog_data_for_version(catalog_id)
-            if snap is not None:
-                return snap
-        return catalog_service.get_catalog_data(is_owner=is_owner)
+            if catalog_id.startswith("admin-catalog-v") and not is_owner:
+                raise HTTPException(status_code=403, detail="Access denied: admin snapshot requires owner permissions")
+            snap = catalog_service.get_catalog_data_for_version(catalog_id, is_owner=is_owner)
+            if snap is None:
+                raise HTTPException(status_code=404, detail=f"Catalog version '{catalog_id}' not found")
+            return snap
+        cat_data = catalog_service.get_catalog_data(is_owner=is_owner)
+        if not is_owner and cat_data.get("catalog_id", "").startswith("admin-catalog-v"):
+            raise HTTPException(status_code=403, detail="Access denied: admin snapshot requires owner permissions")
+        return cat_data
 
     @app.get("/api/catalog/{recipe_id}")
+    @app.get("/api/recipes/{recipe_id}")
     def get_recipe(
         recipe_id: str,
+        response: Response,
         authorization: Optional[str] = Header(None),
         x_user_id: Optional[int] = Header(None),
         user_id: Optional[int] = Query(None),
         catalog_id: Optional[str] = Query(None),
     ):
+        response.headers["Cache-Control"] = "private, no-cache"
+        response.headers["Vary"] = "Authorization, Cookie, X-User-Id"
         is_owner = False
         target_uid = None
         try:
@@ -855,6 +870,9 @@ def create_app(
             if target_uid not in active_settings.owner_allowlist:
                 raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
             is_owner = True
+
+        if catalog_id and catalog_id.startswith("admin-catalog-v") and not is_owner:
+            raise HTTPException(status_code=403, detail="Access denied: admin snapshot requires owner permissions")
 
         recipe = catalog_service.get_recipe_by_id(recipe_id, catalog_id=catalog_id, is_owner=is_owner)
         if not recipe:
