@@ -40,6 +40,8 @@
 | **Backend Test Suite** | `python scripts/run_backend_tests.py` | 331 тестов PASS | **PASS** |
 | **Frontend Unit Tests** | `npm run test:unit` | 249 тестов PASS, 0 fail | **PASS** |
 | **Playwright Full E2E** | `npx playwright test --config playwright.full.config.ts` | 15 тестов PASS | **PASS** |
+| **Каталог приёмки владельца** | `node scripts/validate-catalog.mjs && export-release-catalog.mjs` | 50 рецептов PASS; 36 рецептов в каталоге владельца (20 кето + 16 карнивор на проверке) | **PASS** |
+| **Месячный план и покупки** | `playwright test --config playwright.full.config.ts` | 28–31 день, недели меню, выбор диапазона покупок (неделя/месяц), сохранение порций | **PASS** |
 | **24-часовая устойчивость** | Наблюдаемый период работы без домашнего ПК | Старт наблюдения: 2026-11-07 18:50 MSK | **OBSERVING** |
 
 ---
