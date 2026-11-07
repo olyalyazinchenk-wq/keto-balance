@@ -8,7 +8,10 @@ import {
 } from './Icons';
 import type {
   ShoppingFixtureItem,
+  RecipeViewModel,
 } from './contract';
+import { rebuildShoppingFromMenu } from './shoppingFromMenu';
+import { toRecipeViewModel } from './recipesAdapter';
 import type { PilotShoppingItemV1 } from '../../api/pilotTypes';
 import {
   calculateShoppingProgress,
@@ -53,7 +56,19 @@ export function ShoppingScreen({
   recipesById,
 }: ShoppingScreenProps) {
   const isMonthPlan = Boolean(menuDays && menuDays.length > 7);
-  const [selectedRange, setSelectedRange] = useState<string>('week-0');
+
+  function getDefaultWeekRange(): string {
+    if (!menuDays || menuDays.length <= 7) return 'all';
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const foundIdx = menuDays.findIndex((d) => d.date === todayStr);
+    if (foundIdx >= 0) {
+      const weekIdx = Math.floor(foundIdx / 7);
+      return 'week-' + weekIdx;
+    }
+    return 'week-0';
+  }
+
+  const [selectedRange, setSelectedRange] = useState<string>(() => getDefaultWeekRange());
 
   const weeksList = (function() {
     if (!menuDays || menuDays.length <= 7) return [];
@@ -80,20 +95,48 @@ export function ShoppingScreen({
       return items;
     }
     const weekIdx = parseInt(selectedRange.replace('week-', ''), 10);
-    const rangeDays = menuDays.slice(weekIdx * 7, Math.min((weekIdx + 1) * 7, menuDays.length));
-    const rangeRecipeTitles = new Set<string>();
-    for (const d of rangeDays) {
-      for (const rid of Object.values(d.slots)) {
-        if (recipesById && recipesById[rid]) {
-          rangeRecipeTitles.add(recipesById[rid].title);
+    const startIdx = weekIdx * 7;
+    const endIdx = Math.min((weekIdx + 1) * 7, menuDays.length);
+    const rangeDays = menuDays.slice(startIdx, endIdx);
+
+    if (recipesById && Object.keys(recipesById).length > 0) {
+      const normalizedRecipes: Record<string, RecipeViewModel> = {};
+      for (const [id, r] of Object.entries(recipesById)) {
+        if (!r) continue;
+        if ((r as any).portionsVariants) {
+          normalizedRecipes[id] = r as RecipeViewModel;
+        } else if ((r as any).ing) {
+          normalizedRecipes[id] = toRecipeViewModel(r as any);
+        } else if ((r as any).ingredients) {
+          normalizedRecipes[id] = {
+            id,
+            title: (r as any).title || id,
+            portionsVariants: {
+              1: {
+                portions: 1,
+                yieldNote: '',
+                nutritionStatus: '[УТОЧНИТЬ]',
+                ingredients: (r as any).ingredients,
+              },
+            },
+          } as any;
         }
       }
+
+      try {
+        const rangeShopping = rebuildShoppingFromMenu(
+          { days: rangeDays },
+          normalizedRecipes,
+          items,
+          { targetPortions: portionsMultiplier, preserveCheckmarks: true }
+        );
+        return rangeShopping;
+      } catch (e) {
+        // Fallback below
+      }
     }
-    return items.filter((item) => {
-      if (item.id.startsWith('shop-custom-')) return true;
-      if (!item.linkedRecipeTitles || item.linkedRecipeTitles.length === 0) return true;
-      return item.linkedRecipeTitles.some((t) => rangeRecipeTitles.has(t));
-    });
+
+    return items;
   })();
   const [copiedNotice, setCopiedNotice] = useState(false);
   const [copyError, setCopyError] = useState(false);
