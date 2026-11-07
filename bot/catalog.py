@@ -57,16 +57,13 @@ class CatalogService:
     def invalidate_cache(self) -> None:
         self._cached_catalog = None
 
-    def get_catalog_data(self) -> Dict[str, Any]:
+    def get_catalog_data(self, is_owner: bool = False) -> Dict[str, Any]:
         if self._cached_catalog is not None:
-            return self._cached_catalog
-
-        if self.provider is not None:
+            data = self._cached_catalog
+        elif self.provider is not None:
             data = self.provider()
             self._cached_catalog = data
-            return data
-
-        if self.db_path is not None and Path(self.db_path).is_file():
+        elif self.db_path is not None and Path(self.db_path).is_file():
             try:
                 from bot.app_db import get_admin_catalog_version, get_catalog_snapshot
                 ver = get_admin_catalog_version(self.db_path)
@@ -83,12 +80,23 @@ class CatalogService:
                         "nutrition_status": "verified",
                     }
                     self._cached_catalog = data
-                    return data
+                else:
+                    data = load_static_catalog(self.dist_dir, self.app_stage)
+                    self._cached_catalog = data
             except Exception:
-                pass
+                data = load_static_catalog(self.dist_dir, self.app_stage)
+                self._cached_catalog = data
+        else:
+            data = load_static_catalog(self.dist_dir, self.app_stage)
+            self._cached_catalog = data
 
-        data = load_static_catalog(self.dist_dir, self.app_stage)
-        self._cached_catalog = data
+        if not is_owner and data and "public_released_ids" in data:
+            public_ids = set(data["public_released_ids"])
+            return {
+                **data,
+                "released_ids": [i for i in data.get("released_ids", []) if i in public_ids],
+                "recipes": [r for r in data.get("recipes", []) if r.get("id") in public_ids],
+            }
         return data
 
     def get_catalog_data_for_version(self, catalog_id: Optional[str]) -> Optional[Dict[str, Any]]:
@@ -118,18 +126,18 @@ class CatalogService:
             return current
         return None
 
-    def get_released_recipes(self, catalog_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_released_recipes(self, catalog_id: Optional[str] = None, is_owner: bool = False) -> List[Dict[str, Any]]:
         data = self.get_catalog_data_for_version(catalog_id) if catalog_id else None
         if data is None:
-            data = self.get_catalog_data()
+            data = self.get_catalog_data(is_owner=is_owner)
         released_ids = set(data.get("released_ids", []))
         recipes = data.get("recipes", [])
         return [r for r in recipes if r.get("id") in released_ids]
 
-    def get_recipe_by_id(self, recipe_id: str, catalog_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def get_recipe_by_id(self, recipe_id: str, catalog_id: Optional[str] = None, is_owner: bool = False) -> Optional[Dict[str, Any]]:
         data = self.get_catalog_data_for_version(catalog_id) if catalog_id else None
         if data is None:
-            data = self.get_catalog_data()
+            data = self.get_catalog_data(is_owner=is_owner)
         released_ids = set(data.get("released_ids", []))
         if recipe_id not in released_ids:
             return None
@@ -201,6 +209,7 @@ def is_shopping_consistent_with_menu(
     shopping_batches: int,
     shopping_items: List[Dict[str, Any]],
     catalog_service: CatalogService,
+    is_owner: bool = False,
 ) -> bool:
     if not menu_data or not menu_data.get("days"):
         return True
@@ -221,7 +230,7 @@ def is_shopping_consistent_with_menu(
 
     cat_id = menu_data.get("catalog_id") if isinstance(menu_data, dict) else None
     try:
-        admitted_recipes = catalog_service.get_released_recipes(catalog_id=cat_id)
+        admitted_recipes = catalog_service.get_released_recipes(catalog_id=cat_id, is_owner=is_owner)
     except TypeError:
         admitted_recipes = catalog_service.get_released_recipes()
     admitted_ids = {r.get("id") for r in admitted_recipes if r.get("id")}

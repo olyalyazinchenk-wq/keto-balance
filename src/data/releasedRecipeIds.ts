@@ -1,8 +1,10 @@
 /**
- * Released recipe IDs manifest.
- * Option 1B: 20 verified keto recipes for initial 7-day launch.
- * Approved by Olga (2026-11-07, Variant 1B).
- * Remaining recipes retained in PREVIEW_RECIPE_IDS and drafts.
+ * Released recipe IDs manifest & Candidate Review Records.
+ *
+ * 1. RELEASED_RECIPE_IDS: 20 verified keto recipes for general release.
+ * 2. OWNER_REVIEW_CARNIVORE_IDS: 16 candidate carnivore recipes prepared for owner review.
+ * 3. OWNER_ACCEPTANCE_RECIPE_IDS: Combined 36 recipes for owner private acceptance.
+ * 4. PREVIEW_RECIPE_IDS: Complete 50-recipe catalog for previews and testing.
  */
 
 export interface RecipeApprovalRecord {
@@ -13,6 +15,7 @@ export interface RecipeApprovalRecord {
   serv: number;
   imageStatus: 'verified' | 'unverified' | 'placeholder';
   license: string;
+  editorialStatus?: 'approved' | 'review' | 'candidate';
 }
 
 export const RELEASED_RECIPE_IDS: readonly string[] = [
@@ -38,6 +41,30 @@ export const RELEASED_RECIPE_IDS: readonly string[] = [
   "k28"
 ];
 
+export const OWNER_REVIEW_CARNIVORE_IDS: readonly string[] = [
+  "c1",
+  "c2",
+  "c3",
+  "c4",
+  "c5",
+  "c6",
+  "c7",
+  "c8",
+  "c9",
+  "c10",
+  "c11",
+  "c12",
+  "c13",
+  "c14",
+  "c15",
+  "c16"
+];
+
+export const OWNER_ACCEPTANCE_RECIPE_IDS: readonly string[] = [
+  ...RELEASED_RECIPE_IDS,
+  ...OWNER_REVIEW_CARNIVORE_IDS,
+];
+
 export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
   {
     "id": "k1",
@@ -46,7 +73,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 2,
     "imageStatus": "verified",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k2",
@@ -55,7 +83,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 1,
     "imageStatus": "verified",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k3",
@@ -64,7 +93,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 3,
     "imageStatus": "verified",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k4",
@@ -73,7 +103,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 2,
     "imageStatus": "verified",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k5",
@@ -82,7 +113,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 4,
     "imageStatus": "verified",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k6",
@@ -91,7 +123,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 4,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k7",
@@ -100,7 +133,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 2,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k8",
@@ -109,7 +143,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 2,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k9",
@@ -118,7 +153,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 4,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k10",
@@ -127,7 +163,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 3,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k11",
@@ -136,7 +173,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 3,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k12",
@@ -145,7 +183,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 3,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k13",
@@ -154,7 +193,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 3,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k14",
@@ -163,7 +203,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 4,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k15",
@@ -172,7 +213,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 4,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k16",
@@ -181,7 +223,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 4,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k17",
@@ -190,7 +233,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 4,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k25",
@@ -199,7 +243,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 2,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k27",
@@ -208,7 +253,8 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 2,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
   },
   {
     "id": "k28",
@@ -217,7 +263,168 @@ export const RELEASED_RECIPE_APPROVALS: readonly RecipeApprovalRecord[] = [
     "approvalDate": "2026-11-07",
     "serv": 2,
     "imageStatus": "placeholder",
-    "license": "proprietary"
+    "license": "proprietary",
+    "editorialStatus": "approved"
+  },
+  {
+    "id": "c1",
+    "sourceHash": "9d5d0d991f6783d0f4a494d3cd0e59e801bf5e8677eaf35fdeb3b8596c2db62d",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 1,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c2",
+    "sourceHash": "141fe2273077d910fb3da6bf9080bfc5ab0b4bbaeb1a83a9043e324597c802d3",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 3,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c3",
+    "sourceHash": "41c54de257cccd41da4db499f9eb4cc35fadbd4c5b119ab9041caf1e78f1eaf0",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 4,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c4",
+    "sourceHash": "4f9cc2c634df6c3a4db5e52f701de0fd963c77822aadf9fe5920f800dcd4077d",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 2,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c5",
+    "sourceHash": "81f805028fb43d43e12c9ee9d338239215e706680fcb38e9979ee9a976104912",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 2,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c6",
+    "sourceHash": "11582cb19a2caf42f4badaf0582e34c773cad3836e4b2b2d543a50744241d502",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 2,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c7",
+    "sourceHash": "36d8ca5713449638fe47777cfce8a2058a6dd4a9d146179600158c86999963f4",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 6,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c8",
+    "sourceHash": "b8956af708810722db16a8f265df175af995307011f9c0c3e2e5d089e4d8e373",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 1,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c9",
+    "sourceHash": "01b8834aeb543f3b54b58783f303bc5e7e90b518a35c29e9472f965f1c692ae2",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 2,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c10",
+    "sourceHash": "cb746f00932c7196eeb7dbff8ab10271cc898b9ba56ff2b6e07b69cd33b710e4",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 3,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c11",
+    "sourceHash": "4dd0c4d3177d3e00ab15526dec92d4ba1feda4d20dbe40b584bd132ed80cc376",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 2,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c12",
+    "sourceHash": "b96ac2bdb0f8b21703e5c9999166d37818fb5dc7e19eb99c8a53cc29c13e0011",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 6,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c13",
+    "sourceHash": "56f1584573215d847d65dc1d0a5f8ece0cd62a9c83ecac6e27e4f902f3072304",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 2,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c14",
+    "sourceHash": "aa9ac3ba9e9eb32d44ab56a876764e8a2be75780eb8059e1aab2e9a980bb4871",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 3,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c15",
+    "sourceHash": "78173426489d2b71fc8aa9ec8baaf61917f5d763ee7d5034e4b8f84d446e7093",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 3,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
+  },
+  {
+    "id": "c16",
+    "sourceHash": "ebc8c2ff567a7450f45f430b0be899e58971aa8cf8872944b3d6d239cc887ba1",
+    "approvalRef": "candidate-carnivore-review-20261107",
+    "approvalDate": "2026-11-07",
+    "serv": 1,
+    "imageStatus": "placeholder",
+    "license": "proprietary",
+    "editorialStatus": "review"
   }
 ];
 

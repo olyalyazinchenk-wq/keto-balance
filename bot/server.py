@@ -745,11 +745,13 @@ def create_app(
                 if existing_user and existing_user.get("profile"):
                     effective_profile = existing_user["profile"]
 
+            is_owner = bool(active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist)
             # 2. Check menu compatibility with profile restrictions and admitted catalog
             compatible, reason = is_menu_compatible_with_profile(
                 payload.state.menu,
                 effective_profile,
-                catalog_service
+                catalog_service,
+                is_owner=is_owner
             )
             if not compatible:
                 raise HTTPException(status_code=400, detail=reason)
@@ -762,7 +764,8 @@ def create_app(
                     payload.state.menu.model_dump(),
                     payload.state.shopping_batches,
                     shopping_items,
-                    catalog_service
+                    catalog_service,
+                    is_owner=is_owner
                 )
                 payload.state.shopping_stale = not is_consistent
         try:
@@ -803,17 +806,29 @@ def create_app(
         user_id: Optional[int] = Query(None),
         catalog_id: Optional[str] = Query(None),
     ):
-        if active_settings.is_owner_mode:
+        is_owner = False
+        target_uid = None
+        try:
             target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+            if active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist:
+                is_owner = True
+        except Exception:
+            pass
+
+        if active_settings.is_owner_mode:
+            if not target_uid:
+                target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
             if active_settings.owner_allowlist is None or len(active_settings.owner_allowlist) == 0:
                 raise HTTPException(status_code=403, detail="Owner allowlist is not configured")
             if target_uid not in active_settings.owner_allowlist:
                 raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
+            is_owner = True
+
         if catalog_id:
             snap = catalog_service.get_catalog_data_for_version(catalog_id)
             if snap is not None:
                 return snap
-        return catalog_service.get_catalog_data()
+        return catalog_service.get_catalog_data(is_owner=is_owner)
 
     @app.get("/api/catalog/{recipe_id}")
     def get_recipe(
@@ -823,13 +838,25 @@ def create_app(
         user_id: Optional[int] = Query(None),
         catalog_id: Optional[str] = Query(None),
     ):
-        if active_settings.is_owner_mode:
+        is_owner = False
+        target_uid = None
+        try:
             target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+            if active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist:
+                is_owner = True
+        except Exception:
+            pass
+
+        if active_settings.is_owner_mode:
+            if not target_uid:
+                target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
             if active_settings.owner_allowlist is None or len(active_settings.owner_allowlist) == 0:
                 raise HTTPException(status_code=403, detail="Owner allowlist is not configured")
             if target_uid not in active_settings.owner_allowlist:
                 raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
-        recipe = catalog_service.get_recipe_by_id(recipe_id, catalog_id=catalog_id)
+            is_owner = True
+
+        recipe = catalog_service.get_recipe_by_id(recipe_id, catalog_id=catalog_id, is_owner=is_owner)
         if not recipe:
             raise HTTPException(
                 status_code=404,

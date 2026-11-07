@@ -47,13 +47,18 @@ export function exportReleaseCatalog(options = {}) {
   const testOnly = options.testOnly ?? false;
 
   const { RECIPES } = loadTs(recipesPath);
-  const { RELEASED_RECIPE_IDS, RELEASED_RECIPE_APPROVALS } = loadTs(releasedIdsPath);
+  const {
+    RELEASED_RECIPE_IDS,
+    OWNER_ACCEPTANCE_RECIPE_IDS,
+    OWNER_REVIEW_CARNIVORE_IDS,
+    RELEASED_RECIPE_APPROVALS,
+  } = loadTs(releasedIdsPath);
 
   if (!Array.isArray(RECIPES)) {
     throw new TypeError('RECIPES must be an array.');
   }
 
-  const releasedIds = options.releasedIds ?? RELEASED_RECIPE_IDS;
+  const releasedIds = options.releasedIds ?? (OWNER_ACCEPTANCE_RECIPE_IDS || RELEASED_RECIPE_IDS);
   const approvals = options.approvals ?? (RELEASED_RECIPE_APPROVALS || []);
 
   if (!Array.isArray(releasedIds)) {
@@ -113,10 +118,23 @@ export function exportReleaseCatalog(options = {}) {
 
   const catalogArtifact = {
     schema_version: 1,
-    catalog_id: options.catalogId ?? (testOnly ? 'synthetic-pilot-v1' : 'released-catalog-v1'),
+    catalog_id: options.catalogId ?? (testOnly ? 'synthetic-pilot-v1' : 'released-catalog-202611-v1'),
+    catalog_month: '2026-11',
+    updated_date: '2026-11-07',
+    editorial_status: 'owner_review',
     test_only: testOnly,
     released_ids: [...releasedIds],
-    recipes: approvedRecipes,
+    public_released_ids: [...(RELEASED_RECIPE_IDS || [])],
+    owner_review_ids: [...(OWNER_REVIEW_CARNIVORE_IDS || [])],
+    recipes: approvedRecipes.map(r => {
+      const app = approvalsMap.get(r.id);
+      return {
+        ...r,
+        editorial_status: app?.editorialStatus ?? (r.mode === 'carnivore' ? 'review' : 'approved'),
+        approval_ref: app?.approvalRef,
+        approval_date: app?.approvalDate,
+      };
+    }),
     nutrition_status: 'unverified'
   };
 

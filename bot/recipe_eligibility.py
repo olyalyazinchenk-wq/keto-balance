@@ -308,7 +308,8 @@ def is_recipe_allowed(recipe: Dict[str, Any], profile: Any) -> Tuple[bool, str]:
 def is_menu_compatible_with_profile(
     menu: Any,
     profile: Any,
-    catalog_service: Any
+    catalog_service: Any,
+    is_owner: bool = False
 ) -> Tuple[bool, str]:
     """
     Проверяет совместимость меню с каталогом и ограничениями пользователя.
@@ -329,7 +330,7 @@ def is_menu_compatible_with_profile(
 
     cat_id = getattr(menu, "catalog_id", None) if hasattr(menu, "catalog_id") else (menu.get("catalog_id") if isinstance(menu, dict) else None)
     try:
-        admitted_recipes = catalog_service.get_released_recipes(catalog_id=cat_id)
+        admitted_recipes = catalog_service.get_released_recipes(catalog_id=cat_id, is_owner=is_owner)
     except TypeError:
         admitted_recipes = catalog_service.get_released_recipes()
     admitted_ids = {r.get("id") for r in admitted_recipes if r.get("id")}
@@ -354,7 +355,7 @@ def is_menu_compatible_with_profile(
                 return False, f"Menu contains unreleased or unknown recipe ID: '{r_id}'"
 
             try:
-                recipe = catalog_service.get_recipe_by_id(r_id, catalog_id=cat_id)
+                recipe = catalog_service.get_recipe_by_id(r_id, catalog_id=cat_id, is_owner=is_owner)
             except TypeError:
                 recipe = catalog_service.get_recipe_by_id(r_id)
             if not recipe:
