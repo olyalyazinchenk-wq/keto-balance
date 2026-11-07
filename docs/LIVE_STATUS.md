@@ -37,9 +37,13 @@
 | **Проверка webhook и очередей** | `getWebhookInfo` via `socks5://127.0.0.1:10808` | `ok: True, url: '', pending_updates: 0` | **PASS** |
 | **Отключение домашнего моста** | `task-750 kill`, проверка порта 18090 на ВМ | Порт 18090 освобождён, бот продолжает polling без ошибок | **PASS** |
 | **Рестарт-дрилл сетевого клиента** | `docker restart ketobalance-tg-proxy` | Восстановление < 1 сек, порт 10808 активен | **PASS** |
-| **Backend Test Suite** | `python scripts/run_backend_tests.py` | 331 тестов PASS | **PASS** |
-| **Frontend Unit Tests** | `npm run test:unit` | 249 тестов PASS, 0 fail | **PASS** |
-| **Playwright Full E2E** | `npx playwright test --config playwright.full.config.ts` | 15 тестов PASS | **PASS** |
+| **Backend Test Suite** | python scripts/run_backend_tests.py | 358 тестов PASS (0 fail, 0 error, 0 skipped) | **PASS** |
+| **Frontend Unit Tests** | 
+pm run test:unit | 278 тестов PASS (0 fail, 0 error) | **PASS** |
+| **TypeScript Typecheck** | 
+pm run typecheck | 0 ошибок | **PASS** |
+| **Playwright Full E2E** | 
+px playwright test --config playwright.full.config.ts | 15 тестов PASS (320px, 390px, 768px, 1440px) | **PASS** |
 | **Каталог приёмки владельца** | `node scripts/validate-catalog.mjs && export-release-catalog.mjs` | 50 рецептов PASS; 36 рецептов в каталоге владельца (20 кето + 16 карнивор на проверке) | **PASS** |
 | **Месячный план и покупки** | `playwright test --config playwright.full.config.ts` | 28–31 день, недели меню, выбор диапазона покупок (неделя/месяц), сохранение порций | **PASS** |
 | **24-часовая устойчивость** | Наблюдаемый период работы без домашнего ПК | Старт наблюдения: 2026-11-07 18:50 MSK | **OBSERVING** |
