@@ -31,7 +31,7 @@ export function createMenuController(
   return {
     getReleasedRecipes,
     createUserMenu(opts: GenerateMenuOptions) {
-      return generateMenu(getReleasedRecipes(), opts);
+      return generateMenu(getReleasedRecipes(), { ...opts, catalogId: opts.catalogId || "released-catalog-v1" });
     },
     createUserReplacementCandidates(request: ReplacementRequest) {
       const recipes = getReleasedRecipes();

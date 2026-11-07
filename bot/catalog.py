@@ -91,14 +91,45 @@ class CatalogService:
         self._cached_catalog = data
         return data
 
-    def get_released_recipes(self) -> List[Dict[str, Any]]:
-        data = self.get_catalog_data()
+    def get_catalog_data_for_version(self, catalog_id: Optional[str]) -> Optional[Dict[str, Any]]:
+        if not catalog_id:
+            return None
+        if catalog_id.startswith("admin-catalog-v"):
+            try:
+                ver = int(catalog_id.replace("admin-catalog-v", ""))
+                if self.db_path is not None and Path(self.db_path).is_file():
+                    from bot.app_db import get_catalog_snapshot
+                    snapshot = get_catalog_snapshot(ver, self.db_path)
+                    if snapshot is not None:
+                        released_ids = [r.get("id") for r in snapshot if r.get("id")]
+                        return {
+                            "schema_version": 1,
+                            "catalog_id": catalog_id,
+                            "catalog_version": ver,
+                            "test_only": self.app_stage == "test",
+                            "released_ids": released_ids,
+                            "recipes": snapshot,
+                            "nutrition_status": "unverified",
+                        }
+            except Exception:
+                pass
+        current = self.get_catalog_data()
+        if current.get("catalog_id") == catalog_id:
+            return current
+        return None
+
+    def get_released_recipes(self, catalog_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        data = self.get_catalog_data_for_version(catalog_id) if catalog_id else None
+        if data is None:
+            data = self.get_catalog_data()
         released_ids = set(data.get("released_ids", []))
         recipes = data.get("recipes", [])
         return [r for r in recipes if r.get("id") in released_ids]
 
-    def get_recipe_by_id(self, recipe_id: str) -> Optional[Dict[str, Any]]:
-        data = self.get_catalog_data()
+    def get_recipe_by_id(self, recipe_id: str, catalog_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        data = self.get_catalog_data_for_version(catalog_id) if catalog_id else None
+        if data is None:
+            data = self.get_catalog_data()
         released_ids = set(data.get("released_ids", []))
         if recipe_id not in released_ids:
             return None
@@ -188,7 +219,11 @@ def is_shopping_consistent_with_menu(
     if not shopping_items:
         return False
 
-    admitted_recipes = catalog_service.get_released_recipes()
+    cat_id = menu_data.get("catalog_id") if isinstance(menu_data, dict) else None
+    try:
+        admitted_recipes = catalog_service.get_released_recipes(catalog_id=cat_id)
+    except TypeError:
+        admitted_recipes = catalog_service.get_released_recipes()
     admitted_ids = {r.get("id") for r in admitted_recipes if r.get("id")}
     for rid in set(menu_recipes_sequence):
         if rid not in admitted_ids:
@@ -199,7 +234,10 @@ def is_shopping_consistent_with_menu(
     menu_titles: set[str] = set()
 
     for rid in menu_recipes_sequence:
-        r = catalog_service.get_recipe_by_id(rid)
+        try:
+            r = catalog_service.get_recipe_by_id(rid, catalog_id=cat_id)
+        except TypeError:
+            r = catalog_service.get_recipe_by_id(rid)
         if not r:
             return False
         title = r.get("title")

@@ -38,6 +38,7 @@ export interface GeneratedMenu {
   portion: number;
   saved: boolean;
   created: number;
+  catalog_id?: string;
   days: DayMenu[];
 }
 

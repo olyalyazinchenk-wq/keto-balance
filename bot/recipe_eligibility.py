@@ -327,7 +327,11 @@ def is_menu_compatible_with_profile(
     if not days:
         return True, ""
 
-    admitted_recipes = catalog_service.get_released_recipes()
+    cat_id = getattr(menu, "catalog_id", None) if hasattr(menu, "catalog_id") else (menu.get("catalog_id") if isinstance(menu, dict) else None)
+    try:
+        admitted_recipes = catalog_service.get_released_recipes(catalog_id=cat_id)
+    except TypeError:
+        admitted_recipes = catalog_service.get_released_recipes()
     admitted_ids = {r.get("id") for r in admitted_recipes if r.get("id")}
 
     for day in days:
@@ -349,7 +353,10 @@ def is_menu_compatible_with_profile(
             if r_id not in admitted_ids:
                 return False, f"Menu contains unreleased or unknown recipe ID: '{r_id}'"
 
-            recipe = catalog_service.get_recipe_by_id(r_id)
+            try:
+                recipe = catalog_service.get_recipe_by_id(r_id, catalog_id=cat_id)
+            except TypeError:
+                recipe = catalog_service.get_recipe_by_id(r_id)
             if not recipe:
                 return False, f"Menu contains unreleased or unknown recipe ID: '{r_id}'"
 

@@ -26,11 +26,16 @@ class AppSettings:
     max_support_message_length: int = 2000
     support_rate_limit_per_minute: int = 5
     allow_anonymous_preview: bool = True
+    access_mode: str = field(default_factory=lambda: os.getenv("KETO_ACCESS_MODE", "owner" if os.getenv("APP_STAGE") in ("staging", "home-pilot") else "public"))
     owner_allowlist: Optional[FrozenSet[int]] = None
     allow_demo_auth: bool = False
     allow_demo_payments: bool = False
     session_max_lifetime_seconds: Optional[int] = None
     telegram_webhook_secret_token: Optional[str] = field(default_factory=lambda: os.getenv("TELEGRAM_WEBHOOK_SECRET_TOKEN"))
+
+    @property
+    def is_owner_mode(self) -> bool:
+        return self.access_mode == "owner" or self.app_stage in {"staging", "home-pilot"}
 
     @property
     def is_staging(self) -> bool:

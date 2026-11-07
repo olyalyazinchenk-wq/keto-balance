@@ -6,6 +6,7 @@ export interface GenerateMenuOptions {
   numDays: number;
   meals: number;
   profile?: UserProfile | null;
+  catalogId?: string;
   today?: Date;
   random?: () => number;
 }
@@ -22,6 +23,7 @@ export interface GeneratedMenu {
   portion: number;
   saved: boolean;
   created: number;
+  catalog_id?: string;
   days: DayMenu[];
 }
 
@@ -119,6 +121,7 @@ export function generateMenu(
     portion: 1,
     saved: false,
     created: today ? today.getTime() : Date.now(),
+    catalog_id: opts.catalogId || "released-catalog-v1",
     days,
   };
 }

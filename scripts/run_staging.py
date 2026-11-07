@@ -52,20 +52,22 @@ def main():
     parser.add_argument("--port", type=int, default=18081, help="Port to bind (default: 18081)")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
     parser.add_argument("--owner-id", type=int, default=DEFAULT_OWNER_ID, help="Allowed Telegram user ID (default: 1084557944)")
-    parser.add_argument("--lifetime", type=int, default=DEFAULT_LIFETIME_SECONDS, help="Lifetime in seconds before auto-shutdown (default: 3600)")
+    parser.add_argument("--lifetime", type=int, default=None, help="Lifetime in seconds before auto-shutdown (default: 3600, or 0/disabled for persistent)")
     parser.add_argument("--persistent", action="store_true", help="Reuse fixed staging database (data/staging_pilot.db) across restarts without auto-shutdown")
     parser.add_argument("--receipt", type=str, default="", help="Path to build-receipt.json")
     parser.add_argument("--db", type=str, default="", help="Custom isolated DB path")
     parser.add_argument("--dist", type=str, default="", help="Custom dist directory")
     parser.add_argument("--catalog", type=str, default="", help="Custom catalog JSON path (or approved demo sidecar)")
     args = parser.parse_args()
+    if args.lifetime is None:
+        args.lifetime = 0 if args.persistent else DEFAULT_LIFETIME_SECONDS
 
     if args.port in FORBIDDEN_PORTS:
         print(f"[ERROR] Port {args.port} is reserved for existing system services. Use an isolated port (e.g. 18081).", file=sys.stderr)
         sys.exit(1)
 
     if not (0 < args.lifetime <= 86400):
-        print(f"[ERROR] Invalid lifetime {args.lifetime}s. Must be between 1 and 86400 seconds.", file=sys.stderr)
+        print(f"[ERROR] Invalid lifetime {args.lifetime}s. Must be between 0 and 86400 seconds (0 disables auto-shutdown).", file=sys.stderr)
         sys.exit(1)
 
     bot_token = ""

@@ -487,7 +487,7 @@ def create_app(
         user_id: Optional[int] = Query(None),
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-        if active_settings.owner_allowlist is not None and target_uid in active_settings.owner_allowlist:
+        if active_settings.is_owner_mode and active_settings.owner_allowlist is not None and target_uid in active_settings.owner_allowlist:
             return SubscriptionReadV1(
                 is_premium=True,
                 tier="owner",
@@ -797,12 +797,39 @@ def create_app(
     # --- K2 CATALOG & RELEASE BOUNDARIES ---
 
     @app.get("/api/catalog")
-    def get_catalog():
+    def get_catalog(
+        authorization: Optional[str] = Header(None),
+        x_user_id: Optional[int] = Header(None),
+        user_id: Optional[int] = Query(None),
+        catalog_id: Optional[str] = Query(None),
+    ):
+        if active_settings.is_owner_mode:
+            target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+            if active_settings.owner_allowlist is None or len(active_settings.owner_allowlist) == 0:
+                raise HTTPException(status_code=403, detail="Owner allowlist is not configured")
+            if target_uid not in active_settings.owner_allowlist:
+                raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
+        if catalog_id:
+            snap = catalog_service.get_catalog_data_for_version(catalog_id)
+            if snap is not None:
+                return snap
         return catalog_service.get_catalog_data()
 
     @app.get("/api/catalog/{recipe_id}")
-    def get_recipe(recipe_id: str):
-        recipe = catalog_service.get_recipe_by_id(recipe_id)
+    def get_recipe(
+        recipe_id: str,
+        authorization: Optional[str] = Header(None),
+        x_user_id: Optional[int] = Header(None),
+        user_id: Optional[int] = Query(None),
+        catalog_id: Optional[str] = Query(None),
+    ):
+        if active_settings.is_owner_mode:
+            target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+            if active_settings.owner_allowlist is None or len(active_settings.owner_allowlist) == 0:
+                raise HTTPException(status_code=403, detail="Owner allowlist is not configured")
+            if target_uid not in active_settings.owner_allowlist:
+                raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
+        recipe = catalog_service.get_recipe_by_id(recipe_id, catalog_id=catalog_id)
         if not recipe:
             raise HTTPException(
                 status_code=404,
@@ -1032,10 +1059,18 @@ def create_app(
         ):
             raise HTTPException(status_code=404, detail="Not Found")
 
-        if rel_path in ("released-catalog.json", "catalog.json") or rel_path.endswith("-catalog.json"):
-            raise HTTPException(status_code=401, detail="Owner session required")
-
         resolved = resolve_safe_path(resolved_dist, full_path)
+
+        # Strictly block direct static access to catalog JSON files even with traversal tricks (/., %2f., etc.)
+        resolved_name = resolved.name.lower()
+        rel_lower = rel_path.lower()
+        if (
+            resolved_name in ("released-catalog.json", "catalog.json")
+            or (resolved_name.endswith(".json") and "catalog" in resolved_name)
+            or "released-catalog.json" in rel_lower
+            or "catalog.json" in rel_lower
+        ):
+            raise HTTPException(status_code=401, detail="Owner session required")
 
         if resolved.is_file():
             headers = {}
