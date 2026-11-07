@@ -7,6 +7,7 @@ export interface StartGateScreenProps {
   onGateGranted: (payload: { approach: PilotApproach; confirmed18Plus: true }) => void;
   onContinue?: (approach: PilotApproach) => void;
   onOpenSupport?: () => void;
+  onViewHome?: () => void;
 }
 
 function ArrowRightIcon() {
@@ -66,6 +67,7 @@ export function StartGateScreen({
   onGateGranted,
   onContinue,
   onOpenSupport,
+  onViewHome,
 }: StartGateScreenProps) {
   const [localApproach, setLocalApproach] = useState<PilotApproach>(approach || 'keto');
   const currentApproach = approach || localApproach;
@@ -382,6 +384,17 @@ export function StartGateScreen({
             <span>Продолжить</span>
             <ArrowRightIcon />
           </button>
+
+          {onViewHome && (
+            <button
+              type="button"
+              data-testid="gate-view-home-btn"
+              onClick={onViewHome}
+              className="w-full py-2 text-xs text-[#0F3526] hover:text-[#164D37] font-semibold text-center transition-colors underline"
+            >
+              Познакомиться с возможностями на главной →
+            </button>
+          )}
         </div>
       </div>
     </div>

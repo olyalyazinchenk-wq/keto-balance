@@ -132,7 +132,8 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
     steps: recipe.steps,
     substitutions: Object.entries(recipe.subs || {}).map(([k, v]) => `${k} → ${v}`),
     storageRule: recipe.store || 'Хранить в холодильнике',
-    sourceStatus: 'КБЖУ уточняется автором',
+    sourceStatus: (recipe as any).editorial_status ?? (recipe as any).sourceStatus ?? (recipe.mode === 'carnivore' ? 'review' : 'approved'),
+    editorial_status: (recipe as any).editorial_status ?? (recipe as any).sourceStatus ?? (recipe.mode === 'carnivore' ? 'review' : 'approved'),
   };
 }
 

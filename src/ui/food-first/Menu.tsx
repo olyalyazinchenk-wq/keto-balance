@@ -270,7 +270,7 @@ export function MenuScreen({
                     <>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3>{recipe.title}</h3>
-                        {(recipe.sourceStatus === 'review' || (recipe.id && recipe.id.startsWith('c'))) && (
+                        {(recipe.sourceStatus === 'review' || recipe.editorial_status === 'review') && (
                           <span
                             className="fm-review-badge"
                             data-testid={`review-badge-${recipe.id}`}

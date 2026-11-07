@@ -1,4 +1,5 @@
 import './recipe-shopping-food.css';
+import './menu-food.css';
 import { useEffect, useState } from 'react';
 import {
   Check,
@@ -113,7 +114,17 @@ export function RecipeScreen({
         )}
         <div className="food-grid items-start">
           <div className="col-span-3 md:col-span-5 space-y-3 sm:space-y-4 min-w-0">
-            <div className="kb-eyebrow text-[var(--kb-text-4)]">Рецепт</div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="kb-eyebrow text-[var(--kb-text-4)]">Рецепт</div>
+              {(recipe.sourceStatus === 'review' || (recipe as any).editorial_status === 'review') && (
+                <span
+                  className="fm-review-badge"
+                  data-testid={`review-badge-${recipe.id}`}
+                >
+                  🔍 На проверке
+                </span>
+              )}
+            </div>
             <h1 className="food-title text-[26px] sm:text-[40px] lg:text-[46px] text-[var(--kb-text-1)]">
               {recipe.title}
             </h1>

@@ -35,7 +35,7 @@ export interface FoodFirstAppProps {
   onToggleCheckedInStore: (id: string) => void;
   onToggleAlreadyHave: (id: string) => void;
   onAddCustomItem: (item: PilotShoppingItemV1) => void;
-  onOpenSettings?: () => void;
+  onOpenSettings?: (targetApproach?: 'keto' | 'carnivore') => void;
   subscription?: SubscriptionState | null;
   onUpdateSubscription?: (sub: SubscriptionState) => void;
   sessionToken?: string;
@@ -390,13 +390,21 @@ export function FoodFirstApp({
           }))}
           hasMenu={Boolean(state.menu && state.menu.days && state.menu.days.length > 0)}
           onOpenRecipe={handleOpenRecipe}
-          onChooseMenu={() => navigateTo('menu')}
+          onChooseMenu={() => {
+            if (state.menu && state.menu.days && state.menu.days.length > 0) {
+              navigateTo('menu');
+            } else if (onOpenSettings) {
+              onOpenSettings();
+            }
+          }}
           onOpenSettings={onOpenSettings}
           onOpenPaywall={handleOpenPaywall}
           isPremium={isPremium}
           localSubscription={localSubscription}
           onNavigateToSupport={() => navigateTo('support')}
-          onSelectApproach={onOpenSettings}
+          onSelectApproach={(approach) => {
+            if (onOpenSettings) onOpenSettings(approach);
+          }}
         />
       )}
 
@@ -414,7 +422,7 @@ export function FoodFirstApp({
             onRefreshShopping();
             navigateTo('shopping');
           }}
-          onEditSettings={onOpenSettings}
+          onEditSettings={onOpenSettings ? () => onOpenSettings() : undefined}
           onRebuildMenu={onRebuildMenu}
           catalogRecipes={catalog.recipes}
           admittedRecipeIds={effectiveCatalogIds}
@@ -484,7 +492,7 @@ export function FoodFirstApp({
           <h1>{currentScreen === 'diary' ? 'Дневник' : 'Ещё'}</h1>
           <section aria-label="Настройки и помощь">
             <h2>Твоё питание</h2>
-            {onOpenSettings && <button type="button" className="ff-more-link" onClick={onOpenSettings}>Настройки питания и ограничения<span aria-hidden="true">→</span></button>}
+            {onOpenSettings && <button type="button" className="ff-more-link" onClick={() => onOpenSettings()}>Настройки питания и ограничения<span aria-hidden="true">→</span></button>}
             <DailyTip showButton={true} />
             <button type="button" className="ff-more-link" onClick={() => navigateTo('support')}>Помощь и личный вопрос Ольге<span aria-hidden="true">→</span></button>
           </section>

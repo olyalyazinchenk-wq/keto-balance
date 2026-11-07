@@ -71,14 +71,10 @@ export function FoodToday({
           <button
             type="button"
             className="ff-action ff-hero__cta"
-            data-testid="food-main-action"
+            data-testid="home-hero-cta"
             onClick={() => {
               triggerHaptic('impact_medium');
-              if (primary) {
-                open(primary.id);
-              } else {
-                onChooseMenu();
-              }
+              onChooseMenu();
             }}
           >
             {hasMenu ? 'Продолжить мой план' : 'Составить меню на месяц'}
@@ -109,7 +105,7 @@ export function FoodToday({
                 <button
                   type="button"
                   className="ff-action"
-                  data-testid="food-card-action"
+                  data-testid="food-main-action"
                   onClick={() => open(primary.id)}
                 >
                   Открыть рецепт
@@ -203,7 +199,7 @@ export function FoodToday({
             <span className="ff-step-num">1</span>
             <div>
               <h3>Меню по дням</h3>
-              <p>Готовый сбалансированный рацион на календарный месяц без ежедневного придумывания блюд.</p>
+              <p>План питания на календарный месяц с распределением блюд по дням недели.</p>
             </div>
           </div>
           <div className="ff-step-item">
@@ -240,18 +236,18 @@ export function FoodToday({
       {/* 4. Знакомство с кето и карнивором */}
       <section className="ff-approaches" aria-label="Знакомство с кето и карнивором" data-testid="approaches-section">
         <div className="ff-section-title">
-          <span className="ff-kicker">Два терапевтических режима</span>
+          <span className="ff-kicker">Два подхода к питанию</span>
           <h2>Знакомство с кето и карнивором</h2>
         </div>
         <p className="ff-approaches__intro">
-          Каждый организм уникален. Выберите подход, который лучше всего соответствует вашим целям и ощущениям.
+          Каждый организм индивидуален. Выберите подход к питанию, который лучше соответствует вашему образу жизни и предпочтениям в продуктах.
         </p>
         <div className="ff-approaches-grid">
           <div className="ff-approach-card">
-            <span className="ff-approach-card__badge">Сбалансированное кето</span>
+            <span className="ff-approach-card__badge">Низкоуглеводный рацион</span>
             <h3>Кето-рацион</h3>
             <p>
-              Рацион на основе качественных жиров, белков и свежих овощей. Способствует стабильному уровню энергии и чувству насыщения без скачков сахара.
+              Рацион на основе мяса, рыбы, яиц, натуральных масел и зелёных овощей с низким содержанием углеводов.
             </p>
             <button
               type="button"
@@ -268,10 +264,10 @@ export function FoodToday({
           </div>
 
           <div className="ff-approach-card">
-            <span className="ff-approach-card__badge ff-approach-card__badge--carnivore">Элиминационный рацион</span>
+            <span className="ff-approach-card__badge ff-approach-card__badge--carnivore">Мясной рацион</span>
             <h3>Карнивор-рацион</h3>
             <p>
-              Питание на основе мяса, птицы, рыбы, субпродуктов и яиц без растительных углеводов. Применяется для разгрузки ЖКТ и исключения триггеров.
+              Рацион исключительно из продуктов животного происхождения: мяса, птицы, рыбы, яиц и животных жиров.
             </p>
             <button
               type="button"

@@ -79,6 +79,19 @@ export default function PilotApp() {
   const [draftPrepTime, setDraftPrepTime] = useState<number>(35);
   const [draftMealsPerDay, setDraftMealsPerDay] = useState<2 | 3 | 4>(3);
   const [draftPlanDays, setDraftPlanDays] = useState<1 | 3 | 7 | 28 | 29 | 30 | 31>(30);
+  const [draftMonth, setDraftMonth] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const [viewHomeBeforeGate, setViewHomeBeforeGate] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      const s = p.get('screen');
+      if (s === 'home' || s === 'today') return true;
+      if (window.location.hash.includes('home') || window.location.hash.includes('today')) return true;
+    }
+    return false;
+  });
   const [showSupport, setShowSupport] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
@@ -184,6 +197,11 @@ export default function PilotApp() {
         setDraftPrepTime(currentProfile.settings.prepTimeMax ?? 0);
         setDraftMealsPerDay((currentProfile.settings.mealsPerDay as any) || 3);
         setDraftPlanDays((currentProfile.settings.planDays as any) || 3);
+        if (currentProfile.settings.month) {
+          setDraftMonth(currentProfile.settings.month);
+        } else if (currentState?.menu?.month) {
+          setDraftMonth(currentState.menu.month);
+        }
 
         if (currentProfile.settings.approach === 'explore') {
           setPhase('needs_settings');
@@ -208,6 +226,7 @@ export default function PilotApp() {
           if (!isComp) {
             const controller = createMenuController(catData.recipes, catData.released_ids, {
               isPreview: catData.test_only,
+              catalogId: catData.catalog_id,
             });
             const validNumDays = (currentProfile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(currentProfile.settings.planDays as any))
               ? currentProfile.settings.planDays
@@ -220,6 +239,7 @@ export default function PilotApp() {
                 meals: currentProfile.settings.mealsPerDay,
                 profile: canonProfile,
                 mode: approachToMode(currentProfile.settings.approach),
+                catalogId: catData.catalog_id,
               });
               currentState = {
                 ...currentState,
@@ -271,6 +291,7 @@ export default function PilotApp() {
           const canonProfile = preferencesToUserProfile(currentProfile.settings);
           const controller = createMenuController(catData.recipes, catData.released_ids, {
             isPreview: catData.test_only,
+            catalogId: catData.catalog_id,
           });
           const planDays = (currentProfile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(currentProfile.settings.planDays as any))
             ? currentProfile.settings.planDays
@@ -282,6 +303,7 @@ export default function PilotApp() {
               meals: currentProfile.settings.mealsPerDay,
               profile: canonProfile,
               mode: approachToMode(currentProfile.settings.approach),
+              catalogId: catData.catalog_id,
             });
           } catch (genErr: any) {
             setPhase('error');
@@ -400,6 +422,7 @@ export default function PilotApp() {
       prepTimeMax: draftPrepTime,
       mealsPerDay: draftMealsPerDay,
       planDays: draftPlanDays,
+      month: draftPlanDays >= 28 ? draftMonth : undefined,
       preferenceNote: 'simple_daily',
     };
 
@@ -408,18 +431,40 @@ export default function PilotApp() {
 
     const controller = createMenuController(catalog.recipes, catalog.released_ids, {
       isPreview: catalog.test_only,
+      catalogId: catalog.catalog_id,
     });
 
     let genMenu;
     try {
       genMenu = controller.createUserMenu({
         numDays: draftPlanDays,
+        month: draftPlanDays >= 28 ? draftMonth : undefined,
         meals: draftMealsPerDay,
         profile: canonProfile,
         mode: approachToMode(draftApproach),
+        catalogId: catalog.catalog_id,
       });
     } catch (genErr: any) {
-      setErrorMessage(genErr.message || 'Не удалось составить меню из доступных рецептов. Попробуйте изменить параметры или ограничения.');
+      setProfile(newProfile);
+      profileRef.current = newProfile;
+      saveQueue.enqueue(async () => {
+        try {
+          const uRes = await client.putUser({
+            schema_version: 1,
+            expected_revision: userRevisionRef.current,
+            profile: newProfile,
+            state: stateRef.current,
+          });
+          userRevisionRef.current = uRes.revision;
+          setUserRevision(uRes.revision);
+        } catch (saveErr) {
+          console.error('Failed to save profile after menu gen error', saveErr);
+        }
+      });
+      setErrorMessage(
+        genErr.message ||
+          'Не удалось составить меню из доступных рецептов. Ваши настройки сохранены. Попробуйте выбрать режим «Кето» или уменьшить количество приёмов пищи в день.'
+      );
       return;
     }
 
@@ -672,6 +717,7 @@ export default function PilotApp() {
       const mode = approachToMode(profile.settings.approach);
       const controller = createMenuController(catalog.recipes, catalog.released_ids, {
         isPreview: catalog.test_only,
+        catalogId: catalog.catalog_id,
       });
 
       const daysCount = (profile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(profile.settings.planDays as any))
@@ -684,6 +730,7 @@ export default function PilotApp() {
         meals: profile.settings.mealsPerDay,
         profile: canonProfile,
         mode,
+        catalogId: catalog.catalog_id,
       });
 
       const nextState: PilotStateV1 = {
@@ -928,18 +975,29 @@ export default function PilotApp() {
     [enqueueShoppingStateSave]
   );
 
-  const handleOpenSettings = useCallback(() => {
+  const handleOpenSettings = useCallback((targetApproach?: 'keto' | 'carnivore') => {
+    if (targetApproach) {
+      setDraftApproach(targetApproach);
+    }
     if (profile?.settings) {
       setDraftConfirmed18(Boolean(profile.settings.confirmed18Plus));
-      setDraftApproach(profile.settings.approach || 'keto');
+      if (!targetApproach) {
+        setDraftApproach(profile.settings.approach || 'keto');
+      }
       setDraftRestrictions(profile.settings.restrictions || []);
       setDraftPrepTime(profile.settings.prepTimeMax ?? 0);
       setDraftMealsPerDay((profile.settings.mealsPerDay as any) || 3);
       setDraftPlanDays((profile.settings.planDays as any) || (state?.menu?.days?.length as any) || 30);
+      if (profile.settings.month) {
+        setDraftMonth(profile.settings.month);
+      } else if (state?.menu?.month) {
+        setDraftMonth(state.menu.month);
+      }
       if (profile.settings.confirmed18Plus) {
         setGatePassed(true);
       }
     }
+    setViewHomeBeforeGate(false);
     setPhase('needs_settings');
   }, [profile, state]);
 
@@ -1038,6 +1096,55 @@ export default function PilotApp() {
         }
       };
 
+      if (viewHomeBeforeGate && catalog) {
+        const emptyState: PilotStateV1 = {
+          schema_version: 1,
+          menu: null,
+          selected_date: null,
+          checked_ingredients: {},
+          checked_steps: {},
+          shopping_batches: 1,
+          shopping_stale: false,
+        };
+        const emptyProfile: PilotProfileV1 = {
+          settings: {
+            confirmed18Plus: false,
+            approach: draftApproach,
+            restrictions: draftRestrictions,
+            prepTimeMax: draftPrepTime,
+            mealsPerDay: draftMealsPerDay,
+            planDays: draftPlanDays,
+            preferenceNote: '',
+          },
+        };
+        return (
+          <FoodFirstApp
+            catalog={catalog}
+            profile={emptyProfile}
+            state={emptyState}
+            shoppingItems={[]}
+            syncStatus="idle"
+            onToggleStep={() => {}}
+            onToggleIngredient={() => {}}
+            onChangeBatches={() => {}}
+            onRefreshShopping={() => {}}
+            onToggleCheckedInStore={() => {}}
+            onToggleAlreadyHave={() => {}}
+            onAddCustomItem={() => {}}
+            onSelectDate={() => {}}
+            onReplaceRecipe={async () => {}}
+            onRebuildMenu={async () => {}}
+            onOpenSettings={(appr) => {
+              if (appr) setDraftApproach(appr);
+              setViewHomeBeforeGate(false);
+            }}
+            subscription={subscription}
+            onUpdateSubscription={setSubscription}
+            sessionToken={sessionToken || undefined}
+          />
+        );
+      }
+
       return (
         <StartGateScreen
           approach={draftApproach === 'carnivore' ? 'carnivore' : 'keto'}
@@ -1045,6 +1152,7 @@ export default function PilotApp() {
           onGateGranted={(payload) => handleGateContinue(payload.approach)}
           onContinue={handleGateContinue}
           onOpenSupport={() => setShowSupport(true)}
+          onViewHome={() => setViewHomeBeforeGate(true)}
         />
       );
     }
@@ -1054,6 +1162,16 @@ export default function PilotApp() {
         <div className="max-w-lg mx-auto bg-white rounded-2xl border border-[#E5DECF] p-6 sm:p-8 space-y-6 shadow-sm">
           <div className="border-b border-stone-200 pb-4 flex items-start justify-between gap-4">
             <div>
+              <div className="flex items-center gap-2 mb-1">
+                <button
+                  type="button"
+                  data-testid="settings-back-to-home"
+                  onClick={() => setViewHomeBeforeGate(true)}
+                  className="text-xs text-[#5F7161] hover:underline font-semibold"
+                >
+                  ← На главную
+                </button>
+              </div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#5F7161]">
                 Персональный рацион
               </span>
@@ -1241,13 +1359,16 @@ export default function PilotApp() {
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
                 Срок меню
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {([1, 3, 7] as const).map((d) => (
                   <button
                     key={d}
                     type="button"
                     data-testid={`settings-days-${d}`}
-                    onClick={() => setDraftPlanDays(d)}
+                    onClick={() => {
+                      setDraftPlanDays(d);
+                      setDraftMonth('');
+                    }}
                     className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
                       draftPlanDays === d
                         ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
@@ -1259,20 +1380,60 @@ export default function PilotApp() {
                 ))}
                 {(() => {
                   const now = new Date();
-                  const monthDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                  const isMonthSelected = draftPlanDays >= 28 && draftPlanDays <= 31;
+                  const currYear = now.getFullYear();
+                  const currMonthIdx = now.getMonth();
+                  const currMonthDays = new Date(currYear, currMonthIdx + 1, 0).getDate();
+                  const currMonthKey = `${currYear}-${String(currMonthIdx + 1).padStart(2, '0')}`;
+                  const currMonthName = now.toLocaleString('ru-RU', { month: 'long' });
+                  const currLabel = currMonthName.charAt(0).toUpperCase() + currMonthName.slice(1);
+
+                  const isCurrSelected = (draftPlanDays >= 28 && draftPlanDays <= 31) && (draftMonth === currMonthKey || !draftMonth);
+
                   return (
                     <button
                       type="button"
                       data-testid="settings-days-month"
-                      onClick={() => setDraftPlanDays(monthDays as 1 | 3 | 7 | 28 | 29 | 30 | 31)}
+                      onClick={() => {
+                        setDraftPlanDays(currMonthDays as any);
+                        setDraftMonth(currMonthKey);
+                      }}
                       className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
-                        isMonthSelected
+                        isCurrSelected
                           ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
                           : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
                       }`}
                     >
-                      Месяц ({monthDays} дн.)
+                      {currLabel} ({currMonthDays} дн.)
+                    </button>
+                  );
+                })()}
+                {(() => {
+                  const now = new Date();
+                  const nextDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                  const nextYear = nextDate.getFullYear();
+                  const nextMonthIdx = nextDate.getMonth();
+                  const nextMonthDays = new Date(nextYear, nextMonthIdx + 1, 0).getDate();
+                  const nextMonthKey = `${nextYear}-${String(nextMonthIdx + 1).padStart(2, '0')}`;
+                  const nextMonthName = nextDate.toLocaleString('ru-RU', { month: 'long' });
+                  const nextLabel = nextMonthName.charAt(0).toUpperCase() + nextMonthName.slice(1);
+
+                  const isNextSelected = (draftPlanDays >= 28 && draftPlanDays <= 31) && draftMonth === nextMonthKey;
+
+                  return (
+                    <button
+                      type="button"
+                      data-testid="settings-days-next-month"
+                      onClick={() => {
+                        setDraftPlanDays(nextMonthDays as any);
+                        setDraftMonth(nextMonthKey);
+                      }}
+                      className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
+                        isNextSelected
+                          ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
+                          : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                      }`}
+                    >
+                      {nextLabel} ({nextMonthDays} дн.)
                     </button>
                   );
                 })()}
@@ -1307,7 +1468,7 @@ export default function PilotApp() {
                         : `С выбранными ограничениями доступно только ${pool.length} блюд, а требуется минимум ${draftMealsPerDay} на день.`}
                     </p>
                     <p className="text-[11px] text-amber-800">
-                      Пожалуйста, снимите часть ограничений или выберите режим «Кето».
+                      Ваши настройки сохранятся. Для составления меню вы можете выбрать режим «Кето», уменьшить количество приёмов пищи на день или дождаться выхода новых карнивор-рецептов. Пожалуйста, не отменяйте медицинские исключения аллергенов.
                     </p>
                   </div>
                 );
