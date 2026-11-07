@@ -100,6 +100,17 @@ export function MenuScreen({
   const appliedConditionsText = formatAppliedConditionsSummary(settings);
   const diversity = evaluateSevenDayDiversity(matchingRecipes, menu.days.length);
 
+  const isMonthView = menu.days.length > 7;
+  const [selectedWeek, setSelectedWeek] = useState<number>(() =>
+    isMonthView ? Math.floor(selectedDayIndex / 7) : 0
+  );
+
+  useEffect(() => {
+    if (isMonthView) {
+      setSelectedWeek(Math.floor(selectedDayIndex / 7));
+    }
+  }, [isMonthView, selectedDayIndex]);
+
   return (
     <div className="fm-menu" data-testid="food-menu-screen">
       <header className="fm-heading">
@@ -134,14 +145,53 @@ export function MenuScreen({
         </div>
       </header>
 
+      {isMonthView && (
+        <div className="fm-week-selector" role="tablist" aria-label="Недели месяца" data-testid="menu-week-selector">
+          {Array.from({ length: Math.ceil(menu.days.length / 7) }).map((_, wIdx) => {
+            const startDay = wIdx * 7 + 1;
+            const endDay = Math.min((wIdx + 1) * 7, menu.days.length);
+            const isSelected = selectedWeek === wIdx;
+            const startDayObj = menu.days[wIdx * 7];
+            const endDayObj = menu.days[endDay - 1];
+            const dateSpan = startDayObj?.date && endDayObj?.date
+              ? ` (${new Date(startDayObj.date).getDate()}–${new Date(endDayObj.date).getDate()} ${new Date(endDayObj.date).toLocaleString('ru-RU', { month: 'short' })})`
+              : ` (дни ${startDay}–${endDay})`;
+            return (
+              <button
+                key={wIdx}
+                type="button"
+                role="tab"
+                data-testid={`menu-week-tab-${wIdx}`}
+                aria-selected={isSelected}
+                className={`fm-week-tab ${isSelected ? 'fm-week-tab--active' : ''}`}
+                onClick={() => {
+                  triggerHaptic('selection');
+                  setSelectedWeek(wIdx);
+                  onSelectDayIndex(wIdx * 7);
+                }}
+              >
+                <strong>Неделя {wIdx + 1}</strong>
+                <span>{dateSpan}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {menu.days.length > 0 && (
         <div className="fm-days" role="tablist" aria-label="Дни меню">
-          {menu.days.map((day) => {
+          {(isMonthView
+            ? menu.days.slice(selectedWeek * 7, Math.min((selectedWeek + 1) * 7, menu.days.length))
+            : menu.days
+          ).map((day) => {
             const minutes = resolveDayMenuSlots(
               day,
               recipesById,
               settings.mealsPerDay
             ).reduce((sum, slot) => sum + (slot.recipe?.prepMinutes || 0), 0);
+            const dateStr = day.date
+              ? ` (${new Date(day.date).getDate()} ${new Date(day.date).toLocaleString('ru-RU', { month: 'short' })})`
+              : '';
             return (
               <button
                 type="button"
@@ -154,7 +204,7 @@ export function MenuScreen({
                   onSelectDayIndex(day.dayIndex);
                 }}
               >
-                <strong>{day.label}</strong>
+                <strong>{day.label}{dateStr}</strong>
                 <span>{minutes} мин у плиты</span>
               </button>
             );
@@ -218,7 +268,17 @@ export function MenuScreen({
                   </p>
                   {recipe ? (
                     <>
-                      <h3>{recipe.title}</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3>{recipe.title}</h3>
+                        {(recipe.sourceStatus === 'review' || (recipe.id && recipe.id.startsWith('c'))) && (
+                          <span
+                            className="fm-review-badge"
+                            data-testid={`review-badge-${recipe.id}`}
+                          >
+                            🔍 На проверке
+                          </span>
+                        )}
+                      </div>
                       <p className="fm-card__subtitle">{recipe.subtitle}</p>
                       <p className="fm-card__meta">
                         {recipe.prepMinutes} мин · КБЖУ уточняется автором

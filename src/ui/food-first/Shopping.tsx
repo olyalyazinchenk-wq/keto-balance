@@ -28,6 +28,8 @@ export interface ShoppingScreenProps {
   onAddCustomItem?: (item: PilotShoppingItemV1) => void;
   portionsMultiplier?: 1 | 2 | 4;
   onChangePortionsMultiplier?: (multiplier: 1 | 2 | 4) => void;
+  menuDays?: Array<{ date?: string; slots: Record<string, string> }>;
+  recipesById?: Record<string, { title: string }>;
 }
 
 const DEPARTMENTS: ShoppingFixtureItem['department'][] = [
@@ -47,7 +49,52 @@ export function ShoppingScreen({
   onAddCustomItem,
   portionsMultiplier = 1,
   onChangePortionsMultiplier,
+  menuDays,
+  recipesById,
 }: ShoppingScreenProps) {
+  const isMonthPlan = Boolean(menuDays && menuDays.length > 7);
+  const [selectedRange, setSelectedRange] = useState<string>('week-0');
+
+  const weeksList = (function() {
+    if (!menuDays || menuDays.length <= 7) return [];
+    const count = Math.ceil(menuDays.length / 7);
+    return Array.from({ length: count }).map((_, idx) => {
+      const startDay = idx * 7 + 1;
+      const endDay = Math.min((idx + 1) * 7, menuDays.length);
+      const startObj = menuDays[idx * 7];
+      const endObj = menuDays[endDay - 1];
+      const dateSpan = startObj?.date && endObj?.date
+        ? ` (${new Date(startObj.date).getDate()}–${new Date(endObj.date).getDate()} ${new Date(endObj.date).toLocaleString('ru-RU', { month: 'short' })})`
+        : ` (дни ${startDay}–${endDay})`;
+      return {
+        id: `week-${idx}`,
+        label: `Неделя ${idx + 1}${dateSpan}`,
+        startIdx: idx * 7,
+        endIdx: endDay,
+      };
+    });
+  })();
+
+  const effectiveItems = (function() {
+    if (!isMonthPlan || selectedRange === 'all' || !menuDays) {
+      return items;
+    }
+    const weekIdx = parseInt(selectedRange.replace('week-', ''), 10);
+    const rangeDays = menuDays.slice(weekIdx * 7, Math.min((weekIdx + 1) * 7, menuDays.length));
+    const rangeRecipeTitles = new Set<string>();
+    for (const d of rangeDays) {
+      for (const rid of Object.values(d.slots)) {
+        if (recipesById && recipesById[rid]) {
+          rangeRecipeTitles.add(recipesById[rid].title);
+        }
+      }
+    }
+    return items.filter((item) => {
+      if (item.id.startsWith('shop-custom-')) return true;
+      if (!item.linkedRecipeTitles || item.linkedRecipeTitles.length === 0) return true;
+      return item.linkedRecipeTitles.some((t) => rangeRecipeTitles.has(t));
+    });
+  })();
   const [copiedNotice, setCopiedNotice] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const [filterMode, setFilterMode] = useState<'all' | 'remaining' | 'home'>('all');
@@ -56,12 +103,14 @@ export function ShoppingScreen({
   const [customAmount, setCustomAmount] = useState('');
   const [customDept, setCustomDept] = useState<ShoppingFixtureItem['department']>('Овощи и зелень');
 
-  const progress = calculateShoppingProgress(items);
+  const progress = calculateShoppingProgress(effectiveItems);
 
   const handleCopyListOnly = async () => {
     const text = formatShoppingListForClipboard(
-      items,
-      menuTitle,
+      effectiveItems,
+      selectedRange === 'all' || !isMonthPlan
+        ? menuTitle
+        : `${menuTitle} (${weeksList.find((w) => w.id === selectedRange)?.label || selectedRange})`,
       isStaleAfterMenuEdit
     );
     setCopiedNotice(false);
@@ -101,7 +150,7 @@ export function ShoppingScreen({
     setShowAddForm(false);
   };
 
-  const visibleItems = items.filter((it) => {
+  const visibleItems = effectiveItems.filter((it) => {
     if (filterMode === 'remaining') {
       return !it.checkedInStore && !it.alreadyHave;
     }
@@ -122,6 +171,49 @@ export function ShoppingScreen({
               Список покупок
             </h1>
             <p className="text-sm text-[var(--kb-text-2)]">{menuTitle}</p>
+            {isMonthPlan && (
+              <div className="mt-3 space-y-1.5" data-testid="shopping-range-selector">
+                <label className="text-xs font-semibold text-[var(--kb-text-3)] block">
+                  Период покупок:
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {weeksList.map((w) => (
+                    <button
+                      key={w.id}
+                      type="button"
+                      data-testid={`shopping-range-${w.id}`}
+                      onClick={() => {
+                        triggerHaptic('selection');
+                        setSelectedRange(w.id);
+                      }}
+                      className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
+                        selectedRange === w.id
+                          ? 'border-[var(--kb-primary)] bg-[#EDF1E6] text-[#1B211B] font-bold'
+                          : 'border-[var(--kb-border)] bg-white text-[var(--kb-text-2)] hover:bg-stone-50'
+                      }`}
+                    >
+                      {w.label}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    data-testid="shopping-range-all"
+                    onClick={() => {
+                      triggerHaptic('selection');
+                      setSelectedRange('all');
+                    }}
+                    className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
+                      selectedRange === 'all'
+                        ? 'border-[var(--kb-primary)] bg-[#EDF1E6] text-[#1B211B] font-bold'
+                        : 'border-[var(--kb-border)] bg-white text-[var(--kb-text-2)] hover:bg-stone-50'
+                    }`}
+                  >
+                    Весь месяц ({menuDays ? menuDays.length : 0} дн.)
+                  </button>
+                </div>
+              </div>
+            )}
+
             {onChangePortionsMultiplier && (
               <div
                 role="group"

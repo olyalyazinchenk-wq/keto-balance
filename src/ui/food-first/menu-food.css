@@ -60,3 +60,56 @@
 .fm-candidate > div {flex:1 1 200px}
 .fm-dialog {padding-bottom:calc(24px + var(--kb-safe-bottom,0px))}
 @media(min-width:768px){.fm-card:has(.fm-card__photo){grid-template-columns:200px minmax(0,1fr);gap:24px}.fm-card__photo{min-height:0;height:160px}.fm-card__body{padding:0}}
+
+/* Week selector for month menu */
+.fm-week-selector {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 2px 10px;
+  margin-top: 12px;
+}
+.fm-week-selector::-webkit-scrollbar { display: none; }
+.fm-week-tab {
+  flex: 1 0 120px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--fm-line);
+  background: #fff;
+  color: var(--fm-muted);
+  text-align: center;
+  transition: all 0.15s;
+}
+.fm-week-tab strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fm-ink);
+}
+.fm-week-tab span {
+  display: block;
+  font-size: 11px;
+  color: var(--fm-muted);
+  margin-top: 2px;
+}
+.fm-week-tab--active {
+  border-color: var(--fm-green);
+  background: #edf1e6;
+  color: var(--fm-green);
+}
+.fm-week-tab--active strong {
+  color: var(--fm-green);
+}
+.fm-review-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}

@@ -22,7 +22,7 @@ export interface PilotPreferencesV1 {
   restrictions: PilotRestrictionToken[];
   prepTimeMax: number;
   mealsPerDay: 2 | 3 | 4;
-  planDays?: 1 | 3 | 7;
+  planDays?: 1 | 3 | 7 | 28 | 29 | 30 | 31;
   preferenceNote: '' | 'simple_daily';
 }
 

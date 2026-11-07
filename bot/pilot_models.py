@@ -32,7 +32,7 @@ class PilotPreferencesV1(StrictBaseModel):
     restrictions: List[PilotRestrictionToken] = Field(default_factory=list)
     prepTimeMax: int = Field(..., ge=0, le=240, strict=True)
     mealsPerDay: Literal[2, 3, 4]
-    planDays: Optional[Literal[1, 3, 7]] = 3
+    planDays: Optional[int] = Field(default=3, ge=1, le=31)
     preferenceNote: Literal['', 'simple_daily'] = ''
 
 class PilotProfileV1(StrictBaseModel):
@@ -59,7 +59,7 @@ class DayMenuModel(StrictBaseModel):
 
 class GeneratedMenuModel(StrictBaseModel):
     mode: str
-    numDays: int = Field(..., ge=1, le=30, strict=True)
+    numDays: int = Field(..., ge=1, le=31, strict=True)
     meals: int = Field(..., ge=1, le=10, strict=True)
     portion: int = Field(default=1, ge=1, le=10, strict=True)
     saved: bool = Field(default=False, strict=True)

@@ -53,10 +53,9 @@ export function generateMenu(
     throw new Error(`Недопустимый режим питания для формирования меню: ${mode}.`);
   }
 
-  if (![1, 3, 7].includes(numDays)) {
-    throw new Error(`Недопустимое количество дней: ${numDays}. Поддерживается: 1, 3, 7.`);
+  if (!Number.isInteger(numDays) || ![1, 3, 7, 28, 29, 30, 31].includes(numDays)) {
+    throw new Error(`Недопустимое количество дней: ${numDays}. Поддерживается: 1, 3, 7 или календарный месяц (28–31 день).`);
   }
-
   if (profile) {
     if (
       (profile.allergies !== undefined && profile.allergies !== null && !Array.isArray(profile.allergies)) ||
@@ -78,6 +77,7 @@ export function generateMenu(
   }
 
   const days: DayMenu[] = [];
+  const recentDaysHistory: string[] = [];
 
   for (let dayIdx = 0; dayIdx < numDays; dayIdx++) {
     const dayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + dayIdx);
@@ -103,12 +103,18 @@ export function generateMenu(
         candidates = available;
       }
 
+      // Приоритет блюдам, которые не использовались в последние 1-2 дня
+      const recentSet = new Set(recentDaysHistory.slice(-Math.min(recentDaysHistory.length, meals * 2)));
+      const freshCandidates = candidates.filter(r => !recentSet.has(r.id));
+      const finalCandidates = freshCandidates.length > 0 ? freshCandidates : candidates;
+
       // Детерминированный выбор по переданному random
-      const idx = Math.floor(rand() * candidates.length);
-      const chosen = candidates[Math.min(idx, candidates.length - 1)];
+      const idx = Math.floor(rand() * finalCandidates.length);
+      const chosen = finalCandidates[Math.min(idx, finalCandidates.length - 1)];
       
       slots[slotKey] = chosen.id;
       usedTodayIds.add(chosen.id);
+      recentDaysHistory.push(chosen.id);
     }
 
     days.push({ date: dateStr, slots });
