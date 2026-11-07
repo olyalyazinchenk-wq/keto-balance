@@ -149,6 +149,86 @@ export function exportReleaseCatalog(options = {}) {
     fs.writeFileSync(versionedPath, JSON.stringify(catalogArtifact, null, 2), 'utf-8');
   }
 
+  if (!testOnly) {
+    const decCatalogArtifact = {
+      schema_version: 1,
+      catalog_id: 'released-catalog-202612-v1',
+      catalog_month: '2026-12',
+      updated_date: '2026-11-08',
+      editorial_status: 'draft_for_owner_review',
+      test_only: false,
+      released_ids: [...catalogArtifact.released_ids, 'k21', 'k22', 'c17', 'c18'],
+      public_released_ids: [...catalogArtifact.public_released_ids],
+      owner_review_ids: [...catalogArtifact.owner_review_ids, 'k21', 'k22', 'c17', 'c18'],
+      recipes: [
+        ...catalogArtifact.recipes,
+        {
+          id: 'k21',
+          title: 'Запечённая свиная корейка с квашеной капустой и тмином',
+          mode: 'keto',
+          cat: 'dinner',
+          kcal: 480,
+          p: 38,
+          f: 35,
+          nc: 4,
+          serv: 2,
+          ing: [['Свиная корейка', '400 г'], ['Квашеная капуста', '250 г'], ['Смалец', '20 г']],
+          steps: ['Запечь корейку с капустой в духовке.'],
+          tags: ['meat', 'winter'],
+          editorial_status: 'draft_for_owner_review',
+        },
+        {
+          id: 'k22',
+          title: 'Сливочный суп-пюре из цветной капусты с копчёным беконом',
+          mode: 'keto',
+          cat: 'lunch',
+          kcal: 390,
+          p: 14,
+          f: 34,
+          nc: 5,
+          serv: 2,
+          ing: [['Цветная капуста', '400 г'], ['Сливки 33%', '150 мл'], ['Бекон', '80 г']],
+          steps: ['Сварить цветную капусту, пюрировать со сливками, посыпать беконом.'],
+          tags: ['soup', 'winter'],
+          editorial_status: 'draft_for_owner_review',
+        },
+        {
+          id: 'c17',
+          title: 'Томлёная баранья голяшка в собственном соку',
+          mode: 'carnivore',
+          cat: 'dinner',
+          kcal: 620,
+          p: 48,
+          f: 46,
+          nc: 0,
+          serv: 1,
+          ing: [['Баранья голяшка', '450 г'], ['Топлёный говяжий жир', '20 г']],
+          steps: ['Томить голяшку на медленном огне 2 часа.'],
+          tags: ['lamb', 'carnivore'],
+          editorial_status: 'draft_for_owner_review',
+        },
+        {
+          id: 'c18',
+          title: 'Печёночные оладьи карнивор',
+          mode: 'carnivore',
+          cat: 'breakfast',
+          kcal: 410,
+          p: 32,
+          f: 30,
+          nc: 2,
+          serv: 1,
+          ing: [['Печень говяжья', '200 г'], ['Яйцо куриное', '1 шт.'], ['Топлёное масло', '15 г']],
+          steps: ['Измельчить печень с яйцом, обжарить оладьи на масле.'],
+          tags: ['offal', 'carnivore'],
+          editorial_status: 'draft_for_owner_review',
+        },
+      ],
+      nutrition_status: 'unverified',
+    };
+    const decPath = path.join(outputDir, 'released-catalog-202612-v1.json');
+    fs.writeFileSync(decPath, JSON.stringify(decCatalogArtifact, null, 2), 'utf-8');
+  }
+
   return {
     status: 'ok',
     outputPath,
