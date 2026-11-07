@@ -44,7 +44,7 @@
 | **TASK-R7-1** | R7: Closed Internal Pilot Package | Проверяющий | `docs/release/closed-pilot-results.md` | TASK-R6-3 | Прогон чек-листа на тестовом стенде владельца | `передано` | Пакет и чек-лист закрытого теста на 5 добровольцев (цель: >=4 проходят самостоятельно, >=3 возвращаются) подготовлен к запуску |
 | **TASK-R8-1** | R8: Paid Pilot Readiness Package | Координатор | `docs/release/paid-pilot-readiness.md` | TASK-R7-1 | Проверка условий ограниченного платного пилота (до 10 пользователей) | `передано` | Пакет платного пилота (до 10 пользователей, Stars XTR) подготовлен к запуску по согласованию с Ольгой |
 | **TASK-R9-1** | R9: Release Dossier & PR Preparation | Координатор | `docs/release/release-dossier.md`, Pull Request | TASK-R8-1 | Финальный отчёт, хеши, артефакты, инструкция переключения/отката | `передано` | Релизное досье docs/handoff/2026-11-06-final-release-dossier.md, чистое дерево git, вердикт CLEAN |
-| **TASK-NET-1** | R6.1: Cloud Network Autonomy | Исполнитель A | `deploy/*`, `docs/release/release-plan.md`, `docs/LIVE_STATUS.md` | TASK-R6-1 | Telegram API через прокси на ВМ без домашнего ПК | `в работе` | Автономный прокси-маршрут на ВМ 84.54.56.73 для бота без зависимости от домашнего туннеля |
+| **TASK-NET-1** | R6.1: Cloud Network Autonomy | Исполнитель A | `deploy/*`, `docs/release/release-plan.md`, `docs/LIVE_STATUS.md` | TASK-R6-1 | Telegram API через прокси на ВМ без домашнего ПК | `локально проверено` | Автономный маршрут Xray (VLESS Reality) на ВМ 84.54.56.73, KETO_BOT_PROXY переключён на 127.0.0.1:10808, домашний мост task-750 отключён, бот работает автономно |
 
 ---
 
