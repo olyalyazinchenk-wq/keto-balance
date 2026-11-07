@@ -45,3 +45,7 @@ scratch-preview.*
 # публичные ассеты приложения должны попадать в репозиторий
 !public/media/
 !public/media/**
+
+# исходный код в src/data должен попадать в репозиторий
+!src/data/
+!src/data/**

@@ -254,6 +254,67 @@ class TestRecipeEligibility(unittest.TestCase):
         self.assertFalse(is_recipe_allowed(offal_recipe, prof_offal)[0])
         self.assertTrue(is_recipe_allowed(mushroom_recipe, prof_offal)[0])
 
+    def test_russian_morphology_stems_and_offal_variants(self):
+        prof_offal = {"settings": {"confirmed18Plus": True, "approach": "carnivore", "restrictions": ["exclude_offal"], "prepTimeMax": 60}}
+
+        # Offal: "сердечки" (c4), "сердца" (c14), "сердец", "печень" (c5), "печенка", "костный бульон" (c12), "бульон костный"
+        offal_cases = [
+            ("r_hearts", "Куриные сердечки на сковороде", [["Куриные сердечки", "400 г"]]),
+            ("r_beef_hearts", "Говяжьи сердца тушёные", [["Говяжьи сердца", "300 г"]]),
+            ("r_hearts_gen", "Сердечки куриные", [["500 г куриных сердец", "500 г"]]),
+            ("r_liver", "Говяжья печень с луком", [["Говяжья печень", "250 г"]]),
+            ("r_liver_dim", "Печёнка куриная", [["Печёнка куриная", "200 г"]]),
+            ("r_bone_broth", "Костный бульон", [["Костный бульон говяжий", "500 мл"]]),
+            ("r_broth_inverted", "Бульон на костях", [["Бульон костный", "400 мл"]]),
+        ]
+        for rid, title, ing in offal_cases:
+            recipe = {"id": rid, "title": title, "mode": "carnivore", "time": 30, "ing": ing}
+            allowed, reason = is_recipe_allowed(recipe, prof_offal)
+            self.assertFalse(allowed, f"Offal recipe '{title}' must be blocked: got allowed={allowed}")
+
+        # Non-offal recipes must remain allowed
+        non_offal_cases = [
+            ("r_ribeye", "Стейк рибай", [["Говяжий стейк рибай", "350 г"], ["Соль", "по вкусу"]]),
+            ("r_pork", "Свиная корейка", [["Свиная корейка", "300 г"], ["Топлёное масло", "1 ст. л."]]),
+        ]
+        for rid, title, ing in non_offal_cases:
+            recipe = {"id": rid, "title": title, "mode": "carnivore", "time": 20, "ing": ing}
+            allowed, _ = is_recipe_allowed(recipe, prof_offal)
+            self.assertTrue(allowed, f"Non-offal recipe '{title}' must remain allowed")
+
+        # Allergens: fish, dairy, nuts morphological stems
+        prof_fish = {"settings": {"confirmed18Plus": True, "approach": "keto", "restrictions": ["exclude_fish"], "prepTimeMax": 30}}
+        fish_stems = [
+            ("r_tuna", "Филе тунца", [["Филе тунца", "200 г"]]),
+            ("r_pollock", "Филе минтая", [["Филе минтая", "250 г"]]),
+            ("r_herring", "Селедочный паштет", [["Селедка слабосоленая", "150 г"]]),
+        ]
+        for rid, title, ing in fish_stems:
+            recipe = {"id": rid, "title": title, "mode": "keto", "time": 15, "ing": ing}
+            allowed, _ = is_recipe_allowed(recipe, prof_fish)
+            self.assertFalse(allowed, f"Fish recipe '{title}' must be blocked")
+
+        prof_dairy = {"settings": {"confirmed18Plus": True, "approach": "keto", "restrictions": ["exclude_dairy"], "prepTimeMax": 30}}
+        dairy_stems = [
+            ("r_tvorog", "Творожная запеканка", [["Творожная масса", "200 г"]]),
+            ("r_whey", "Сывороточный коктейль", [["Сывороточный протеин", "30 г"]]),
+        ]
+        for rid, title, ing in dairy_stems:
+            recipe = {"id": rid, "title": title, "mode": "keto", "time": 15, "ing": ing}
+            allowed, _ = is_recipe_allowed(recipe, prof_dairy)
+            self.assertFalse(allowed, f"Dairy recipe '{title}' must be blocked")
+
+        prof_nuts = {"settings": {"confirmed18Plus": True, "approach": "keto", "restrictions": ["exclude_nuts"], "prepTimeMax": 30}}
+        nut_stems = [
+            ("r_hazelnut", "Фундучное печенье", [["Фундучная мука", "50 г"]]),
+            ("r_nuts_dim", "Салат с орешками", [["Орешки кедровые", "30 г"]]),
+            ("r_pistachio", "Фисташковый перекус", [["Фисташки очищенные", "40 г"]]),
+        ]
+        for rid, title, ing in nut_stems:
+            recipe = {"id": rid, "title": title, "mode": "keto", "time": 15, "ing": ing}
+            allowed, _ = is_recipe_allowed(recipe, prof_nuts)
+            self.assertFalse(allowed, f"Nut recipe '{title}' must be blocked")
+
     def test_prep_time_limit(self):
         slow_recipe = {
             "id": "r_slow",

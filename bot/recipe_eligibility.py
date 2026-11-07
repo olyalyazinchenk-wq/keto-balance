@@ -58,6 +58,7 @@ DAIRY_KEYWORDS: List[str] = [
     "сливк",
     "сметан",
     "творог",
+    "творож",
     "моцарелл",
     "сливочное масло",
     "сливочн",
@@ -78,7 +79,7 @@ DAIRY_KEYWORDS: List[str] = [
     "йогурт",
     "кефир",
     "ряженк",
-    "сыворотк",
+    "сыворот",
     "казеин",
     "простокваш",
     "ацидофил",
@@ -102,12 +103,15 @@ FISH_KEYWORDS: List[str] = [
     "скумбри",
     "семг",
     "тунец",
+    "тунц",
     "рыб",
     "лосос",
     "треск",
     "форел",
     "минтай",
+    "минта",
     "сельд",
+    "селед",
     "селедк",
     "шпрот",
     "сардин",
@@ -115,13 +119,15 @@ FISH_KEYWORDS: List[str] = [
 
 NUTS_KEYWORDS: List[str] = [
     "орех",
+    "ореш",
     "миндал",
     "фундук",
+    "фундуч",
     "кешью",
     "пекан",
     "грецк",
     "арахис",
-    "фисташк",
+    "фисташ",
     "макадам",
 ]
 
@@ -160,7 +166,7 @@ def ingredient_has_allergen(ing_norm: str, cat: str) -> bool:
 
 def ingredient_has_disliked(ing_norm: str, dis_norm: str) -> bool:
     if dis_norm in ("печень и субпродукты", "субпродукты", "печень"):
-        return any(k in ing_norm for k in ("печень", "сердц", "субпродукт", "костный бульон"))
+        return any(k in ing_norm for k in ("печен", "сердц", "сердеч", "сердец", "субпродукт", "костный бульон")) or ("костн" in ing_norm and "бульон" in ing_norm)
     elif dis_norm in ("грибы", "гриб"):
         return "гриб" in ing_norm or "шампиньон" in ing_norm
     elif dis_norm == "рыба":
@@ -172,9 +178,9 @@ def ingredient_has_disliked(ing_norm: str, dis_norm: str) -> bool:
     elif dis_norm == "лук":
         return ing_norm == "лук" or ing_norm.startswith("лук ") or " лук" in ing_norm
     elif dis_norm in ("болгарский перец", "перец"):
-        return "болгарский перец" in ing_norm or "перец болгарский" in ing_norm
+        return ("болгарск" in ing_norm and ("перец" in ing_norm or "перц" in ing_norm)) or ("сладк" in ing_norm and ("перец" in ing_norm or "перц" in ing_norm))
     elif dis_norm in ("морепродукты", "морепродукт"):
-        return any(k in ing_norm for k in ("креветк", "кальмар", "миди", "осьминог", "гребешк", "морепродукт"))
+        return any(k in ing_norm for k in ("кревет", "кальмар", "миди", "осьминог", "гребеш", "краб", "морепродукт"))
     elif dis_norm in ("свинина", "свиной"):
         return any(k in ing_norm for k in ("свинин", "свин", "бекон", "сало", "ветчин", "грудинк"))
     return dis_norm in ing_norm

@@ -46,6 +46,7 @@ const DAIRY_KEYWORDS = [
   "сливк",
   "сметан",
   "творог",
+  "творож",
   "моцарелл",
   "сливочное масло",
   "сливочн",
@@ -66,7 +67,7 @@ const DAIRY_KEYWORDS = [
   "йогурт",
   "кефир",
   "ряженк",
-  "сыворотк",
+  "сыворот",
   "казеин",
   "простокваш",
   "ацидофил",
@@ -90,12 +91,15 @@ const FISH_KEYWORDS = [
   "скумбри",
   "семг",
   "тунец",
+  "тунц",
   "рыб",
   "лосос",
   "треск",
   "форел",
   "минтай",
+  "минта",
   "сельд",
+  "селед",
   "селедк",
   "шпрот",
   "сардин",
@@ -103,13 +107,15 @@ const FISH_KEYWORDS = [
 
 const NUTS_KEYWORDS = [
   "орех",
+  "ореш",
   "миндал",
   "фундук",
+  "фундуч",
   "кешью",
   "пекан",
   "грецк",
   "арахис",
-  "фисташк",
+  "фисташ",
   "макадам",
 ];
 
@@ -146,10 +152,13 @@ function ingredientHasAllergen(ingNorm: string, cat: AllergyCategory): boolean {
 function ingredientHasDisliked(ingNorm: string, disNorm: string): boolean {
   if (disNorm === "печень и субпродукты" || disNorm === "субпродукты" || disNorm === "печень") {
     return (
-      ingNorm.includes("печень") ||
+      ingNorm.includes("печен") ||
       ingNorm.includes("сердц") ||
+      ingNorm.includes("сердеч") ||
+      ingNorm.includes("сердец") ||
       ingNorm.includes("субпродукт") ||
-      ingNorm.includes("костный бульон")
+      ingNorm.includes("костный бульон") ||
+      (ingNorm.includes("костн") && ingNorm.includes("бульон"))
     );
   }
   if (disNorm === "грибы" || disNorm === "гриб") {
@@ -168,15 +177,19 @@ function ingredientHasDisliked(ingNorm: string, disNorm: string): boolean {
     return ingNorm === "лук" || ingNorm.startsWith("лук ") || ingNorm.includes(" лук");
   }
   if (disNorm === "болгарский перец" || disNorm === "перец") {
-    return ingNorm.includes("болгарский перец") || ingNorm.includes("перец болгарский");
+    return (
+      (ingNorm.includes("болгарск") && (ingNorm.includes("перец") || ingNorm.includes("перц"))) ||
+      (ingNorm.includes("сладк") && (ingNorm.includes("перец") || ingNorm.includes("перц")))
+    );
   }
   if (disNorm === "морепродукты" || disNorm === "морепродукт") {
     return (
-      ingNorm.includes("креветк") ||
+      ingNorm.includes("кревет") ||
       ingNorm.includes("кальмар") ||
       ingNorm.includes("миди") ||
       ingNorm.includes("осьминог") ||
-      ingNorm.includes("гребешк") ||
+      ingNorm.includes("гребеш") ||
+      ingNorm.includes("краб") ||
       ingNorm.includes("морепродукт")
     );
   }
