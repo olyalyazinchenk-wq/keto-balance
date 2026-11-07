@@ -29,7 +29,7 @@ let dirty = process.env.GIT_DIRTY === '1';
 if (gitSha === 'unknown') {
   try {
     gitSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-    const status = execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const status = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
     const meaningful = status
       .split('\n')
       .map((l) => l.trim())
