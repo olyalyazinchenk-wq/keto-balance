@@ -66,7 +66,7 @@ def main():
         print(f"[ERROR] Port {args.port} is reserved for existing system services. Use an isolated port (e.g. 18081).", file=sys.stderr)
         sys.exit(1)
 
-    if not (0 < args.lifetime <= 86400):
+    if not (0 <= args.lifetime <= 86400):
         print(f"[ERROR] Invalid lifetime {args.lifetime}s. Must be between 0 and 86400 seconds (0 disables auto-shutdown).", file=sys.stderr)
         sys.exit(1)
 
