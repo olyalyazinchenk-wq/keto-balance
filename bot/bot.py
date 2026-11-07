@@ -814,7 +814,25 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         )
 
 async def post_init(application: Application):
-    """Установка списка команд в меню Telegram бота."""
+    """Установка списка команд в меню Telegram бота и запуск heartbeat."""
+    import asyncio
+    import time
+
+    heartbeat_path = os.getenv("KETO_BOT_HEARTBEAT_PATH", "/tmp/bot_heartbeat.ts")
+
+    async def _heartbeat_loop():
+        while True:
+            try:
+                Path(heartbeat_path).write_text(str(int(time.time())), encoding="utf-8")
+            except Exception:
+                pass
+            await asyncio.sleep(15)
+
+    try:
+        Path(heartbeat_path).write_text(str(int(time.time())), encoding="utf-8")
+    except Exception:
+        pass
+    asyncio.create_task(_heartbeat_loop())
     commands = [
         BotCommand("start", "🌿 Главное меню"),
         BotCommand("ask", "👩⚕️ Задать вопрос нутрициологу (в ЛС)"),

@@ -30,16 +30,17 @@ def get_clipboard_text() -> str:
 
 def restrict_permissions(target_file: Path) -> None:
     if sys.platform == "win32":
-        try:
-            user = os.environ.get("USERNAME", "")
-            if user:
-                subprocess.run(
-                    ["icacls", str(target_file), "/inheritance:r", "/grant:r", f"{user}:F"],
-                    capture_output=True,
-                    check=False,
-                )
-        except Exception:
-            pass
+        user = os.environ.get("USERNAME", "")
+        if not user:
+            raise RuntimeError("Cannot determine current Windows USERNAME to restrict permissions")
+        res = subprocess.run(
+            ["icacls", str(target_file), "/inheritance:r", "/grant:r", f"{user}:F"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if res.returncode != 0:
+            raise RuntimeError(f"Failed to restrict permissions on {target_file}: {res.stderr.strip()}")
 
 def import_profile() -> bool:
     SECRETS_DIR.mkdir(parents=True, exist_ok=True)
