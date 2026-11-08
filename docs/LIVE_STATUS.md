@@ -3,7 +3,7 @@
 > **Единая точка оперативной правды для всех агентов и разработчиков.**
 > **Дата последнего обновления**: 2026-11-08 11:30:00 RTZ 2
 > **Инициатор обновления**: Antigravity
-> **Проверенный SHA**: готовится коммит после устранения 4 групп дефектов аудита Codex c4aacb1 (ветка `feat/owner-private-acceptance-20261107`)
+> **Проверенный SHA**: `851f9b9ebd14ae6912b1cb7c3c6df85ddfa1da2b` (ветка `feat/owner-private-acceptance-20261107`)
 
 ---
 
@@ -12,7 +12,7 @@
 - **Проект**: Keto-Balance (Премиум Telegram Mini App + Бот).
 - **Канонический репозиторий**: `https://github.com/olyalyazinchenk-wq/keto-balance`
 - **Текущая ветка**: `feat/owner-private-acceptance-20261107`
-- **HEAD коммит**: `cc06a65` (cc06a6597282710313531b2649ea9df099cefd00)
+- **HEAD коммит**: `851f9b9` (851f9b9ebd14ae6912b1cb7c3c6df85ddfa1da2b)
 - **Облачный статус (Cloud.ru ВМ 84.54.56.73)**:
   - Веб-приложение: `ketobalance-owner-app` (образ `ketobalance-owner-private:v4`, `buildId: a32499d38a5f766a`, `dirty: false`, порт `18183 -> 18081`).
   - HTTPS: `ketobalance-https` (`https://84.54.56.73.nip.io/`).
