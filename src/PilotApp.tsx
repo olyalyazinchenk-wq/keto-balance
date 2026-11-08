@@ -797,13 +797,21 @@ export default function PilotApp() {
 
       const nextMenu = { ...currentState.menu, days: nextDays };
 
-      // Reconcile range checkmarks if replacement increased any ingredient in covered ranges
-      const prevChecked = currentState.shopping_range_checked || {};
-      const nextRangeChecked: Record<string, boolean> = { ...prevChecked };
-      const currentRecipe = catalog.recipes.find((r) => r.id === currentRecipeId);
-      const nextRecipe = catalog.recipes.find((r) => r.id === nextRecipeId);
+      const reconcileRangeCheckmarks = (
+        prevMenu?: { days?: Array<{ date?: string; slots: Record<string, string> }> },
+        nextM?: { days?: Array<{ date?: string; slots: Record<string, string> }> },
+        recList?: Array<{ id: string; serv?: number; ing?: Array<[string, string]> }>,
+        numBatches: number = 1,
+        prevCheckmarks: Record<string, boolean> = {}
+      ): Record<string, boolean> => {
+        const nextRangeChecked: Record<string, boolean> = { ...prevCheckmarks };
+        if (!prevMenu || !nextM || !recList || !Array.isArray(recList)) return nextRangeChecked;
 
-      if (currentRecipe && nextRecipe) {
+        const recipesMap = new Map<string, { serv?: number; ing?: Array<[string, string]> }>();
+        for (const r of recList) {
+          if (r && r.id) recipesMap.set(r.id, r);
+        }
+
         const slugify = (text: string): string => {
           return text
             .toLowerCase()
@@ -847,37 +855,54 @@ export default function PilotApp() {
           return `shop-agg-${slug}${unitType !== 'text' ? `-${unitType}-${slugify(baseUnit)}` : ''}`;
         };
 
-        const batches = currentState.shopping_batches || 1;
-
-        const getRecipeItemContributions = (recipe?: { serv?: number; ing?: Array<[string, string]> }) => {
-          const map = new Map<string, { value: number; unitType: string; baseUnit: string; isText: boolean }>();
-          if (!recipe || !Array.isArray(recipe.ing)) return map;
-          const serv = typeof recipe.serv === 'number' && recipe.serv > 0 ? recipe.serv : 1;
-          const portionFactor = batches / serv;
-          for (const [name, amount] of recipe.ing) {
-            if (!name || !amount) continue;
-            const parsed = parseAmountHelper(amount);
-            const id = getAggregatedId(name.trim(), parsed.unitType, parsed.baseUnit);
-            const existing = map.get(id);
-            const val = parsed.value * portionFactor;
-            if (existing) {
-              existing.value += val;
-            } else {
-              map.set(id, {
-                value: val,
-                unitType: parsed.unitType,
-                baseUnit: parsed.baseUnit,
-                isText: parsed.isText,
-              });
-            }
+        const getRangeDays = (
+          menuDays: Array<{ date?: string; slots: Record<string, string> }>,
+          rangeKey: string
+        ): Array<{ date?: string; slots: Record<string, string> }> => {
+          if (!menuDays || !Array.isArray(menuDays)) return [];
+          if (rangeKey === 'all') return menuDays;
+          if (rangeKey.startsWith('week-')) {
+            const weekIdx = parseInt(rangeKey.replace('week-', ''), 10);
+            const startIdx = weekIdx * 7;
+            const endIdx = Math.min((weekIdx + 1) * 7, menuDays.length);
+            return menuDays.slice(startIdx, endIdx);
           }
-          return map;
+          if (rangeKey.startsWith('custom:')) {
+            const [s, e] = rangeKey.replace('custom:', '').split('_');
+            return menuDays.filter((d) => Boolean(d.date && d.date >= s && d.date <= e));
+          }
+          return menuDays;
         };
 
-        const curContribs = getRecipeItemContributions(currentRecipe);
-        const nextContribs = getRecipeItemContributions(nextRecipe);
+        const computeRangeQuantities = (
+          days: Array<{ date?: string; slots: Record<string, string> }>
+        ) => {
+          const quantities = new Map<string, { value: number; isText: boolean; unitType: string }>();
+          for (const day of days) {
+            if (!day || !day.slots) continue;
+            for (const recipeId of Object.values(day.slots)) {
+              const recipe = recipesMap.get(recipeId);
+              if (!recipe || !Array.isArray(recipe.ing)) continue;
+              const serv = typeof recipe.serv === 'number' && recipe.serv > 0 ? recipe.serv : 1;
+              const portionFactor = numBatches / serv;
+              for (const [name, amount] of recipe.ing) {
+                if (!name || !amount) continue;
+                const parsed = parseAmountHelper(amount);
+                const id = getAggregatedId(name.trim(), parsed.unitType, parsed.baseUnit);
+                const val = parsed.value * portionFactor;
+                const existing = quantities.get(id);
+                if (existing) {
+                  existing.value += val;
+                } else {
+                  quantities.set(id, { value: val, isText: parsed.isText, unitType: parsed.unitType });
+                }
+              }
+            }
+          }
+          return quantities;
+        };
 
-        for (const [key, isChecked] of Object.entries(prevChecked)) {
+        for (const [key, isChecked] of Object.entries(prevCheckmarks)) {
           if (!isChecked) {
             nextRangeChecked[key] = false;
             continue;
@@ -888,53 +913,41 @@ export default function PilotApp() {
           const itemId = key.slice(lastColon + 1);
 
           if (itemId.startsWith('shop-custom-')) {
+            nextRangeChecked[key] = true;
             continue;
           }
 
-          let coversDate = false;
-          if (rangeKey === 'all') {
-            coversDate = true;
-          } else if (rangeKey.startsWith('week-')) {
-            const weekIdx = parseInt(rangeKey.replace('week-', ''), 10);
-            const startIdx = weekIdx * 7;
-            const endIdx = Math.min((weekIdx + 1) * 7, nextMenu.days.length);
-            const wDays = nextMenu.days.slice(startIdx, endIdx);
-            coversDate = wDays.some((d) => d.date === date);
-          } else if (rangeKey.startsWith('custom:')) {
-            const [s, e] = rangeKey.replace('custom:', '').split('_');
-            coversDate = Boolean(date >= s && date <= e);
-          }
+          const prevDays = getRangeDays(prevMenu.days || [], rangeKey);
+          const nextDays = getRangeDays(nextM.days || [], rangeKey);
 
-          if (coversDate) {
-            const curContrib = curContribs.get(itemId);
-            const nextContrib = nextContribs.get(itemId);
+          const prevQuantities = computeRangeQuantities(prevDays);
+          const nextQuantities = computeRangeQuantities(nextDays);
 
-            if (curContrib || nextContrib) {
-              const curVal = curContrib ? curContrib.value : 0;
-              const nextVal = nextContrib ? nextContrib.value : 0;
+          const prevItem = prevQuantities.get(itemId);
+          const nextItem = nextQuantities.get(itemId);
 
-              let isIncreased = false;
-              if (nextContrib && curContrib) {
-                if (!nextContrib.isText && !curContrib.isText && nextContrib.unitType === curContrib.unitType) {
-                  isIncreased = nextVal > curVal;
-                } else {
-                  isIncreased = nextVal > curVal;
-                }
-              } else if (nextContrib && !curContrib) {
-                isIncreased = nextVal > 0;
-              } else if (!nextContrib && curContrib) {
-                isIncreased = false;
-              }
+          const prevVal = prevItem ? prevItem.value : 0;
+          const nextVal = nextItem ? nextItem.value : 0;
 
-              if (isIncreased) {
-                nextRangeChecked[key] = false;
-              } else {
-                nextRangeChecked[key] = true;
-              }
-            }
+          const isIncreased = nextVal - prevVal > 1e-6;
+
+          if (isIncreased) {
+            nextRangeChecked[key] = false;
+          } else {
+            nextRangeChecked[key] = isChecked;
           }
         }
-      }
+
+        return nextRangeChecked;
+      };
+
+      const nextRangeChecked = reconcileRangeCheckmarks(
+        currentState.menu,
+        nextMenu,
+        catalog.recipes,
+        currentState.shopping_batches || 1,
+        currentState.shopping_range_checked || {}
+      );
 
       const nextState: PilotStateV1 = {
         ...currentState,
@@ -1007,11 +1020,164 @@ export default function PilotApp() {
 
       const nextSelectedDate = resolveSelectedDate(newMenu, currentState.selected_date);
 
+      const reconcileRangeCheckmarks = (
+        prevMenu?: { days?: Array<{ date?: string; slots: Record<string, string> }> },
+        nextM?: { days?: Array<{ date?: string; slots: Record<string, string> }> },
+        recList?: Array<{ id: string; serv?: number; ing?: Array<[string, string]> }>,
+        numBatches: number = 1,
+        prevCheckmarks: Record<string, boolean> = {}
+      ): Record<string, boolean> => {
+        const nextRangeChecked: Record<string, boolean> = { ...prevCheckmarks };
+        if (!prevMenu || !nextM || !recList || !Array.isArray(recList)) return nextRangeChecked;
+
+        const recipesMap = new Map<string, { serv?: number; ing?: Array<[string, string]> }>();
+        for (const r of recList) {
+          if (r && r.id) recipesMap.set(r.id, r);
+        }
+
+        const slugify = (text: string): string => {
+          return text
+            .toLowerCase()
+            .replace(/[^a-zа-я0-9]+/gi, '-')
+            .replace(/^-+|-+$/g, '');
+        };
+
+        const normalizeUnit = (rawUnit: string) => {
+          const u = rawUnit.toLowerCase().replace(/\.$/, '').trim();
+          if (u === 'г' || u === 'гр') return { baseUnit: 'г', unitType: 'weight', scale: 1 };
+          if (u === 'кг') return { baseUnit: 'г', unitType: 'weight', scale: 1000 };
+          if (u === 'мл') return { baseUnit: 'мл', unitType: 'volume', scale: 1 };
+          if (u === 'л') return { baseUnit: 'мл', unitType: 'volume', scale: 1000 };
+          if (u === 'шт' || u === 'штук' || u === 'штуки') return { baseUnit: 'шт.', unitType: 'count', scale: 1 };
+          if (u.includes('ст') && u.includes('л')) return { baseUnit: 'ст. л.', unitType: 'tbsp', scale: 1 };
+          if (u.startsWith('банк')) return { baseUnit: 'банка', unitType: 'can', scale: 1 };
+          if (u.startsWith('стейк')) return { baseUnit: 'стейка', unitType: 'steak', scale: 1 };
+          if (u.startsWith('нож')) return { baseUnit: 'ножки', unitType: 'leg', scale: 1 };
+          return { baseUnit: u || 'ед', unitType: u ? 'custom' : 'text', scale: 1 };
+        };
+
+        const parseAmountHelper = (raw: string) => {
+          const s = (raw || '').trim();
+          const frac = s.match(/^(\d+)\/(\d+)\s*(.*)$/);
+          if (frac) {
+            const val = parseInt(frac[1], 10) / parseInt(frac[2], 10);
+            const u = normalizeUnit(frac[3]);
+            return { value: val * u.scale, baseUnit: u.baseUnit, unitType: u.unitType, isText: false };
+          }
+          const dec = s.match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);
+          if (dec) {
+            const val = parseFloat(dec[1].replace(',', '.'));
+            const u = normalizeUnit(dec[2]);
+            return { value: val * u.scale, baseUnit: u.baseUnit, unitType: u.unitType, isText: false };
+          }
+          return { value: 0, baseUnit: s, unitType: 'text', isText: true };
+        };
+
+        const getAggregatedId = (normName: string, unitType: string, baseUnit: string): string => {
+          const slug = slugify(normName);
+          return `shop-agg-${slug}${unitType !== 'text' ? `-${unitType}-${slugify(baseUnit)}` : ''}`;
+        };
+
+        const getRangeDays = (
+          menuDays: Array<{ date?: string; slots: Record<string, string> }>,
+          rangeKey: string
+        ): Array<{ date?: string; slots: Record<string, string> }> => {
+          if (!menuDays || !Array.isArray(menuDays)) return [];
+          if (rangeKey === 'all') return menuDays;
+          if (rangeKey.startsWith('week-')) {
+            const weekIdx = parseInt(rangeKey.replace('week-', ''), 10);
+            const startIdx = weekIdx * 7;
+            const endIdx = Math.min((weekIdx + 1) * 7, menuDays.length);
+            return menuDays.slice(startIdx, endIdx);
+          }
+          if (rangeKey.startsWith('custom:')) {
+            const [s, e] = rangeKey.replace('custom:', '').split('_');
+            return menuDays.filter((d) => Boolean(d.date && d.date >= s && d.date <= e));
+          }
+          return menuDays;
+        };
+
+        const computeRangeQuantities = (
+          days: Array<{ date?: string; slots: Record<string, string> }>
+        ) => {
+          const quantities = new Map<string, { value: number; isText: boolean; unitType: string }>();
+          for (const day of days) {
+            if (!day || !day.slots) continue;
+            for (const recipeId of Object.values(day.slots)) {
+              const recipe = recipesMap.get(recipeId);
+              if (!recipe || !Array.isArray(recipe.ing)) continue;
+              const serv = typeof recipe.serv === 'number' && recipe.serv > 0 ? recipe.serv : 1;
+              const portionFactor = numBatches / serv;
+              for (const [name, amount] of recipe.ing) {
+                if (!name || !amount) continue;
+                const parsed = parseAmountHelper(amount);
+                const id = getAggregatedId(name.trim(), parsed.unitType, parsed.baseUnit);
+                const val = parsed.value * portionFactor;
+                const existing = quantities.get(id);
+                if (existing) {
+                  existing.value += val;
+                } else {
+                  quantities.set(id, { value: val, isText: parsed.isText, unitType: parsed.unitType });
+                }
+              }
+            }
+          }
+          return quantities;
+        };
+
+        for (const [key, isChecked] of Object.entries(prevCheckmarks)) {
+          if (!isChecked) {
+            nextRangeChecked[key] = false;
+            continue;
+          }
+          const lastColon = key.lastIndexOf(':');
+          if (lastColon === -1) continue;
+          const rangeKey = key.slice(0, lastColon);
+          const itemId = key.slice(lastColon + 1);
+
+          if (itemId.startsWith('shop-custom-')) {
+            nextRangeChecked[key] = true;
+            continue;
+          }
+
+          const prevDays = getRangeDays(prevMenu.days || [], rangeKey);
+          const nextDays = getRangeDays(nextM.days || [], rangeKey);
+
+          const prevQuantities = computeRangeQuantities(prevDays);
+          const nextQuantities = computeRangeQuantities(nextDays);
+
+          const prevItem = prevQuantities.get(itemId);
+          const nextItem = nextQuantities.get(itemId);
+
+          const prevVal = prevItem ? prevItem.value : 0;
+          const nextVal = nextItem ? nextItem.value : 0;
+
+          const isIncreased = nextVal - prevVal > 1e-6;
+
+          if (isIncreased) {
+            nextRangeChecked[key] = false;
+          } else {
+            nextRangeChecked[key] = isChecked;
+          }
+        }
+
+        return nextRangeChecked;
+      };
+
+      const nextRangeChecked = reconcileRangeCheckmarks(
+        currentState.menu,
+        newMenu,
+        activeCatalog.recipes,
+        currentState.shopping_batches || 1,
+        currentState.shopping_range_checked || {}
+      );
+
       const nextState: PilotStateV1 = {
         ...currentState,
         menu: newMenu,
         selected_date: nextSelectedDate,
         shopping_stale: true,
+        shopping_range_checked: nextRangeChecked,
       };
 
       enqueueUserStateSave(nextState);
@@ -1178,7 +1344,7 @@ export default function PilotApp() {
           return item;
         });
         for (const it of inFlightItems) {
-          if (!mergedShopping.some((x) => x.id === it.id)) {
+          if (it.id.startsWith('shop-custom-') && !mergedShopping.some((x) => x.id === it.id)) {
             mergedShopping.push(it);
           }
         }
@@ -1224,15 +1390,13 @@ export default function PilotApp() {
           const prevVal = parseVal(prevItem.amountLabel);
           const nextVal = parseVal(nextItem.amountLabel);
 
-          // If overall requirement in the menu did not increase, keep checkmark
-          if (nextVal <= prevVal) {
-            nextRangeChecked[key] = true;
-            continue;
-          }
-
-          // Overall requirement increased. Determine if this range increased.
+          // Overall requirement in the menu
           if (rangeKey === 'all') {
-            nextRangeChecked[key] = false;
+            if (nextVal > prevVal) {
+              nextRangeChecked[key] = false;
+            } else {
+              nextRangeChecked[key] = isChecked;
+            }
             continue;
           }
 
@@ -1261,7 +1425,7 @@ export default function PilotApp() {
             (title) => !prevTitles.has(title) && nextItem?.linkedRecipeTitles?.includes(title)
           );
 
-          if (hasAddedRecipe) {
+          if (hasAddedRecipe && nextVal > prevVal) {
             nextRangeChecked[key] = false;
           } else {
             nextRangeChecked[key] = isChecked;
@@ -1299,8 +1463,11 @@ export default function PilotApp() {
         } else {
           setSyncStatus(stickyErrorRef.current);
         }
-      } catch (err) {
-        if (err instanceof ConflictError) {
+      } catch (err: any) {
+        const isConflict =
+          (typeof ConflictError !== 'undefined' && ConflictError && err instanceof ConflictError) ||
+          Boolean(err && (err.status === 409 || err.statusCode === 409 || err.name === 'ConflictError'));
+        if (isConflict) {
           stickyErrorRef.current = 'conflict';
           setSyncStatus('conflict');
         } else {
