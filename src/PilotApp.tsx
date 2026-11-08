@@ -9,6 +9,7 @@ import type {
   PilotStateV1,
   PilotShoppingItemV1,
   PilotRestrictionToken,
+  ShoppingRange,
 } from './api/pilotTypes';
 import {
   preferencesToUserProfile,
@@ -20,6 +21,7 @@ import {
   RESTRICTION_MAP,
 } from './adapters/pilotState';
 import { createMenuController } from './adapters/menuController';
+import { resolveSelectedDate } from './domain/menu';
 import { isRecipeAllowed } from './domain/eligibility';
 import { FoodFirstApp } from './ui/food-first/FoodFirstApp';
 import { rebuildShoppingFromMenu } from './ui/food-first/shoppingFromMenu';
@@ -166,11 +168,25 @@ export default function PilotApp() {
         void fetchSubscription(session.session_token).then((data) => {
           if (isMounted) setSubscription(data);
         }).catch(() => { /* Keep access unknown; subscription service does not block meals. */ });
-        const [catData, userData, shopData] = await Promise.all([
-          client.getCatalog(),
+        const [userData, shopData] = await Promise.all([
           client.getUser(),
           client.getShopping(),
         ]);
+
+        if (!isMounted) return;
+
+        const savedCatalogId = userData.state?.menu?.catalog_id;
+        let catData: PilotCatalogV1;
+        try {
+          catData = await client.getCatalog(savedCatalogId || undefined);
+        } catch (catErr: any) {
+          if (savedCatalogId) {
+            setPhase('error');
+            setErrorMessage(`Сохранённая версия каталога меню (${savedCatalogId}) недоступна на сервере. Пожалуйста, обратитесь в службу поддержки.`);
+            return;
+          }
+          throw catErr;
+        }
 
         if (!isMounted) return;
         setCatalog(catData);
@@ -233,18 +249,22 @@ export default function PilotApp() {
               : (currentState.menu.days?.length && [1, 3, 7, 28, 29, 30, 31].includes(currentState.menu.days.length as any)
                 ? currentState.menu.days.length
                 : 3) as any;
+            const targetMonth = currentState.menu.month || currentProfile.settings.month;
+            const isCalendarMonth = validNumDays >= 28 || Boolean(targetMonth && (currentProfile.settings.planDays ?? 0) >= 28);
             try {
               const rebuiltMenu = controller.createUserMenu({
                 numDays: validNumDays,
+                month: isCalendarMonth ? targetMonth : undefined,
                 meals: currentProfile.settings.mealsPerDay,
                 profile: canonProfile,
                 mode: approachToMode(currentProfile.settings.approach),
                 catalogId: catData.catalog_id,
               });
+              const nextSelectedDate = resolveSelectedDate(rebuiltMenu, currentState.selected_date);
               currentState = {
                 ...currentState,
                 menu: rebuiltMenu,
-                selected_date: rebuiltMenu.days[0]?.date || null,
+                selected_date: nextSelectedDate,
                 shopping_stale: true,
               };
               enqueueUserStateSave(currentState);
@@ -296,10 +316,13 @@ export default function PilotApp() {
           const planDays = (currentProfile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(currentProfile.settings.planDays as any))
             ? currentProfile.settings.planDays
             : 3;
+          const targetMonth = currentProfile.settings.month;
+          const isCalendarMonth = planDays >= 28;
           let genMenu;
           try {
             genMenu = controller.createUserMenu({
               numDays: planDays,
+              month: isCalendarMonth ? targetMonth : undefined,
               meals: currentProfile.settings.mealsPerDay,
               profile: canonProfile,
               mode: approachToMode(currentProfile.settings.approach),
@@ -311,10 +334,11 @@ export default function PilotApp() {
             return;
           }
 
+          const nextSelectedDate = resolveSelectedDate(genMenu, null);
           const initState: PilotStateV1 = {
             schema_version: 1,
             menu: genMenu,
-            selected_date: genMenu.days[0]?.date || null,
+            selected_date: nextSelectedDate,
             checked_ingredients: {},
             checked_steps: {},
             shopping_batches: 1,
@@ -429,9 +453,32 @@ export default function PilotApp() {
     const newProfile: PilotProfileV1 = { settings: newSettings };
     const canonProfile = preferencesToUserProfile(newSettings);
 
-    const controller = createMenuController(catalog.recipes, catalog.released_ids, {
-      isPreview: catalog.test_only,
-      catalogId: catalog.catalog_id,
+    let activeCatalog = catalog;
+    if (draftPlanDays >= 28 && draftMonth === '2026-12' && catalog.catalog_id !== 'released-catalog-202612-v1') {
+      try {
+        const decCatalog = await client.getCatalog('released-catalog-202612-v1');
+        if (decCatalog && decCatalog.recipes) {
+          activeCatalog = decCatalog;
+          setCatalog(decCatalog);
+        }
+      } catch {
+        // Fallback to activeCatalog if not owner or draft inaccessible
+      }
+    } else if (draftPlanDays >= 28 && draftMonth === '2026-11' && catalog.catalog_id === 'released-catalog-202612-v1') {
+      try {
+        const novCatalog = await client.getCatalog('released-catalog-202611-v1');
+        if (novCatalog && novCatalog.recipes) {
+          activeCatalog = novCatalog;
+          setCatalog(novCatalog);
+        }
+      } catch {
+        // Fallback
+      }
+    }
+
+    const controller = createMenuController(activeCatalog.recipes, activeCatalog.released_ids, {
+      isPreview: activeCatalog.test_only,
+      catalogId: activeCatalog.catalog_id,
     });
 
     let genMenu;
@@ -442,7 +489,7 @@ export default function PilotApp() {
         meals: draftMealsPerDay,
         profile: canonProfile,
         mode: approachToMode(draftApproach),
-        catalogId: catalog.catalog_id,
+        catalogId: activeCatalog.catalog_id,
       });
     } catch (genErr: any) {
       setProfile(newProfile);
@@ -468,10 +515,11 @@ export default function PilotApp() {
       return;
     }
 
+    const nextSelectedDate = resolveSelectedDate(genMenu, stateRef.current?.selected_date);
     const initState: PilotStateV1 = {
       schema_version: 1,
       menu: genMenu,
-      selected_date: genMenu.days[0]?.date || null,
+      selected_date: nextSelectedDate,
       checked_ingredients: {},
       checked_steps: {},
       shopping_batches: 1,
@@ -713,30 +761,59 @@ export default function PilotApp() {
     if (!profile?.settings || !catalog || !currentState) return;
 
     try {
-      const canonProfile = preferencesToUserProfile(profile.settings);
-      const mode = approachToMode(profile.settings.approach);
-      const controller = createMenuController(catalog.recipes, catalog.released_ids, {
-        isPreview: catalog.test_only,
-        catalogId: catalog.catalog_id,
-      });
-
       const daysCount = (profile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(profile.settings.planDays as any))
         ? profile.settings.planDays
         : (currentState.menu?.days?.length && [1, 3, 7, 28, 29, 30, 31].includes(currentState.menu.days.length as any)
           ? currentState.menu.days.length
           : 3) as any;
+      const targetMonth = currentState.menu?.month || profile.settings.month;
+      const isCalendarMonth = daysCount >= 28 || Boolean(targetMonth && (profile.settings.planDays ?? 0) >= 28);
+
+      let activeCatalog = catalog;
+      if (isCalendarMonth && targetMonth === '2026-12' && catalog.catalog_id !== 'released-catalog-202612-v1') {
+        try {
+          const decCatalog = await client.getCatalog('released-catalog-202612-v1');
+          if (decCatalog && decCatalog.recipes) {
+            activeCatalog = decCatalog;
+            setCatalog(decCatalog);
+          }
+        } catch {
+          // Fallback to activeCatalog
+        }
+      } else if (isCalendarMonth && targetMonth === '2026-11' && catalog.catalog_id === 'released-catalog-202612-v1') {
+        try {
+          const novCatalog = await client.getCatalog('released-catalog-202611-v1');
+          if (novCatalog && novCatalog.recipes) {
+            activeCatalog = novCatalog;
+            setCatalog(novCatalog);
+          }
+        } catch {
+          // Fallback to activeCatalog
+        }
+      }
+
+      const canonProfile = preferencesToUserProfile(profile.settings);
+      const mode = approachToMode(profile.settings.approach);
+      const controller = createMenuController(activeCatalog.recipes, activeCatalog.released_ids, {
+        isPreview: activeCatalog.test_only,
+        catalogId: activeCatalog.catalog_id,
+      });
+
       const newMenu = controller.createUserMenu({
         numDays: daysCount,
+        month: isCalendarMonth ? targetMonth : undefined,
         meals: profile.settings.mealsPerDay,
         profile: canonProfile,
         mode,
-        catalogId: catalog.catalog_id,
+        catalogId: activeCatalog.catalog_id,
       });
+
+      const nextSelectedDate = resolveSelectedDate(newMenu, currentState.selected_date);
 
       const nextState: PilotStateV1 = {
         ...currentState,
         menu: newMenu,
-        selected_date: newMenu.days[0]?.date || null,
+        selected_date: nextSelectedDate,
         shopping_stale: true,
       };
 
@@ -785,15 +862,22 @@ export default function PilotApp() {
       const currentState = stateRef.current;
       if (!currentState || !currentState.menu) return;
       const currentItems = shoppingItemsRef.current;
-      const nextShopping = rebuildShoppingFromMenu(
+      const oldBatches = currentState.shopping_batches;
+      const isIncrease = batches > oldBatches;
+      let nextShopping = rebuildShoppingFromMenu(
         currentState.menu,
         recipesById,
         currentItems,
         batches
       );
+      if (isIncrease) {
+        nextShopping = nextShopping.map((it) => ({ ...it, checkedInStore: false }));
+      }
+      const nextRangeChecked = isIncrease ? {} : (currentState.shopping_range_checked || {});
       const nextState: PilotStateV1 = {
         ...currentState,
         shopping_batches: batches,
+        shopping_range_checked: nextRangeChecked,
       };
 
       setState(nextState);
@@ -973,6 +1057,46 @@ export default function PilotApp() {
       enqueueShoppingStateSave(nextItems);
     },
     [enqueueShoppingStateSave]
+  );
+
+  const handleSelectShoppingRange = useCallback(
+    (range: ShoppingRange) => {
+      const currentState = stateRef.current;
+      if (!currentState) return;
+      const nextState: PilotStateV1 = {
+        ...currentState,
+        shopping_range: range,
+      };
+      enqueueUserStateSave(nextState);
+    },
+    [enqueueUserStateSave]
+  );
+
+  const handleToggleRangeChecked = useCallback(
+    (rangeKey: string, itemId: string) => {
+      const currentState = stateRef.current;
+      if (!currentState) return;
+      const key = `${rangeKey}:${itemId}`;
+      const prevChecked = currentState.shopping_range_checked || {};
+      const nextChecked = {
+        ...prevChecked,
+        [key]: !prevChecked[key],
+      };
+      const nextState: PilotStateV1 = {
+        ...currentState,
+        shopping_range_checked: nextChecked,
+      };
+      enqueueUserStateSave(nextState);
+
+      if (rangeKey === 'all') {
+        const currentItems = shoppingItemsRef.current;
+        const nextItems = currentItems.map((item) =>
+          item.id === itemId ? { ...item, checkedInStore: !item.checkedInStore } : item
+        );
+        enqueueShoppingStateSave(nextItems);
+      }
+    },
+    [enqueueUserStateSave, enqueueShoppingStateSave]
   );
 
   const handleOpenSettings = useCallback((targetApproach?: 'keto' | 'carnivore') => {
@@ -1528,6 +1652,8 @@ export default function PilotApp() {
       onToggleCheckedInStore={handleToggleCheckedInStore}
       onToggleAlreadyHave={handleToggleAlreadyHave}
       onAddCustomItem={handleAddCustomItem}
+      onSelectShoppingRange={handleSelectShoppingRange}
+      onToggleRangeChecked={handleToggleRangeChecked}
       onOpenSettings={handleOpenSettings}
       subscription={subscription}
       onUpdateSubscription={setSubscription}

@@ -1,7 +1,7 @@
 import { DailyTip } from './DailyTip';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ScreenId, UserSettingsDraft, RecipeViewModel } from './contract';
-import type { PilotCatalogV1, PilotProfileV1, PilotStateV1, PilotShoppingItemV1 } from '../../api/pilotTypes';
+import type { PilotCatalogV1, PilotProfileV1, PilotStateV1, PilotShoppingItemV1, ShoppingRange } from '../../api/pilotTypes';
 import type { SubscriptionState } from '../../types/subscription';
 import { AppShell } from './AppShell';
 
@@ -35,6 +35,8 @@ export interface FoodFirstAppProps {
   onToggleCheckedInStore: (id: string) => void;
   onToggleAlreadyHave: (id: string) => void;
   onAddCustomItem: (item: PilotShoppingItemV1) => void;
+  onSelectShoppingRange?: (range: ShoppingRange) => void;
+  onToggleRangeChecked?: (rangeKey: string, itemId: string) => void;
   onOpenSettings?: (targetApproach?: 'keto' | 'carnivore') => void;
   subscription?: SubscriptionState | null;
   onUpdateSubscription?: (sub: SubscriptionState) => void;
@@ -79,6 +81,8 @@ export function FoodFirstApp({
   onToggleCheckedInStore,
   onToggleAlreadyHave,
   onAddCustomItem,
+  onSelectShoppingRange,
+  onToggleRangeChecked,
   onOpenSettings,
   subscription,
   onUpdateSubscription,
@@ -471,6 +475,10 @@ export function FoodFirstApp({
           onAddCustomItem={onAddCustomItem}
           menuDays={state.menu?.days}
           recipesById={recipesById}
+          savedRange={state.shopping_range}
+          onSelectRange={onSelectShoppingRange}
+          rangeCheckmarks={state.shopping_range_checked}
+          onToggleRangeChecked={onToggleRangeChecked}
         />
       )}
 

@@ -2,7 +2,8 @@
 bot/pilot_models.py — Wire v1 Pydantic-модели валидации данных пилота (Section 5.3).
 Строгая типизация, валидация revisions, ISO-дат, целостности selected_date и запрет лишних полей (extra='forbid').
 """
-from datetime import date
+import calendar
+from datetime import date, timedelta
 from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -69,6 +70,64 @@ class GeneratedMenuModel(StrictBaseModel):
     month: Optional[str] = Field(None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
     days: List[DayMenuModel] = Field(default_factory=list)
 
+    @model_validator(mode="after")
+    def validate_menu_calendar_consistency(self) -> "GeneratedMenuModel":
+        if len(self.days) != self.numDays:
+            raise ValueError(
+                f"Menu days count ({len(self.days)}) does not match numDays ({self.numDays})"
+            )
+        if self.days:
+            parsed_dates = [date.fromisoformat(d.date) for d in self.days]
+            for i in range(len(parsed_dates) - 1):
+                if parsed_dates[i + 1] != parsed_dates[i] + timedelta(days=1):
+                    raise ValueError(
+                        f"Menu days must be consecutive calendar dates: {parsed_dates[i]} followed by {parsed_dates[i+1]}"
+                    )
+            if self.month:
+                year, month_num = map(int, self.month.split("-"))
+                _, days_in_month = calendar.monthrange(year, month_num)
+                if self.numDays >= 28 or self.numDays == days_in_month:
+                    if self.numDays != days_in_month:
+                        raise ValueError(
+                            f"Calendar month {self.month} must have exactly {days_in_month} days, got {self.numDays}"
+                        )
+                    first_expected = f"{self.month}-01"
+                    last_expected = f"{self.month}-{days_in_month:02d}"
+                    if self.days[0].date != first_expected:
+                        raise ValueError(
+                            f"Calendar month {self.month} must start on {first_expected}, got {self.days[0].date}"
+                        )
+                    if self.days[-1].date != last_expected:
+                        raise ValueError(
+                            f"Calendar month {self.month} must end on {last_expected}, got {self.days[-1].date}"
+                        )
+                else:
+                    for d in self.days:
+                        if not d.date.startswith(self.month):
+                            raise ValueError(
+                                f"Day date {d.date} does not belong to specified menu month {self.month}"
+                            )
+        return self
+
+class ShoppingRangeModel(StrictBaseModel):
+    range_id: str = Field(default="all", max_length=100)
+    type: Literal["all", "week", "custom"] = "all"
+    week_index: Optional[int] = Field(default=None, ge=0, le=5)
+    start_date: Optional[str] = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    end_date: Optional[str] = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+
+    @model_validator(mode="after")
+    def validate_range_dates(self) -> "ShoppingRangeModel":
+        if self.type == "week":
+            if self.week_index is None:
+                raise ValueError("week_index is required when type is 'week'")
+        elif self.type == "custom":
+            if not self.start_date or not self.end_date:
+                raise ValueError("start_date and end_date are required when type is 'custom'")
+            if self.start_date > self.end_date:
+                raise ValueError(f"start_date ({self.start_date}) cannot be after end_date ({self.end_date})")
+        return self
+
 class PilotStateV1(StrictBaseModel):
     schema_version: Literal[1] = 1
     menu: Optional[GeneratedMenuModel] = None
@@ -78,6 +137,8 @@ class PilotStateV1(StrictBaseModel):
     checked_steps: Dict[str, bool] = Field(default_factory=dict)
     shopping_batches: Literal[1, 2, 4] = 1
     shopping_stale: bool = Field(default=False, strict=True)
+    shopping_range: Optional[ShoppingRangeModel] = None
+    shopping_range_checked: Dict[str, bool] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def validate_menu_and_selected_date(self) -> "PilotStateV1":

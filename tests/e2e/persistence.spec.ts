@@ -20,9 +20,14 @@ test.describe('E2: Server-Side State Persistence Across Contexts', () => {
 
     await expect(page1.locator('[data-testid="food-today"]')).toBeVisible();
 
-    // Select Day 2 in Menu
+    // Select Day 2 in Menu (switch to Week 1 if week selector is visible)
     await page1.locator('[data-testid="bottom-nav-menu"]').click();
     await expect(page1.locator('[data-testid="food-menu-screen"]')).toBeVisible();
+
+    const week1Tab = page1.locator('[data-testid="menu-week-tab-0"]');
+    if (await week1Tab.isVisible()) {
+      await week1Tab.click();
+    }
 
     const [daySelectRes] = await Promise.all([
       page1.waitForResponse((res) => res.url().includes('/api/user') && res.request().method() === 'PUT'),

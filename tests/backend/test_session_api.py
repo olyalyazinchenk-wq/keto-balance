@@ -419,7 +419,11 @@ class TestSessionApi(unittest.TestCase):
                 "portion": 1,
                 "saved": True,
                 "created": 1730764800,
-                "days": [{"date": "2026-11-05", "slots": {"breakfast": "s1", "lunch": "s2", "dinner": "s3"}}],
+                "days": [
+                    {"date": "2026-11-05", "slots": {"breakfast": "s1", "lunch": "s2", "dinner": "s3"}},
+                    {"date": "2026-11-06", "slots": {"breakfast": "s1", "lunch": "s2", "dinner": "s3"}},
+                    {"date": "2026-11-07", "slots": {"breakfast": "s1", "lunch": "s2", "dinner": "s3"}},
+                ],
             },
             "selected_date": "2026-11-05",
             "checked_steps": {"s1:0": True},

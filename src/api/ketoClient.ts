@@ -148,8 +148,21 @@ export class KetoClient {
     return data;
   }
 
-  async getCatalog(): Promise<PilotCatalogV1> {
-    return this.request<PilotCatalogV1>('/api/catalog', { method: 'GET' }, true);
+  async getCatalog(catalogId?: string): Promise<PilotCatalogV1> {
+    const query = catalogId ? `?catalog_id=${encodeURIComponent(catalogId)}` : '';
+    return this.request<PilotCatalogV1>(`/api/catalog${query}`, { method: 'GET' }, true);
+  }
+
+  async listCatalogs(): Promise<{
+    catalogs: Array<{
+      catalog_id: string;
+      catalog_month?: string;
+      editorial_status: string;
+      accessible: boolean;
+      total_recipes: number;
+    }>;
+  }> {
+    return this.request('/api/catalogs', { method: 'GET' }, true);
   }
 
   async getUser(): Promise<PilotUserReadV1> {

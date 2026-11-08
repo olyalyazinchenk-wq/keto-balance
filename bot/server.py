@@ -801,6 +801,26 @@ def create_app(
 
     # --- K2 CATALOG & RELEASE BOUNDARIES ---
 
+    @app.get("/api/catalogs")
+    def get_catalogs(
+        response: Response,
+        authorization: Optional[str] = Header(None),
+        x_user_id: Optional[int] = Header(None),
+        user_id: Optional[int] = Query(None),
+    ):
+        response.headers["Cache-Control"] = "private, no-cache"
+        response.headers["Vary"] = "Authorization, Cookie, X-User-Id"
+        is_owner = False
+        try:
+            target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+            if active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist:
+                is_owner = True
+        except Exception:
+            pass
+        if active_settings.is_owner_mode:
+            is_owner = True
+        return {"catalogs": catalog_service.list_catalogs(is_owner=is_owner)}
+
     @app.get("/api/catalog")
     def get_catalog(
         response: Response,
@@ -832,6 +852,8 @@ def create_app(
         if catalog_id:
             if catalog_id.startswith("admin-catalog-v") and not is_owner:
                 raise HTTPException(status_code=403, detail="Access denied: admin snapshot requires owner permissions")
+            if catalog_id == "released-catalog-202612-v1" and not is_owner:
+                raise HTTPException(status_code=403, detail="Access denied: December catalog is draft for owner review")
             snap = catalog_service.get_catalog_data_for_version(catalog_id, is_owner=is_owner)
             if snap is None:
                 raise HTTPException(status_code=404, detail=f"Catalog version '{catalog_id}' not found")

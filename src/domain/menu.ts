@@ -44,6 +44,23 @@ export function formatLocalDateISO(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function resolveSelectedDate(
+  menu: { days: { date: string }[] },
+  preferredDate?: string | null,
+  now: Date = new Date()
+): string | null {
+  if (!menu.days || menu.days.length === 0) return null;
+  const availableDates = new Set(menu.days.map((d) => d.date));
+  if (preferredDate && availableDates.has(preferredDate)) {
+    return preferredDate;
+  }
+  const todayStr = formatLocalDateISO(now);
+  if (availableDates.has(todayStr)) {
+    return todayStr;
+  }
+  return menu.days[0].date;
+}
+
 export function generateMenu(
   recipes: Recipe[],
   opts: GenerateMenuOptions

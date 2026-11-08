@@ -38,6 +38,14 @@ export interface PilotProfileV1 {
   contraindications?: string[];
 }
 
+export interface ShoppingRange {
+  range_id: string;
+  type: 'all' | 'week' | 'custom';
+  week_index?: number | null;
+  start_date?: string | null;
+  end_date?: string | null;
+}
+
 export interface PilotStateV1 {
   schema_version: 1;
   menu: GeneratedMenu | null;
@@ -47,6 +55,8 @@ export interface PilotStateV1 {
   checked_steps: Record<string, boolean>;
   shopping_batches: 1 | 2 | 4;
   shopping_stale: boolean;
+  shopping_range?: ShoppingRange | null;
+  shopping_range_checked?: Record<string, boolean>;
 }
 
 export interface PilotShoppingItemV1 {

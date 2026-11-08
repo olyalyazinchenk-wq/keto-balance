@@ -43,7 +43,11 @@ test.describe('E1: Food-First End-to-End User Flow', () => {
     const menuScreen = page.locator('[data-testid="food-menu-screen"]');
     await expect(menuScreen).toBeVisible();
 
-    // 5. Select Day 2
+    // 5. Select Day 2 (switch to Week 1 if week selector is visible)
+    const week1Tab = page.locator('[data-testid="menu-week-tab-0"]');
+    if (await week1Tab.isVisible()) {
+      await week1Tab.click();
+    }
     const day2Tab = page.locator('[data-testid="menu-day-tab-1"]');
     await expect(day2Tab).toBeVisible();
     await day2Tab.click();

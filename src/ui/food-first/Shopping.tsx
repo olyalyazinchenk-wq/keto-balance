@@ -1,5 +1,5 @@
 import './recipe-shopping-food.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Check,
   Copy,
@@ -20,6 +20,7 @@ import {
 } from './state';
 import { copyShoppingText } from './clipboard';
 import { triggerHaptic } from '../../tma/telegram';
+import type { ShoppingRange } from '../../api/pilotTypes';
 
 export interface ShoppingScreenProps {
   items: (ShoppingFixtureItem | PilotShoppingItemV1)[];
@@ -33,6 +34,10 @@ export interface ShoppingScreenProps {
   onChangePortionsMultiplier?: (multiplier: 1 | 2 | 4) => void;
   menuDays?: Array<{ date?: string; slots: Record<string, string> }>;
   recipesById?: Record<string, { title: string }>;
+  savedRange?: ShoppingRange | null;
+  onSelectRange?: (range: ShoppingRange) => void;
+  rangeCheckmarks?: Record<string, boolean>;
+  onToggleRangeChecked?: (rangeKey: string, itemId: string) => void;
 }
 
 const DEPARTMENTS: ShoppingFixtureItem['department'][] = [
@@ -54,6 +59,10 @@ export function ShoppingScreen({
   onChangePortionsMultiplier,
   menuDays,
   recipesById,
+  savedRange,
+  onSelectRange,
+  rangeCheckmarks,
+  onToggleRangeChecked,
 }: ShoppingScreenProps) {
   const isMonthPlan = Boolean(menuDays && menuDays.length > 7);
 
@@ -68,7 +77,25 @@ export function ShoppingScreen({
     return 'week-0';
   }
 
-  const [selectedRange, setSelectedRange] = useState<string>(() => getDefaultWeekRange());
+  const [selectedRange, setSelectedRange] = useState<string>(() => {
+    if (savedRange?.range_id) return savedRange.range_id;
+    return getDefaultWeekRange();
+  });
+  const [customStartDate, setCustomStartDate] = useState<string>(() => savedRange?.start_date || '');
+  const [customEndDate, setCustomEndDate] = useState<string>(() => savedRange?.end_date || '');
+  const [showCustomPicker, setShowCustomPicker] = useState<boolean>(Boolean(savedRange?.type === 'custom'));
+  const [customRangeError, setCustomRangeError] = useState<string>('');
+
+  useEffect(() => {
+    if (savedRange?.range_id && savedRange.range_id !== selectedRange) {
+      setSelectedRange(savedRange.range_id);
+      if (savedRange.type === 'custom') {
+        setShowCustomPicker(true);
+        if (savedRange.start_date) setCustomStartDate(savedRange.start_date);
+        if (savedRange.end_date) setCustomEndDate(savedRange.end_date);
+      }
+    }
+  }, [savedRange]);
 
   const weeksList = (function() {
     if (!menuDays || menuDays.length <= 7) return [];
@@ -91,15 +118,26 @@ export function ShoppingScreen({
   })();
 
   const effectiveItems = (function() {
-    if (!isMonthPlan || selectedRange === 'all' || !menuDays) {
-      return items;
-    }
-    const weekIdx = parseInt(selectedRange.replace('week-', ''), 10);
-    const startIdx = weekIdx * 7;
-    const endIdx = Math.min((weekIdx + 1) * 7, menuDays.length);
-    const rangeDays = menuDays.slice(startIdx, endIdx);
+    let rangeDays = menuDays;
 
-    if (recipesById && Object.keys(recipesById).length > 0) {
+    if (isMonthPlan && menuDays && menuDays.length > 0) {
+      if (selectedRange.startsWith('week-')) {
+        const weekIdx = parseInt(selectedRange.replace('week-', ''), 10);
+        const startIdx = weekIdx * 7;
+        const endIdx = Math.min((weekIdx + 1) * 7, menuDays.length);
+        rangeDays = menuDays.slice(startIdx, endIdx);
+      } else if (selectedRange === 'custom') {
+        if (customStartDate && customEndDate) {
+          rangeDays = menuDays.filter(
+            (d) => Boolean(d.date && d.date >= customStartDate && d.date <= customEndDate)
+          );
+        }
+      }
+    }
+
+    let calculatedList: (ShoppingFixtureItem | PilotShoppingItemV1)[] = items;
+
+    if (isMonthPlan && selectedRange !== 'all' && rangeDays && recipesById && Object.keys(recipesById).length > 0) {
       const normalizedRecipes: Record<string, RecipeViewModel> = {};
       for (const [id, r] of Object.entries(recipesById)) {
         if (!r) continue;
@@ -124,19 +162,31 @@ export function ShoppingScreen({
       }
 
       try {
-        const rangeShopping = rebuildShoppingFromMenu(
-          { days: rangeDays },
+        calculatedList = rebuildShoppingFromMenu(
+          { days: rangeDays as any },
           normalizedRecipes,
-          items,
-          { targetPortions: portionsMultiplier, preserveCheckmarks: true }
+          items as any,
+          { targetPortions: portionsMultiplier, preserveCheckmarks: false }
         );
-        return rangeShopping;
       } catch (e) {
-        // Fallback below
+        calculatedList = items;
       }
     }
 
-    return items;
+    // Overlay range-isolated checkmarks and preserve alreadyHave across range filtering
+    const rangeKey = selectedRange;
+    return calculatedList.map((it) => {
+      const isChecked = rangeCheckmarks
+        ? Boolean(rangeCheckmarks[`${rangeKey}:${it.id}`])
+        : it.checkedInStore;
+      const prevHomeItem = items.find((prev) => prev.id === it.id || prev.name.toLowerCase().trim() === it.name.toLowerCase().trim());
+      const isHome = prevHomeItem ? Boolean(prevHomeItem.alreadyHave) : it.alreadyHave;
+      return {
+        ...it,
+        checkedInStore: isChecked,
+        alreadyHave: isHome,
+      };
+    });
   })();
   const [copiedNotice, setCopiedNotice] = useState(false);
   const [copyError, setCopyError] = useState(false);
@@ -149,11 +199,20 @@ export function ShoppingScreen({
   const progress = calculateShoppingProgress(effectiveItems);
 
   const handleCopyListOnly = async () => {
+    const rangeLabel = (function() {
+      if (selectedRange === 'all' || !isMonthPlan) return menuTitle;
+      if (selectedRange.startsWith('week-')) {
+        const found = weeksList.find((w) => w.id === selectedRange);
+        return `${menuTitle} (${found?.label || selectedRange})`;
+      }
+      if (selectedRange === 'custom') {
+        return `${menuTitle} (${customStartDate} – ${customEndDate})`;
+      }
+      return `${menuTitle} (${selectedRange})`;
+    })();
     const text = formatShoppingListForClipboard(
       effectiveItems,
-      selectedRange === 'all' || !isMonthPlan
-        ? menuTitle
-        : `${menuTitle} (${weeksList.find((w) => w.id === selectedRange)?.label || selectedRange})`,
+      rangeLabel,
       isStaleAfterMenuEdit
     );
     setCopiedNotice(false);
@@ -220,7 +279,7 @@ export function ShoppingScreen({
                   Период покупок:
                 </label>
                 <div className="flex flex-wrap gap-1.5">
-                  {weeksList.map((w) => (
+                  {weeksList.map((w, idx) => (
                     <button
                       key={w.id}
                       type="button"
@@ -228,6 +287,11 @@ export function ShoppingScreen({
                       onClick={() => {
                         triggerHaptic('selection');
                         setSelectedRange(w.id);
+                        onSelectRange?.({
+                          range_id: w.id,
+                          type: 'week',
+                          week_index: idx,
+                        });
                       }}
                       className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
                         selectedRange === w.id
@@ -244,6 +308,7 @@ export function ShoppingScreen({
                     onClick={() => {
                       triggerHaptic('selection');
                       setSelectedRange('all');
+                      onSelectRange?.({ range_id: 'all', type: 'all' });
                     }}
                     className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
                       selectedRange === 'all'
@@ -253,7 +318,81 @@ export function ShoppingScreen({
                   >
                     Весь месяц ({menuDays ? menuDays.length : 0} дн.)
                   </button>
+                  <button
+                    type="button"
+                    data-testid="shopping-range-custom"
+                    onClick={() => {
+                      triggerHaptic('selection');
+                      setShowCustomPicker((prev) => !prev);
+                    }}
+                    className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
+                      selectedRange === 'custom'
+                        ? 'border-[var(--kb-primary)] bg-[#EDF1E6] text-[#1B211B] font-bold'
+                        : 'border-[var(--kb-border)] bg-white text-[var(--kb-text-2)] hover:bg-stone-50'
+                    }`}
+                  >
+                    Свой диапазон
+                  </button>
                 </div>
+                {showCustomPicker && (
+                  <div
+                    className="mt-2 p-2.5 rounded-lg border border-[var(--kb-border)] bg-stone-50 text-xs space-y-2"
+                    data-testid="custom-range-picker"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="flex items-center gap-1">
+                        <span className="text-[var(--kb-text-3)]">С:</span>
+                        <input
+                          type="date"
+                          data-testid="custom-range-start"
+                          value={customStartDate}
+                          onChange={(e) => setCustomStartDate(e.target.value)}
+                          className="px-2 py-1 rounded border border-[var(--kb-border)] bg-white text-xs"
+                        />
+                      </label>
+                      <label className="flex items-center gap-1">
+                        <span className="text-[var(--kb-text-3)]">По:</span>
+                        <input
+                          type="date"
+                          data-testid="custom-range-end"
+                          value={customEndDate}
+                          onChange={(e) => setCustomEndDate(e.target.value)}
+                          className="px-2 py-1 rounded border border-[var(--kb-border)] bg-white text-xs"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        data-testid="custom-range-apply"
+                        onClick={() => {
+                          if (!customStartDate || !customEndDate) {
+                            setCustomRangeError('Укажите обе даты');
+                            return;
+                          }
+                          if (customStartDate > customEndDate) {
+                            setCustomRangeError('Дата начала не может быть позже окончания');
+                            return;
+                          }
+                          setCustomRangeError('');
+                          setSelectedRange('custom');
+                          onSelectRange?.({
+                            range_id: 'custom',
+                            type: 'custom',
+                            start_date: customStartDate,
+                            end_date: customEndDate,
+                          });
+                        }}
+                        className="px-3 py-1 bg-[var(--kb-primary)] text-white rounded font-medium hover:opacity-90 transition-opacity"
+                      >
+                        Применить
+                      </button>
+                    </div>
+                    {customRangeError && (
+                      <p className="text-red-600 text-xs" data-testid="custom-range-error">
+                        {customRangeError}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -454,7 +593,11 @@ export function ShoppingScreen({
                           type="button"
                           onClick={() => {
                             triggerHaptic('impact_light');
-                            onToggleCheckedInStore(item.id);
+                            if (onToggleRangeChecked) {
+                              onToggleRangeChecked(selectedRange, item.id);
+                            } else {
+                              onToggleCheckedInStore(item.id);
+                            }
                           }}
                           aria-pressed={isDone}
                           data-testid={`toggle-in-store-${item.id}`}

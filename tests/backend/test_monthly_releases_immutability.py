@@ -91,6 +91,51 @@ class TestMonthlyReleasesImmutability(unittest.TestCase):
         rec_c17_normal = self.catalog_service.get_recipe_by_id("c17", catalog_id="released-catalog-202612-v1", is_owner=False)
         self.assertIsNone(rec_c17_normal)
 
+        # Normal user requesting December catalog gets 403 Forbidden
+        res_dec_normal = self.client.get(
+            "/api/catalog?catalog_id=released-catalog-202612-v1",
+            headers={"Authorization": f"Bearer {self.normal_token}"},
+        )
+        self.assertEqual(res_dec_normal.status_code, 403)
+        self.assertIn("owner review", res_dec_normal.json().get("detail", "").lower())
+
+    def test_catalogs_registry_endpoint(self):
+        # 1. Owner gets list with all catalogs accessible
+        res_owner = self.client.get("/api/catalogs", headers={"Authorization": f"Bearer {self.owner_token}"})
+        self.assertEqual(res_owner.status_code, 200)
+        cats_owner = res_owner.json().get("catalogs", [])
+        dec_owner = next((c for c in cats_owner if c["catalog_id"] == "released-catalog-202612-v1"), None)
+        self.assertIsNotNone(dec_owner)
+        self.assertTrue(dec_owner["accessible"])
+        self.assertEqual(dec_owner["total_recipes"], 40)
+
+        # 2. Normal user gets December catalog marked accessible: False
+        res_normal = self.client.get("/api/catalogs", headers={"Authorization": f"Bearer {self.normal_token}"})
+        self.assertEqual(res_normal.status_code, 200)
+        cats_normal = res_normal.json().get("catalogs", [])
+        dec_normal = next((c for c in cats_normal if c["catalog_id"] == "released-catalog-202612-v1"), None)
+        self.assertIsNotNone(dec_normal)
+        self.assertFalse(dec_normal["accessible"])
+
+    def test_december_candidate_recipes_have_all_required_fields(self):
+        dec_cat = self.catalog_service.get_catalog_data_for_version("released-catalog-202612-v1", is_owner=True)
+        self.assertIsNotNone(dec_cat)
+        dec_recipes = {r["id"]: r for r in dec_cat["recipes"]}
+        for rid in ["k21", "k22", "c17", "c18"]:
+            self.assertIn(rid, dec_recipes)
+            r = dec_recipes[rid]
+            # Verify all required Recipe fields exist
+            for field in ["time", "diff", "emoji", "g", "cost", "make", "freeze", "fam", "batch", "store", "ing", "steps"]:
+                self.assertIn(field, r, f"Recipe {rid} missing required field '{field}'")
+            self.assertIsInstance(r["time"], int)
+            self.assertGreater(r["time"], 0)
+            self.assertLessEqual(r["time"], 240, f"Recipe {rid} time must be <= 240 min")
+
+        # Verify k22 ingredients match docs/release/monthly-editorial-package-202612.md
+        k22_ing_names = [item[0] for item in dec_recipes["k22"]["ing"]]
+        for expected in ["Цветная капуста", "Сливки 33%", "Бекон", "Сливочное масло", "Бульон костный", "Мускатный орех"]:
+            self.assertIn(expected, k22_ing_names)
+
     def test_historical_november_menu_immutability(self):
         # Saved November menu preserves its exact catalog_id and recipe lookups
         nov_menu = {

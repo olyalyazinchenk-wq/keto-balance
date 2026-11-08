@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /.*carnivoreDraftRecipes(\.ts)?$/,
+        find: /.*(carnivoreDraftRecipes|ketoDraftRecipes|decemberDraftRecipes)(\.ts)?$/,
         replacement: path.resolve(__dirname, 'src/data/emptyDrafts.ts'),
       },
     ],

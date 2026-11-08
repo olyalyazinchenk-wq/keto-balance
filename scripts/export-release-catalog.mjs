@@ -4,6 +4,7 @@
  *
  * Экспорт проверенного канонического каталога рецептов в статический артефакт
  * dist/released-catalog.json со схемой PilotCatalogV1 (Раздел 5.3).
+ * Сохраняет подтверждённые неизменяемые версии в catalogs/archive/ и предотвращает перезапись существующих ID.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -143,6 +144,53 @@ export function exportReleaseCatalog(options = {}) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
+  const isDefaultOutput = !options.outputPath || path.resolve(outputPath) === path.resolve(ROOT, 'dist/released-catalog.json');
+  const archiveDir = options.archiveDir !== undefined ? options.archiveDir : (isDefaultOutput ? path.join(ROOT, 'catalogs/archive') : null);
+  if (!testOnly && archiveDir && !fs.existsSync(archiveDir)) {
+    fs.mkdirSync(archiveDir, { recursive: true });
+  }
+
+  function verifyAndSaveToArchive(artifact) {
+    if (!archiveDir || !artifact.catalog_id || artifact.catalog_id.startsWith('synthetic-') || testOnly) {
+      return;
+    }
+    const archivePath = path.join(archiveDir, `${artifact.catalog_id}.json`);
+    if (fs.existsSync(archivePath)) {
+      const existing = JSON.parse(fs.readFileSync(archivePath, 'utf-8'));
+      const existingRecipes = existing.recipes || [];
+      const newRecipes = artifact.recipes || [];
+      const existingMap = new Map(existingRecipes.map(r => [r.id, r]));
+      const newMap = new Map(newRecipes.map(r => [r.id, r]));
+
+      if (existingRecipes.length !== newRecipes.length) {
+        throw new Error(
+          `Immutability violation: catalog_id '${artifact.catalog_id}' was already released with ${existingRecipes.length} recipes, but current export has ${newRecipes.length}. Modifying a released catalog is forbidden; please bump the catalog_id version.`
+        );
+      }
+
+      for (const [id, rExisting] of existingMap.entries()) {
+        const rNew = newMap.get(id);
+        if (!rNew) {
+          throw new Error(
+            `Immutability violation: recipe '${id}' in released catalog '${artifact.catalog_id}' is missing in current export.`
+          );
+        }
+        const hExisting = computeRecipeHash(rExisting);
+        const hNew = computeRecipeHash(rNew);
+        if (hExisting !== hNew) {
+          throw new Error(
+            `Immutability violation: recipe '${id}' in released catalog '${artifact.catalog_id}' has been modified (content hash mismatch). ` +
+            `Existing: ${hExisting}, New: ${hNew}. Re-releasing a modified recipe under the same catalog_id is strictly forbidden. Please bump catalog_id.`
+          );
+        }
+      }
+    } else {
+      fs.writeFileSync(archivePath, JSON.stringify(artifact, null, 2), 'utf-8');
+    }
+  }
+
+  verifyAndSaveToArchive(catalogArtifact);
+
   fs.writeFileSync(outputPath, JSON.stringify(catalogArtifact, null, 2), 'utf-8');
   if (catalogArtifact.catalog_id && !catalogArtifact.catalog_id.startsWith('synthetic-')) {
     const versionedPath = path.join(outputDir, `${catalogArtifact.catalog_id}.json`);
@@ -150,6 +198,9 @@ export function exportReleaseCatalog(options = {}) {
   }
 
   if (!testOnly) {
+    const decCandidatesPath = path.join(ROOT, 'src/data/decemberDraftRecipes.ts');
+    const { DECEMBER_DRAFT_RECIPES } = loadTs(decCandidatesPath);
+
     const decCatalogArtifact = {
       schema_version: 1,
       catalog_id: 'released-catalog-202612-v1',
@@ -157,76 +208,28 @@ export function exportReleaseCatalog(options = {}) {
       updated_date: '2026-11-08',
       editorial_status: 'draft_for_owner_review',
       test_only: false,
-      released_ids: [...catalogArtifact.released_ids, 'k21', 'k22', 'c17', 'c18'],
+      released_ids: [...catalogArtifact.released_ids, ...DECEMBER_DRAFT_RECIPES.map(r => r.id)],
       public_released_ids: [...catalogArtifact.public_released_ids],
-      owner_review_ids: [...catalogArtifact.owner_review_ids, 'k21', 'k22', 'c17', 'c18'],
+      owner_review_ids: [...catalogArtifact.owner_review_ids, ...DECEMBER_DRAFT_RECIPES.map(r => r.id)],
       recipes: [
         ...catalogArtifact.recipes,
-        {
-          id: 'k21',
-          title: 'Запечённая свиная корейка с квашеной капустой и тмином',
-          mode: 'keto',
-          cat: 'dinner',
-          kcal: 480,
-          p: 38,
-          f: 35,
-          nc: 4,
-          serv: 2,
-          ing: [['Свиная корейка', '400 г'], ['Квашеная капуста', '250 г'], ['Смалец', '20 г']],
-          steps: ['Запечь корейку с капустой в духовке.'],
-          tags: ['meat', 'winter'],
-          editorial_status: 'draft_for_owner_review',
-        },
-        {
-          id: 'k22',
-          title: 'Сливочный суп-пюре из цветной капусты с копчёным беконом',
-          mode: 'keto',
-          cat: 'lunch',
-          kcal: 390,
-          p: 14,
-          f: 34,
-          nc: 5,
-          serv: 2,
-          ing: [['Цветная капуста', '400 г'], ['Сливки 33%', '150 мл'], ['Бекон', '80 г']],
-          steps: ['Сварить цветную капусту, пюрировать со сливками, посыпать беконом.'],
-          tags: ['soup', 'winter'],
-          editorial_status: 'draft_for_owner_review',
-        },
-        {
-          id: 'c17',
-          title: 'Томлёная баранья голяшка в собственном соку',
-          mode: 'carnivore',
-          cat: 'dinner',
-          kcal: 620,
-          p: 48,
-          f: 46,
-          nc: 0,
-          serv: 1,
-          ing: [['Баранья голяшка', '450 г'], ['Топлёный говяжий жир', '20 г']],
-          steps: ['Томить голяшку на медленном огне 2 часа.'],
-          tags: ['lamb', 'carnivore'],
-          editorial_status: 'draft_for_owner_review',
-        },
-        {
-          id: 'c18',
-          title: 'Печёночные оладьи карнивор',
-          mode: 'carnivore',
-          cat: 'breakfast',
-          kcal: 410,
-          p: 32,
-          f: 30,
-          nc: 2,
-          serv: 1,
-          ing: [['Печень говяжья', '200 г'], ['Яйцо куриное', '1 шт.'], ['Топлёное масло', '15 г']],
-          steps: ['Измельчить печень с яйцом, обжарить оладьи на масле.'],
-          tags: ['offal', 'carnivore'],
-          editorial_status: 'draft_for_owner_review',
-        },
+        ...DECEMBER_DRAFT_RECIPES,
       ],
       nutrition_status: 'unverified',
     };
+    verifyAndSaveToArchive(decCatalogArtifact);
     const decPath = path.join(outputDir, 'released-catalog-202612-v1.json');
     fs.writeFileSync(decPath, JSON.stringify(decCatalogArtifact, null, 2), 'utf-8');
+  }
+
+  // Copy any other archived catalog versions into outputDir (dist/)
+  if (!testOnly && fs.existsSync(archiveDir)) {
+    for (const f of fs.readdirSync(archiveDir)) {
+      if (f.endsWith('.json')) {
+        const dest = path.join(outputDir, f);
+        fs.copyFileSync(path.join(archiveDir, f), dest);
+      }
+    }
   }
 
   return {
