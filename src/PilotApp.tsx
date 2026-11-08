@@ -1351,86 +1351,8 @@ export default function PilotApp() {
         setShoppingItems(mergedShopping);
         shoppingItemsRef.current = mergedShopping;
 
-        // 2. Put user second with shopping_stale: false and reconciled range checkmarks
-        const prevRangeChecked = currentState.shopping_range_checked || {};
-        const nextRangeChecked: Record<string, boolean> = { ...prevRangeChecked };
-
-        const prevItemMap = new Map(currentItems.map((x) => [x.id, x]));
-        const nextItemMap = new Map(nextShopping.map((x) => [x.id, x]));
-
-        const parseVal = (lbl?: string) => {
-          if (!lbl) return 0;
-          const m = lbl.match(/^(\d+(?:[.,]\d+)?)/);
-          return m ? parseFloat(m[1].replace(',', '.')) : 0;
-        };
-
-        for (const [key, isChecked] of Object.entries(prevRangeChecked)) {
-          if (!isChecked) {
-            nextRangeChecked[key] = false;
-            continue;
-          }
-          const lastColon = key.lastIndexOf(':');
-          if (lastColon === -1) continue;
-          const rangeKey = key.slice(0, lastColon);
-          const itemId = key.slice(lastColon + 1);
-
-          if (itemId.startsWith('shop-custom-')) {
-            nextRangeChecked[key] = true;
-            continue;
-          }
-
-          const prevItem = prevItemMap.get(itemId);
-          const nextItem = nextItemMap.get(itemId);
-
-          if (!nextItem || !prevItem) {
-            nextRangeChecked[key] = false;
-            continue;
-          }
-
-          const prevVal = parseVal(prevItem.amountLabel);
-          const nextVal = parseVal(nextItem.amountLabel);
-
-          // Overall requirement in the menu
-          if (rangeKey === 'all') {
-            if (nextVal > prevVal) {
-              nextRangeChecked[key] = false;
-            } else {
-              nextRangeChecked[key] = isChecked;
-            }
-            continue;
-          }
-
-          let rangeDays: Array<{ date?: string; slots: Record<string, string> }> = [];
-          if (rangeKey.startsWith('week-')) {
-            const weekIdx = parseInt(rangeKey.replace('week-', ''), 10);
-            const startIdx = weekIdx * 7;
-            const endIdx = Math.min((weekIdx + 1) * 7, currentState.menu.days.length);
-            rangeDays = currentState.menu.days.slice(startIdx, endIdx);
-          } else if (rangeKey.startsWith('custom:')) {
-            const [start, end] = rangeKey.replace('custom:', '').split('_');
-            rangeDays = currentState.menu.days.filter((d) => Boolean(d.date && d.date >= start && d.date <= end));
-          } else {
-            rangeDays = currentState.menu.days;
-          }
-
-          const prevTitles = new Set(prevItem?.linkedRecipeTitles || []);
-          const rangeRecipeTitles = new Set(
-            rangeDays
-              .flatMap((d) => Object.values(d.slots))
-              .map((id) => recipesById[id]?.title)
-              .filter(Boolean)
-          );
-
-          const hasAddedRecipe = [...rangeRecipeTitles].some(
-            (title) => !prevTitles.has(title) && nextItem?.linkedRecipeTitles?.includes(title)
-          );
-
-          if (hasAddedRecipe && nextVal > prevVal) {
-            nextRangeChecked[key] = false;
-          } else {
-            nextRangeChecked[key] = isChecked;
-          }
-        }
+        // 2. Put user second with shopping_stale: false and preserved range checkmarks
+        const nextRangeChecked: Record<string, boolean> = { ...(currentState.shopping_range_checked || {}) };
 
         const nextState: PilotStateV1 = {
           ...currentState,

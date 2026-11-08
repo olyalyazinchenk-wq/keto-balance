@@ -797,12 +797,12 @@ describe('Shopping Range Persistence & Checkmarks Isolation (Codex Proof)', () =
     assert.equal(egg4.amountLabel, '8 шт.');
   });
 
-  test('Full menu rebuild preserves bought checkmark when requirement decreases in week', async () => {
+  test('Full menu rebuild preserves bought checkmark when requirement decreases in week even if month total increases, through rebuild and refresh', async () => {
     const eggId = 'shop-agg-яйца-count-шт';
-    // Before: Day 0..6 all have k2 (3 eggs each, 21 eggs in week 0).
+    // Days 0..6 have k2 (3 eggs each, 21 eggs in week 0). Days 7..29 have k27 (0 eggs). Month total = 21 eggs.
     const beforeDays = Array.from({ length: 30 }, (_, i) => ({
       date: `2026-11-${String(i + 1).padStart(2, '0')}`,
-      slots: { breakfast: 'k2', dinner: 'k10' },
+      slots: { breakfast: i < 7 ? 'k2' : 'k27', dinner: 'k10' },
     }));
 
     const profile = {
@@ -814,6 +814,7 @@ describe('Shopping Range Persistence & Checkmarks Isolation (Codex Proof)', () =
         mealsPerDay: 2,
         planDays: 30,
         month: '2026-11',
+        preferenceNote: 'simple_daily',
       },
     };
 
@@ -838,17 +839,20 @@ describe('Shopping Range Persistence & Checkmarks Isolation (Codex Proof)', () =
       shopping_range: { range_id: 'week-0', type: 'week', week_index: 0 },
       shopping_range_checked: {
         [`week-0:${eggId}`]: true,
+        [`custom:2026-11-01_2026-11-07:${eggId}`]: true,
         [`all:${eggId}`]: true,
       },
     };
 
+    const beforeItems = rebuildShoppingFromMenu(beforeState.menu, recipesById, [], 1);
     const state = { current: beforeState };
+    const itemRef = { current: beforeItems };
 
     const { preferencesToUserProfile, approachToMode } = loadTs(path.join(ROOT, 'src/adapters/pilotState.ts'));
     const { createMenuController } = loadTs(path.join(ROOT, 'src/adapters/menuController.ts'));
     const { resolveSelectedDate } = loadTs(path.join(ROOT, 'src/domain/menu.ts'));
 
-    // Rebuild generates menu where seed 0.999 produces 5 eggs in week 0 (drop from 21 -> 5 eggs)
+    // Rebuild generates menu where seed 0.999 produces 5 eggs in week 0 (drop from 21 -> 5 eggs) and 25 eggs in month (increase from 21 -> 25 eggs)
     const rebuild = getHandler('handleRebuildMenu', {
       stateRef: state,
       catalog: novCatalog,
@@ -867,8 +871,45 @@ describe('Shopping Range Persistence & Checkmarks Isolation (Codex Proof)', () =
 
     await rebuild();
 
-    assert.equal(state.current.shopping_range_checked[`week-0:${eggId}`], true, 'Decreasing from 21 -> 5 eggs must preserve checkmark');
-    assert.equal(state.current.shopping_range_checked[`all:${eggId}`], true, 'Month decrease must preserve checkmark');
+    // After rebuild: week 0 decreases 21 -> 5 eggs (must stay true), custom 01-07 stays true, month increases 21 -> 25 eggs (must be false)
+    assert.equal(state.current.shopping_range_checked[`week-0:${eggId}`], true, 'Decreasing from 21 -> 5 eggs must preserve week checkmark');
+    assert.equal(state.current.shopping_range_checked[`custom:2026-11-01_2026-11-07:${eggId}`], true, 'Custom 01-07 must preserve checkmark');
+    assert.equal(state.current.shopping_range_checked[`all:${eggId}`], false, 'Month increase from 21 -> 25 must reset month checkmark');
+
+    // Run handleRefreshShopping and verify saved state
+    let submittedShoppingItems;
+    let savedUserState;
+    const pendingQueue = [];
+    const refresh = getHandler('handleRefreshShopping', {
+      stateRef: state,
+      shoppingItemsRef: itemRef,
+      recipesById,
+      rebuildShoppingFromMenu,
+      stickyErrorRef: { current: null },
+      userId: null,
+      shoppingRevisionRef: { current: 1 },
+      userRevisionRef: { current: 1 },
+      profileRef: { current: profile },
+      setShoppingRevision: () => {},
+      setUserRevision: () => {},
+      setShoppingItems: (items) => { itemRef.current = items; },
+      setState: () => {},
+      setSyncStatus: () => {},
+      saveQueue: { enqueue: (fn) => { const p = fn(); pendingQueue.push(p); return p; } },
+      client: {
+        putShopping: async (p) => { submittedShoppingItems = p.items; return { revision: 2 }; },
+        putUser: async (p) => { savedUserState = p.state; return { revision: 2 }; },
+      },
+    });
+
+    await refresh();
+    await Promise.all(pendingQueue);
+
+    assert.ok(savedUserState);
+    assert.equal(savedUserState.shopping_range_checked[`week-0:${eggId}`], true, 'Saved week 0 mark must remain true after refresh');
+    assert.equal(savedUserState.shopping_range_checked[`custom:2026-11-01_2026-11-07:${eggId}`], true, 'Saved custom 01-07 mark must remain true after refresh');
+    assert.equal(savedUserState.shopping_range_checked[`all:${eggId}`], false, 'Saved month mark must remain false after refresh');
+    assert.equal(savedUserState.shopping_stale, false, 'Shopping stale flag must be cleared');
   });
 
   test('409 Conflict during handleRefreshShopping sets sync status to conflict without data corruption', async () => {
