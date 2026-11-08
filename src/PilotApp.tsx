@@ -150,17 +150,23 @@ export default function PilotApp() {
     return map;
   }, [catalog]);
 
-  // Load registered catalogs list
-  useEffect(() => {
-    client
-      .listCatalogs()
-      .then((res) => {
-        if (res && Array.isArray(res.catalogs)) {
-          setAvailableCatalogs(res.catalogs);
-        }
-      })
-      .catch(() => {});
+  // Load registered catalogs list, refreshed whenever sessionToken / userId changes
+  const catalogRegistryReqIdRef = useRef(0);
+  const refreshCatalogRegistry = useCallback(async () => {
+    const reqId = ++catalogRegistryReqIdRef.current;
+    try {
+      const res = await client.listCatalogs();
+      if (reqId === catalogRegistryReqIdRef.current && res && Array.isArray(res.catalogs)) {
+        setAvailableCatalogs(res.catalogs);
+      }
+    } catch {
+      // Keep existing catalogs if available
+    }
   }, [client]);
+
+  useEffect(() => {
+    void refreshCatalogRegistry();
+  }, [client, sessionToken, userId, refreshCatalogRegistry]);
 
   // Auth & bootstrap
   useEffect(() => {
@@ -189,12 +195,17 @@ export default function PilotApp() {
         void fetchSubscription(session.session_token).then((data) => {
           if (isMounted) setSubscription(data);
         }).catch(() => { /* Keep access unknown; subscription service does not block meals. */ });
-        const [userData, shopData] = await Promise.all([
+        const [userData, shopData, catListRes] = await Promise.all([
           client.getUser(),
           client.getShopping(),
+          client.listCatalogs().catch(() => null),
         ]);
 
         if (!isMounted) return;
+
+        if (catListRes && Array.isArray(catListRes.catalogs)) {
+          setAvailableCatalogs(catListRes.catalogs);
+        }
 
         const savedCatalogId = userData.state?.menu?.catalog_id;
         let catData: PilotCatalogV1;
@@ -785,10 +796,60 @@ export default function PilotApp() {
       });
 
       const nextMenu = { ...currentState.menu, days: nextDays };
+
+      // Reconcile range checkmarks if replacement increased any ingredient
+      const prevChecked = currentState.shopping_range_checked || {};
+      const nextRangeChecked: Record<string, boolean> = { ...prevChecked };
+      const currentRecipe = catalog.recipes.find((r) => r.id === currentRecipeId);
+      const nextRecipe = catalog.recipes.find((r) => r.id === nextRecipeId);
+
+      if (currentRecipe && nextRecipe) {
+        const curIngs = currentRecipe.ing || [];
+        const nextIngs = nextRecipe.ing || [];
+        for (const [key, isChecked] of Object.entries(prevChecked)) {
+          if (!isChecked) continue;
+          const lastColon = key.lastIndexOf(':');
+          if (lastColon === -1) continue;
+          const rangeKey = key.slice(0, lastColon);
+          const itemId = key.slice(lastColon + 1);
+
+          let coversDate = false;
+          if (rangeKey === 'all') {
+            coversDate = true;
+          } else if (rangeKey.startsWith('week-')) {
+            const weekIdx = parseInt(rangeKey.replace('week-', ''), 10);
+            const startIdx = weekIdx * 7;
+            const endIdx = Math.min((weekIdx + 1) * 7, nextMenu.days.length);
+            const wDays = nextMenu.days.slice(startIdx, endIdx);
+            coversDate = wDays.some((d) => d.date === date);
+          } else if (rangeKey.startsWith('custom:')) {
+            const [s, e] = rangeKey.replace('custom:', '').split('_');
+            coversDate = Boolean(date >= s && date <= e);
+          }
+
+          if (coversDate) {
+            const nextIng = nextIngs.find((i) => itemId.includes(i[0].toLowerCase().trim()));
+            const curIng = curIngs.find((i) => itemId.includes(i[0].toLowerCase().trim()));
+            if (nextIng) {
+              const parseVal = (s: string) => {
+                const m = s.match(/^(\d+(?:[.,]\d+)?)/);
+                return m ? parseFloat(m[1].replace(',', '.')) : 0;
+              };
+              const nextVal = parseVal(nextIng[1]);
+              const curVal = curIng ? parseVal(curIng[1]) : 0;
+              if (nextVal > curVal) {
+                nextRangeChecked[key] = false;
+              }
+            }
+          }
+        }
+      }
+
       const nextState: PilotStateV1 = {
         ...currentState,
         menu: nextMenu,
         shopping_stale: true,
+        shopping_range_checked: nextRangeChecked,
       };
 
       enqueueUserStateSave(nextState);
@@ -1033,8 +1094,102 @@ export default function PilotApp() {
         setShoppingItems(mergedShopping);
         shoppingItemsRef.current = mergedShopping;
 
-        // 2. Put user second with shopping_stale: false
-        const nextState: PilotStateV1 = { ...currentState, shopping_stale: false };
+        // 2. Put user second with shopping_stale: false and reconciled range checkmarks
+        const prevRangeChecked = currentState.shopping_range_checked || {};
+        const nextRangeChecked: Record<string, boolean> = { ...prevRangeChecked };
+
+        const prevItemMap = new Map(currentItems.map((x) => [x.id, x]));
+        const nextItemMap = new Map(nextShopping.map((x) => [x.id, x]));
+
+        const parseVal = (lbl?: string) => {
+          if (!lbl) return 0;
+          const m = lbl.match(/^(\d+(?:[.,]\d+)?)/);
+          return m ? parseFloat(m[1].replace(',', '.')) : 0;
+        };
+
+        for (const [key, isChecked] of Object.entries(prevRangeChecked)) {
+          if (!isChecked) continue;
+          const lastColon = key.lastIndexOf(':');
+          if (lastColon === -1) continue;
+          const rangeKey = key.slice(0, lastColon);
+          const itemId = key.slice(lastColon + 1);
+
+          const prevItem = prevItemMap.get(itemId);
+          const nextItem = nextItemMap.get(itemId);
+
+          if (!nextItem || !prevItem) {
+            nextRangeChecked[key] = false;
+            continue;
+          }
+
+          const prevVal = parseVal(prevItem.amountLabel);
+          const nextVal = parseVal(nextItem.amountLabel);
+
+          // If overall requirement in the menu did not increase, keep checkmark
+          if (nextVal <= prevVal) {
+            nextRangeChecked[key] = true;
+            continue;
+          }
+
+          // Overall requirement increased. Determine if this range increased.
+          if (rangeKey === 'all') {
+            nextRangeChecked[key] = false;
+            continue;
+          }
+
+          let rangeDays: Array<{ date?: string; slots: Record<string, string> }> = [];
+          if (rangeKey.startsWith('week-')) {
+            const weekIdx = parseInt(rangeKey.replace('week-', ''), 10);
+            const startIdx = weekIdx * 7;
+            const endIdx = Math.min((weekIdx + 1) * 7, currentState.menu.days.length);
+            rangeDays = currentState.menu.days.slice(startIdx, endIdx);
+          } else if (rangeKey.startsWith('custom:')) {
+            const [start, end] = rangeKey.replace('custom:', '').split('_');
+            rangeDays = currentState.menu.days.filter((d) => Boolean(d.date && d.date >= start && d.date <= end));
+          } else {
+            rangeDays = currentState.menu.days;
+          }
+
+          const prevTitles = new Set(prevItem.linkedRecipeTitles || []);
+          const rangeRecipeTitles = new Set(
+            rangeDays
+              .flatMap((d) => Object.values(d.slots))
+              .map((id) => recipesById[id]?.title)
+              .filter(Boolean)
+          );
+
+          const hasAddedRecipe = [...rangeRecipeTitles].some(
+            (title) => !prevTitles.has(title) && nextItem.linkedRecipeTitles?.includes(title)
+          );
+
+          if (hasAddedRecipe) {
+            nextRangeChecked[key] = false;
+          } else {
+            try {
+              const rangeShopping = rebuildShoppingFromMenu(
+                { days: rangeDays as any },
+                recipesById,
+                [],
+                currentState.shopping_batches
+              );
+              const rItem = rangeShopping.find((x) => x.id === itemId);
+              const rVal = rItem ? parseVal(rItem.amountLabel) : 0;
+              if (rVal > prevVal) {
+                nextRangeChecked[key] = false;
+              } else {
+                nextRangeChecked[key] = true;
+              }
+            } catch {
+              nextRangeChecked[key] = false;
+            }
+          }
+        }
+
+        const nextState: PilotStateV1 = {
+          ...currentState,
+          shopping_stale: false,
+          shopping_range_checked: nextRangeChecked,
+        };
         const userRes = await client.putUser({
           schema_version: 1,
           expected_revision: userRevisionRef.current,
@@ -1049,6 +1204,7 @@ export default function PilotApp() {
           const mergedState: PilotStateV1 = {
             ...latestState,
             shopping_stale: !isMenuUnchanged,
+            shopping_range_checked: nextRangeChecked,
           };
           setState(mergedState);
           stateRef.current = mergedState;

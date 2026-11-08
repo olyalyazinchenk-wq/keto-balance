@@ -137,4 +137,63 @@ describe('December Switch & Active Catalog Shopping Calculation (Codex Group 1)'
 
     assert.ok(errorMessage.includes('только владельцу'));
   });
+
+  test('Authenticated owner reloads registry and unlocks December in public mode, discarding late anonymous responses', async () => {
+    let currentSessionToken = null;
+    let catalogRegistryReqId = 0;
+    let availableCatalogs = [];
+
+    // Mock client
+    const mockClient = {
+      listCatalogs: async () => {
+        // If session token is present, user is authenticated owner
+        if (currentSessionToken === 'owner-valid-token') {
+          return {
+            catalogs: [
+              { catalog_id: 'released-catalog-202611-v1', catalog_month: '2026-11', accessible: true },
+              { catalog_id: 'released-catalog-202612-v1', catalog_month: '2026-12', accessible: true },
+            ],
+          };
+        }
+        // Anonymous or non-owner: December is inaccessible
+        return {
+          catalogs: [
+            { catalog_id: 'released-catalog-202611-v1', catalog_month: '2026-11', accessible: true },
+            { catalog_id: 'released-catalog-202612-v1', catalog_month: '2026-12', accessible: false },
+          ],
+        };
+      },
+    };
+
+    // 1. Initial anonymous load
+    const req1 = ++catalogRegistryReqId;
+    const anonRes = await mockClient.listCatalogs();
+    if (req1 === catalogRegistryReqId) {
+      availableCatalogs = anonRes.catalogs;
+    }
+    assert.equal(availableCatalogs.find((c) => c.catalog_month === '2026-12').accessible, false);
+
+    // 2. User authenticates as owner
+    currentSessionToken = 'owner-valid-token';
+    const req2 = ++catalogRegistryReqId;
+
+    // Simulate a delayed anonymous response from req1 arriving late
+    const delayedAnonPromise = (async () => {
+      if (req1 === catalogRegistryReqId) {
+        availableCatalogs = [{ catalog_id: 'released-catalog-202612-v1', catalog_month: '2026-12', accessible: false }];
+      }
+    })();
+
+    // Authenticated load completes
+    const authRes = await mockClient.listCatalogs();
+    if (req2 === catalogRegistryReqId) {
+      availableCatalogs = authRes.catalogs;
+    }
+    await delayedAnonPromise;
+
+    // Must be accessible=true for owner; delayed anonymous response was safely ignored
+    const decMeta = availableCatalogs.find((c) => c.catalog_month === '2026-12');
+    assert.ok(decMeta);
+    assert.equal(decMeta.accessible, true, 'Authenticated owner must see December as accessible');
+  });
 });

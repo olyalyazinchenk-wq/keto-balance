@@ -175,11 +175,16 @@ export function rebuildShoppingFromMenu(
       (item) => item.id === group.id || item.name.toLowerCase().trim() === group.name.toLowerCase()
     );
 
-    // Checkmarks are ONLY preserved if amount has not changed (unless preserveCheckmarks is explicitly enabled)!
+    // Checkmarks are preserved if requirement has not increased (unless preserveCheckmarks is explicitly enabled)!
     const preserveCheckmarks = typeof optionsOrPortions === 'object' && Boolean(optionsOrPortions?.preserveCheckmarks);
-    const isAmountSame = prevItem && (preserveCheckmarks || prevItem.amountLabel === amountLabel);
+    const prevParsed = prevItem ? parseAmount(prevItem.amountLabel) : null;
+    const currentParsed = parseAmount(amountLabel);
+    const isIncreased = prevParsed && !prevParsed.isText && !currentParsed.isText && prevParsed.unitType === currentParsed.unitType
+      ? currentParsed.value > prevParsed.value
+      : (prevItem ? prevItem.amountLabel !== amountLabel : false);
+
     const alreadyHave = prevItem ? Boolean(prevItem.alreadyHave) : false;
-    const checkedInStore = isAmountSame ? Boolean(prevItem.checkedInStore) : false;
+    const checkedInStore = prevItem && (preserveCheckmarks || !isIncreased) ? Boolean(prevItem.checkedInStore) : false;
 
     result.push({
       id: group.id,

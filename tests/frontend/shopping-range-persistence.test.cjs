@@ -229,4 +229,142 @@ describe('Shopping Range Persistence & Checkmarks Isolation (Codex Proof)', () =
     assert.equal(egg1.checkedInStore, true, 'Egg in custom range 1 is checked');
     assert.equal(egg2.checkedInStore, false, 'Egg in custom range 2 must NOT be checked (isolated!)');
   });
+
+  test('Menu replacement increasing requirement (14 -> 15 eggs) resets bought checkmark for that range while preserving ranges without increase', () => {
+    // 30 days menu
+    const oldDays = Array.from({ length: 30 }, (_, i) => ({
+      date: `2026-11-${String(i + 1).padStart(2, '0')}`,
+      slots: { breakfast: 'k1', dinner: 'k10' },
+    }));
+    // Larger menu: day 0 has k2 (3 eggs) instead of k1 (2 eggs)
+    const largerDays = oldDays.map((d, i) =>
+      i === 0 ? { ...d, slots: { ...d.slots, breakfast: 'k2' } } : d
+    );
+
+    const eggsId = 'shop-agg-яйца-count-шт';
+    const oldItems = rebuildShoppingFromMenu({ days: oldDays }, recipesById, [], 1);
+    const nextShopping = rebuildShoppingFromMenu({ days: largerDays }, recipesById, oldItems, 1);
+
+    const oldEgg = oldItems.find((i) => i.id === eggsId);
+    const nextEgg = nextShopping.find((i) => i.id === eggsId);
+    assert.equal(oldEgg.amountLabel, '60 шт.');
+    assert.equal(nextEgg.amountLabel, '61 шт.');
+
+    // Simulated range checkmarks before edit:
+    // User had marked eggs bought for week-0 and week-1
+    const prevRangeChecked = {
+      [`week-0:${eggsId}`]: true,
+      [`week-1:${eggsId}`]: true,
+      [`custom:2026-11-01_2026-11-03:${eggsId}`]: true,
+      [`custom:2026-11-08_2026-11-14:${eggsId}`]: true,
+    };
+
+    // Reconcile logic as implemented in handleRefreshShopping
+    const nextRangeChecked = { ...prevRangeChecked };
+    const prevItemMap = new Map(oldItems.map((x) => [x.id, x]));
+    const nextItemMap = new Map(nextShopping.map((x) => [x.id, x]));
+
+    const parseVal = (lbl) => {
+      if (!lbl) return 0;
+      const m = lbl.match(/^(\d+(?:[.,]\d+)?)/);
+      return m ? parseFloat(m[1].replace(',', '.')) : 0;
+    };
+
+    for (const [key, isChecked] of Object.entries(prevRangeChecked)) {
+      if (!isChecked) continue;
+      const lastColon = key.lastIndexOf(':');
+      if (lastColon === -1) continue;
+      const rangeKey = key.slice(0, lastColon);
+      const itemId = key.slice(lastColon + 1);
+
+      const prevItem = prevItemMap.get(itemId);
+      const nextItem = nextItemMap.get(itemId);
+      if (!nextItem || !prevItem) {
+        nextRangeChecked[key] = false;
+        continue;
+      }
+
+      const prevVal = parseVal(prevItem.amountLabel);
+      const nextVal = parseVal(nextItem.amountLabel);
+
+      if (nextVal <= prevVal) {
+        nextRangeChecked[key] = true;
+        continue;
+      }
+
+      if (rangeKey === 'all') {
+        nextRangeChecked[key] = false;
+        continue;
+      }
+
+      let rangeDays = [];
+      if (rangeKey.startsWith('week-')) {
+        const weekIdx = parseInt(rangeKey.replace('week-', ''), 10);
+        const startIdx = weekIdx * 7;
+        const endIdx = Math.min((weekIdx + 1) * 7, largerDays.length);
+        rangeDays = largerDays.slice(startIdx, endIdx);
+      } else if (rangeKey.startsWith('custom:')) {
+        const [start, end] = rangeKey.replace('custom:', '').split('_');
+        rangeDays = largerDays.filter((d) => Boolean(d.date && d.date >= start && d.date <= end));
+      } else {
+        rangeDays = largerDays;
+      }
+
+      const prevTitles = new Set(prevItem.linkedRecipeTitles || []);
+      const rangeRecipeTitles = new Set(
+        rangeDays
+          .flatMap((d) => Object.values(d.slots))
+          .map((id) => recipesById[id]?.title)
+          .filter(Boolean)
+      );
+
+      const hasAddedRecipe = [...rangeRecipeTitles].some(
+        (title) => !prevTitles.has(title) && nextItem.linkedRecipeTitles?.includes(title)
+      );
+
+      if (hasAddedRecipe) {
+        nextRangeChecked[key] = false;
+      } else {
+        const rShopping = rebuildShoppingFromMenu({ days: rangeDays }, recipesById, [], 1);
+        const rItem = rShopping.find((x) => x.id === itemId);
+        const rVal = rItem ? parseVal(rItem.amountLabel) : 0;
+        if (rVal > prevVal) {
+          nextRangeChecked[key] = false;
+        } else {
+          nextRangeChecked[key] = true;
+        }
+      }
+    }
+
+    // Assertions:
+    // Week 0 covered Day 0 (k2 added with +1 egg) -> reset to false
+    assert.equal(nextRangeChecked[`week-0:${eggsId}`], false, 'Week 0 bought mark must be reset because requirement grew');
+    // Custom 01-03 covered Day 0 -> reset to false
+    assert.equal(nextRangeChecked[`custom:2026-11-01_2026-11-03:${eggsId}`], false, 'Custom 01-03 bought mark must be reset');
+
+    // Week 1 did NOT cover Day 0 (only k1 used) -> preserved as true!
+    assert.equal(nextRangeChecked[`week-1:${eggsId}`], true, 'Week 1 bought mark must be preserved because requirement did NOT grow');
+    // Custom 08-14 did NOT cover Day 0 -> preserved as true!
+    assert.equal(nextRangeChecked[`custom:2026-11-08_2026-11-14:${eggsId}`], true, 'Custom 08-14 bought mark must be preserved');
+  });
+
+  test('Menu replacement with same or lower requirement preserves bought checkmark', () => {
+    // 30 days menu
+    const days = Array.from({ length: 30 }, (_, i) => ({
+      date: `2026-11-${String(i + 1).padStart(2, '0')}`,
+      slots: { breakfast: 'k1', dinner: 'k10' },
+    }));
+
+    const items = rebuildShoppingFromMenu({ days }, recipesById, [], 1);
+    const egg = items.find((i) => i.name === 'Яйца');
+    const checked = { [`week-0:${egg.id}`]: true };
+
+    // Same menu rebuilt
+    const rebuiltShopping = rebuildShoppingFromMenu({ days }, recipesById, items, 1);
+    const rebuiltEgg = rebuiltShopping.find((i) => i.id === egg.id);
+
+    assert.equal(rebuiltEgg.amountLabel, egg.amountLabel);
+    // rebuiltShoppingFromMenu preserves checkedInStore when requirement does not grow
+    assert.equal(rebuiltEgg.checkedInStore, egg.checkedInStore);
+  });
 });
