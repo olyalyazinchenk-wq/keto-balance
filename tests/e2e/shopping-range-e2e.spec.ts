@@ -104,25 +104,38 @@ test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', 
     const restoredCheckBtn = page2.locator('[data-testid^="toggle-in-store-"]').first();
     await expect(restoredCheckBtn).toHaveAttribute('aria-pressed', 'true');
 
-    // Test 409 conflict handling directly via API on this user
-    const token = await page2.evaluate(() => {
-      return (window as any).__ketoClient?.getToken() || localStorage.getItem('kb_session_token');
+    // Test 409 conflict handling directly via API on this authenticated user
+    const sessionRes = await page2.request.post('http://127.0.0.1:18080/api/session', {
+      headers: { 'Content-Type': 'application/json' },
+      data: { init_data: session2.initData },
     });
+    expect(sessionRes.status()).toBe(200);
+    const sessionJson = await sessionRes.json();
+    const token = sessionJson.session_token;
+    expect(token).toBeTruthy();
 
-    if (token) {
-      const conflictResp = await page2.request.put('http://127.0.0.1:18080/api/user', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+    const conflictResp = await page2.request.put('http://127.0.0.1:18080/api/user', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        schema_version: 1,
+        expected_revision: 0, // Stale revision, server is at revision 4+
+        profile: {
+          settings: {
+            confirmed18Plus: true,
+            approach: 'keto',
+            restrictions: [],
+            prepTimeMax: 35,
+            mealsPerDay: 3,
+            planDays: 30,
+          },
         },
-        data: {
-          schema_version: 1,
-          expected_revision: 0, // Stale revision, server is at 4+
-          profile: { settings: { confirmed18Plus: true, approach: 'keto' } },
-        },
-      });
-      expect(conflictResp.status()).toBe(409);
-    }
+        state: null,
+      },
+    });
+    expect(conflictResp.status()).toBe(409);
 
     await session2.context.close();
   });

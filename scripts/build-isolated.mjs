@@ -94,6 +94,9 @@ copyDirectoryFiltered('scripts', path.join(snapshotDir, 'scripts'), ['.mjs', '.j
 copyDirectoryFiltered('docs/release', path.join(snapshotDir, 'docs/release'), ['.md', '.json']);
 copyDirectoryFiltered('tests/fixtures', path.join(snapshotDir, 'tests/fixtures'), ['.json']);
 copyDirectoryFiltered('tests/helpers', path.join(snapshotDir, 'tests/helpers'), ['.cjs', '.js', '.py']);
+if (existsSync('catalogs')) {
+  copyDirectoryFiltered('catalogs', path.join(snapshotDir, 'catalogs'), ['.json']);
+}
 
 // Copy only .py source files from bot/ (strictly forbidding .db and runtime data)
 if (existsSync('bot')) {
@@ -142,6 +145,7 @@ hashDir('src');
 hashDir('public');
 hashDir('scripts');
 hashDir('bot');
+hashDir('catalogs');
 
 // Save complete source manifest to disk
 const sourceManifestPath = path.join(runDir, 'source-manifest.json');

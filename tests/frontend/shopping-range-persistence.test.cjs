@@ -178,5 +178,55 @@ describe('Shopping Range Persistence & Checkmarks Isolation (Codex Proof)', () =
     assert.ok(preservedCustom, 'Custom user product must be preserved in weekly range');
     assert.ok(preservedPantry, 'Pantry item must be in weekly list');
     assert.equal(preservedPantry.alreadyHave, true, 'alreadyHave must remain true');
+
+    // Direct check: rebuildShoppingFromMenu natively preserves alreadyHave without outside wrapper
+    const directRangeShopping = rebuildShoppingFromMenu(
+      { days: week0Days },
+      recipesById,
+      initialList,
+      { targetPortions: 1, preserveCheckmarks: false }
+    );
+    const directPantry = directRangeShopping.find((i) => i.name === 'Сливочное масло');
+    assert.ok(directPantry, 'Pantry item must be in weekly list');
+    assert.equal(directPantry.alreadyHave, true, 'alreadyHave must remain true directly without manual wrapper');
+  });
+
+  test('Two distinct custom ranges with the same product have isolated checkmarks', () => {
+    const custom1Days = menuDays.slice(0, 3); // 2026-11-01 to 2026-11-03
+    const custom2Days = menuDays.slice(7, 14); // 2026-11-08 to 2026-11-14
+
+    const eggsId = 'shop-agg-яйца-count-шт';
+    // Checkmarks stored with exact range keys:
+    const rangeCheckmarks = {
+      [`custom:2026-11-01_2026-11-03:${eggsId}`]: true,
+    };
+
+    // Range 1 (01-03)
+    const shopping1 = rebuildShoppingFromMenu(
+      { days: custom1Days },
+      recipesById,
+      [],
+      { targetPortions: 1, preserveCheckmarks: false }
+    ).map((it) => ({
+      ...it,
+      checkedInStore: Boolean(rangeCheckmarks[`custom:2026-11-01_2026-11-03:${it.id}`]),
+    }));
+
+    // Range 2 (08-14)
+    const shopping2 = rebuildShoppingFromMenu(
+      { days: custom2Days },
+      recipesById,
+      [],
+      { targetPortions: 1, preserveCheckmarks: false }
+    ).map((it) => ({
+      ...it,
+      checkedInStore: Boolean(rangeCheckmarks[`custom:2026-11-08_2026-11-14:${it.id}`]),
+    }));
+
+    const egg1 = shopping1.find((i) => i.id === eggsId);
+    const egg2 = shopping2.find((i) => i.id === eggsId);
+
+    assert.equal(egg1.checkedInStore, true, 'Egg in custom range 1 is checked');
+    assert.equal(egg2.checkedInStore, false, 'Egg in custom range 2 must NOT be checked (isolated!)');
   });
 });

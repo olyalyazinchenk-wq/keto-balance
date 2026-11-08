@@ -178,7 +178,7 @@ export function rebuildShoppingFromMenu(
     // Checkmarks are ONLY preserved if amount has not changed (unless preserveCheckmarks is explicitly enabled)!
     const preserveCheckmarks = typeof optionsOrPortions === 'object' && Boolean(optionsOrPortions?.preserveCheckmarks);
     const isAmountSame = prevItem && (preserveCheckmarks || prevItem.amountLabel === amountLabel);
-    const alreadyHave = isAmountSame ? Boolean(prevItem.alreadyHave) : false;
+    const alreadyHave = prevItem ? Boolean(prevItem.alreadyHave) : false;
     const checkedInStore = isAmountSame ? Boolean(prevItem.checkedInStore) : false;
 
     result.push({

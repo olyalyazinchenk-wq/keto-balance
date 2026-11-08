@@ -151,8 +151,8 @@ test('PilotState and SerializedSaveQueue Unit Tests', async (t) => {
     // 2. Multiplier increases to 2x (amount changes to 8 шт.)
     const list2 = rebuildShoppingFromMenu(menu, mockRecipes, list1, 2);
     assert.equal(list2[0].amountLabel, '8 шт.');
-    // Checkmarks MUST be reset because amount changed!
-    assert.equal(list2[0].alreadyHave, false, 'alreadyHave must reset when amount changes');
+    // checkedInStore MUST be reset because amount changed, but alreadyHave is preserved!
+    assert.equal(list2[0].alreadyHave, true, 'alreadyHave must be preserved when amount changes');
     assert.equal(list2[0].checkedInStore, false, 'checkedInStore must reset when amount changes');
   });
 

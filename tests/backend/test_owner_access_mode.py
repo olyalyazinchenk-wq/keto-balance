@@ -292,7 +292,11 @@ class TestOwnerAccessMode(unittest.TestCase):
             saved=True,
             created=1794000000,
             catalog_id=None,
-            days=[DayMenuModel(date="2026-11-07", slots={"breakfast": "k1", "dinner": "k2"})],
+            days=[
+                DayMenuModel(date="2026-11-07", slots={"breakfast": "k1", "dinner": "k2"}),
+                DayMenuModel(date="2026-11-08", slots={"breakfast": "k1", "dinner": "k2"}),
+                DayMenuModel(date="2026-11-09", slots={"breakfast": "k1", "dinner": "k2"}),
+            ],
         )
         data = legacy_menu.model_dump()
         self.assertIsNone(data.get("catalog_id"))

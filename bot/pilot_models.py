@@ -102,11 +102,11 @@ class GeneratedMenuModel(StrictBaseModel):
                             f"Calendar month {self.month} must end on {last_expected}, got {self.days[-1].date}"
                         )
                 else:
-                    for d in self.days:
-                        if not d.date.startswith(self.month):
-                            raise ValueError(
-                                f"Day date {d.date} does not belong to specified menu month {self.month}"
-                            )
+                    # Short menu (1, 3, 7 days): must start in self.month, but subsequent days can cross into next month/year
+                    if not self.days[0].date.startswith(self.month):
+                        raise ValueError(
+                            f"First day date {self.days[0].date} does not belong to specified menu month {self.month}"
+                        )
         return self
 
 class ShoppingRangeModel(StrictBaseModel):

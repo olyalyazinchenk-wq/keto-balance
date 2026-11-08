@@ -127,9 +127,9 @@ test('scaling portions multiplier scales amounts and resets checkmarks when amou
   assert.equal(egg2x.amountLabel, '8 шт.');
   assert.equal(cottage2x.amountLabel, '160 г');
 
-  // Checkbox states reset when amount changed (audit R4)
+  // checkedInStore resets when amount changed, but alreadyHave ("есть дома") is preserved (Codex audit Group 3)
   assert.equal(egg2x.checkedInStore, false, 'checkedInStore should reset when amount changed');
-  assert.equal(cottage2x.alreadyHave, false, 'alreadyHave should reset when amount changed');
+  assert.equal(cottage2x.alreadyHave, true, 'alreadyHave should be preserved when amount changed');
 
   // When amount does NOT change, checkmark state is preserved
   egg2x.checkedInStore = true;

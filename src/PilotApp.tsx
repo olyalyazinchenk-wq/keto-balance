@@ -85,6 +85,15 @@ export default function PilotApp() {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
+  const [availableCatalogs, setAvailableCatalogs] = useState<
+    Array<{
+      catalog_id: string;
+      catalog_month?: string;
+      editorial_status: string;
+      accessible: boolean;
+      total_recipes: number;
+    }>
+  >([]);
   const [viewHomeBeforeGate, setViewHomeBeforeGate] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
@@ -140,6 +149,18 @@ export default function PilotApp() {
     }
     return map;
   }, [catalog]);
+
+  // Load registered catalogs list
+  useEffect(() => {
+    client
+      .listCatalogs()
+      .then((res) => {
+        if (res && Array.isArray(res.catalogs)) {
+          setAvailableCatalogs(res.catalogs);
+        }
+      })
+      .catch(() => {});
+  }, [client]);
 
   // Auth & bootstrap
   useEffect(() => {
@@ -454,25 +475,58 @@ export default function PilotApp() {
     const canonProfile = preferencesToUserProfile(newSettings);
 
     let activeCatalog = catalog;
-    if (draftPlanDays >= 28 && draftMonth === '2026-12' && catalog.catalog_id !== 'released-catalog-202612-v1') {
-      try {
-        const decCatalog = await client.getCatalog('released-catalog-202612-v1');
-        if (decCatalog && decCatalog.recipes) {
-          activeCatalog = decCatalog;
-          setCatalog(decCatalog);
-        }
-      } catch {
-        // Fallback to activeCatalog if not owner or draft inaccessible
+    if (draftPlanDays >= 28 && draftMonth) {
+      const catalogsList = typeof availableCatalogs !== 'undefined' && Array.isArray(availableCatalogs) ? availableCatalogs : [];
+      const matchedMeta = catalogsList.find((c) => c.catalog_month === draftMonth);
+      if (matchedMeta && matchedMeta.accessible === false) {
+        setErrorMessage(
+          `Подборка на ${draftMonth} пока находится на утверждении у автора и доступна только владельцу. Выберите утверждённый месяц или повторите попытку позже.`
+        );
+        return;
       }
-    } else if (draftPlanDays >= 28 && draftMonth === '2026-11' && catalog.catalog_id === 'released-catalog-202612-v1') {
-      try {
-        const novCatalog = await client.getCatalog('released-catalog-202611-v1');
-        if (novCatalog && novCatalog.recipes) {
-          activeCatalog = novCatalog;
-          setCatalog(novCatalog);
+
+      const targetCatalogId =
+        matchedMeta?.catalog_id ||
+        (draftMonth === '2026-12' ? 'released-catalog-202612-v1' : 'released-catalog-202611-v1');
+
+      if (catalog.catalog_id !== targetCatalogId) {
+        try {
+          const fetchedCatalog = await client.getCatalog(targetCatalogId);
+          if (fetchedCatalog && fetchedCatalog.recipes && fetchedCatalog.recipes.length > 0) {
+            activeCatalog = fetchedCatalog;
+          } else {
+            throw new Error(`Подборка ${targetCatalogId} не содержит рецептов`);
+          }
+        } catch (catErr: any) {
+          setErrorMessage(
+            `Не удалось загрузить подборку на ${draftMonth}. Пожалуйста, повторите попытку или выберите другой месяц.`
+          );
+          return;
         }
-      } catch {
-        // Fallback
+      }
+    }
+
+    const activeRecipesMap: Record<string, any> = { ...(recipesById || {}) };
+    for (const r of activeCatalog.recipes) {
+      if (typeof toRecipeViewModel === 'function') {
+        activeRecipesMap[r.id] = toRecipeViewModel(r);
+      } else {
+        activeRecipesMap[r.id] = {
+          id: r.id,
+          title: r.title || r.id,
+          portionsVariants: {
+            1: {
+              portions: 1,
+              yieldNote: '',
+              nutritionStatus: '[УТОЧНИТЬ]',
+              ingredients: (r.ing || []).map(([name, amount]: [string, string]) => ({
+                name,
+                amountLabel: amount,
+                department: 'Масла и бакалея',
+              })),
+            },
+          },
+        };
       }
     }
 
@@ -482,6 +536,7 @@ export default function PilotApp() {
     });
 
     let genMenu;
+    let initialShopping;
     try {
       genMenu = controller.createUserMenu({
         numDays: draftPlanDays,
@@ -491,26 +546,12 @@ export default function PilotApp() {
         mode: approachToMode(draftApproach),
         catalogId: activeCatalog.catalog_id,
       });
+
+      initialShopping = rebuildShoppingFromMenu(genMenu, activeRecipesMap, [], 1);
     } catch (genErr: any) {
-      setProfile(newProfile);
-      profileRef.current = newProfile;
-      saveQueue.enqueue(async () => {
-        try {
-          const uRes = await client.putUser({
-            schema_version: 1,
-            expected_revision: userRevisionRef.current,
-            profile: newProfile,
-            state: stateRef.current,
-          });
-          userRevisionRef.current = uRes.revision;
-          setUserRevision(uRes.revision);
-        } catch (saveErr) {
-          console.error('Failed to save profile after menu gen error', saveErr);
-        }
-      });
       setErrorMessage(
         genErr.message ||
-          'Не удалось составить меню из доступных рецептов. Ваши настройки сохранены. Попробуйте выбрать режим «Кето» или уменьшить количество приёмов пищи в день.'
+          'Не удалось составить меню или список покупок из доступных рецептов. Ваши настройки не применены. Попробуйте выбрать другой режим или уменьшить количество приёмов пищи.'
       );
       return;
     }
@@ -526,8 +567,7 @@ export default function PilotApp() {
       shopping_stale: false,
     };
 
-    const initialShopping = rebuildShoppingFromMenu(genMenu, recipesById, [], 1);
-
+    setCatalog(activeCatalog);
     setProfile(newProfile);
     profileRef.current = newProfile;
     setState(initState);
@@ -770,25 +810,30 @@ export default function PilotApp() {
       const isCalendarMonth = daysCount >= 28 || Boolean(targetMonth && (profile.settings.planDays ?? 0) >= 28);
 
       let activeCatalog = catalog;
-      if (isCalendarMonth && targetMonth === '2026-12' && catalog.catalog_id !== 'released-catalog-202612-v1') {
-        try {
-          const decCatalog = await client.getCatalog('released-catalog-202612-v1');
-          if (decCatalog && decCatalog.recipes) {
-            activeCatalog = decCatalog;
-            setCatalog(decCatalog);
-          }
-        } catch {
-          // Fallback to activeCatalog
+      if (isCalendarMonth && targetMonth) {
+        const catalogsList = typeof availableCatalogs !== 'undefined' && Array.isArray(availableCatalogs) ? availableCatalogs : [];
+        const matchedMeta = catalogsList.find((c) => c.catalog_month === targetMonth);
+        if (matchedMeta && matchedMeta.accessible === false) {
+          setSyncStatus('error');
+          return;
         }
-      } else if (isCalendarMonth && targetMonth === '2026-11' && catalog.catalog_id === 'released-catalog-202612-v1') {
-        try {
-          const novCatalog = await client.getCatalog('released-catalog-202611-v1');
-          if (novCatalog && novCatalog.recipes) {
-            activeCatalog = novCatalog;
-            setCatalog(novCatalog);
+        const targetCatalogId =
+          matchedMeta?.catalog_id ||
+          (targetMonth === '2026-12' ? 'released-catalog-202612-v1' : 'released-catalog-202611-v1');
+        if (catalog.catalog_id !== targetCatalogId) {
+          try {
+            const fetchedCatalog = await client.getCatalog(targetCatalogId);
+            if (fetchedCatalog && fetchedCatalog.recipes && fetchedCatalog.recipes.length > 0) {
+              activeCatalog = fetchedCatalog;
+              setCatalog(fetchedCatalog);
+            } else {
+              setSyncStatus('error');
+              return;
+            }
+          } catch {
+            setSyncStatus('error');
+            return;
           }
-        } catch {
-          // Fallback to activeCatalog
         }
       }
 
@@ -821,7 +866,7 @@ export default function PilotApp() {
     } catch {
       setSyncStatus('error');
     }
-  }, [profile, catalog, enqueueUserStateSave]);
+  }, [profile, catalog, enqueueUserStateSave, availableCatalogs, client]);
 
   const handleToggleIngredient = useCallback(
     (key: string) => {

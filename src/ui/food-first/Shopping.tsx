@@ -117,6 +117,10 @@ export function ShoppingScreen({
     });
   })();
 
+  const rangeKey = (selectedRange === 'custom' || selectedRange.startsWith('custom'))
+    ? (customStartDate && customEndDate ? `custom:${customStartDate}_${customEndDate}` : 'custom')
+    : selectedRange;
+
   const effectiveItems = (function() {
     let rangeDays = menuDays;
 
@@ -126,7 +130,7 @@ export function ShoppingScreen({
         const startIdx = weekIdx * 7;
         const endIdx = Math.min((weekIdx + 1) * 7, menuDays.length);
         rangeDays = menuDays.slice(startIdx, endIdx);
-      } else if (selectedRange === 'custom') {
+      } else if (selectedRange === 'custom' || selectedRange.startsWith('custom')) {
         if (customStartDate && customEndDate) {
           rangeDays = menuDays.filter(
             (d) => Boolean(d.date && d.date >= customStartDate && d.date <= customEndDate)
@@ -174,7 +178,6 @@ export function ShoppingScreen({
     }
 
     // Overlay range-isolated checkmarks and preserve alreadyHave across range filtering
-    const rangeKey = selectedRange;
     return calculatedList.map((it) => {
       const isChecked = rangeCheckmarks
         ? Boolean(rangeCheckmarks[`${rangeKey}:${it.id}`])
@@ -205,7 +208,7 @@ export function ShoppingScreen({
         const found = weeksList.find((w) => w.id === selectedRange);
         return `${menuTitle} (${found?.label || selectedRange})`;
       }
-      if (selectedRange === 'custom') {
+      if (selectedRange === 'custom' || selectedRange.startsWith('custom')) {
         return `${menuTitle} (${customStartDate} – ${customEndDate})`;
       }
       return `${menuTitle} (${selectedRange})`;
@@ -326,7 +329,7 @@ export function ShoppingScreen({
                       setShowCustomPicker((prev) => !prev);
                     }}
                     className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
-                      selectedRange === 'custom'
+                      selectedRange === 'custom' || selectedRange.startsWith('custom')
                         ? 'border-[var(--kb-primary)] bg-[#EDF1E6] text-[#1B211B] font-bold'
                         : 'border-[var(--kb-border)] bg-white text-[var(--kb-text-2)] hover:bg-stone-50'
                     }`}
@@ -373,9 +376,10 @@ export function ShoppingScreen({
                             return;
                           }
                           setCustomRangeError('');
-                          setSelectedRange('custom');
+                          const customRangeId = `custom:${customStartDate}_${customEndDate}`;
+                          setSelectedRange(customRangeId);
                           onSelectRange?.({
-                            range_id: 'custom',
+                            range_id: customRangeId,
                             type: 'custom',
                             start_date: customStartDate,
                             end_date: customEndDate,
@@ -594,7 +598,7 @@ export function ShoppingScreen({
                           onClick={() => {
                             triggerHaptic('impact_light');
                             if (onToggleRangeChecked) {
-                              onToggleRangeChecked(selectedRange, item.id);
+                              onToggleRangeChecked(rangeKey, item.id);
                             } else {
                               onToggleCheckedInStore(item.id);
                             }

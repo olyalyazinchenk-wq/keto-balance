@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-07T22:50:06.600Z",
+  "timestamp": "2026-11-08T07:23:12.931Z",
   "engine": "src/core/keto-engine",
   "catalogPath": "src/data/recipes.ts",
   "botDataPath": null,
@@ -526,6 +526,96 @@
       "issues": []
     },
     {
+      "id": "k25",
+      "title": "Кето «Цезарь» с курицей и пармезаном",
+      "mode": "keto",
+      "cat": "salad",
+      "declared": {
+        "kcal": 460,
+        "p": 32,
+        "f": 34,
+        "nc": 3
+      },
+      "calculated": {
+        "kcal": 446,
+        "ratios": {
+          "proteinPct": 28.7,
+          "fatPct": 68.6,
+          "carbsPct": 2.7,
+          "proteinCalories": 128,
+          "fatCalories": 306,
+          "carbsCalories": 12,
+          "totalCalories": 446
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 14,
+        "pctDiff": 3
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k27",
+      "title": "Индейка со шпинатом на сковороде",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 304,
+        "p": 38,
+        "f": 16,
+        "nc": 2
+      },
+      "calculated": {
+        "kcal": 304,
+        "ratios": {
+          "proteinPct": 50,
+          "fatPct": 47.4,
+          "carbsPct": 2.6,
+          "proteinCalories": 152,
+          "fatCalories": 144,
+          "carbsCalories": 8,
+          "totalCalories": 304
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k28",
+      "title": "Курица с кабачком и зеленью",
+      "mode": "keto",
+      "cat": "lunch",
+      "declared": {
+        "kcal": 370,
+        "p": 48,
+        "f": 18,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 370,
+        "ratios": {
+          "proteinPct": 51.9,
+          "fatPct": 43.8,
+          "carbsPct": 4.3,
+          "proteinCalories": 192,
+          "fatCalories": 162,
+          "carbsCalories": 16,
+          "totalCalories": 370
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
       "id": "k18",
       "title": "Сырные кето-крекеры",
       "mode": "keto",
@@ -551,96 +641,6 @@
       "discrepancy": {
         "kcalDiff": 2,
         "pctDiff": 0.8
-      },
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "id": "k19",
-      "title": "Яйца, фаршированные сыром и зеленью",
-      "mode": "keto",
-      "cat": "snack",
-      "declared": {
-        "kcal": 240,
-        "p": 15,
-        "f": 19,
-        "nc": 1
-      },
-      "calculated": {
-        "kcal": 235,
-        "ratios": {
-          "proteinPct": 25.5,
-          "fatPct": 72.8,
-          "carbsPct": 1.7,
-          "proteinCalories": 60,
-          "fatCalories": 171,
-          "carbsCalories": 4,
-          "totalCalories": 235
-        }
-      },
-      "discrepancy": {
-        "kcalDiff": 5,
-        "pctDiff": 2.1
-      },
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "id": "k20",
-      "title": "Кето-брауни на кокосовой муке",
-      "mode": "keto",
-      "cat": "dessert",
-      "declared": {
-        "kcal": 310,
-        "p": 8,
-        "f": 28,
-        "nc": 5
-      },
-      "calculated": {
-        "kcal": 304,
-        "ratios": {
-          "proteinPct": 10.5,
-          "fatPct": 82.9,
-          "carbsPct": 6.6,
-          "proteinCalories": 32,
-          "fatCalories": 252,
-          "carbsCalories": 20,
-          "totalCalories": 304
-        }
-      },
-      "discrepancy": {
-        "kcalDiff": 6,
-        "pctDiff": 1.9
-      },
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "id": "k21",
-      "title": "Кокосовые шарики с какао",
-      "mode": "keto",
-      "cat": "dessert",
-      "declared": {
-        "kcal": 220,
-        "p": 4,
-        "f": 20,
-        "nc": 4
-      },
-      "calculated": {
-        "kcal": 212,
-        "ratios": {
-          "proteinPct": 7.5,
-          "fatPct": 84.9,
-          "carbsPct": 7.5,
-          "proteinCalories": 16,
-          "fatCalories": 180,
-          "carbsCalories": 16,
-          "totalCalories": 212
-        }
-      },
-      "discrepancy": {
-        "kcalDiff": 8,
-        "pctDiff": 3.6
       },
       "status": "PASS",
       "issues": []
@@ -1126,6 +1126,96 @@
       "issues": []
     },
     {
+      "id": "k19",
+      "title": "Яйца, фаршированные сыром и зеленью",
+      "mode": "keto",
+      "cat": "snack",
+      "declared": {
+        "kcal": 240,
+        "p": 15,
+        "f": 19,
+        "nc": 1
+      },
+      "calculated": {
+        "kcal": 235,
+        "ratios": {
+          "proteinPct": 25.5,
+          "fatPct": 72.8,
+          "carbsPct": 1.7,
+          "proteinCalories": 60,
+          "fatCalories": 171,
+          "carbsCalories": 4,
+          "totalCalories": 235
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 5,
+        "pctDiff": 2.1
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k20",
+      "title": "Кето-брауни на кокосовой муке",
+      "mode": "keto",
+      "cat": "dessert",
+      "declared": {
+        "kcal": 310,
+        "p": 8,
+        "f": 28,
+        "nc": 5
+      },
+      "calculated": {
+        "kcal": 304,
+        "ratios": {
+          "proteinPct": 10.5,
+          "fatPct": 82.9,
+          "carbsPct": 6.6,
+          "proteinCalories": 32,
+          "fatCalories": 252,
+          "carbsCalories": 20,
+          "totalCalories": 304
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 6,
+        "pctDiff": 1.9
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k21",
+      "title": "Кокосовые шарики с какао",
+      "mode": "keto",
+      "cat": "dessert",
+      "declared": {
+        "kcal": 220,
+        "p": 4,
+        "f": 20,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 212,
+        "ratios": {
+          "proteinPct": 7.5,
+          "fatPct": 84.9,
+          "carbsPct": 7.5,
+          "proteinCalories": 16,
+          "fatCalories": 180,
+          "carbsCalories": 16,
+          "totalCalories": 212
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 8,
+        "pctDiff": 3.6
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
       "id": "k22",
       "title": "Сливочно-сырный суп с беконом и брокколи",
       "mode": "keto",
@@ -1216,36 +1306,6 @@
       "issues": []
     },
     {
-      "id": "k25",
-      "title": "Кето «Цезарь» с курицей и пармезаном",
-      "mode": "keto",
-      "cat": "salad",
-      "declared": {
-        "kcal": 460,
-        "p": 32,
-        "f": 34,
-        "nc": 3
-      },
-      "calculated": {
-        "kcal": 446,
-        "ratios": {
-          "proteinPct": 28.7,
-          "fatPct": 68.6,
-          "carbsPct": 2.7,
-          "proteinCalories": 128,
-          "fatCalories": 306,
-          "carbsCalories": 12,
-          "totalCalories": 446
-        }
-      },
-      "discrepancy": {
-        "kcalDiff": 14,
-        "pctDiff": 3
-      },
-      "status": "PASS",
-      "issues": []
-    },
-    {
       "id": "k26",
       "title": "Греческий салат с оливками и сыром фета",
       "mode": "keto",
@@ -1271,66 +1331,6 @@
       "discrepancy": {
         "kcalDiff": 12,
         "pctDiff": 3.8
-      },
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "id": "k27",
-      "title": "Индейка со шпинатом на сковороде",
-      "mode": "keto",
-      "cat": "breakfast",
-      "declared": {
-        "kcal": 304,
-        "p": 38,
-        "f": 16,
-        "nc": 2
-      },
-      "calculated": {
-        "kcal": 304,
-        "ratios": {
-          "proteinPct": 50,
-          "fatPct": 47.4,
-          "carbsPct": 2.6,
-          "proteinCalories": 152,
-          "fatCalories": 144,
-          "carbsCalories": 8,
-          "totalCalories": 304
-        }
-      },
-      "discrepancy": {
-        "kcalDiff": 0,
-        "pctDiff": 0
-      },
-      "status": "PASS",
-      "issues": []
-    },
-    {
-      "id": "k28",
-      "title": "Курица с кабачком и зеленью",
-      "mode": "keto",
-      "cat": "lunch",
-      "declared": {
-        "kcal": 370,
-        "p": 48,
-        "f": 18,
-        "nc": 4
-      },
-      "calculated": {
-        "kcal": 370,
-        "ratios": {
-          "proteinPct": 51.9,
-          "fatPct": 43.8,
-          "carbsPct": 4.3,
-          "proteinCalories": 192,
-          "fatCalories": 162,
-          "carbsCalories": 16,
-          "totalCalories": 370
-        }
-      },
-      "discrepancy": {
-        "kcalDiff": 0,
-        "pctDiff": 0
       },
       "status": "PASS",
       "issues": []
