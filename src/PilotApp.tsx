@@ -797,21 +797,99 @@ export default function PilotApp() {
 
       const nextMenu = { ...currentState.menu, days: nextDays };
 
-      // Reconcile range checkmarks if replacement increased any ingredient
+      // Reconcile range checkmarks if replacement increased any ingredient in covered ranges
       const prevChecked = currentState.shopping_range_checked || {};
       const nextRangeChecked: Record<string, boolean> = { ...prevChecked };
       const currentRecipe = catalog.recipes.find((r) => r.id === currentRecipeId);
       const nextRecipe = catalog.recipes.find((r) => r.id === nextRecipeId);
 
       if (currentRecipe && nextRecipe) {
-        const curIngs = currentRecipe.ing || [];
-        const nextIngs = nextRecipe.ing || [];
+        const slugify = (text: string): string => {
+          return text
+            .toLowerCase()
+            .replace(/[^a-zа-я0-9]+/gi, '-')
+            .replace(/^-+|-+$/g, '');
+        };
+
+        const normalizeUnit = (rawUnit: string) => {
+          const u = rawUnit.toLowerCase().replace(/\.$/, '').trim();
+          if (u === 'г' || u === 'гр') return { baseUnit: 'г', unitType: 'weight', scale: 1 };
+          if (u === 'кг') return { baseUnit: 'г', unitType: 'weight', scale: 1000 };
+          if (u === 'мл') return { baseUnit: 'мл', unitType: 'volume', scale: 1 };
+          if (u === 'л') return { baseUnit: 'мл', unitType: 'volume', scale: 1000 };
+          if (u === 'шт' || u === 'штук' || u === 'штуки') return { baseUnit: 'шт.', unitType: 'count', scale: 1 };
+          if (u.includes('ст') && u.includes('л')) return { baseUnit: 'ст. л.', unitType: 'tbsp', scale: 1 };
+          if (u.startsWith('банк')) return { baseUnit: 'банка', unitType: 'can', scale: 1 };
+          if (u.startsWith('стейк')) return { baseUnit: 'стейка', unitType: 'steak', scale: 1 };
+          if (u.startsWith('нож')) return { baseUnit: 'ножки', unitType: 'leg', scale: 1 };
+          return { baseUnit: u || 'ед', unitType: u ? 'custom' : 'text', scale: 1 };
+        };
+
+        const parseAmountHelper = (raw: string) => {
+          const s = (raw || '').trim();
+          const frac = s.match(/^(\d+)\/(\d+)\s*(.*)$/);
+          if (frac) {
+            const val = parseInt(frac[1], 10) / parseInt(frac[2], 10);
+            const u = normalizeUnit(frac[3]);
+            return { value: val * u.scale, baseUnit: u.baseUnit, unitType: u.unitType, isText: false };
+          }
+          const dec = s.match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);
+          if (dec) {
+            const val = parseFloat(dec[1].replace(',', '.'));
+            const u = normalizeUnit(dec[2]);
+            return { value: val * u.scale, baseUnit: u.baseUnit, unitType: u.unitType, isText: false };
+          }
+          return { value: 0, baseUnit: s, unitType: 'text', isText: true };
+        };
+
+        const getAggregatedId = (normName: string, unitType: string, baseUnit: string): string => {
+          const slug = slugify(normName);
+          return `shop-agg-${slug}${unitType !== 'text' ? `-${unitType}-${slugify(baseUnit)}` : ''}`;
+        };
+
+        const batches = currentState.shopping_batches || 1;
+
+        const getRecipeItemContributions = (recipe?: { serv?: number; ing?: Array<[string, string]> }) => {
+          const map = new Map<string, { value: number; unitType: string; baseUnit: string; isText: boolean }>();
+          if (!recipe || !Array.isArray(recipe.ing)) return map;
+          const serv = typeof recipe.serv === 'number' && recipe.serv > 0 ? recipe.serv : 1;
+          const portionFactor = batches / serv;
+          for (const [name, amount] of recipe.ing) {
+            if (!name || !amount) continue;
+            const parsed = parseAmountHelper(amount);
+            const id = getAggregatedId(name.trim(), parsed.unitType, parsed.baseUnit);
+            const existing = map.get(id);
+            const val = parsed.value * portionFactor;
+            if (existing) {
+              existing.value += val;
+            } else {
+              map.set(id, {
+                value: val,
+                unitType: parsed.unitType,
+                baseUnit: parsed.baseUnit,
+                isText: parsed.isText,
+              });
+            }
+          }
+          return map;
+        };
+
+        const curContribs = getRecipeItemContributions(currentRecipe);
+        const nextContribs = getRecipeItemContributions(nextRecipe);
+
         for (const [key, isChecked] of Object.entries(prevChecked)) {
-          if (!isChecked) continue;
+          if (!isChecked) {
+            nextRangeChecked[key] = false;
+            continue;
+          }
           const lastColon = key.lastIndexOf(':');
           if (lastColon === -1) continue;
           const rangeKey = key.slice(0, lastColon);
           const itemId = key.slice(lastColon + 1);
+
+          if (itemId.startsWith('shop-custom-')) {
+            continue;
+          }
 
           let coversDate = false;
           if (rangeKey === 'all') {
@@ -828,17 +906,30 @@ export default function PilotApp() {
           }
 
           if (coversDate) {
-            const nextIng = nextIngs.find((i) => itemId.includes(i[0].toLowerCase().trim()));
-            const curIng = curIngs.find((i) => itemId.includes(i[0].toLowerCase().trim()));
-            if (nextIng) {
-              const parseVal = (s: string) => {
-                const m = s.match(/^(\d+(?:[.,]\d+)?)/);
-                return m ? parseFloat(m[1].replace(',', '.')) : 0;
-              };
-              const nextVal = parseVal(nextIng[1]);
-              const curVal = curIng ? parseVal(curIng[1]) : 0;
-              if (nextVal > curVal) {
+            const curContrib = curContribs.get(itemId);
+            const nextContrib = nextContribs.get(itemId);
+
+            if (curContrib || nextContrib) {
+              const curVal = curContrib ? curContrib.value : 0;
+              const nextVal = nextContrib ? nextContrib.value : 0;
+
+              let isIncreased = false;
+              if (nextContrib && curContrib) {
+                if (!nextContrib.isText && !curContrib.isText && nextContrib.unitType === curContrib.unitType) {
+                  isIncreased = nextVal > curVal;
+                } else {
+                  isIncreased = nextVal > curVal;
+                }
+              } else if (nextContrib && !curContrib) {
+                isIncreased = nextVal > 0;
+              } else if (!nextContrib && curContrib) {
+                isIncreased = false;
+              }
+
+              if (isIncreased) {
                 nextRangeChecked[key] = false;
+              } else {
+                nextRangeChecked[key] = true;
               }
             }
           }
@@ -1108,11 +1199,19 @@ export default function PilotApp() {
         };
 
         for (const [key, isChecked] of Object.entries(prevRangeChecked)) {
-          if (!isChecked) continue;
+          if (!isChecked) {
+            nextRangeChecked[key] = false;
+            continue;
+          }
           const lastColon = key.lastIndexOf(':');
           if (lastColon === -1) continue;
           const rangeKey = key.slice(0, lastColon);
           const itemId = key.slice(lastColon + 1);
+
+          if (itemId.startsWith('shop-custom-')) {
+            nextRangeChecked[key] = true;
+            continue;
+          }
 
           const prevItem = prevItemMap.get(itemId);
           const nextItem = nextItemMap.get(itemId);
@@ -1150,7 +1249,7 @@ export default function PilotApp() {
             rangeDays = currentState.menu.days;
           }
 
-          const prevTitles = new Set(prevItem.linkedRecipeTitles || []);
+          const prevTitles = new Set(prevItem?.linkedRecipeTitles || []);
           const rangeRecipeTitles = new Set(
             rangeDays
               .flatMap((d) => Object.values(d.slots))
@@ -1159,29 +1258,13 @@ export default function PilotApp() {
           );
 
           const hasAddedRecipe = [...rangeRecipeTitles].some(
-            (title) => !prevTitles.has(title) && nextItem.linkedRecipeTitles?.includes(title)
+            (title) => !prevTitles.has(title) && nextItem?.linkedRecipeTitles?.includes(title)
           );
 
           if (hasAddedRecipe) {
             nextRangeChecked[key] = false;
           } else {
-            try {
-              const rangeShopping = rebuildShoppingFromMenu(
-                { days: rangeDays as any },
-                recipesById,
-                [],
-                currentState.shopping_batches
-              );
-              const rItem = rangeShopping.find((x) => x.id === itemId);
-              const rVal = rItem ? parseVal(rItem.amountLabel) : 0;
-              if (rVal > prevVal) {
-                nextRangeChecked[key] = false;
-              } else {
-                nextRangeChecked[key] = true;
-              }
-            } catch {
-              nextRangeChecked[key] = false;
-            }
+            nextRangeChecked[key] = isChecked;
           }
         }
 

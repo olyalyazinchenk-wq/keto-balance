@@ -230,141 +230,311 @@ describe('Shopping Range Persistence & Checkmarks Isolation (Codex Proof)', () =
     assert.equal(egg2.checkedInStore, false, 'Egg in custom range 2 must NOT be checked (isolated!)');
   });
 
-  test('Menu replacement increasing requirement (14 -> 15 eggs) resets bought checkmark for that range while preserving ranges without increase', () => {
-    // 30 days menu
-    const oldDays = Array.from({ length: 30 }, (_, i) => ({
-      date: `2026-11-${String(i + 1).padStart(2, '0')}`,
-      slots: { breakfast: 'k1', dinner: 'k10' },
-    }));
-    // Larger menu: day 0 has k2 (3 eggs) instead of k1 (2 eggs)
-    const largerDays = oldDays.map((d, i) =>
-      i === 0 ? { ...d, slots: { ...d.slots, breakfast: 'k2' } } : d
-    );
+  const fs = require('node:fs');
+  const vm = require('node:vm');
+  const ts = require('typescript');
+  const novCatalog = JSON.parse(fs.readFileSync(path.join(ROOT, 'catalogs/archive/released-catalog-202611-v1.json'), 'utf8'));
+  const pilotAppSrc = fs.readFileSync(path.join(ROOT, 'src/PilotApp.tsx'), 'utf8');
+  const sourceFile = ts.createSourceFile('PilotApp.tsx', pilotAppSrc, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 
-    const eggsId = 'shop-agg-яйца-count-шт';
-    const oldItems = rebuildShoppingFromMenu({ days: oldDays }, recipesById, [], 1);
-    const nextShopping = rebuildShoppingFromMenu({ days: largerDays }, recipesById, oldItems, 1);
-
-    const oldEgg = oldItems.find((i) => i.id === eggsId);
-    const nextEgg = nextShopping.find((i) => i.id === eggsId);
-    assert.equal(oldEgg.amountLabel, '60 шт.');
-    assert.equal(nextEgg.amountLabel, '61 шт.');
-
-    // Simulated range checkmarks before edit:
-    // User had marked eggs bought for week-0 and week-1
-    const prevRangeChecked = {
-      [`week-0:${eggsId}`]: true,
-      [`week-1:${eggsId}`]: true,
-      [`custom:2026-11-01_2026-11-03:${eggsId}`]: true,
-      [`custom:2026-11-08_2026-11-14:${eggsId}`]: true,
-    };
-
-    // Reconcile logic as implemented in handleRefreshShopping
-    const nextRangeChecked = { ...prevRangeChecked };
-    const prevItemMap = new Map(oldItems.map((x) => [x.id, x]));
-    const nextItemMap = new Map(nextShopping.map((x) => [x.id, x]));
-
-    const parseVal = (lbl) => {
-      if (!lbl) return 0;
-      const m = lbl.match(/^(\d+(?:[.,]\d+)?)/);
-      return m ? parseFloat(m[1].replace(',', '.')) : 0;
-    };
-
-    for (const [key, isChecked] of Object.entries(prevRangeChecked)) {
-      if (!isChecked) continue;
-      const lastColon = key.lastIndexOf(':');
-      if (lastColon === -1) continue;
-      const rangeKey = key.slice(0, lastColon);
-      const itemId = key.slice(lastColon + 1);
-
-      const prevItem = prevItemMap.get(itemId);
-      const nextItem = nextItemMap.get(itemId);
-      if (!nextItem || !prevItem) {
-        nextRangeChecked[key] = false;
-        continue;
+  function getHandler(name, context) {
+    let expression;
+    function walk(node) {
+      if (ts.isVariableDeclaration(node) && node.name.getText(sourceFile) === name) {
+        expression = ts.isCallExpression(node.initializer) ? node.initializer.arguments[0] : node.initializer;
       }
-
-      const prevVal = parseVal(prevItem.amountLabel);
-      const nextVal = parseVal(nextItem.amountLabel);
-
-      if (nextVal <= prevVal) {
-        nextRangeChecked[key] = true;
-        continue;
-      }
-
-      if (rangeKey === 'all') {
-        nextRangeChecked[key] = false;
-        continue;
-      }
-
-      let rangeDays = [];
-      if (rangeKey.startsWith('week-')) {
-        const weekIdx = parseInt(rangeKey.replace('week-', ''), 10);
-        const startIdx = weekIdx * 7;
-        const endIdx = Math.min((weekIdx + 1) * 7, largerDays.length);
-        rangeDays = largerDays.slice(startIdx, endIdx);
-      } else if (rangeKey.startsWith('custom:')) {
-        const [start, end] = rangeKey.replace('custom:', '').split('_');
-        rangeDays = largerDays.filter((d) => Boolean(d.date && d.date >= start && d.date <= end));
-      } else {
-        rangeDays = largerDays;
-      }
-
-      const prevTitles = new Set(prevItem.linkedRecipeTitles || []);
-      const rangeRecipeTitles = new Set(
-        rangeDays
-          .flatMap((d) => Object.values(d.slots))
-          .map((id) => recipesById[id]?.title)
-          .filter(Boolean)
-      );
-
-      const hasAddedRecipe = [...rangeRecipeTitles].some(
-        (title) => !prevTitles.has(title) && nextItem.linkedRecipeTitles?.includes(title)
-      );
-
-      if (hasAddedRecipe) {
-        nextRangeChecked[key] = false;
-      } else {
-        const rShopping = rebuildShoppingFromMenu({ days: rangeDays }, recipesById, [], 1);
-        const rItem = rShopping.find((x) => x.id === itemId);
-        const rVal = rItem ? parseVal(rItem.amountLabel) : 0;
-        if (rVal > prevVal) {
-          nextRangeChecked[key] = false;
-        } else {
-          nextRangeChecked[key] = true;
-        }
-      }
+      ts.forEachChild(node, walk);
     }
+    walk(sourceFile);
+    if (!expression) throw Error('Handler missing: ' + name);
+    const js = ts.transpileModule('module.exports = ' + expression.getText(sourceFile), {
+      compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS },
+    }).outputText;
+    const mod = { exports: {} };
+    vm.runInNewContext(js, { ...context, module: mod });
+    return mod.exports;
+  }
 
-    // Assertions:
-    // Week 0 covered Day 0 (k2 added with +1 egg) -> reset to false
-    assert.equal(nextRangeChecked[`week-0:${eggsId}`], false, 'Week 0 bought mark must be reset because requirement grew');
-    // Custom 01-03 covered Day 0 -> reset to false
-    assert.equal(nextRangeChecked[`custom:2026-11-01_2026-11-03:${eggsId}`], false, 'Custom 01-03 bought mark must be reset');
+  test('Real handleReplaceRecipe and handleRefreshShopping reset mark on repeated recipe increase while preserving unaffected ranges', async () => {
+    const eggId = 'shop-agg-яйца-count-шт';
+    // 30 days: day 7 already has k2, all other days have k1
+    const beforeDays = Array.from({ length: 30 }, (_, i) => ({
+      date: `2026-11-${String(i + 1).padStart(2, '0')}`,
+      slots: { breakfast: i === 7 ? 'k2' : 'k1', dinner: 'k10' },
+    }));
 
-    // Week 1 did NOT cover Day 0 (only k1 used) -> preserved as true!
-    assert.equal(nextRangeChecked[`week-1:${eggsId}`], true, 'Week 1 bought mark must be preserved because requirement did NOT grow');
-    // Custom 08-14 did NOT cover Day 0 -> preserved as true!
-    assert.equal(nextRangeChecked[`custom:2026-11-08_2026-11-14:${eggsId}`], true, 'Custom 08-14 bought mark must be preserved');
+    const profile = {
+      settings: {
+        confirmed18Plus: true,
+        approach: 'keto',
+        restrictions: [],
+        prepTimeMax: 0,
+        mealsPerDay: 2,
+        planDays: 30,
+        month: '2026-11',
+      },
+    };
+
+    const state = {
+      current: {
+        schema_version: 1,
+        menu: {
+          mode: 'keto',
+          month: '2026-11',
+          numDays: 30,
+          meals: 2,
+          portion: 1,
+          saved: false,
+          created: 1,
+          catalog_id: novCatalog.catalog_id,
+          days: beforeDays,
+        },
+        selected_date: '2026-11-01',
+        checked_ingredients: {},
+        checked_steps: {},
+        shopping_batches: 1,
+        shopping_stale: false,
+        shopping_range: { range_id: 'week-0', type: 'week', week_index: 0 },
+        shopping_range_checked: {
+          [`week-0:${eggId}`]: true,
+          [`week-1:${eggId}`]: true,
+          [`custom:2026-11-01_2026-11-03:${eggId}`]: true,
+          [`custom:2026-11-08_2026-11-14:${eggId}`]: true,
+          [`all:${eggId}`]: true,
+        },
+      },
+    };
+
+    const beforeItems = rebuildShoppingFromMenu(state.current.menu, recipesById, [], 1);
+    const itemRef = { current: beforeItems };
+
+    const { preferencesToUserProfile, approachToMode } = loadTs(path.join(ROOT, 'src/adapters/pilotState.ts'));
+    const { createMenuController } = loadTs(path.join(ROOT, 'src/adapters/menuController.ts'));
+
+    const replace = getHandler('handleReplaceRecipe', {
+      stateRef: state,
+      catalog: novCatalog,
+      profile,
+      preferencesToUserProfile,
+      approachToMode,
+      createMenuController,
+      enqueueUserStateSave: (s) => { state.current = s; },
+    });
+
+    // Action: replace Day 0 breakfast (k1 -> k2: 2 eggs -> 3 eggs)
+    await replace('2026-11-01', 'breakfast', 'k2');
+
+    // Assert: immediate checkmark state right after replace
+    const afterReplaceChecked = state.current.shopping_range_checked;
+    assert.equal(afterReplaceChecked[`week-0:${eggId}`], false, 'Week 0 must be reset immediately upon replacement');
+    assert.equal(afterReplaceChecked[`week-1:${eggId}`], true, 'Week 1 must be preserved (not affected)');
+    assert.equal(afterReplaceChecked[`custom:2026-11-01_2026-11-03:${eggId}`], false, 'Custom 01-03 must be reset');
+    assert.equal(afterReplaceChecked[`custom:2026-11-08_2026-11-14:${eggId}`], true, 'Custom 08-14 must be preserved');
+    assert.equal(afterReplaceChecked[`all:${eggId}`], false, 'All (month) must be reset');
+
+    // Now run real handleRefreshShopping
+    let savedState;
+    const pendingQueue = [];
+    const refresh = getHandler('handleRefreshShopping', {
+      stateRef: state,
+      shoppingItemsRef: itemRef,
+      recipesById,
+      rebuildShoppingFromMenu,
+      stickyErrorRef: { current: null },
+      userId: null,
+      shoppingRevisionRef: { current: 1 },
+      userRevisionRef: { current: 1 },
+      profileRef: { current: profile },
+      setShoppingRevision: () => {},
+      setUserRevision: () => {},
+      setShoppingItems: () => {},
+      setState: () => {},
+      setSyncStatus: () => {},
+      saveQueue: { enqueue: (fn) => { const p = fn(); pendingQueue.push(p); return p; } },
+      client: {
+        putShopping: async () => ({ revision: 2 }),
+        putUser: async (p) => { savedState = p.state; return { revision: 2 }; },
+      },
+    });
+
+    await refresh();
+    await Promise.all(pendingQueue);
+
+    assert.ok(savedState);
+    assert.equal(savedState.shopping_range_checked[`week-0:${eggId}`], false, 'Week 0 must stay false after refresh');
+    assert.equal(savedState.shopping_range_checked[`week-1:${eggId}`], true, 'Week 1 must stay true after refresh');
+    assert.equal(savedState.shopping_range_checked[`all:${eggId}`], false, 'All must stay false after refresh');
   });
 
-  test('Menu replacement with same or lower requirement preserves bought checkmark', () => {
-    // 30 days menu
-    const days = Array.from({ length: 30 }, (_, i) => ({
+  test('Real handleReplaceRecipe and handleRefreshShopping preserve mark when requirement decreases (k2 -> k1: 21 -> 20 eggs)', async () => {
+    const eggId = 'shop-agg-яйца-count-шт';
+    // 30 days: all days breakfast k2 (3 eggs)
+    const beforeDays = Array.from({ length: 30 }, (_, i) => ({
+      date: `2026-11-${String(i + 1).padStart(2, '0')}`,
+      slots: { breakfast: 'k2', dinner: 'k10' },
+    }));
+
+    const profile = {
+      settings: {
+        confirmed18Plus: true,
+        approach: 'keto',
+        restrictions: [],
+        prepTimeMax: 0,
+        mealsPerDay: 2,
+        planDays: 30,
+        month: '2026-11',
+      },
+    };
+
+    const state = {
+      current: {
+        schema_version: 1,
+        menu: {
+          mode: 'keto',
+          month: '2026-11',
+          numDays: 30,
+          meals: 2,
+          portion: 1,
+          saved: false,
+          created: 1,
+          catalog_id: novCatalog.catalog_id,
+          days: beforeDays,
+        },
+        selected_date: '2026-11-01',
+        checked_ingredients: {},
+        checked_steps: {},
+        shopping_batches: 1,
+        shopping_stale: false,
+        shopping_range: { range_id: 'week-0', type: 'week', week_index: 0 },
+        shopping_range_checked: {
+          [`week-0:${eggId}`]: true,
+          [`week-1:${eggId}`]: true,
+          [`custom:2026-11-01_2026-11-03:${eggId}`]: true,
+          [`all:${eggId}`]: true,
+        },
+      },
+    };
+
+    const beforeItems = rebuildShoppingFromMenu(state.current.menu, recipesById, [], 1);
+    const itemRef = { current: beforeItems };
+
+    const { preferencesToUserProfile, approachToMode } = loadTs(path.join(ROOT, 'src/adapters/pilotState.ts'));
+    const { createMenuController } = loadTs(path.join(ROOT, 'src/adapters/menuController.ts'));
+
+    const replace = getHandler('handleReplaceRecipe', {
+      stateRef: state,
+      catalog: novCatalog,
+      profile,
+      preferencesToUserProfile,
+      approachToMode,
+      createMenuController,
+      enqueueUserStateSave: (s) => { state.current = s; },
+    });
+
+    // Action: replace Day 0 breakfast (k2 -> k1: 3 eggs -> 2 eggs, requirement drops 21 -> 20)
+    await replace('2026-11-01', 'breakfast', 'k1');
+
+    // Assert: mark must be PRESERVED immediately upon replacement
+    const afterReplaceChecked = state.current.shopping_range_checked;
+    assert.equal(afterReplaceChecked[`week-0:${eggId}`], true, 'Week 0 must be preserved when requirement decreases');
+    assert.equal(afterReplaceChecked[`week-1:${eggId}`], true, 'Week 1 must be preserved');
+    assert.equal(afterReplaceChecked[`custom:2026-11-01_2026-11-03:${eggId}`], true, 'Custom 01-03 must be preserved');
+    assert.equal(afterReplaceChecked[`all:${eggId}`], true, 'All (month) must be preserved');
+
+    // Now run real handleRefreshShopping
+    let savedState;
+    const pendingQueue = [];
+    const refresh = getHandler('handleRefreshShopping', {
+      stateRef: state,
+      shoppingItemsRef: itemRef,
+      recipesById,
+      rebuildShoppingFromMenu,
+      stickyErrorRef: { current: null },
+      userId: null,
+      shoppingRevisionRef: { current: 1 },
+      userRevisionRef: { current: 1 },
+      profileRef: { current: profile },
+      setShoppingRevision: () => {},
+      setUserRevision: () => {},
+      setShoppingItems: () => {},
+      setState: () => {},
+      setSyncStatus: () => {},
+      saveQueue: { enqueue: (fn) => { const p = fn(); pendingQueue.push(p); return p; } },
+      client: {
+        putShopping: async () => ({ revision: 2 }),
+        putUser: async (p) => { savedState = p.state; return { revision: 2 }; },
+      },
+    });
+
+    await refresh();
+    await Promise.all(pendingQueue);
+
+    assert.ok(savedState);
+    assert.equal(savedState.shopping_range_checked[`week-0:${eggId}`], true, 'Week 0 must stay true after refresh');
+    assert.equal(savedState.shopping_range_checked[`week-1:${eggId}`], true, 'Week 1 must stay true after refresh');
+    assert.equal(savedState.shopping_range_checked[`all:${eggId}`], true, 'All must stay true after refresh');
+  });
+
+  test('Replacing with equal requirement preserves bought checkmark', async () => {
+    const eggId = 'shop-agg-яйца-count-шт';
+    const beforeDays = Array.from({ length: 30 }, (_, i) => ({
       date: `2026-11-${String(i + 1).padStart(2, '0')}`,
       slots: { breakfast: 'k1', dinner: 'k10' },
     }));
 
-    const items = rebuildShoppingFromMenu({ days }, recipesById, [], 1);
-    const egg = items.find((i) => i.name === 'Яйца');
-    const checked = { [`week-0:${egg.id}`]: true };
+    const profile = {
+      settings: {
+        confirmed18Plus: true,
+        approach: 'keto',
+        restrictions: [],
+        prepTimeMax: 0,
+        mealsPerDay: 2,
+        planDays: 30,
+        month: '2026-11',
+      },
+    };
 
-    // Same menu rebuilt
-    const rebuiltShopping = rebuildShoppingFromMenu({ days }, recipesById, items, 1);
-    const rebuiltEgg = rebuiltShopping.find((i) => i.id === egg.id);
+    const state = {
+      current: {
+        schema_version: 1,
+        menu: {
+          mode: 'keto',
+          month: '2026-11',
+          numDays: 30,
+          meals: 2,
+          portion: 1,
+          saved: false,
+          created: 1,
+          catalog_id: novCatalog.catalog_id,
+          days: beforeDays,
+        },
+        selected_date: '2026-11-01',
+        checked_ingredients: {},
+        checked_steps: {},
+        shopping_batches: 1,
+        shopping_stale: false,
+        shopping_range: { range_id: 'week-0', type: 'week', week_index: 0 },
+        shopping_range_checked: {
+          [`week-0:${eggId}`]: true,
+        },
+      },
+    };
 
-    assert.equal(rebuiltEgg.amountLabel, egg.amountLabel);
-    // rebuiltShoppingFromMenu preserves checkedInStore when requirement does not grow
-    assert.equal(rebuiltEgg.checkedInStore, egg.checkedInStore);
+    const { preferencesToUserProfile, approachToMode } = loadTs(path.join(ROOT, 'src/adapters/pilotState.ts'));
+    const { createMenuController } = loadTs(path.join(ROOT, 'src/adapters/menuController.ts'));
+
+    const replace = getHandler('handleReplaceRecipe', {
+      stateRef: state,
+      catalog: novCatalog,
+      profile,
+      preferencesToUserProfile,
+      approachToMode,
+      createMenuController,
+      enqueueUserStateSave: (s) => { state.current = s; },
+    });
+
+    // Replace k1 with k1 (equal requirement)
+    await replace('2026-11-01', 'breakfast', 'k1');
+    assert.equal(state.current.shopping_range_checked[`week-0:${eggId}`], true, 'Equal requirement preserves checkmark');
   });
 });
