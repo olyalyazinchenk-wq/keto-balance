@@ -77,6 +77,87 @@ test('KetoClient Unit Tests', async (t) => {
     assert.equal(client.getToken(), null);
   });
 
+  await t.test('late anonymous catalog 401 cannot invalidate a newly created session', async () => {
+    let unauthorizedCount = 0;
+    let resolveCatalog;
+    const catalogResponse = new Promise(resolve => { resolveCatalog = resolve; });
+    const client = new KetoClient({ onUnauthorized: () => { unauthorizedCount++; } });
+    global.fetch = async (url, options) => {
+      if (url === '/api/catalogs') {
+        assert.equal(new Headers(options.headers).get('Authorization'), null);
+        return catalogResponse;
+      }
+      assert.equal(url, '/api/session');
+      return new Response(JSON.stringify({ session_token: 'new-session-token', user_id: 1001 }), { status: 200 });
+    };
+
+    const staleCatalog = assert.rejects(client.listCatalogs(), UnauthorizedError);
+    await client.createSession('synthetic-signed-data');
+    resolveCatalog(new Response('{"detail":"Unauthorized"}', { status: 401 }));
+    await staleCatalog;
+
+    assert.equal(client.getToken(), 'new-session-token');
+    assert.equal(unauthorizedCount, 0, 'an anonymous request has no session to invalidate');
+  });
+
+  await t.test('late 401 from an older authenticated request cannot clear the replacement token', async () => {
+    let unauthorizedCount = 0;
+    let resolveUser;
+    const userResponse = new Promise(resolve => { resolveUser = resolve; });
+    const client = new KetoClient({ onUnauthorized: () => { unauthorizedCount++; } });
+    client.setToken('old-session-token');
+    global.fetch = async (url, options) => {
+      if (url === '/api/user') {
+        assert.equal(new Headers(options.headers).get('Authorization'), 'Bearer old-session-token');
+        return userResponse;
+      }
+      assert.equal(url, '/api/session');
+      return new Response(JSON.stringify({ session_token: 'replacement-session-token', user_id: 1001 }), { status: 200 });
+    };
+
+    const staleUser = assert.rejects(client.getUser(), UnauthorizedError);
+    await client.createSession('synthetic-new-signed-data');
+    resolveUser(new Response('{"detail":"Session expired"}', { status: 401 }));
+    await staleUser;
+
+    assert.equal(client.getToken(), 'replacement-session-token');
+    assert.equal(unauthorizedCount, 0);
+  });
+
+  await t.test('catalog 401 still invalidates the current token when that token was sent', async () => {
+    let unauthorizedCount = 0;
+    const client = new KetoClient({ onUnauthorized: () => { unauthorizedCount++; } });
+    client.setToken('expired-current-token');
+    global.fetch = async (_url, options) => {
+      assert.equal(new Headers(options.headers).get('Authorization'), 'Bearer expired-current-token');
+      return new Response('{"detail":"Session expired"}', { status: 401 });
+    };
+
+    await assert.rejects(client.listCatalogs(), UnauthorizedError);
+    assert.equal(client.getToken(), null);
+    assert.equal(unauthorizedCount, 1);
+  });
+
+  await t.test('concurrent 401 responses notify only once for the same expired session', async () => {
+    let unauthorizedCount = 0;
+    let resolveSecond;
+    const secondResponse = new Promise(resolve => { resolveSecond = resolve; });
+    const client = new KetoClient({ onUnauthorized: () => { unauthorizedCount++; } });
+    client.setToken('expired-current-token');
+    global.fetch = async url => url === '/api/user'
+      ? new Response('{"detail":"Session expired"}', { status: 401 })
+      : secondResponse;
+
+    const first = assert.rejects(client.getUser(), UnauthorizedError);
+    const second = assert.rejects(client.getShopping(), UnauthorizedError);
+    await first;
+    resolveSecond(new Response('{"detail":"Session expired"}', { status: 401 }));
+    await second;
+
+    assert.equal(client.getToken(), null);
+    assert.equal(unauthorizedCount, 1);
+  });
+
   await t.test('409 response throws ConflictError with server detail', async () => {
     const client = new KetoClient({ baseUrl: 'http://127.0.0.1:18080' });
     client.setToken('valid_token');

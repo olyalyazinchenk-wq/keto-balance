@@ -67,14 +67,15 @@ export class KetoClient {
   private async request<T>(path: string, options: RequestInit = {}, isPublic = false): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     const headers = new Headers(options.headers || {});
+    const requestToken = this.token;
 
     if (!isPublic) {
-      if (!this.token) {
+      if (!requestToken) {
         throw new UnauthorizedError('No authentication token available');
       }
-      headers.set('Authorization', `Bearer ${this.token}`);
-    } else if (this.token && !headers.has('Authorization')) {
-      headers.set('Authorization', `Bearer ${this.token}`);
+      headers.set('Authorization', `Bearer ${requestToken}`);
+    } else if (requestToken && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${requestToken}`);
     }
 
     if (options.body && !headers.has('Content-Type')) {
@@ -89,9 +90,10 @@ export class KetoClient {
     }
 
     if (response.status === 401) {
-      this.token = null;
-      if (this.onUnauthorized) {
-        this.onUnauthorized();
+      // An anonymous or superseded request must not expire a newer login.
+      if (requestToken && this.token === requestToken && headers.get('Authorization') === `Bearer ${requestToken}`) {
+        this.token = null;
+        this.onUnauthorized?.();
       }
       throw new UnauthorizedError('Session expired or unauthorized (401)');
     }
