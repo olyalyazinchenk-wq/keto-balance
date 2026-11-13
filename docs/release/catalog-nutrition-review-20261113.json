@@ -8,10 +8,13 @@
     "remainingRecipes": 14,
     "reviewedNutritionRecipes": 0,
     "assignedPhotos": 5,
-    "sourceCandidates": 15
+    "sourceCandidates": 15,
+    "usdaSourceProfiles": 49,
+    "completeProposedNutritionCandidates": 36,
+    "unchangedOriginalRecipesWithApprovedNutrition": 0
   },
   "sourceCandidatesFile": "nutrition-source-candidates-20261113.json",
-  "method": "No automatic approval, no guessed mass, Tr/N stay unknown. Existing engine used only after evidence admission.",
+  "method": "Original compositions retained; exact metric unit conversions only. New independent all-gram formulations are computed through unchanged keto-engine as candidates, never used to imply grams for old piece/spoon quantities.",
   "recipes": [
     {
       "id": "k1",
@@ -125,7 +128,21 @@
       "issues": [
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k1-nutrition-v2",
+        "candidateInputSha256": "a17b17bb98c4932e6f247a023ecd4749220270048dbd0a01c793b5d8914fdbff",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k2",
@@ -240,7 +257,21 @@
       "issues": [
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k2-nutrition-v2",
+        "candidateInputSha256": "c482c1402bf35b8fe09da49b9824f32e5d622eaf0bfe38cdecbec2454e9296f4",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k3",
@@ -354,7 +385,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Замена эритрита на обычный сахар не должна предлагаться как эквивалентная кето-замена; масса подсластителя, полиолы и бренд муки требуют отдельной проверки."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k3-nutrition-v2",
+        "candidateInputSha256": "13581b84fef539543598b932ed8613236eb1bff4a09ecb2c869ff73ed8832590",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k4",
@@ -465,7 +510,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Не описаны температура и способ выпекания лепёшек; проверить, укладывается ли рецепт в 10 минут."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k4-nutrition-v2",
+        "candidateInputSha256": "b5b65ca0ba24b9cfd0b6ab66182e46882de6bce2ee1849414a9246ae32040346",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k5",
@@ -577,7 +636,21 @@
       "issues": [
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k5-nutrition-v2",
+        "candidateInputSha256": "13c165eb5957ad321060a7c6ca2eb2cabb47c1f8ff7a45253a65d876e3214aa1",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k6",
@@ -686,7 +759,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
         "Для исходного выхода4 точно определить съедобную массу куриной грудки и жирность/массу сливок."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k6-nutrition-v2",
+        "candidateInputSha256": "caf1120712f8e98472197044ffff50ae31cc5fbe345b0b427c12dc7808ca83eb",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k7",
@@ -780,7 +867,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k7-nutrition-v2",
+        "candidateInputSha256": "e5ce80d2a5ce6285c5a1c503e2b98fdc52699d42e663b30ce12cf1296ff9d58c",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k8",
@@ -895,7 +996,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k8-nutrition-v2",
+        "candidateInputSha256": "39affe82eac28acb1800ad13d108c9040381b1571b44bfd3ed01d565bf9870dc",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k9",
@@ -1007,7 +1122,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k9-nutrition-v2",
+        "candidateInputSha256": "d171e0dd6e14e81a18499f8f2418684f1b08e91a68bb726ba55f6b7f3051d725",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k10",
@@ -1121,7 +1250,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k10-nutrition-v2",
+        "candidateInputSha256": "7568b843e301362769cbad2be9932836332c0a0c7bb33d716fe8c66d9e3ebc09",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k11",
@@ -1229,7 +1372,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k11-nutrition-v2",
+        "candidateInputSha256": "17b398bbfbfdcbbb2336a8fd4de05418b9e84ddeee4263b23958caaa53cebf78",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k12",
@@ -1337,7 +1494,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k12-nutrition-v2",
+        "candidateInputSha256": "6854a10c97f110cd5a17e8010a2a786d196a21d97058fad4114e9b496b64c7e1",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k13",
@@ -1430,7 +1601,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k13-nutrition-v2",
+        "candidateInputSha256": "0762a0f3911c22e57b720dd02a351cfd8b1434da085636adb2bb9ea593838eb1",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k14",
@@ -1537,7 +1722,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
         "Требуется уточнение части туши/жирности говядины, а не усреднённая запись «говядина»."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k14-nutrition-v2",
+        "candidateInputSha256": "85694e462336f16bf2595a88afadbf1efa3b1d1763afc7cce100936c1d8fafdd",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k15",
@@ -1645,7 +1844,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k15-nutrition-v2",
+        "candidateInputSha256": "49dd21c0b5127d594caaa404fde0527caa334973d73415fbcc9522fa236d55b5",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k16",
@@ -1757,7 +1970,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k16-nutrition-v2",
+        "candidateInputSha256": "b6c9b03ca547469b0938c4577392577baae1eceb7a87886d4fa1217cb04cacda",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k17",
@@ -1871,7 +2098,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k17-nutrition-v2",
+        "candidateInputSha256": "530587375addc49ca894e63b046d3c60b6ce57bd46480b0cbea8ebede3ca2f8c",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k25",
@@ -1994,7 +2235,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
         "Курица и бекон уже обжаренные: использовать таблицы готового продукта, не сырые; нужен состав домашнего майонеза."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k25-nutrition-v2",
+        "candidateInputSha256": "28d4dad3e70147009ef1354ee1243cbe583ef84d7cedfafefc16a42300b8030d",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k27",
@@ -2101,7 +2356,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k27-nutrition-v2",
+        "candidateInputSha256": "b5b748f2768a413bf1844ce3b81a4cec03ed0e2e0f07c3f678eb665b618edf8f",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k28",
@@ -2212,7 +2481,21 @@
         "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k28-nutrition-v2",
+        "candidateInputSha256": "41b718f33984bcf55def34c818918c9c3c63bb776f41cf8771f4934bce898686",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k18",
@@ -2386,7 +2669,21 @@
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
         "Прожарка3–4мин зависит от толщины и массы стейка; время не гарантирует готовность."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c1-nutrition-v2",
+        "candidateInputSha256": "307289036ff0b6d590cc3265e1e60e12663c41053197416b47189c0d45af77dd",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c2",
@@ -2485,7 +2782,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c2-nutrition-v2",
+        "candidateInputSha256": "88c403322888e6bf4cf1e2e4f380ffc6f772641383dfa48b6d3bba8ddfb56d7e",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c3",
@@ -2563,7 +2874,21 @@
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
         "Целая тушка: сырой вес включает несъедобные кости; нужен фактический выход мяса."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c3-nutrition-v2",
+        "candidateInputSha256": "06d76c21e3965cb2fc624ddd5c4fa24ea1ac095db3c74629a00557c6588708b9",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c4",
@@ -2639,7 +2964,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c4-nutrition-v2",
+        "candidateInputSha256": "32ba64526e0764b1f0c5b82e44df81796710827487fdb5da7bd80d2b00b64cec",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c5",
@@ -2731,7 +3070,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c5-nutrition-v2",
+        "candidateInputSha256": "1386ff11cf071234da30304e9e4fb782d7c2bd98eab0a36f6d769327444cd5c7",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c6",
@@ -2808,7 +3161,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c6-nutrition-v2",
+        "candidateInputSha256": "5bbb84240f95709c420d4633f16158b6fc09ef5888e9eb57f2326255f80395a6",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c7",
@@ -2825,12 +3192,14 @@
           "index": 0,
           "name": "Говядина",
           "originalAmount": "1 кг",
-          "normalizedAmount": null,
-          "edibleGramsCandidate": null,
+          "normalizedAmount": {
+            "value": 1000,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 1000,
           "sourceCandidateRecordIds": [],
           "status": "candidate_only",
           "issues": [
-            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
             "Источник и соответствие продукту не утверждены."
           ]
         },
@@ -2881,7 +3250,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c7-nutrition-v2",
+        "candidateInputSha256": "cee71ac20eb67e151a125d1f0eb1335a53ba0828e2a1579f898990fc78481e09",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c8",
@@ -2958,7 +3341,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c8-nutrition-v2",
+        "candidateInputSha256": "c33dd53d909a7d5d5b68abf42781e80e16b4dc734691b83a965779b7e37c9c1d",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c9",
@@ -3018,7 +3415,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c9-nutrition-v2",
+        "candidateInputSha256": "e07e6526eebdc283761fa54efbaabcd37346a55e3d9b9683e703033fdd838b78",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c10",
@@ -3094,7 +3505,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c10-nutrition-v2",
+        "candidateInputSha256": "50dd5e74544964a73ecebce04340fb82c8d56ad6071a566043ad31889b6b323c",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c11",
@@ -3194,7 +3619,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c11-nutrition-v2",
+        "candidateInputSha256": "c23c004dca8886346583768ee35f576312af1095344aaf8f39090e935003f123",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c12",
@@ -3212,8 +3651,8 @@
           "name": "Костный бульон",
           "originalAmount": "1,5 л",
           "normalizedAmount": {
-            "value": 1.5,
-            "unit": "л"
+            "value": 1500,
+            "unit": "мл"
           },
           "edibleGramsCandidate": null,
           "sourceCandidateRecordIds": [],
@@ -3255,7 +3694,21 @@
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
         "В составе указан уже готовый бульон, а шаги готовят его из костей. Указать кости/воду/выход или переписать способ;4–12ч расходится с time240."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c12-nutrition-v2",
+        "candidateInputSha256": "912b1f74df694817977c2dbe4785b8dc9856db6af0b5a79d05734bbe6fb40462",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c13",
@@ -3352,7 +3805,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c13-nutrition-v2",
+        "candidateInputSha256": "4999a96ea533cc35502d7fbac4d30d3343407c706320f53c80f9f5fa253e2780",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c14",
@@ -3427,7 +3894,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c14-nutrition-v2",
+        "candidateInputSha256": "b3d1b7831a02bd656cc4c95226cabb2fbe8d17b83f3ab89d04c30cfb21bd28fa",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c15",
@@ -3487,7 +3968,21 @@
         "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
         "Конфи требует жира, которого нет в составе; уточнить массу ножек и учёт вытопленного/удалённого жира."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c15-nutrition-v2",
+        "candidateInputSha256": "e8a6458923a7f1ff20c3b610f19db25b2ea532b02e66dd4bd638b0c0e28e002d",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "c16",
@@ -3570,7 +4065,21 @@
         "Проверить технологию, время готовности и хранение.",
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
         "Готовая мясная нарезка и сыр: фиксировать бренд/состав, не предполагать отсутствие сахара/растительных добавок."
-      ]
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c16-nutrition-v2",
+        "candidateInputSha256": "00f7c8ac04143265dfbbf1b43056bf9e065d80becba52f18bf3dbbbbf2806274",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
     },
     {
       "id": "k19",
@@ -4018,8 +4527,8 @@
           "name": "Мясной или костный бульон",
           "originalAmount": "1,2 л",
           "normalizedAmount": {
-            "value": 1.2,
-            "unit": "л"
+            "value": 1200,
+            "unit": "мл"
           },
           "edibleGramsCandidate": null,
           "sourceCandidateRecordIds": [],
@@ -5113,5 +5622,7 @@
         "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
       ]
     }
-  ]
+  ],
+  "usdaSourceFile": "nutrition-usda-sources-20261113.json",
+  "proposedCandidateFile": "nutrition-candidates-v2-20261113.json"
 }
