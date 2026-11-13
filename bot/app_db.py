@@ -3,6 +3,7 @@ bot/app_db.py — Изолированное хранилище SQLite (WAL, For
 """
 import hashlib
 import json
+import math
 import re
 import secrets
 import sqlite3
@@ -1320,11 +1321,23 @@ def publish_recipe_draft(
                 raise RecipePublicationValidationError(
                     f"Cannot publish recipe '{recipe_id}': ingredient #{idx} has empty or whitespace-only name/quantity"
                 )
-            if '[УТОЧНИТЬ]' in qty or not re.fullmatch(
-                r'(?:\d+(?:[.,]\d+|/\d+)?\s*(?:г|кг|мл|л|шт\.?|ст\.?\s*л\.?|ч\.?\s*л\.?|зубчик\w*|ломтик\w*)|по вкусу|щепотка)',
+            if qty.lower() in ('по вкусу', 'по желанию', 'щепотка'):
+                continue
+            quantity = re.fullmatch(
+                r'(?P<number>\d+(?:[.,]\d+|/\d+)?)\s*(?:г|гр|кг|мл|л|шт\.?|штук|штуки|ст\.?\s*л\.?|ч\.?\s*л\.?|зубчик\w*|ломтик\w*|бан(?:ка|ки|ок)|стейк(?:а|ов)?|нож(?:ка|ки|ек))',
                 qty, re.IGNORECASE,
-            ):
+            )
+            if quantity is None:
                 raise RecipePublicationValidationError(f'Ingredient #{idx} needs a known quantity and unit')
+            raw_number = quantity.group('number').replace(',', '.')
+            try:
+                numerator, *denominator = raw_number.split('/')
+                value = float(numerator) / (float(denominator[0]) if denominator else 1.0)
+                valid_quantity = math.isfinite(value) and value > 0
+            except (ValueError, OverflowError, ZeroDivisionError):
+                valid_quantity = False
+            if not valid_quantity:
+                raise RecipePublicationValidationError(f'Ingredient #{idx} quantity must be positive and finite')
 
         # 3. Preparation steps validation
         steps = draft_content.get("steps")

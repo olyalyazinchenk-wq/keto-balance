@@ -249,7 +249,9 @@ class TestPublicationValidationAndMenuReproducibility(unittest.TestCase):
 
     def test_publication_requires_mode_yield_time_units_and_matching_id(self):
         cases = [dict(mode=None), dict(serv=0), dict(serv=True), dict(time=-1),
-                 dict(time=None), dict(ing=[["Мясо", "100"]]), dict(id="other_recipe")]
+                 dict(time=None), dict(ing=[["Мясо", "100"]]), dict(id="other_recipe"),
+                 dict(ing=[["Мясо", "0 г"]]), dict(ing=[["Мясо", "1/0 г"]]),
+                 dict(ing=[["Мясо", "10 неизвестных"]]), dict(ing=[["Мясо", "9" * 400 + " г"]])]
         for index, changes in enumerate(cases):
             with self.subTest(changes=changes):
                 rid = f"invalid_metadata_{index}"
@@ -262,6 +264,17 @@ class TestPublicationValidationAndMenuReproducibility(unittest.TestCase):
                 result = self.client.post(f'/api/admin/recipes/{rid}/publish',headers=self.admin_headers)
                 self.assertEqual(result.status_code,422)
                 self.assertEqual(get_admin_catalog_version(self.db_path),old_version)
+
+    def test_publication_accepts_existing_count_units_and_positive_fraction(self):
+        for index, qty in enumerate(('1 банка', '2 банки', '2 стейка', '2 ножки', 'по желанию', '1/2 г')):
+            with self.subTest(quantity=qty):
+                rid = f'valid_count_unit_{index}'
+                data = {'id':rid,'title':'Synthetic recipe','mode':'keto','serv':2,'time':20,
+                        'ing':[['Продукт',qty]],'steps':['Prepare']}
+                result = self.client.post('/api/admin/recipes',json={'recipe_id':rid,'recipe_data':data,
+                    'approval_marks':{'approved':True,'approved_by':'synthetic-owner'}},headers=self.admin_headers)
+                self.assertEqual(result.status_code,200)
+                self.assertEqual(self.client.post(f'/api/admin/recipes/{rid}/publish',headers=self.admin_headers).status_code,200)
 
 if __name__ == "__main__":
     unittest.main()
