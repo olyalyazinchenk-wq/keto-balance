@@ -283,7 +283,7 @@ class TestStagingAndDemo(unittest.TestCase):
         )
         client = TestClient(app)
 
-        s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}")
+        s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}&premium=1")
         token = s_resp.json()["session_token"]
         headers = {"Authorization": f"Bearer {token}"}
 
@@ -424,7 +424,7 @@ class TestStagingAndDemo(unittest.TestCase):
         )
         client = TestClient(app)
 
-        s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}")
+        s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}&premium=1")
         token = s_resp.json()["session_token"]
         headers = {"Authorization": f"Bearer {token}"}
 
@@ -492,7 +492,7 @@ class TestStagingAndDemo(unittest.TestCase):
         )
         client = TestClient(app)
 
-        s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}")
+        s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}&premium=1")
         token = s_resp.json()["session_token"]
         headers = {"Authorization": f"Bearer {token}"}
 
@@ -617,7 +617,7 @@ class TestStagingAndDemo(unittest.TestCase):
         )
         client = TestClient(app)
 
-        s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}")
+        s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}&premium=1")
         token = s_resp.json()["session_token"]
         headers = {"Authorization": f"Bearer {token}"}
 
@@ -727,7 +727,7 @@ class TestStagingAndDemo(unittest.TestCase):
                 catalog_provider=lambda c=case["catalog"]: c,
             )
             client = TestClient(app)
-            s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}")
+            s_resp = client.get(f"/api/demo-session?demo_user={OWNER_ID}&premium=1")
             token = s_resp.json()["session_token"]
             headers = {"Authorization": f"Bearer {token}"}
 

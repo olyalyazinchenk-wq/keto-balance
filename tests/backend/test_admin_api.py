@@ -244,10 +244,11 @@ class TestAdminApi(unittest.TestCase):
             "recipe_id": new_recipe_id,
             "recipe_data": {
                 "id": new_recipe_id,
-                "title": "Стейк рибай с розмариновым маслом",
+                "title": "Стейк рибай со сливочным маслом",
+                "serv": 1, "time": 20,
                 "kcal": 680,
                 "mode": "carnivore",
-                "ing": [["Стейк говяжий", "300 г"], ["Масло розмариновое", "20 г"]],
+                "ing": [["Стейк говяжий", "300 г"], ["Масло сливочное", "20 г"]],
                 "steps": ["Обжарьте стейк до готовности.", "Подавайте с маслом."],
             },
             "approval_marks": {
@@ -270,7 +271,7 @@ class TestAdminApi(unittest.TestCase):
         list_resp = self.client.get("/api/admin/recipes", headers=headers)
         new_rec = next(r for r in list_resp.json()["recipes"] if r["recipe_id"] == new_recipe_id)
         self.assertEqual(new_rec["status"], "published")
-        self.assertEqual(new_rec["published"]["title"], "Стейк рибай с розмариновым маслом")
+        self.assertEqual(new_rec["published"]["title"], "Стейк рибай со сливочным маслом")
 
     def test_admin_status_endpoint(self):
         headers = {"Authorization": f"Bearer {self.admin_token}"}

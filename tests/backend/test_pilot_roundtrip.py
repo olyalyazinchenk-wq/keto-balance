@@ -8,6 +8,8 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from bot.app_settings import AppSettings
+from bot.app_db import save_user_subscription
+from datetime import datetime,timedelta,timezone
 from bot.auth import generate_telegram_init_data
 from bot.server import create_app
 
@@ -36,6 +38,7 @@ class TestPilotRoundtrip(unittest.TestCase):
             "/api/session",
             json={"init_data": generate_telegram_init_data({"id": 2001, "first_name": "RoundtripUser"}, TEST_TOKEN)}
         )
+        save_user_subscription(self.db_path,2001,"premium","active",(datetime.now(timezone.utc)+timedelta(days=1)).isoformat())
         self.token = resp.json()["session_token"]
         self.headers = {"Authorization": f"Bearer {self.token}"}
 

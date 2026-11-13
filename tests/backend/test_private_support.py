@@ -1,11 +1,23 @@
+import tempfile
+from pathlib import Path
 import unittest
 from types import SimpleNamespace as NS
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 from telegram.error import Forbidden, TimedOut
 from bot.private_support import PENDING, KNOWN, begin_question, cancel_question, deliver_pending_question, reply_to_question, reject_pending_attachment
 
 
 class TestPrivateSupport(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.db = Path(self.temp.name) / 'private-support.db'
+        self.db_patch = patch('bot.private_support._db', return_value=self.db)
+        self.db_patch.start()
+
+    def tearDown(self):
+        self.db_patch.stop()
+        self.temp.cleanup()
+
     def fixture(self, text='Мой Вопрос <b>&', sender=101):
         msg = NS(text=text, reply_text=AsyncMock())
         update = NS(message=msg, effective_chat=NS(type='private'), effective_user=NS(id=sender))
@@ -31,7 +43,7 @@ class TestPrivateSupport(unittest.IsolatedAsyncioTestCase):
             else:
                 c.bot.send_message.side_effect = Forbidden('synthetic')
             await deliver_pending_question(u, c, 777)
-            self.assertTrue(c.user_data[PENDING])
+            self.assertNotIn(PENDING, c.user_data)
             self.assertNotIn(101, c.bot_data.get(KNOWN, set()))
             self.assertIn('Не удалось отправить', u.message.reply_text.call_args.args[0])
             if channel:
@@ -42,7 +54,7 @@ class TestPrivateSupport(unittest.IsolatedAsyncioTestCase):
             u, c = self.fixture()
             (c.bot.get_chat if before else c.bot.send_message).side_effect = TimedOut('synthetic')
             await deliver_pending_question(u, c, 777)
-            self.assertIn('Не удалось отправить' if before else 'мог дойти', u.message.reply_text.call_args.args[0])
+            self.assertIn('Не удалось отправить' if before else 'могло дойти', u.message.reply_text.call_args.args[0])
             self.assertEqual(c.bot.send_message.await_count, 0 if before else 1)
 
     async def test_cancel_group_length_and_attachment(self):
@@ -70,7 +82,10 @@ class TestPrivateSupport(unittest.IsolatedAsyncioTestCase):
         u.effective_user.id = 777
         await reply_to_question(u, c, 777)
         c.bot.send_message.assert_not_awaited()
-        c.bot_data[KNOWN] = {101}
+        from bot.app_db import create_support_ticket
+        create_support_ticket(101, 'general', 'Вопрос', db_path=self.db)
         c.args = ['101', '<b>Ответ</b>']
         await reply_to_question(u, c, 777)
-        c.bot.send_message.assert_awaited_once_with(chat_id=101, text='Ответ Ольги:\n\n<b>Ответ</b>', parse_mode=None)
+        c.bot.send_message.assert_not_awaited()
+        self.assertIn('<b>Ответ</b>', u.message.reply_text.call_args.args[0])
+        self.assertIn('Отправить этот ответ', str(u.message.reply_text.call_args.kwargs['reply_markup']))

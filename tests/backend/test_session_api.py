@@ -8,6 +8,8 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from bot.app_settings import AppSettings
+from bot.app_db import save_user_subscription, create_or_get_user
+from datetime import datetime, timedelta, timezone
 from bot.auth import generate_telegram_init_data
 from bot.server import create_app
 
@@ -96,6 +98,12 @@ class TestSessionApi(unittest.TestCase):
             catalog_provider=lambda: self.fixture,
         )
         self.client = TestClient(self.app)
+        # These tests exercise authenticated paid menu workflows; free/expired access
+        # is covered separately by test_public_product_boundaries.
+        for uid in (888000222, 888000333, 888000111):
+            create_or_get_user(uid, db_path=self.db_path)
+            save_user_subscription(self.db_path, uid, 'premium', 'active',
+                (datetime.now(timezone.utc) + timedelta(days=1)).isoformat())
 
     def tearDown(self):
         self.tmp_dir.cleanup()

@@ -60,7 +60,9 @@ from bot.funnel import (
     get_plateau_full_guide,
 )
 from bot.payments import init_purchase, complete_demo_payment
-from bot.private_support import begin_question, cancel_question, deliver_pending_question, reply_to_question, reject_pending_attachment
+from bot.private_support import (begin_question, cancel_question, deliver_pending_question,
+    reply_to_question, reject_pending_attachment, support_callback, handle_draft_text,
+    show_support_queue, process_support_once)
 from bot.transport import configure_transport
 
 # Настройка логирования
@@ -74,7 +76,7 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # Сбои бота пишем в отдельный файл: без деталей разбор инцидента невозможен
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-ERROR_LOG_PATH = PROJECT_ROOT / "logs" / "bot_errors.log"
+ERROR_LOG_PATH = Path(os.getenv('KETO_TEST_ROOT') or PROJECT_ROOT) / "logs" / "bot_errors.log"
 SECRET_PATTERN = re.compile(r"\d{5,}:[A-Za-z0-9_-]{30,}")
 
 # Загрузка рецептов и советов из bot_data.json
@@ -140,33 +142,12 @@ def webapp_button(text: str, url: Optional[str] = None) -> InlineKeyboardButton:
 
 
 def get_main_keyboard() -> InlineKeyboardMarkup:
-    """Главное интерактивное меню бота."""
-    keyboard = [
-        [
-            webapp_button("📱 Открыть приложение Кето Баланс")
-        ],
-        [
-            InlineKeyboardButton("🎲 Идея блюда", callback_data="idea"),
-            InlineKeyboardButton("📖 Каталог рецептов", callback_data="recipes_cat"),
-        ],
-        [
-            InlineKeyboardButton("💧 Трекер воды", callback_data="water_tracker"),
-            InlineKeyboardButton("⚖️ Расчёт нормы БЖУ", callback_data="calc_mode"),
-        ],
-        [
-            InlineKeyboardButton("⚡ Протокол «Плато»", callback_data="plateau_info"),
-            InlineKeyboardButton("🆘 Антисрыв", callback_data="sos_info"),
-        ],
-        [
-            InlineKeyboardButton("💡 Совет дня", callback_data="tip_random"),
-            InlineKeyboardButton("👑 Тарифы", callback_data="tariffs"),
-        ],
-        [
-            InlineKeyboardButton("📢 Канал Ольги", url=CHANNEL_URL),
-            InlineKeyboardButton("👩⚕️ Задать вопрос", callback_data="ask_menu"),
-        ],
-    ]
-    return InlineKeyboardMarkup(keyboard)
+    return InlineKeyboardMarkup([
+        [webapp_button("🥑 Открыть КетоБаланс")],
+        [InlineKeyboardButton("Блюда и месячный рацион", callback_data="recipes_cat")],
+        [InlineKeyboardButton("Обучение", callback_data="tip_random"), InlineKeyboardButton("Условия доступа", callback_data="tariffs")],
+        [InlineKeyboardButton("Личный вопрос Ольге", callback_data="ask_menu")],
+    ])
 
 def format_recipe_card(r: Dict[str, Any]) -> str:
     """Форматирование полного рецепта для Telegram."""
@@ -250,12 +231,12 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     user = update.effective_user
     get_or_create_user(user.id, user.username, user.first_name)
-    welcome_text = get_welcome_text(user.first_name or "друг")
+    welcome_text = "🌿 <b>Добро пожаловать в КетоБаланс</b>\n\nРацион на календарный месяц, блюда, покупки и обучение — в одном приложении. Личный вопрос Ольге: /ask."
     
     if context.args and len(context.args) > 0:
         arg = context.args[0].lower()
         if "plateau" in arg or "plato" in arg:
-            await update.message.reply_html(get_plateau_promo_text(), reply_markup=get_plateau_keyboard())
+            await current_app_route(update, "Учебные материалы находятся в приложении. Вопросы о самочувствии — лично Ольге через /ask.")
             return
             
     # Очищаем дублирующую нижнюю клавиатуру, если осталась у пользователя
@@ -338,85 +319,37 @@ async def menu_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cancel_question(context)
     await send_single_menu(update, context)
 
+async def current_app_route(update, text):
+    keyboard = InlineKeyboardMarkup([[webapp_button("Открыть КетоБаланс")],
+        [InlineKeyboardButton("Личный вопрос Ольге", callback_data="ask_menu")]])
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, reply_markup=keyboard, parse_mode=None)
+    elif update.message:
+        await update.message.reply_text(text, reply_markup=keyboard, parse_mode=None)
+
 async def idea_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /idea."""
-    if not update.message:
-        return
-    if not RECIPES:
-        await update.message.reply_html("🍳 Рецепты скоро появятся! Загляните в меню: /menu")
-        return
-    r = random.choice(RECIPES)
-    kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🎲 Другая идея", callback_data="idea")],
-        [webapp_button("📱 Открыть в приложении")],
-        [InlineKeyboardButton("« В меню", callback_data="to_main")],
-    ])
-    await update.message.reply_html(format_recipe_card(r), reply_markup=kb)
+    await current_app_route(update, 'Блюда и подходящие замены находятся в приложении. Откройте свой рацион на месяц.')
+
 
 async def recipes_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /recipes."""
-    if not update.message:
-        return
-    kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🍳 Завтраки", callback_data="cat_breakfast"), InlineKeyboardButton("🥩 Обеды и ужины", callback_data="cat_lunch")],
-        [InlineKeyboardButton("🍲 Супы", callback_data="cat_soup"), InlineKeyboardButton("🥗 Салаты", callback_data="cat_salad")],
-        [InlineKeyboardButton("🧀 Перекусы", callback_data="cat_snack"), InlineKeyboardButton("🥩 Карнивор", callback_data="cat_carnivore")],
-        [InlineKeyboardButton("🎲 Случайное блюдо", callback_data="idea")],
-        [webapp_button("📱 Все 37+ рецептов в Web App")],
-        [InlineKeyboardButton("« В меню", callback_data="to_main")],
-    ])
-    await update.message.reply_html(
-        "📖 <b>Каталог проверенных рецептов Кето Баланс</b>\n\nВыберите категорию блюд или запустите случайный подбор:",
-        reply_markup=kb,
-    )
+    await current_app_route(update, 'Актуальные допущенные блюда кето и карнивора — в каталоге приложения. Доступ зависит от выбранного подхода и ограничений.')
+
 
 async def water_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /water."""
-    if not update.message or not update.effective_user:
-        return
-    text, kb = get_water_view(update.effective_user.id)
-    await update.message.reply_html(text, reply_markup=kb)
+    await current_app_route(update, 'Дневник и трекер воды пока не входят в приложение. Сейчас доступны рацион на месяц, рецепты и покупки.')
+
 
 async def tip_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /tip."""
-    if not update.message:
-        return
-    tip = random.choice(TIPS) if TIPS else "Пейте достаточное количество воды с щепоткой морской соли для поддержания электролитов."
-    kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("💡 Ещё совет", callback_data="tip_random")],
-        [InlineKeyboardButton("« В меню", callback_data="to_main")],
-    ])
-    await update.message.reply_html(f"💡 <b>Совет нутрициолога Ольги:</b>\n\n{tip}", reply_markup=kb)
+    await current_app_route(update, 'Учебные материалы находятся на главной странице приложения в разделе «Обучение».')
+
 
 async def sos_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /sos."""
-    if not update.message:
-        return
-    kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("⚡ Протокол «Плато»", callback_data="plateau_info")],
-        [InlineKeyboardButton("👩⚕️ Написать Ольге", callback_data="ask_menu")],
-        [InlineKeyboardButton("« В меню", callback_data="to_main")],
-    ])
-    await update.message.reply_html(get_sos_text(), reply_markup=kb)
+    await current_app_route(update, 'Вопросы о самочувствии и питании Ольга разбирает лично. Автоматических медицинских протоколов здесь нет. Для вопроса используйте /ask.')
+
 
 async def calc_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /calc."""
-    text = (
-        "🎯 <b>Шаг 1 из 2: Выберите формат питания</b>\n\n"
-        "🥑 <b>Кето</b> — рацион с сытными жирами, белком и зеленью/овощами (до 20–25г чистых углев.).\n"
-        "🥩 <b>Карнивор</b> — строго мясной протокол (мясо, рыба, яйца, сливочное масло, 0 углев.)."
-    )
-    kb = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("🥑 Кето", callback_data="set_mode_keto"),
-            InlineKeyboardButton("🥩 Карнивор", callback_data="set_mode_carnivore"),
-        ],
-        [InlineKeyboardButton("« В меню", callback_data="to_main")],
-    ])
-    if update.message:
-        await update.message.reply_html(text, reply_markup=kb)
-    elif update.callback_query:
-        await update.callback_query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
+    await current_app_route(update, 'Индивидуальные нормы питания здесь не назначаются. Проверенные сведения по составу блюд будут доступны в рецептах приложения после допуска.')
+
 
 async def ask_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Описание личной связи до согласия на отправку."""
@@ -434,6 +367,9 @@ async def ask_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def reply_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await reply_to_question(update, context, ADMIN_ID)
+
+async def support_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await show_support_queue(update, context, ADMIN_ID)
 
 async def cancel_on_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cancel_question(context)
@@ -465,42 +401,21 @@ async def tariffs_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def paysupport_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /paysupport: условия подписки, отмена и возврат через Telegram Stars."""
-    text = (
-        "💳 <b>Поддержка по оплате и подписке Кето Баланс</b>\n\n"
-        "• <b>Тариф:</b> Месячная подписка на полный доступ к сервису.\n"
-        "• <b>Оплата:</b> Оплата производится официально через Telegram Stars (XTR) без скрытых комиссий.\n"
-        "• <b>Автопродление:</b> Только при вашем явном согласии. Вы можете отменить подписку в любой момент в Telegram: <i>Настройки → Мои подписки</i>.\n"
-        "• <b>Возврат средств:</b> При технических сбоях или ошибочном списании возврат производится через команду поддержки или вызов refundStarPayment.\n\n"
-        "Для решения любых вопросов по платежам обратитесь в службу поддержки через Mini App или напишите нашему нутрициологу."
-    )
-    kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("👑 Посмотреть тариф", callback_data="tariffs")],
-        [InlineKeyboardButton("« В главное меню", callback_data="to_main")],
-    ])
+    text = ('Поддержка по оплате и подписке\n\nРеальные платежи пока отключены. '
+            'Планируемый доступ — 990 ₽ за 30 дней, без автоматического продления. '
+            'Сумма в Telegram Stars будет согласована перед запуском. '
+            'Вопросы об оплате и возврате: /ask.')
+    keyboard = InlineKeyboardMarkup([[webapp_button('Открыть приложение')],
+        [InlineKeyboardButton('Личный вопрос Ольге', callback_data='ask_menu')]])
     if update.callback_query:
-        await update.callback_query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
+        await update.callback_query.edit_message_text(text, reply_markup=keyboard, parse_mode=None)
     elif update.message:
-        await update.message.reply_html(text, reply_markup=kb)
+        await update.message.reply_html(text, reply_markup=keyboard)
+
 
 async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /help."""
-    if not update.message:
-        return
-    text = (
-        "🥑 <b>Команды бота Кето Баланс</b>\n\n"
-        "• /start — Главное меню и приветствие\n"
-        "• /idea — Случайная идея рецепта на сегодня\n"
-        "• /recipes — Каталог рецептов по категориям\n"
-        "• /water — Трекер выпитой воды за день\n"
-        "• /calc — Расчет нормы воды и БЖУ под ваш вес\n"
-        "• /tip — Полезный совет от нутрициолога\n"
-        "• /sos — Помощь при тяге к сладкому и срыве\n"
-        "• /menu — Быстрое меню\n\n"
-        f"📱 Веб-приложение доступно по ссылке или кнопке: {WEBAPP_URL}"
-    )
-    kb = InlineKeyboardMarkup([[InlineKeyboardButton("« В главное меню", callback_data="to_main")]])
-    await update.message.reply_html(text, reply_markup=kb)
+    await current_app_route(update, 'КетоБаланс: /start — главное меню; /recipes — блюда в приложении; /ask — личный вопрос Ольге; /tariffs — условия доступа; /paysupport — вопросы оплаты. Дневник пока готовится.')
+
 
 # --- ОБРАБОТЧИК CALLBACK КНОПОК ---
 
@@ -509,11 +424,16 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     if not query or not query.data or not query.from_user:
         return
+    if await support_callback(update, context, ADMIN_ID):
+        return
     await query.answer()
     data = query.data
     if data != "ask_start":
         cancel_question(context)
     user_id = query.from_user.id
+    if data not in {"open_app_local", "paysupport_cb", "to_main", "ask_menu", "ask_start", "tariffs"} and not data.startswith(("buy_", "confirm_demo_")):
+        await current_app_route(update, "Актуальные рецепты, рацион на месяц, покупки и обучение находятся в приложении. Вопросы о самочувствии Ольга разбирает лично через /ask.")
+        return
     
     if data == "open_app_local":
         await query.answer(
@@ -739,6 +659,8 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     msg = update.message
     if not msg or not msg.text:
         return
+    if await handle_draft_text(update, context, ADMIN_ID):
+        return
         
     keyboard_texts = {button.text for row in get_reply_keyboard().keyboard for button in row}
     if msg.text in keyboard_texts:
@@ -752,26 +674,19 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         return
     text = msg.text.strip().lower()
     user_id = update.effective_user.id
+    from bot.support_queue import support_scope
+    if support_scope(text) == 'personal':
+        await current_app_route(update, 'Вопрос о самочувствии требует личного разбора. Чтобы передать его Ольге, используйте /ask. При резком ухудшении обратитесь за медицинской помощью; бот не назначает лечение.')
+        return
     
-    # Проверка, вводит ли пользователь вес числом
+    # Historical weight input no longer invokes individual diet formulas.
     try:
-        num = float(text.replace(",", "."))
-        if 35 <= num <= 250:
-            mode = user_states.get(user_id, {}).get("mode", "keto")
-            calc = calculate_nutrition(num, mode)
-            save_calculation(user_id, num, mode, calc["water"], calc["kcal"], calc["protein"], calc["fat"], calc["carbs"])
-            res_text = format_calc_result(calc)
-            kb = InlineKeyboardMarkup([
-                [webapp_button("📱 Открыть меню под этот расчёт")],
-                [InlineKeyboardButton("⚡ Протокол «Выход из плато»", callback_data="plateau_info")],
-                [InlineKeyboardButton("« В меню", callback_data="to_main")],
-            ])
-            await msg.reply_html(res_text, reply_markup=kb)
-            return
+        float(text.replace(",", "."))
     except ValueError:
         pass
-
-
+    else:
+        await calc_cmd(update, context)
+        return
         
     # Обработка кнопок нижней клавиатуры и текстовых команд
     if "вопрос" in text or "спросить" in text or "нутрициолог" in text or "связь" in text:
@@ -791,7 +706,7 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     elif "срыв" in text or "тяг" in text or "sos" in text or "антисрыв" in text:
         await sos_cmd(update, context)
     elif "плато" in text or "вес стоит" in text:
-        await msg.reply_html(get_plateau_promo_text(), reply_markup=get_plateau_keyboard())
+        await current_app_route(update, "Вопросы о самочувствии Ольга разбирает лично через /ask. Рацион и обучение доступны в приложении.")
     elif "меню" in text or "старт" in text or "главное" in text:
         await menu_cmd(update, context)
     elif "помощ" in text or "справк" in text or "help" in text:
@@ -803,7 +718,7 @@ async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYP
             context,
             text=(
                 "🌿 <b>Добро пожаловать по кодовому слову БАЛАНС!</b>\n\n"
-                "Вам доступен экспресс-расчёт нормы воды и БЖУ, а также персональный помощник питания:"
+                "Откройте рацион на месяц, рецепты, покупки и обучение:"
             ),
         )
     else:
@@ -833,17 +748,35 @@ async def post_init(application: Application):
     except Exception:
         pass
     asyncio.create_task(_heartbeat_loop())
+    from bot import support_queue
+    from bot.app_settings import get_settings
+    support_db = get_settings().db_path
+    application.bot_data['support_db_path'] = support_db
+    support_queue.recover_interrupted_replies(support_db)
+    async def _support_loop():
+        last_cleanup = 0
+        while True:
+            try:
+                await process_support_once(application.bot, ADMIN_ID, support_db)
+                if time.time() - last_cleanup > 3600:
+                    support_queue.purge_closed_text(support_db)
+                    last_cleanup = time.time()
+            except Exception as exc:
+                logger.warning('Support queue unavailable: %s', type(exc).__name__)
+            await asyncio.sleep(3)
+    application.bot_data['support_worker'] = asyncio.create_task(_support_loop())
     commands = [
         BotCommand("start", "🌿 Главное меню"),
         BotCommand("ask", "👩⚕️ Задать вопрос нутрициологу (в ЛС)"),
         BotCommand("idea", "🎲 Идея блюда на сегодня"),
-        BotCommand("recipes", "📖 Каталог рецептов (37+)"),
-        BotCommand("water", "💧 Трекер воды"),
-        BotCommand("calc", "⚖️ Калькулятор воды и БЖУ"),
+        BotCommand("recipes", "📖 Блюда в приложении"),
+
+
         BotCommand("tip", "💡 Совет нутрициолога"),
-        BotCommand("sos", "🆘 Протокол при тяге и срыве"),
+
         BotCommand("tariffs", "👑 Тарифы и продукты"),
         BotCommand("paysupport", "💳 Поддержка по оплате и подписке"),
+        BotCommand("support", "👩 Очередь обращений для Ольги"),
         BotCommand("menu", "🌿 Меню бота"),
         BotCommand("help", "❓ Справка по боту"),
     ]
@@ -1010,6 +943,7 @@ def main():
     app.add_handler(CommandHandler("paysupport", paysupport_cmd))
     app.add_handler(CommandHandler("ask", ask_cmd))
     app.add_handler(CommandHandler("reply", reply_cmd))
+    app.add_handler(CommandHandler("support", support_cmd))
     app.add_handler(CommandHandler("cancel", cancel_cmd))
     app.add_handler(CommandHandler("idea", idea_cmd))
     app.add_handler(CommandHandler("recipes", recipes_cmd))

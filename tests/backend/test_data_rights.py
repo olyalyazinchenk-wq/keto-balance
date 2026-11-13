@@ -118,7 +118,13 @@ class TestDataRights(unittest.TestCase):
         self.assertEqual(saved_order["product_id"], "sub_month")
 
     def test_educational_guides_endpoint(self):
-        resp = self.client.get("/api/education/guides")
+        # Draft educational material is visible to the authenticated owner only.
+        from bot.app_db import create_session
+        owner_id = 1084557944
+        create_session(owner_id, 'education-owner', db_path=self.db_path)
+        self.settings.owner_allowlist = frozenset({owner_id})
+        self.settings.access_mode = 'owner'
+        resp = self.client.get("/api/education/guides", headers={'Authorization':'Bearer education-owner'})
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertIn("guides", data)

@@ -228,6 +228,7 @@ class TestOwnerAccessMode(unittest.TestCase):
             "fat": 45.0,
             "carb": 3.0,
             "serv": 1,
+            "time": 15,
             "ing": [["Шпинат", "350 г"], ["Яйца", "4 шт."]],
             "steps": ["Обжарить шпинат", "Вбить яйца и довести до готовности"],
         }

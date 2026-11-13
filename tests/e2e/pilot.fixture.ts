@@ -81,6 +81,29 @@ export interface AuthenticatedUserSession {
   user: { id: number; first_name: string; username?: string };
 }
 
+/** Full-plan scenarios explicitly pay through the isolated demo API; public/free boundaries stay enabled. */
+export async function activateSyntheticPremium(session: AuthenticatedUserSession): Promise<void> {
+  const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:18080';
+  const host = new URL(baseUrl).hostname;
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(host)) throw new Error('Synthetic payment fixtures require an isolated loopback test server.');
+  const auth = await session.page.request.post(`${baseUrl}/api/session`, { data: { init_data: session.initData } });
+  expect(auth.status()).toBe(200);
+  const { session_token: token } = await auth.json();
+  expect(token).toBeTruthy();
+  const headers = { Authorization: `Bearer ${token}` };
+  const purchase = await session.page.request.post(`${baseUrl}/api/subscription/purchase`, {
+    headers, data: { product_id: 'sub_month', provider: 'demo' },
+  });
+  expect(purchase.status()).toBe(200);
+  const order = await purchase.json();
+  expect(order.demo_mode).toBe(true);
+  const confirmation = await session.page.request.post(`${baseUrl}/api/subscription/confirm-demo`, {
+    headers, data: { order_id: order.order_id },
+  });
+  expect(confirmation.status()).toBe(200);
+  expect((await confirmation.json()).subscription.is_premium).toBe(true);
+}
+
 export const test = base.extend<{
   createSession: (user?: { id: number; first_name: string; username?: string }) => Promise<AuthenticatedUserSession>;
 }>({

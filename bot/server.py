@@ -85,6 +85,8 @@ from bot.app_models import (
     ShoppingUpdatePayload,
     SupportTicketPayload,
     SupportTicketResponse,
+    SupportDraftPayload,
+    SupportReviewAction,
     SafetyCheckPayload,
     SafetyCheckResponse,
     SubscriptionReadV1,
@@ -140,8 +142,10 @@ from bot.app_db import (
     RecipePublicationValidationError,
 )
 from bot.safety import evaluate_contraindications
+from bot import support_queue
 from bot.catalog import (
     CatalogService,
+    catalog_is_public,
     CatalogProvider,
     is_shopping_consistent_with_menu,
     is_menu_compatible_with_profile,
@@ -525,17 +529,12 @@ def create_app(
                         # Corrupt or unparseable expiration date must never grant premium
                         status = "expired"
                 else:
-                    # In production and staging, every subscription requires a valid expiration date
-                    if active_settings.is_production or active_settings.app_stage in ("production", "staging"):
-                        status = "expired"
+                    # Missing expiry is never proof of a valid time-limited entitlement.
+                    status = "expired"
                 if status == "active" and tier not in (None, "free"):
                     is_premium = True
 
-        available_catalog = (
-            PRODUCTS
-            if (active_settings.is_production or active_settings.app_stage in ("production", "staging"))
-            else ALL_PRODUCTS
-        )
+        available_catalog = PRODUCTS
         available_products = [
             {
                 "id": p["id"],
@@ -687,6 +686,36 @@ def create_app(
             expires_at=sub_read.expires_at,
         )
 
+    def paid_access(target_uid):
+        if not target_uid:
+            return False
+        if active_settings.is_owner_mode and active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist:
+            return True
+        sub = get_user_subscription(active_db, target_uid)
+        if not sub or sub.get('status') != 'active' or sub.get('tier') in (None, 'free'):
+            return False
+        try:
+            expires = datetime.fromisoformat(str(sub.get('expires_at', '')).replace('Z', '+00:00'))
+            if expires.tzinfo is None:
+                expires = expires.replace(tzinfo=timezone.utc)
+            return expires > datetime.now(timezone.utc)
+        except (ValueError, TypeError):
+            return False
+
+    def catalog_for_access(data, target_uid, is_owner):
+        if is_owner or paid_access(target_uid):
+            return {**data, 'access': 'full'}
+        preview_ids = [r['id'] for r in data.get('recipes', [])[:5]]
+        allowed = set(preview_ids)
+        if target_uid:
+            old_menu = (get_pilot_user(target_uid, db_path=active_db).get('state') or {}).get('menu') or {}
+            if old_menu.get('catalog_id') == data.get('catalog_id'):
+                for day in old_menu.get('days') or []:
+                    allowed.update((day.get('slots') or {}).values())
+        return {**data, 'released_ids': [i for i in data.get('released_ids', []) if i in allowed],
+                'recipes': [r for r in data.get('recipes', []) if r.get('id') in allowed],
+                'preview_released_ids': preview_ids, 'access': 'preview'}
+
     # --- K2 USER PROFILE & STATE API ---
 
     @app.get("/api/user", response_model=PilotUserReadV1)
@@ -740,6 +769,17 @@ def create_app(
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
         if payload.state and payload.state.menu:
+            existing_state = get_pilot_user(target_uid, db_path=active_db).get('state') or {}
+            old_menu = existing_state.get('menu') or {}
+            new_menu = payload.state.menu.model_dump()
+            menu_keys = ('mode', 'numDays', 'meals', 'portion', 'days', 'catalog_id', 'month')
+            changed = any(new_menu.get(key) != old_menu.get(key) for key in menu_keys)
+            if changed and not paid_access(target_uid):
+                public_cat = catalog_service.get_catalog_data(is_owner=False)
+                preview_ids = {r['id'] for r in public_cat.get('recipes', [])[:5]}
+                selected_ids = {rid for day in new_menu.get('days', []) for rid in (day.get('slots') or {}).values()}
+                if new_menu.get('numDays') != 1 or new_menu.get('meals') != 2 or not selected_ids.issubset(preview_ids):
+                    raise HTTPException(status_code=403, detail='Для нового месячного меню и замен требуется действующий доступ. Сохранённое меню остаётся доступным.')
             # 1. Resolve effective profile (from payload or existing DB record)
             effective_profile = payload.profile
             if effective_profile is None or (hasattr(effective_profile, "settings") and effective_profile.settings is None):
@@ -818,6 +858,9 @@ def create_app(
         except Exception:
             pass
         if active_settings.is_owner_mode:
+            target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+            if not active_settings.owner_allowlist or target_uid not in active_settings.owner_allowlist:
+                raise HTTPException(status_code=403, detail="Owner allowlist is not configured")
             is_owner = True
         return {"catalogs": catalog_service.list_catalogs(is_owner=is_owner)}
 
@@ -852,16 +895,16 @@ def create_app(
         if catalog_id:
             if catalog_id.startswith("admin-catalog-v") and not is_owner:
                 raise HTTPException(status_code=403, detail="Access denied: admin snapshot requires owner permissions")
-            if catalog_id == "released-catalog-202612-v1" and not is_owner:
-                raise HTTPException(status_code=403, detail="Access denied: December catalog is draft for owner review")
             snap = catalog_service.get_catalog_data_for_version(catalog_id, is_owner=is_owner)
             if snap is None:
                 raise HTTPException(status_code=404, detail=f"Catalog version '{catalog_id}' not found")
-            return snap
+            if not is_owner and not catalog_is_public(snap):
+                raise HTTPException(status_code=403, detail='Catalog is awaiting owner review')
+            return catalog_for_access(snap, target_uid, is_owner)
         cat_data = catalog_service.get_catalog_data(is_owner=is_owner)
         if not is_owner and cat_data.get("catalog_id", "").startswith("admin-catalog-v"):
             raise HTTPException(status_code=403, detail="Access denied: admin snapshot requires owner permissions")
-        return cat_data
+        return catalog_for_access(cat_data, target_uid, is_owner)
 
     @app.get("/api/catalog/{recipe_id}")
     @app.get("/api/recipes/{recipe_id}")
@@ -902,6 +945,11 @@ def create_app(
                 status_code=404,
                 detail=f"Recipe '{recipe_id}' is not available or not released in stage '{active_settings.app_stage}'"
             )
+        if not is_owner and not paid_access(target_uid):
+            data = catalog_service.get_catalog_data_for_version(catalog_id, is_owner=False) if catalog_id else catalog_service.get_catalog_data(is_owner=False)
+            accessible = catalog_for_access(data or {}, target_uid, False)
+            if recipe_id not in accessible.get('released_ids', []):
+                raise HTTPException(status_code=403, detail='Recipe is outside the introductory catalog')
         return recipe
 
     # --- K2 SUPPORT API ---
@@ -920,6 +968,7 @@ def create_app(
             message=payload.message,
             contact=payload.contact,
             db_path=active_db,
+            scope=support_queue.support_scope(payload.message, payload.topic),
         )
         return SupportTicketResponse(
             ticket_id=ticket_id,
@@ -928,6 +977,52 @@ def create_app(
         )
 
     # --- K2 SAFETY ROUTING API ---
+
+    def support_owner(authorization):
+        actor = extract_admin_user_id(authorization)
+        if actor != ADMIN_ID:
+            raise HTTPException(status_code=403, detail="Only Olga may review and send support replies")
+        return actor
+
+    def support_action(action, ticket_id, payload, authorization):
+        actor = support_owner(authorization)
+        try:
+            kwargs = dict(ticket_id=ticket_id, expected_version=payload.expected_version,
+                          recipient_id=payload.recipient_id, actor_id=actor, owner_id=ADMIN_ID, db_path=active_db)
+            if isinstance(payload, SupportDraftPayload):
+                kwargs["text"] = payload.text
+            return action(**kwargs)
+        except support_queue.SupportNotFoundError:
+            raise HTTPException(status_code=404, detail="Обращение не найдено")
+        except StaleRevisionError as exc:
+            raise HTTPException(status_code=409, detail=str(exc))
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc))
+
+    @app.get("/api/admin/support")
+    def owner_support_queue(authorization: Optional[str] = Header(None)):
+        support_owner(authorization)
+        return {"tickets": support_queue.list_tickets(active_db)}
+
+    @app.get("/api/admin/support/{ticket_id}")
+    def owner_support_ticket(ticket_id: int, authorization: Optional[str] = Header(None)):
+        support_owner(authorization)
+        try:
+            return support_queue.get_ticket(ticket_id, active_db)
+        except support_queue.SupportNotFoundError:
+            raise HTTPException(status_code=404, detail="Обращение не найдено")
+
+    @app.post("/api/admin/support/{ticket_id}/draft")
+    def owner_support_draft(ticket_id: int, payload: SupportDraftPayload, authorization: Optional[str] = Header(None)):
+        return support_action(support_queue.save_draft, ticket_id, payload, authorization)
+
+    @app.post("/api/admin/support/{ticket_id}/send")
+    def owner_support_send(ticket_id: int, payload: SupportReviewAction, authorization: Optional[str] = Header(None)):
+        return support_action(support_queue.approve_reply, ticket_id, payload, authorization)
+
+    @app.post("/api/admin/support/{ticket_id}/reject")
+    def owner_support_reject(ticket_id: int, payload: SupportReviewAction, authorization: Optional[str] = Header(None)):
+        return support_action(support_queue.reject_ticket, ticket_id, payload, authorization)
 
     @app.post("/api/safety/check", response_model=SafetyCheckResponse)
     def check_safety(payload: SafetyCheckPayload):
@@ -998,14 +1093,25 @@ def create_app(
     # --- EDUCATIONAL GUIDES API ---
 
     @app.get("/api/education/guides")
-    def get_educational_guides():
+    def get_educational_guides(authorization: Optional[str] = Header(None)):
         guides_path = Path(__file__).resolve().parent.parent / "docs" / "content" / "educational-guides.json"
         if not guides_path.is_file():
             return {"guides": [], "count": 0}
         try:
             with open(guides_path, "r", encoding="utf-8") as f:
                 guides = json.load(f)
-            return {"guides": guides, "count": len(guides)}
+            target_uid = None
+            if authorization:
+                target_uid = extract_authenticated_user_id(authorization, None, None)
+            is_owner = bool(target_uid and active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist)
+            if not is_owner:
+                guides = [g for g in guides if g.get('editorial_status') == 'approved']
+                if not paid_access(target_uid):
+                    guides = guides[:2]
+            return {"guides": guides, "count": len(guides),
+                    "editorial_notice": 'Материалы подготовлены к личной проверке Ольгой.' if is_owner and any(g.get('editorial_status') != 'approved' for g in guides) else None}
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to read educational guides: {e}")
 

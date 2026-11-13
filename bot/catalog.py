@@ -40,6 +40,24 @@ def load_static_catalog(dist_dir: Path, app_stage: str = "prod") -> Dict[str, An
     except Exception:
         return dict(EMPTY_CATALOG)
 
+def catalog_is_public(data):
+    status = data.get("editorial_status", "approved")
+    return status in ("approved", "published", "released") or (status == "owner_review" and bool(data.get("public_released_ids")))
+
+
+def _public_partition(data):
+    """Every current/historical catalog uses the same admission rules."""
+    if not catalog_is_public(data):
+        return {**data, "recipes": [], "released_ids": [], "public_released_ids": []}
+    public_ids = set(data.get("public_released_ids", data.get("released_ids", [])))
+    review_ids = set(data.get("owner_review_ids", []))
+    recipes = [r for r in data.get("recipes", []) if r.get("id") in public_ids
+               and r.get("id") not in review_ids
+               and r.get("editorial_status", "approved") in ("approved", "published", "released")]
+    ids = {r.get("id") for r in recipes}
+    return {**data, "recipes": recipes, "released_ids": [i for i in data.get("released_ids", []) if i in ids],
+            "public_released_ids": [i for i in data.get("released_ids", []) if i in ids]}
+
 class CatalogService:
     def __init__(
         self,
@@ -88,7 +106,7 @@ class CatalogService:
                             "test_only": self.app_stage == "test",
                             "released_ids": released_ids,
                             "recipes": snapshot,
-                            "nutrition_status": "verified",
+                            "nutrition_status": "unverified",
                         }
                     else:
                         data = load_static_catalog(self.dist_dir, self.app_stage)
@@ -110,7 +128,7 @@ class CatalogService:
                     if snapshot is not None and len(snapshot) > 0:
                         pub_recipes = [
                             r for r in snapshot
-                            if r.get("editorial_status") != "review" and not str(r.get("id", "")).startswith("c")
+                            if r.get("editorial_status", "approved") in ("approved", "published", "released")
                         ]
                         pub_ids = [r.get("id") for r in pub_recipes if r.get("id")]
                         data = {
@@ -121,7 +139,7 @@ class CatalogService:
                             "released_ids": pub_ids,
                             "public_released_ids": pub_ids,
                             "recipes": pub_recipes,
-                            "nutrition_status": "verified",
+                            "nutrition_status": "unverified",
                         }
                     else:
                         data = load_static_catalog(self.dist_dir, self.app_stage)
@@ -130,26 +148,9 @@ class CatalogService:
             else:
                 data = load_static_catalog(self.dist_dir, self.app_stage)
 
-        # Apply public partitioning for non-owners
+        # Apply identical rules to all catalog versions; no ID-prefix exceptions.
         if not is_owner and data:
-            if "public_released_ids" in data:
-                public_ids = set(data["public_released_ids"])
-                filtered_data = {
-                    **data,
-                    "released_ids": [i for i in data.get("released_ids", []) if i in public_ids],
-                    "recipes": [r for r in data.get("recipes", []) if r.get("id") in public_ids],
-                }
-            else:
-                pub_recipes = [
-                    r for r in data.get("recipes", [])
-                    if r.get("editorial_status") != "review" and not str(r.get("id", "")).startswith("c")
-                ]
-                pub_ids = [r.get("id") for r in pub_recipes if r.get("id")]
-                filtered_data = {
-                    **data,
-                    "released_ids": pub_ids,
-                    "recipes": pub_recipes,
-                }
+            filtered_data = _public_partition(data)
             self._cached_public_catalog = filtered_data
             return filtered_data
 
@@ -160,7 +161,7 @@ class CatalogService:
         return data
 
     def get_catalog_data_for_version(self, catalog_id: Optional[str], is_owner: bool = False) -> Optional[Dict[str, Any]]:
-        if not catalog_id:
+        if not catalog_id or not re.fullmatch(r"[A-Za-z0-9_-]{1,100}", catalog_id):
             return None
         if catalog_id.startswith("admin-catalog-v"):
             try:
@@ -172,7 +173,7 @@ class CatalogService:
                         if not is_owner:
                             snapshot = [
                                 r for r in snapshot
-                                if r.get("editorial_status") != "review" and not str(r.get("id", "")).startswith("c")
+                                if r.get("editorial_status", "approved") in ("approved", "published", "released")
                             ]
                         released_ids = [r.get("id") for r in snapshot if r.get("id")]
                         return {
@@ -192,17 +193,10 @@ class CatalogService:
         if current.get("catalog_id") == catalog_id:
             return current
 
-        # Check static catalog from dist
+        # Check static catalog from dist.
         static_data = load_static_catalog(self.dist_dir, self.app_stage)
         if static_data.get("catalog_id") == catalog_id:
-            if not is_owner and "public_released_ids" in static_data:
-                public_ids = set(static_data["public_released_ids"])
-                return {
-                    **static_data,
-                    "released_ids": [i for i in static_data.get("released_ids", []) if i in public_ids],
-                    "recipes": [r for r in static_data.get("recipes", []) if r.get("id") in public_ids],
-                }
-            return static_data
+            return static_data if is_owner else _public_partition(static_data)
 
         # Check versioned artifact in dist or catalogs/archive
         candidate_file = self.dist_dir / f"{catalog_id}.json"
@@ -215,14 +209,7 @@ class CatalogService:
             try:
                 hist_data = json.loads(candidate_file.read_text(encoding="utf-8"))
                 if isinstance(hist_data, dict) and hist_data.get("catalog_id") == catalog_id:
-                    if not is_owner and "public_released_ids" in hist_data:
-                        public_ids = set(hist_data["public_released_ids"])
-                        return {
-                            **hist_data,
-                            "released_ids": [i for i in hist_data.get("released_ids", []) if i in public_ids],
-                            "recipes": [r for r in hist_data.get("recipes", []) if r.get("id") in public_ids],
-                        }
-                    return hist_data
+                    return hist_data if is_owner else _public_partition(hist_data)
             except Exception:
                 pass
 
@@ -288,14 +275,12 @@ class CatalogService:
             return None
 
         if not is_owner:
-            if str(recipe_id).startswith("c"):
-                return None
             if data.get("owner_review_ids") and recipe_id in set(data.get("owner_review_ids", [])):
                 return None
 
         for r in data.get("recipes", []):
             if r.get("id") == recipe_id:
-                if not is_owner and r.get("editorial_status") == "review":
+                if not is_owner and r.get("editorial_status", "approved") not in ("approved", "published", "released"):
                     return None
                 return r
         return None

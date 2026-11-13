@@ -1,10 +1,12 @@
-import { test, expect, passNewUserStartGate } from './pilot.fixture';
+import { test, expect, passNewUserStartGate, activateSyntheticPremium } from './pilot.fixture';
 
 test.describe('E1: Food-First End-to-End User Flow', () => {
   test('New user configures preferences, reviews menu, replaces recipe, opens detail, and reviews shopping', async ({
     createSession,
   }) => {
-    const { page } = await createSession({ id: 3001, first_name: 'OlgaTester' });
+    const session = await createSession({ id: 3001, first_name: 'OlgaTester' });
+    const { page } = session;
+    await activateSyntheticPremium(session);
 
     // 1. Open app
     await page.goto('/');

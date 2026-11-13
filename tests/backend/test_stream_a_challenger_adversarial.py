@@ -154,6 +154,7 @@ class TestStreamAAdversarialAdminAuth(unittest.TestCase):
             "recipe_data": {
                 "id": "test_adv_1",
                 "title": "Adversarial Test Recipe",
+                "serv": 2, "time": 20,
                 "kcal": 500,
                 "mode": "keto",
                 "ing": [["Говядина", "250 г"], ["Сливочное масло", "25 г"]],
@@ -454,8 +455,8 @@ class TestStreamAAdversarialStarsPayments(unittest.IsolatedAsyncioTestCase):
 
         self.assertIn("Поддержка по оплате и подписке", text_cmd)
         self.assertIn("Telegram Stars", text_cmd)
-        self.assertIn("Настройки → Мои подписки", text_cmd)
-        self.assertIn("refundStarPayment", text_cmd)
+        self.assertIn("без автоматического продления", text_cmd)
+        self.assertIn("/ask", text_cmd)
 
         # 2. Callback paysupport_cb
         update_cb = MagicMock()

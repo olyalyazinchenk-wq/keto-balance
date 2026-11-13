@@ -57,6 +57,13 @@ class SupportTicketResponse(BaseModel):
     status: str = "open"
     message: str = "Ticket submitted successfully"
 
+class SupportReviewAction(BaseModel):
+    expected_version: int = Field(..., ge=0)
+    recipient_id: int = Field(..., gt=0)
+
+class SupportDraftPayload(SupportReviewAction):
+    text: Optional[str] = Field(None, min_length=1, max_length=1500)
+
 class DataExportModel(BaseModel):
     user_id: int
     profile: Optional[Dict[str, Any]] = None

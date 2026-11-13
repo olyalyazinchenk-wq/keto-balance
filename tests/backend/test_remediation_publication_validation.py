@@ -2,6 +2,7 @@ import os
 os.environ["KETO_LOAD_DOTENV"] = "0"
 
 import json
+from datetime import datetime,timedelta,timezone
 import tempfile
 import unittest
 from pathlib import Path
@@ -16,6 +17,7 @@ from bot.app_db import (
     create_session,
     get_catalog_snapshot,
     get_admin_catalog_version,
+    save_user_subscription,
 )
 
 TEST_TOKEN = "333444555:REMEDIATION_PUB_VALIDATION_TOKEN"
@@ -45,6 +47,7 @@ class TestPublicationValidationAndMenuReproducibility(unittest.TestCase):
         self.user_token = "user_token_menu"
         create_session(self.user_id, self.user_token, expires_in_seconds=3600, db_path=self.db_path)
         self.user_headers = {"Authorization": f"Bearer {self.user_token}"}
+        save_user_subscription(self.db_path,self.user_id,"premium","active",(datetime.now(timezone.utc)+timedelta(days=1)).isoformat())
 
     def tearDown(self):
         self.tmp_dir.cleanup()
@@ -125,7 +128,7 @@ class TestPublicationValidationAndMenuReproducibility(unittest.TestCase):
         and /api/catalog immediately reflects the updated catalog version and recipe.
         """
         # 1. Warm cache of user catalog
-        initial_cat_resp = self.client.get("/api/catalog")
+        initial_cat_resp = self.client.get("/api/catalog",headers=self.user_headers)
         self.assertEqual(initial_cat_resp.status_code, 200)
         initial_cat = initial_cat_resp.json()
         initial_count = len(initial_cat.get("recipes", []))
@@ -137,6 +140,7 @@ class TestPublicationValidationAndMenuReproducibility(unittest.TestCase):
             "recipe_data": {
                 "id": valid_recipe_id,
                 "title": "Новый проверенный кето-салат",
+                "serv": 2, "time": 15,
                 "kcal": 350,
                 "mode": "keto",
                 "ing": [["Огурец", "100 г"], ["Авокадо", "1 шт"], ["Оливковое масло", "15 мл"]],
@@ -153,7 +157,7 @@ class TestPublicationValidationAndMenuReproducibility(unittest.TestCase):
         self.assertEqual(pub_resp.status_code, 200)
 
         # 3. Cache must be invalidated: /api/catalog immediately reflects the new recipe
-        fresh_cat_resp = self.client.get("/api/catalog")
+        fresh_cat_resp = self.client.get("/api/catalog",headers=self.user_headers)
         self.assertEqual(fresh_cat_resp.status_code, 200)
         fresh_cat = fresh_cat_resp.json()
         self.assertEqual(len(fresh_cat.get("recipes", [])), initial_count + 1)
@@ -161,7 +165,7 @@ class TestPublicationValidationAndMenuReproducibility(unittest.TestCase):
         self.assertIn(valid_recipe_id, found_ids)
 
         # Check single recipe endpoint as well
-        rec_resp = self.client.get(f"/api/catalog/{valid_recipe_id}")
+        rec_resp = self.client.get(f"/api/catalog/{valid_recipe_id}",headers=self.user_headers)
         self.assertEqual(rec_resp.status_code, 200)
         self.assertEqual(rec_resp.json()["title"], "Новый проверенный кето-салат")
 
@@ -242,6 +246,22 @@ class TestPublicationValidationAndMenuReproducibility(unittest.TestCase):
         snap_v1 = get_catalog_snapshot(initial_ver, self.db_path)
         k2_orig = next(r for r in snap_v1 if r["id"] == "k2")
         self.assertEqual(k2_orig["title"], "Омлет с сыром и зеленью")
+
+    def test_publication_requires_mode_yield_time_units_and_matching_id(self):
+        cases = [dict(mode=None), dict(serv=0), dict(serv=True), dict(time=-1),
+                 dict(time=None), dict(ing=[["Мясо", "100"]]), dict(id="other_recipe")]
+        for index, changes in enumerate(cases):
+            with self.subTest(changes=changes):
+                rid = f"invalid_metadata_{index}"
+                data = {"id":rid,"title":"Synthetic recipe","mode":"keto","serv":2,"time":20,
+                        "ing":[["Мясо","100 г"]],"steps":["Prepare"],**changes}
+                old_version = get_admin_catalog_version(self.db_path)
+                result = self.client.post('/api/admin/recipes',json={"recipe_id":rid,"recipe_data":data,
+                    "approval_marks":{"approved":True,"approved_by":"synthetic-owner"}},headers=self.admin_headers)
+                self.assertEqual(result.status_code,200)
+                result = self.client.post(f'/api/admin/recipes/{rid}/publish',headers=self.admin_headers)
+                self.assertEqual(result.status_code,422)
+                self.assertEqual(get_admin_catalog_version(self.db_path),old_version)
 
 if __name__ == "__main__":
     unittest.main()

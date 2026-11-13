@@ -3,6 +3,7 @@ bot/app_db.py — Изолированное хранилище SQLite (WAL, For
 """
 import hashlib
 import json
+import re
 import secrets
 import sqlite3
 import time
@@ -135,6 +136,32 @@ def _migrate_schema_if_needed(conn: sqlite3.Connection) -> None:
                 snapshot_json TEXT DEFAULT '[]'
             )
         """)
+
+def _migrate_support_queue(conn: sqlite3.Connection) -> None:
+    """Additive migration; no existing ticket or user row is rewritten."""
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS support_reviews (
+            ticket_id INTEGER PRIMARY KEY REFERENCES support_tickets(id) ON DELETE CASCADE,
+            recipient_id INTEGER NOT NULL,
+            draft_text TEXT NOT NULL DEFAULT '',
+            draft_version INTEGER NOT NULL DEFAULT 0,
+            delivery_status TEXT NOT NULL DEFAULT 'prepared',
+            approved_by INTEGER,
+            approved_version INTEGER,
+            sources_json TEXT NOT NULL DEFAULT '[]',
+            uncertainties_json TEXT NOT NULL DEFAULT '[]',
+            scope TEXT NOT NULL DEFAULT 'application',
+            source TEXT NOT NULL DEFAULT 'tma',
+            source_key TEXT UNIQUE,
+            owner_notified INTEGER NOT NULL DEFAULT 0,
+            telegram_message_id INTEGER,
+            closed_at TEXT,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_support_delivery ON support_reviews(delivery_status)")
+    conn.execute("""INSERT OR IGNORE INTO support_reviews(ticket_id, recipient_id, scope)
+                    SELECT id, user_id, 'personal' FROM support_tickets""")
 
 def _seed_admin_recipes_if_empty(conn: sqlite3.Connection) -> None:
     cur = conn.cursor()
@@ -313,6 +340,7 @@ def init_db(db_path: Optional[Path] = None, force: bool = False) -> None:
         """)
         cur.execute("CREATE INDEX IF NOT EXISTS idx_user_consents_uid ON user_consents(user_id)")
         _migrate_schema_if_needed(conn)
+        _migrate_support_queue(conn)
         _seed_admin_recipes_if_empty(conn)
     _INITIALIZED_DBS.add(target_key)
 
@@ -742,11 +770,17 @@ def create_support_ticket(
     topic: str,
     message: str,
     contact: Optional[str] = None,
-    db_path: Optional[Path] = None
+    db_path: Optional[Path] = None,
+    *, source: str = "tma", source_key: Optional[str] = None, scope: str = "application"
 ) -> int:
     create_or_get_user(user_id, db_path=db_path)
     with get_db_connection(db_path) as conn:
         cur = conn.cursor()
+        conn.execute("BEGIN IMMEDIATE")
+        if source_key:
+            existing = conn.execute("SELECT ticket_id FROM support_reviews WHERE source_key = ?", (source_key,)).fetchone()
+            if existing:
+                return existing["ticket_id"]
         cur.execute(
             """
             INSERT INTO support_tickets (user_id, topic, message, contact)
@@ -754,14 +788,21 @@ def create_support_ticket(
             """,
             (user_id, topic or "general", message, contact or "")
         )
-        return cur.lastrowid
+        ticket_id = cur.lastrowid
+        conn.execute("""INSERT INTO support_reviews(ticket_id, recipient_id, source, source_key, scope)
+                        VALUES (?, ?, ?, ?, ?)""", (ticket_id, user_id, source, source_key, scope))
+        return ticket_id
 
 def get_support_tickets(user_id: int, db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
     init_db(db_path)
     with get_db_connection(db_path) as conn:
         cur = conn.cursor()
         cur.execute("SELECT * FROM support_tickets WHERE user_id = ? ORDER BY id DESC", (user_id,))
-        return [dict(r) for r in cur.fetchall()]
+        tickets = [dict(r) for r in cur.fetchall()]
+        for ticket in tickets:
+            row = conn.execute("SELECT * FROM support_reviews WHERE ticket_id = ?", (ticket["id"],)).fetchone()
+            ticket["review"] = dict(row) if row else None
+        return tickets
 
 def record_user_consent(
     user_id: int,
@@ -1240,7 +1281,6 @@ def publish_recipe_draft(
         draft_content = json.loads(row["draft_payload_json"])
         published_content = json.loads(row["published_payload_json"]) if row["published_payload_json"] else {}
         approval_marks = json.loads(row["approval_marks_json"] or "{}")
-
         # 1. Verification of Approval Status
         if not approval_marks.get("approved"):
             raise RecipePublicationValidationError(
@@ -1280,6 +1320,11 @@ def publish_recipe_draft(
                 raise RecipePublicationValidationError(
                     f"Cannot publish recipe '{recipe_id}': ingredient #{idx} has empty or whitespace-only name/quantity"
                 )
+            if '[УТОЧНИТЬ]' in qty or not re.fullmatch(
+                r'(?:\d+(?:[.,]\d+|/\d+)?\s*(?:г|кг|мл|л|шт\.?|ст\.?\s*л\.?|ч\.?\s*л\.?|зубчик\w*|ломтик\w*)|по вкусу|щепотка)',
+                qty, re.IGNORECASE,
+            ):
+                raise RecipePublicationValidationError(f'Ingredient #{idx} needs a known quantity and unit')
 
         # 3. Preparation steps validation
         steps = draft_content.get("steps")
@@ -1296,6 +1341,23 @@ def publish_recipe_draft(
                 raise RecipePublicationValidationError(
                     f"Cannot publish recipe '{recipe_id}': preparation step #{idx} is empty or whitespace-only"
                 )
+
+        # A partial edit inherits unchanged fields from its exact published recipe.
+        # New recipes must supply these fields explicitly.
+        draft_content = {**published_content, **draft_content}
+        if draft_content.get('id', recipe_id) != recipe_id:
+            raise RecipePublicationValidationError('Recipe ID does not match the publication target')
+        draft_content['id'] = recipe_id
+        title = draft_content.get('title', row['title'])
+        if not isinstance(title, str) or not title.strip():
+            raise RecipePublicationValidationError('Recipe title must not be empty')
+        if draft_content.get('mode') not in ('keto', 'carnivore'):
+            raise RecipePublicationValidationError('Recipe mode must be keto or carnivore')
+        for field in ('serv', 'time'):
+            value = draft_content.get(field)
+            if type(value) is not int or value <= 0:
+                raise RecipePublicationValidationError(f'Recipe {field} must be a positive integer')
+
 
         new_title = draft_content.get("title", row["title"])
         curr_ver = row["version"]

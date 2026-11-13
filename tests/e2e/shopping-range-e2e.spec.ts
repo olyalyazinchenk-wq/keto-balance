@@ -1,4 +1,4 @@
-import { test, expect, passNewUserStartGate } from './pilot.fixture';
+import { test, expect, passNewUserStartGate, activateSyntheticPremium } from './pilot.fixture';
 
 test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', () => {
   test('selects week 1, checks item, switches to week 2, tests custom range, restores in fresh context', async ({
@@ -6,6 +6,7 @@ test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', 
   }) => {
     // === PHASE 1: Session 1 for User 5001 ===
     const session1 = await createSession({ id: 5001, first_name: 'RangeUser' });
+    await activateSyntheticPremium(session1);
     const page1 = session1.page;
 
     await page1.goto('/');

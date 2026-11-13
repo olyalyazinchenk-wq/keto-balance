@@ -136,7 +136,7 @@ class TestShoppingConsistencyServings(unittest.TestCase):
             )
             client = TestClient(app)
 
-            auth = client.get("/api/demo-session?demo_user=99999").json()
+            auth = client.get("/api/demo-session?demo_user=99999&premium=1").json()
             headers = {"Authorization": f"Bearer {auth['session_token']}"}
 
             # Put scaled shopping items (1 portion of 2-serving recipe: 40g bacon, 2 eggs)
@@ -230,7 +230,7 @@ class TestShoppingConsistencyServings(unittest.TestCase):
             )
             client = TestClient(app)
 
-            auth = client.get("/api/demo-session?demo_user=99999").json()
+            auth = client.get("/api/demo-session?demo_user=99999&premium=1").json()
             headers = {"Authorization": f"Bearer {auth['session_token']}"}
 
             # Put shopping with wrong quantity: 999g instead of 40g
@@ -322,7 +322,7 @@ class TestShoppingConsistencyServings(unittest.TestCase):
             )
             client = TestClient(app)
 
-            auth = client.get("/api/demo-session?demo_user=99999").json()
+            auth = client.get("/api/demo-session?demo_user=99999&premium=1").json()
             headers = {"Authorization": f"Bearer {auth['session_token']}"}
 
             # Put shopping with missing eggs (only bacon)

@@ -1,4 +1,4 @@
-import { test, expect, passNewUserStartGate } from './pilot.fixture';
+import { test, expect, passNewUserStartGate, activateSyntheticPremium } from './pilot.fixture';
 
 test.describe('E2: Server-Side State Persistence Across Contexts', () => {
   test('persists state on server and restores accurately in fresh browser context without local cache', async ({
@@ -6,6 +6,7 @@ test.describe('E2: Server-Side State Persistence Across Contexts', () => {
   }) => {
     // === PHASE 1: User A Session 1 ===
     const session1 = await createSession({ id: 4001, first_name: 'PersistUser' });
+    await activateSyntheticPremium(session1);
     const page1 = session1.page;
 
     await page1.goto('/');

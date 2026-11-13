@@ -200,8 +200,8 @@ class TestPollingStarsPayments(unittest.IsolatedAsyncioTestCase):
         text = msg.reply_html.call_args[0][0]
         self.assertIn("Поддержка по оплате и подписке", text)
         self.assertIn("Telegram Stars", text)
-        self.assertIn("Настройки → Мои подписки", text)
-        self.assertIn("refundStarPayment", text)
+        self.assertIn("без автоматического продления", text)
+        self.assertIn("/ask", text)
 
     async def test_callback_paysupport_invokes_cmd(self):
         update = MagicMock()

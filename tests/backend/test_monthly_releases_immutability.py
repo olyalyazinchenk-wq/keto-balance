@@ -65,7 +65,8 @@ class TestMonthlyReleasesImmutability(unittest.TestCase):
         data_nov_normal = res_nov_normal.json()
         self.assertEqual(data_nov_normal["catalog_id"], "released-catalog-202611-v1")
         # Only public released recipes returned
-        self.assertEqual(len(data_nov_normal["recipes"]), 20)
+        self.assertEqual(len(data_nov_normal["recipes"]), 5)
+        self.assertEqual(data_nov_normal["access"], "preview")
         for r in data_nov_normal["recipes"]:
             self.assertFalse(str(r["id"]).startswith("c"), "c* carnivore candidates must not leak to normal users")
 

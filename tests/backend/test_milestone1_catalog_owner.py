@@ -270,7 +270,8 @@ class TestMilestone1CatalogOwner(unittest.TestCase):
         self.assertEqual(len(leaked_in_recipes), 0, f"Candidate recipes leaked in recipes: {leaked_in_recipes}")
 
         # Verify public keto recipes (k1..k20) ARE present
-        self.assertTrue(all(f"k{i}" in normal_released for i in range(1, 21)))
+        self.assertEqual(normal_released, {f"k{i}" for i in range(1, 6)})
+        self.assertEqual(data_normal["access"], "preview")
 
         # 2. Unauthenticated caller
         res_unauth = pilot_client.get("/api/catalog")

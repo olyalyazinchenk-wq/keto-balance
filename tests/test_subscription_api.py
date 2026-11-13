@@ -73,8 +73,7 @@ class TestSubscriptionApi(unittest.TestCase):
 
         product_ids = [p["id"] for p in data["available_products"]]
         self.assertIn("sub_month", product_ids)
-        self.assertIn("plateau_guide", product_ids)
-        self.assertIn("vip_care", product_ids)
+        self.assertEqual(product_ids, ["sub_month"])
 
     def test_purchase_invalid_product(self):
         headers = self._get_auth_headers_for_user(5002, "buyer_user")
@@ -104,7 +103,7 @@ class TestSubscriptionApi(unittest.TestCase):
         self.assertEqual(order["user_id"], 5003)
         self.assertEqual(order["product_id"], "sub_month")
         self.assertEqual(order["status"], "pending")
-        self.assertEqual(order["amount_rub"], 1900.0)
+        self.assertEqual(order["amount_rub"], 990.0)
 
     def test_confirm_demo_order_success(self):
         headers = self._get_auth_headers_for_user(5004, "premium_user")
