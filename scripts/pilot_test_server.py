@@ -14,7 +14,7 @@ os.environ['PAYMENT_MODE'] = 'disabled'
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-FORBIDDEN_PORTS = {8000, 4387, 8090, 10808, 10809}
+FORBIDDEN_PORTS = {8000, 4387, 8090, 10808, 10809, 18081}
 SYNTHETIC_SIGNING_KEY = "synthetic-pilot-signing-key-not-a-telegram-token"
 
 
@@ -98,6 +98,7 @@ def main():
         temp_dir = tempfile.TemporaryDirectory(prefix="pilot-test-server-", dir=scratch)
         db_path = Path(temp_dir.name) / "test_pilot.db"
 
+    os.environ['KETO_TEST_ROOT'] = str(db_path.parent)
     from bot.app_settings import AppSettings
     from bot.app_db import init_db
     from bot.server import create_app

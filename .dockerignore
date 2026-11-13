@@ -38,3 +38,5 @@ current_tunnel_url.txt
 *.credentials*
 media/
 tools/
+.cache/
+.agents/

@@ -64,12 +64,18 @@ try {
   // Ignore
 }
 
+// Asset identity alone does not identify a backend/catalog release.
+hash.update(catalogHash);
+hash.update(backendFingerprint);
+const sourceFingerprint = process.env.SOURCE_FINGERPRINT || 'unknown';
+hash.update(sourceFingerprint);
 const release = {
   buildId: hash.digest('hex').slice(0, 16),
   gitSha,
   dirty,
   catalogHash,
   backendFingerprint,
+  sourceFingerprint,
   builtAt: new Date().toISOString(),
   assets,
 };

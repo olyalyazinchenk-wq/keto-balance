@@ -49,6 +49,9 @@ const ALLOWLIST_FILES = [
   'tailwind.config.js',
   'postcss.config.js',
   'index.html',
+  'requirements.txt',
+  'requirements-p0.txt',
+  '.dockerignore',
 ];
 
 function isSafeSourceFile(filePath) {
@@ -57,6 +60,7 @@ function isSafeSourceFile(filePath) {
   if (base.endsWith('.db') || base.endsWith('.sqlite') || base.endsWith('.sqlite3')) return false;
   if (base.startsWith('.env')) return false;
   if (base === 'bot_data.json' || base === 'current_tunnel_url.txt' || base === '.tunnel_cache.json') return false;
+  if (base === 'catalog-validation-report.json') return false; // Generated during validation.
   if (norm.includes('__pycache__') || norm.includes('.git/') || norm.includes('dist/')) return false;
   return true;
 }
@@ -92,6 +96,7 @@ copyDirectoryFiltered('src', path.join(snapshotDir, 'src'));
 copyDirectoryFiltered('public', path.join(snapshotDir, 'public'));
 copyDirectoryFiltered('scripts', path.join(snapshotDir, 'scripts'), ['.mjs', '.js', '.py']);
 copyDirectoryFiltered('docs/release', path.join(snapshotDir, 'docs/release'), ['.md', '.json']);
+copyDirectoryFiltered('docs/content', path.join(snapshotDir, 'docs/content'), ['.md', '.json']);
 copyDirectoryFiltered('tests/fixtures', path.join(snapshotDir, 'tests/fixtures'), ['.json']);
 copyDirectoryFiltered('tests/helpers', path.join(snapshotDir, 'tests/helpers'), ['.cjs', '.js', '.py']);
 if (existsSync('catalogs')) {
@@ -137,7 +142,7 @@ function hashDir(dirRel) {
       }
     } else if (entry.isFile()) {
       const content = readFileSync(path.join(snapshotDir, rel));
-      sourceManifest[rel] = createHash('sha256').update(content).digest('hex').slice(0, 16);
+      sourceManifest[rel] = createHash('sha256').update(content).digest('hex');
     }
   }
 }
@@ -146,6 +151,16 @@ hashDir('public');
 hashDir('scripts');
 hashDir('bot');
 hashDir('catalogs');
+hashDir('docs');
+hashDir('tests');
+for (const file of ALLOWLIST_FILES) {
+  if (existsSync(path.join(snapshotDir, file))) {
+    sourceManifest[file] = createHash('sha256').update(readFileSync(path.join(snapshotDir, file))).digest('hex');
+  }
+}
+const sourceFingerprint = createHash('sha256').update(JSON.stringify(
+  Object.fromEntries(Object.entries(sourceManifest).sort(([a], [b]) => a.localeCompare(b)))
+)).digest('hex');
 
 // Save complete source manifest to disk
 const sourceManifestPath = path.join(runDir, 'source-manifest.json');
@@ -180,6 +195,7 @@ function getCleanEnv(extra = {}) {
     APP_STAGE: 'test',
     GIT_SHA: gitSha,
     GIT_DIRTY: dirty ? '1' : '0',
+    SOURCE_FINGERPRINT: sourceFingerprint,
     ...extra,
   };
 }
@@ -206,11 +222,11 @@ function runStep(cmd, stepArgs) {
 }
 
 // Validation -> Typecheck -> Vite Build -> Catalog Export -> Release Stamp
-runStep('node', ['scripts/validate-catalog.mjs']);
-runStep('node', ['node_modules/typescript/bin/tsc', '--noEmit', '--incremental', 'false', '--pretty', 'false']);
-runStep('node', ['node_modules/vite/bin/vite.js', 'build', '--outDir', 'dist']);
-runStep('node', ['scripts/export-release-catalog.mjs']);
-runStep('node', ['scripts/stamp-release.mjs']);
+runStep(process.execPath, ['scripts/validate-catalog.mjs']);
+runStep(process.execPath, ['node_modules/typescript/bin/tsc', '--noEmit', '--incremental', 'false', '--pretty', 'false']);
+runStep(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', 'dist']);
+runStep(process.execPath, ['scripts/export-release-catalog.mjs']);
+runStep(process.execPath, ['scripts/stamp-release.mjs']);
 
 const distDir = path.join(snapshotDir, 'dist');
 if (!existsSync(path.join(distDir, 'index.html')) || !existsSync(path.join(distDir, 'release.json'))) {
@@ -233,6 +249,8 @@ const receipt = {
   catalog_hash: releaseData.catalogHash || 'unknown',
   backend_fingerprint: releaseData.backendFingerprint || 'unknown',
   source_manifest_count: Object.keys(sourceManifest).length,
+  source_fingerprint: sourceFingerprint,
+  workspace_dir: snapshotDir,
   commands: executedCommands,
   built_at: new Date().toISOString(),
 };
@@ -250,6 +268,8 @@ if (isJson) {
       test_catalog_path: testCatalogPath,
       receipt_path: receiptPath,
       source_manifest_path: sourceManifestPath,
+      source_fingerprint: sourceFingerprint,
+      workspace_dir: snapshotDir,
       build_id: receipt.build_id,
       catalog_hash: receipt.catalog_hash,
       backend_fingerprint: receipt.backend_fingerprint,
@@ -268,7 +288,7 @@ if (isServeTest) {
     pythonExe,
     [
       '-B',
-      path.resolve('scripts/pilot_test_server.py'),
+      path.join(snapshotDir, 'scripts/pilot_test_server.py'),
       '--port',
       '18080',
       '--dist',
@@ -279,8 +299,9 @@ if (isServeTest) {
     {
       stdio: isJson ? ['ignore', 'ignore', 'inherit'] : 'inherit',
       env: getCleanEnv({
-        PYTHONPATH: path.resolve('.'),
+        PYTHONPATH: snapshotDir,
       }),
+      cwd: snapshotDir,
     }
   );
 

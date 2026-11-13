@@ -51,7 +51,11 @@ if hasattr(sys.stderr, "reconfigure"):
 ROOT = Path(__file__).resolve().parent.parent
 SECRETS_DIR = ROOT / ".secrets"
 SECRETS_FILE = SECRETS_DIR / "cloudru_credentials.json"
-AUDIT_LOG_FILE = ROOT / "docs" / "AGENT_AUDIT_LOG.md"
+AUDIT_LOG_FILE = (
+    Path(os.environ["KETO_TEST_ROOT"]) / "agent-ops-audit.md"
+    if os.environ.get("KETO_TEST_ROOT")
+    else ROOT / "docs" / "AGENT_AUDIT_LOG.md"
+)
 REQUIRED_CONFIRM_PHRASE = "СОГЛАСОВАНО ОЛЬГОЙ"
 
 

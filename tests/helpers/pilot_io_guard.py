@@ -35,7 +35,7 @@ FORBIDDEN_BASENAMES = {
 }
 FORBIDDEN_BASENAMES_LOWER = {b.lower() for b in FORBIDDEN_BASENAMES}
 
-FORBIDDEN_PORTS = {8000, 4387, 8090, 10808, 10809}
+FORBIDDEN_PORTS = {8000, 4387, 8090, 10808, 10809, 18081}
 
 FORBIDDEN_EXTENSIONS = {
     ".db",
@@ -111,13 +111,14 @@ def _guarded_sqlite_connect(database: Any, *args, **kwargs):
                 import urllib.parse
                 parsed = urllib.parse.urlsplit(db_str)
                 if parsed.scheme == "file":
+                    if parsed.netloc not in ("", "localhost"):
+                        _record_and_raise("Unauthorized remote SQLite URI")
                     query_params = urllib.parse.parse_qs(parsed.query)
-                    if parsed.path in (":memory:", "") and "memory" in query_params.get("mode", []):
+                    if parsed.path == ":memory:" or query_params.get("mode") == ["memory"]:
                         is_uri_memory = True
-                    elif parsed.path == ":memory:":
-                        is_uri_memory = True
-                    elif "memory" in query_params.get("mode", []):
-                        is_uri_memory = True
+                    else:
+                        from urllib.request import url2pathname
+                        db_str = url2pathname(parsed.path)
             if not is_uri_memory:
                 p = Path(db_str)
                 if _ALLOWED_ROOT is None:
@@ -144,6 +145,10 @@ def _is_stdlib_socketpair() -> bool:
         return False
 
 def _guarded_socket_bind(self, address, *args, **kwargs):
+    if isinstance(address, tuple):
+        host, port = address[:2]
+        if host not in ("127.0.0.1", "::1", "localhost") or port in FORBIDDEN_PORTS:
+            _record_and_raise(f"Unauthorized application socket bind to {host}:{port}")
     return _ORIGINAL_SOCKET_BIND(self, address, *args, **kwargs)
 
 def _guarded_socket_connect(self, address, *args, **kwargs):
