@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "status": "rendered_and_locally_verified_not_published",
+  "createdAt": "2026-11-13T21:37:21.162Z",
+  "app": {
+    "sourceSha": "3568cc7",
+    "buildId": "8be43f00ba6d26b3",
+    "catalogHash": "666c79712f63128f",
+    "sourceFingerprint": "0315577d5858c6eb61d08d46ba0937bcbb45a99df40c7181fde46f0f0a0890e3",
+    "frozenReceiptSha256": "a2ab1914ad3fdd605e0462f76b7eef5f2168e8d24e481f439a7205f03ae717f5"
+  },
+  "capture": {
+    "environment": "isolated-loopback-18193",
+    "browserViewport": {
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 2
+    },
+    "data": "synthetic-only",
+    "realPhoneRecording": false,
+    "realPayment": false,
+    "realMessagesSent": false,
+    "runtimeAppSourcesChanged": false
+  },
+  "media": {
+    "path": "public/media/how-to-month-20261113.mp4",
+    "sha256": "aca3f97c2d00815228779166f048735432a4bc3184916f9926395045a31d9141",
+    "bytes": 3247309,
+    "durationSeconds": 24,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "frames": 720,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "toolchain": {
+    "hyperframes": "0.9.41",
+    "gsap": "3.15.0",
+    "telemetry": "disabled",
+    "paidCalls": 0,
+    "externalPublication": false
+  },
+  "verification": {
+    "check": {
+      "exitCode": 0,
+      "ok": true,
+      "lintErrors": 0,
+      "runtimeErrors": 0,
+      "layoutErrors": 0,
+      "motionErrors": 0,
+      "contrastWarnings": 0,
+      "craftWarnings": [
+        {
+          "code": "film_silent",
+          "reason": "Intentionally silent captioned tutorial; full text alternative supplied."
+        }
+      ]
+    },
+    "inspect": {
+      "exitCode": 0,
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "samples": [
+        0,
+        3,
+        6.2,
+        9,
+        12.2,
+        15,
+        18.2,
+        21
+      ]
+    },
+    "render": {
+      "exitCode": 0,
+      "seconds": 34.3,
+      "workers": 2
+    },
+    "ffprobe": {
+      "exitCode": 0,
+      "report": "verification/ffprobe.json"
+    },
+    "fullVideoDecode": {
+      "exitCode": 0,
+      "command": "ffmpeg -v error -i public/media/how-to-month-20261113.mp4 -f null NUL"
+    },
+    "visualFrames": {
+      "times": [
+        0,
+        3,
+        6.2,
+        9,
+        12.2,
+        15,
+        18.2,
+        21
+      ],
+      "reviewed": true,
+      "contactSheet": "verification/contact-sheet.jpg",
+      "encodedFrameReviewedAt": 15,
+      "notes": "All settled screens readable without clipping; dissolve seams are intentional, short, and separately reviewed."
+    },
+    "animationMapHelper": {
+      "status": "unavailable",
+      "reason": "Bundled skill helper requires @hyperframes/producer, absent in standalone CLI install. Built-in full check motion/craft passes and frame review completed; helper success is not claimed."
+    }
+  },
+  "assets": [
+    {
+      "path": "index.html",
+      "sha256": "96df4e454af6a95f6288b53e366110e1e78c52ced0cc7553fc90eca1b47af7ce",
+      "bytes": 6855
+    },
+    {
+      "path": "DESIGN.md",
+      "sha256": "d4d96c96112e0d59e346c947ff641935e96efd9eb604fae3828620d20d49d8fc",
+      "bytes": 2957
+    },
+    {
+      "path": "guide.ru.md",
+      "sha256": "e7241c3903ea12154da81fc158ee8dc1ea5575fd52ce27f544c1bb02f5e3d092",
+      "bytes": 6403
+    },
+    {
+      "path": "assets/01-month.png",
+      "sha256": "b5fde3757308b778cd1f9958f290aa7d611304e1126ae80bda71ad02bb2fdb34",
+      "bytes": 122624
+    },
+    {
+      "path": "assets/02-replace.png",
+      "sha256": "360d4f5208a3e8cf0a071a79e247a0d1e7bd463d51011f1fe3999c930b3d658e",
+      "bytes": 124130
+    },
+    {
+      "path": "assets/03-shopping.png",
+      "sha256": "33df2803c794b5a3d65af428da73c07eec66e5a0f1e956eb951e40a3b7289bbf",
+      "bytes": 54421
+    },
+    {
+      "path": "assets/04-cooking.png",
+      "sha256": "afd340555654c55a1a5721c62887b174283b57ef52a2ec2344e772e8fa8c785d",
+      "bytes": 56971
+    },
+    {
+      "path": "assets/GolosText-Variable.ttf",
+      "sha256": "17bb58fb69aec2dfb047a2ebf52534023e9b688c97a6b7ac795b0a72912c2063",
+      "bytes": 184292
+    },
+    {
+      "path": "assets/OFL-GolosText.txt",
+      "sha256": "9f73ecbd863e64e5d3d1b34a1860baaaa517c095b28bd1183e43e0b246b14679",
+      "bytes": 4487
+    },
+    {
+      "path": "assets/gsap.min.js",
+      "sha256": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+      "bytes": 72927
+    }
+  ],
+  "limitations": [
+    "UI screenshots from a real frozen browser build, not a physical Telegram phone recording.",
+    "No audio; instructional captions and guide.ru.md are the alternatives.",
+    "Timer picture is a still from the running UI; it is not an active timer in the video.",
+    "Nutrient/editorial approval, app deployment, and owner acceptance are separate from this asset."
+  ]
+}
