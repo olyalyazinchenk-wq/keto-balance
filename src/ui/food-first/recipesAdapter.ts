@@ -1,5 +1,6 @@
 import { RECIPES } from '../../data/recipes';
 import type { Recipe } from '../../domain/types';
+import { calculateReviewedRecipeNutrition } from '../../core/keto-engine/recipeNutrition';
 import type { PortionIngredientFixture, RecipeViewModel, GeneratedMenu } from './contract';
 
 function inferDepartment(name: string): PortionIngredientFixture['department'] {
@@ -78,7 +79,7 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
     recipe.cat === 'lunch' ? 'Обед' :
     recipe.cat === 'snack' ? 'Перекус' : 'Ужин';
 
-  const subtitle =
+  const subtitle = recipe.mode === 'carnivore' ? 'Блюдо для карнивор-рациона' :
     recipe.cat === 'breakfast' ? 'Сытный и быстрый кето-завтрак' :
     recipe.cat === 'lunch' ? 'Питательный обед для кето-рациона' :
     'Сбалансированный кето-ужин';
@@ -104,6 +105,7 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
       portions: targetPortions,
       yieldNote: formatPortionsLabel(targetPortions),
       nutritionStatus: '[УТОЧНИТЬ]' as const,
+      nutrition: calculateReviewedRecipeNutrition(recipe, targetPortions),
       ingredients: recipe.ing.map(([name, amount]) => ({
         name,
         amountLabel: scaleAmount(amount, factor),

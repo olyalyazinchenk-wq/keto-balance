@@ -281,7 +281,7 @@ export function MenuScreen({
                       </div>
                       <p className="fm-card__subtitle">{recipe.subtitle}</p>
                       <p className="fm-card__meta">
-                        {recipe.prepMinutes} мин · КБЖУ уточняется автором
+                        {recipe.prepMinutes} мин · {recipe.portionsVariants[1]?.nutrition?.status === 'reviewed' ? 'КБЖУ по подтверждённому составу' : 'КБЖУ уточняется автором'}
                       </p>
                       {ingredients.length > 0 && (
                         <p className="fm-card__ingredients">

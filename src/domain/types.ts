@@ -1,3 +1,5 @@
+import type { RecipeNutritionEvidence } from '../core/keto-engine/recipeNutrition';
+
 export type Mode = "keto" | "carnivore" | "explore";
 
 export interface Recipe {
@@ -26,6 +28,7 @@ export interface Recipe {
   store: string;
   sourceStatus?: 'approved' | 'review' | 'candidate' | string;
   editorial_status?: 'approved' | 'review' | 'candidate' | string;
+  nutrition?: RecipeNutritionEvidence;
 }
 
 export interface DayMenu {

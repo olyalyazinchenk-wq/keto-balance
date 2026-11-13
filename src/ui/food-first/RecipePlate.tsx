@@ -92,10 +92,25 @@ export function RecipePlate({ recipe, variant, checkedIngredients, onToggleIngre
         </>
       ) : <p className="recipe-plate__empty">Состав этого блюда пока уточняется.</p>}
 
-      <details className="recipe-plate__nutrition">
+      {variant.nutrition?.status === 'reviewed' ? (
+        <section className="recipe-plate__nutrition" aria-label="Пищевая ценность" data-testid="recipe-reviewed-nutrition">
+          <h3>КБЖУ на выбранный выход · {variant.yieldNote}</h3>
+          <dl className="recipe-plate__macros">
+            {([
+              ['Энергия', variant.nutrition.profile.calculatedCalories, 'ккал'],
+              ['Белки', variant.nutrition.profile.protein, 'г'],
+              ['Жиры', variant.nutrition.profile.fat, 'г'],
+              ['Чистые углеводы', variant.nutrition.profile.netCarbs, 'г'],
+            ] as const).map(([label, value, unit]) => <div key={label}><dt>{label}</dt><dd>{value.toLocaleString('ru-RU', { maximumFractionDigits: 1 })} {unit}</dd></div>)}
+          </dl>
+          <details><summary>Основание расчёта</summary><p>Сумма исходного съедобного состава, распределённая на порции. Вода при готовке меняет массу блюда; индивидуальные нормы здесь не рассчитываются.</p>
+            <ul>{Array.from(new Map(variant.nutrition.sources.map(s => [`${s.url}#${s.recordId}`, s])).values()).map(s => <li key={`${s.url}#${s.recordId}`}><a href={s.url} target="_blank" rel="noopener noreferrer">{s.title} · {s.recordId}</a> ({s.accessedAt})</li>)}</ul>
+          </details>
+        </section>
+      ) : <details className="recipe-plate__nutrition">
         <summary>А где калории и БЖУ?</summary>
         <p>КБЖУ: [УТОЧНИТЬ]. Данные этого рецепта ещё не подтверждены. Здесь показан состав и количество продуктов, а не доли белков, жиров и углеводов.</p>
-      </details>
+      </details>}
     </section>
   );
 }

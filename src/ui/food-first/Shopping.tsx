@@ -21,6 +21,7 @@ import {
 import { copyShoppingText } from './clipboard';
 import { triggerHaptic } from '../../tma/telegram';
 import type { ShoppingRange } from '../../api/pilotTypes';
+import { formatLocalDateISO } from '../../domain/menu';
 
 export interface ShoppingScreenProps {
   items: (ShoppingFixtureItem | PilotShoppingItemV1)[];
@@ -68,7 +69,7 @@ export function ShoppingScreen({
 
   function getDefaultWeekRange(): string {
     if (!menuDays || menuDays.length <= 7) return 'all';
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = formatLocalDateISO(new Date());
     const foundIdx = menuDays.findIndex((d) => d.date === todayStr);
     if (foundIdx >= 0) {
       const weekIdx = Math.floor(foundIdx / 7);

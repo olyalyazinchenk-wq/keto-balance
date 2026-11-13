@@ -72,7 +72,26 @@ export default function PilotApp() {
   // Monetization and subscription state
   const [sessionToken, setSessionToken] = useState<string>('');
   const [subscription, setSubscription] = useState<SubscriptionState | null>(null);
+  const [subscriptionError, setSubscriptionError] = useState('');
+  const [subscriptionRetry, setSubscriptionRetry] = useState(0);
   const [showPaywall, setShowPaywall] = useState<boolean>(false);
+
+  useEffect(() => {
+    let active = true;
+    setSubscription(null);
+    setSubscriptionError('');
+    if (sessionToken) {
+      void fetchSubscription(sessionToken).then(data => {
+        if (active) setSubscription(data);
+      }).catch(() => {
+        if (active) {
+          setSubscription(null);
+          setSubscriptionError('Не удалось проверить доступ. Сохранённое меню остаётся доступным; платные действия требуют проверки подписки.');
+        }
+      });
+    }
+    return () => { active = false; };
+  }, [sessionToken, subscriptionRetry]);
 
   // Settings form draft state (for new or editing users)
   const [draftConfirmed18, setDraftConfirmed18] = useState<boolean>(false);
@@ -192,9 +211,6 @@ export default function PilotApp() {
         setSessionToken(session.session_token);
         setPhase('loading');
 
-        void fetchSubscription(session.session_token).then((data) => {
-          if (isMounted) setSubscription(data);
-        }).catch(() => { /* Keep access unknown; subscription service does not block meals. */ });
         const [userData, shopData, catListRes] = await Promise.all([
           client.getUser(),
           client.getShopping(),
@@ -231,6 +247,11 @@ export default function PilotApp() {
         let currentState = userData.state;
 
         if (!currentProfile?.settings || !currentProfile.settings.confirmed18Plus) {
+          if (catData.access === 'preview') {
+            setDraftPlanDays(1);
+            setDraftMealsPerDay(2);
+            setDraftMonth('');
+          }
           setPhase('needs_settings');
           return;
         }
@@ -340,22 +361,25 @@ export default function PilotApp() {
           setPhase('ready');
         } else {
           // Generate initial menu if missing
-          const canonProfile = preferencesToUserProfile(currentProfile.settings);
+          const generationProfile = catData.access === 'preview' ? {
+            ...currentProfile, settings: { ...currentProfile.settings, planDays: 1 as const, mealsPerDay: 2 as const, month: undefined },
+          } : currentProfile;
+          const canonProfile = preferencesToUserProfile(generationProfile.settings);
           const controller = createMenuController(catData.recipes, catData.released_ids, {
             isPreview: catData.test_only,
             catalogId: catData.catalog_id,
           });
-          const planDays = (currentProfile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(currentProfile.settings.planDays as any))
-            ? currentProfile.settings.planDays
+          const planDays = (generationProfile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(generationProfile.settings.planDays as any))
+            ? generationProfile.settings.planDays
             : 3;
-          const targetMonth = currentProfile.settings.month;
+          const targetMonth = generationProfile.settings.month;
           const isCalendarMonth = planDays >= 28;
           let genMenu;
           try {
             genMenu = controller.createUserMenu({
               numDays: planDays,
               month: isCalendarMonth ? targetMonth : undefined,
-              meals: currentProfile.settings.mealsPerDay,
+              meals: generationProfile.settings.mealsPerDay,
               profile: canonProfile,
               mode: approachToMode(currentProfile.settings.approach),
               catalogId: catData.catalog_id,
@@ -381,26 +405,29 @@ export default function PilotApp() {
           for (const r of catData.recipes) initialUiMap[r.id] = toRecipeViewModel(r);
           const initialShopping = rebuildShoppingFromMenu(genMenu, initialUiMap, [], 1);
 
-          // Save shopping first, then user state
+          const pendingState = { ...initState, shopping_stale: true };
+          const uRes = await client.putUser({
+            schema_version: 1, expected_revision: userData.revision,
+            profile: generationProfile, state: pendingState,
+          });
+          userRevisionRef.current = uRes.revision;
+          setUserRevision(uRes.revision);
           const sRes = await client.putShopping({
-            schema_version: 1,
-            expected_revision: shopData.revision,
-            items: initialShopping,
+            schema_version: 1, expected_revision: shopData.revision, items: initialShopping,
           });
           setShoppingRevision(sRes.revision);
           shoppingRevisionRef.current = sRes.revision;
-
-          const uRes = await client.putUser({
-            schema_version: 1,
-            expected_revision: userData.revision,
-            profile: currentProfile,
-            state: initState,
+          const finalUser = await client.putUser({
+            schema_version: 1, expected_revision: uRes.revision, profile: generationProfile, state: initState,
           });
-          setUserRevision(uRes.revision);
-          userRevisionRef.current = uRes.revision;
-
+          setUserRevision(finalUser.revision);
+          userRevisionRef.current = finalUser.revision;
+          setProfile(generationProfile);
+          profileRef.current = generationProfile;
           setState(initState);
+          stateRef.current = initState;
           setShoppingItems(initialShopping);
+          shoppingItemsRef.current = initialShopping;
           setPhase('ready');
         }
       } catch (err: any) {
@@ -470,6 +497,12 @@ export default function PilotApp() {
       return;
     }
     if (!catalog) return;
+    if (catalog.access === 'preview' && (draftPlanDays !== 1 || draftMealsPerDay !== 2)) {
+      setErrorMessage('Ознакомительный доступ: один день и два приёма пищи. Месячный план доступен в Premium.');
+      setShowPaywall(true);
+      return;
+    }
+
 
     const newSettings: PilotPreferencesV1 = {
       confirmed18Plus: true,
@@ -578,36 +611,35 @@ export default function PilotApp() {
       shopping_stale: false,
     };
 
-    setCatalog(activeCatalog);
-    setProfile(newProfile);
-    profileRef.current = newProfile;
-    setState(initState);
-    stateRef.current = initState;
-    setShoppingItems(initialShopping);
-    shoppingItemsRef.current = initialShopping;
     setPhase('loading');
 
     saveQueue.enqueue(async () => {
       setSyncStatus('saving');
       try {
-        // 1. Put shopping first
-        const sRes = await client.putShopping({
-          schema_version: 1,
-          expected_revision: shoppingRevisionRef.current,
-          items: initialShopping,
-        });
-        shoppingRevisionRef.current = sRes.revision;
-        setShoppingRevision(sRes.revision);
-
-        // 2. Put user second
+        const pendingState = { ...initState, shopping_stale: true };
         const uRes = await client.putUser({
-          schema_version: 1,
-          expected_revision: userRevisionRef.current,
-          profile: newProfile,
-          state: initState,
+          schema_version: 1, expected_revision: userRevisionRef.current,
+          profile: newProfile, state: pendingState,
         });
         userRevisionRef.current = uRes.revision;
         setUserRevision(uRes.revision);
+        const sRes = await client.putShopping({
+          schema_version: 1, expected_revision: shoppingRevisionRef.current, items: initialShopping,
+        });
+        shoppingRevisionRef.current = sRes.revision;
+        setShoppingRevision(sRes.revision);
+        const finalUser = await client.putUser({
+          schema_version: 1, expected_revision: uRes.revision, profile: newProfile, state: initState,
+        });
+        userRevisionRef.current = finalUser.revision;
+        setUserRevision(finalUser.revision);
+        setCatalog(activeCatalog);
+        setProfile(newProfile);
+        profileRef.current = newProfile;
+        setState(initState);
+        stateRef.current = initState;
+        setShoppingItems(initialShopping);
+        shoppingItemsRef.current = initialShopping;
 
         if (userId) {
           writeUserCache(userId, 'state', initState);
@@ -616,6 +648,12 @@ export default function PilotApp() {
         setSyncStatus('saved');
         setPhase('ready');
       } catch (err: any) {
+        if (err instanceof ApiError && err.status === 403) {
+          setSyncStatus('error');
+          setPhase('needs_settings');
+          setErrorMessage('Не удалось подтвердить доступ к выбранному плану. Проверьте подписку или выберите ознакомительный день.');
+          return;
+        }
         if (err instanceof ConflictError) {
           stickyErrorRef.current = 'conflict';
           setSyncStatus('conflict');
@@ -1502,12 +1540,12 @@ export default function PilotApp() {
   if (phase === 'init' || phase === 'authenticating' || phase === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--kb-bg)] text-[var(--kb-text-1)]">
-        <div className="max-w-md w-full p-8 bg-white rounded-2xl shadow-sm border border-[#E5DECF] text-center space-y-4">
+        <div className="max-w-md w-full p-8 bg-[var(--kb-surface)] rounded-2xl shadow-sm border border-[#E5DECF] text-center space-y-4">
           <div className="w-10 h-10 border-4 border-[#5F7161] border-t-transparent rounded-full animate-spin mx-auto" />
           <h2 className="text-xl font-bold">
             {phase === 'authenticating' ? 'Авторизация в Telegram...' : 'Загрузка меню и рациона...'}
           </h2>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-[var(--kb-text-3)]">
             Подключение к защищённому персональному профилю «Кето Баланс».
           </p>
         </div>
@@ -1518,7 +1556,7 @@ export default function PilotApp() {
   if (phase === 'unauthorized' || phase === 'error' || phase === 'conflict') {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--kb-bg)] text-[var(--kb-text-1)]">
-        <div className="max-w-md w-full p-8 bg-white rounded-2xl shadow-sm border border-[#E5DECF] space-y-5">
+        <div className="max-w-md w-full p-8 bg-[var(--kb-surface)] rounded-2xl shadow-sm border border-[#E5DECF] space-y-5">
           <div className="text-center">
 
             <h2 className="text-xl font-bold mt-2">
@@ -1528,7 +1566,7 @@ export default function PilotApp() {
                 ? 'Конфликт данных'
                 : 'Ошибка загрузки'}
             </h2>
-            <p className="text-sm text-stone-600 mt-2">{errorMessage}</p>
+            <p className="text-sm text-[var(--kb-text-2)] mt-2">{errorMessage}</p>
           </div>
           <div className="pt-2 flex flex-col gap-2">
             {phase === 'unauthorized' && <a className="ff-action" href="https://t.me/keto_balance_userbot">Открыть в Telegram</a>}
@@ -1539,8 +1577,8 @@ export default function PilotApp() {
             >
               Перезагрузить страницу
             </button>
-            <div className="border-t border-stone-200 pt-3">
-              <PrivateSupportPage />
+            <div className="border-t border-[var(--kb-border)] pt-3">
+              <PrivateSupportPage sessionToken={sessionToken || undefined} />
             </div>
           </div>
         </div>
@@ -1552,15 +1590,15 @@ export default function PilotApp() {
     if (showSupport) {
       return (
         <div className="min-h-screen py-8 px-4 bg-[var(--kb-bg)] text-[var(--kb-text-1)]">
-          <div className="max-w-lg mx-auto bg-white rounded-2xl border border-[#E5DECF] p-6 sm:p-8 space-y-4 shadow-sm">
+          <div className="max-w-lg mx-auto bg-[var(--kb-surface)] rounded-2xl border border-[var(--kb-border)] p-6 sm:p-8 space-y-4 shadow-sm">
             <button
               type="button"
               onClick={() => setShowSupport(false)}
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-300 hover:bg-stone-50"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-[var(--kb-border)] hover:bg-[var(--kb-bg)]"
             >
               ← Вернуться назад
             </button>
-            <PrivateSupportPage />
+            <PrivateSupportPage sessionToken={sessionToken || undefined} />
           </div>
         </div>
       );
@@ -1636,6 +1674,8 @@ export default function PilotApp() {
               setViewHomeBeforeGate(false);
             }}
             subscription={subscription}
+      subscriptionError={subscriptionError}
+      onRetrySubscription={() => setSubscriptionRetry(value => value + 1)}
             onUpdateSubscription={setSubscription}
             sessionToken={sessionToken || undefined}
           />
@@ -1656,8 +1696,8 @@ export default function PilotApp() {
 
     return (
       <div className="min-h-screen py-8 px-4 bg-[var(--kb-bg)] text-[var(--kb-text-1)]">
-        <div className="max-w-lg mx-auto bg-white rounded-2xl border border-[#E5DECF] p-6 sm:p-8 space-y-6 shadow-sm">
-          <div className="border-b border-stone-200 pb-4 flex items-start justify-between gap-4">
+        <div className="max-w-lg mx-auto bg-[var(--kb-surface)] rounded-2xl border border-[var(--kb-border)] p-6 sm:p-8 space-y-6 shadow-sm">
+          <div className="border-b border-[var(--kb-border)] pb-4 flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <button
@@ -1672,8 +1712,8 @@ export default function PilotApp() {
               <span className="text-xs font-semibold uppercase tracking-wider text-[#5F7161]">
                 Персональный рацион
               </span>
-              <h1 className="text-2xl font-bold text-stone-900 mt-1">Настройки питания</h1>
-              <p className="text-sm text-stone-600 mt-1">
+              <h1 className="text-2xl font-bold text-[var(--kb-text-1)] mt-1">Настройки питания</h1>
+              <p className="text-sm text-[var(--kb-text-2)] mt-1">
                 Укажи свои предпочтения, чтобы подобрать блюда и собрать покупки.
               </p>
             </div>
@@ -1681,7 +1721,7 @@ export default function PilotApp() {
               {subscription?.is_premium ? (
                 <span
                   data-testid="header-premium-badge"
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-sm"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[var(--kb-warn-bg)] text-[var(--kb-warn-ink)] border border-[var(--kb-warn-border)] shadow-sm"
                 >
                   👑 Premium
                 </span>
@@ -1698,7 +1738,7 @@ export default function PilotApp() {
               <button
                 type="button"
                 onClick={() => setShowSupport(true)}
-                className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-stone-300 hover:bg-stone-50"
+                className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-[var(--kb-border)] hover:bg-[var(--kb-bg)]"
               >
                 Помощь
               </button>
@@ -1708,7 +1748,7 @@ export default function PilotApp() {
           <form onSubmit={handleSubmitSettings} className="space-y-6" data-testid="pilot-settings-form">
             {errorMessage && (
               <div
-                className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-xl text-xs sm:text-sm font-medium"
+                className="p-3 bg-[var(--kb-danger-bg)] border border-[var(--kb-danger-border)] text-[var(--kb-danger-ink)] rounded-xl text-xs sm:text-sm font-medium"
                 data-testid="settings-form-error"
                 role="alert"
               >
@@ -1716,16 +1756,16 @@ export default function PilotApp() {
               </div>
             )}
             {/* 18+ confirmation */}
-            <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-xl space-y-2">
+            <div className="p-4 bg-[var(--kb-warn-bg)] border border-amber-200 rounded-xl space-y-2">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   data-testid="settings-confirmed-18"
                   checked={draftConfirmed18}
                   onChange={(e) => setDraftConfirmed18(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-[#5F7161] rounded border-stone-300 focus:ring-[#5F7161]"
+                  className="mt-1 w-4 h-4 text-[#5F7161] rounded border-[var(--kb-border)] focus:ring-[#5F7161]"
                 />
-                <span className="text-xs sm:text-sm font-medium text-amber-900 leading-tight">
+                <span className="text-xs sm:text-sm font-medium text-[var(--kb-warn-ink)] leading-tight">
                   Мне исполнилось 18 лет, у меня нет острых заболеваний и я понимаю, что рацион
                   носит информационный характер.
                 </span>
@@ -1734,7 +1774,7 @@ export default function PilotApp() {
 
             {/* Approach */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--kb-text-2)]">
                 Подход к питанию
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1750,11 +1790,11 @@ export default function PilotApp() {
                     className={`p-3 text-left rounded-xl border transition-all ${
                       draftApproach === item.id
                         ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B] font-semibold'
-                        : 'border-stone-200 bg-stone-50/50 text-stone-700 hover:bg-stone-50'
+                        : 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-bg)]'
                     }`}
                   >
                     <div className="text-sm font-bold">{item.title}</div>
-                    <div className="text-xs text-stone-500">{item.desc}</div>
+                    <div className="text-xs text-[var(--kb-text-3)]">{item.desc}</div>
                   </button>
                 ))}
               </div>
@@ -1762,7 +1802,7 @@ export default function PilotApp() {
 
             {/* Restrictions */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--kb-text-2)]">
                 Исключения и ограничения
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1774,7 +1814,7 @@ export default function PilotApp() {
                       className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-colors ${
                         checked
                           ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
-                          : 'border-stone-200 hover:bg-stone-50 text-stone-700'
+                          : 'border-[var(--kb-border)] hover:bg-[var(--kb-bg)] text-[var(--kb-text-2)]'
                       }`}
                     >
                       <input
@@ -1788,7 +1828,7 @@ export default function PilotApp() {
                             setDraftRestrictions((prev) => prev.filter((t) => t !== token));
                           }
                         }}
-                        className="w-4 h-4 text-[#5F7161] rounded border-stone-300 focus:ring-[#5F7161]"
+                        className="w-4 h-4 text-[#5F7161] rounded border-[var(--kb-border)] focus:ring-[#5F7161]"
                       />
                       <span className="text-xs font-medium">{label}</span>
                     </label>
@@ -1799,7 +1839,7 @@ export default function PilotApp() {
 
             {/* Prep Time Max */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--kb-text-2)]">
                 Максимум времени у плиты: {draftPrepTime > 0 ? `${draftPrepTime} мин` : 'Без ограничений'}
               </label>
               <div className="flex flex-wrap gap-2">
@@ -1817,7 +1857,7 @@ export default function PilotApp() {
                       className={`px-3.5 py-2 text-xs font-semibold rounded-xl border transition-all ${
                         draftPrepTime === t
                           ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
-                          : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                          : 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
                       }`}
                     >
                       {t > 0 ? `${t} мин` : 'Без лимита'}
@@ -1829,7 +1869,7 @@ export default function PilotApp() {
 
             {/* Meals Per Day */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--kb-text-2)]">
                 Приёмов пищи в день
               </label>
               <div className="flex gap-2">
@@ -1842,7 +1882,7 @@ export default function PilotApp() {
                     className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition-all ${
                       draftMealsPerDay === m
                         ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
-                        : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                        : 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
                     }`}
                   >
                     {m} приёма
@@ -1853,7 +1893,7 @@ export default function PilotApp() {
 
             {/* Plan Duration */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--kb-text-2)]">
                 Срок меню
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -1869,7 +1909,7 @@ export default function PilotApp() {
                     className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
                       draftPlanDays === d
                         ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
-                        : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                        : 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
                     }`}
                   >
                     {d === 1 ? '1 день' : d === 3 ? '3 дня' : '7 дней'}
@@ -1897,7 +1937,7 @@ export default function PilotApp() {
                       className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
                         isCurrSelected
                           ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
-                          : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                          : 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
                       }`}
                     >
                       {currLabel} ({currMonthDays} дн.)
@@ -1927,7 +1967,7 @@ export default function PilotApp() {
                       className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
                         isNextSelected
                           ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
-                          : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                          : 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
                       }`}
                     >
                       {nextLabel} ({nextMonthDays} дн.)
@@ -1957,14 +1997,14 @@ export default function PilotApp() {
               );
               if (pool.length < draftMealsPerDay) {
                 return (
-                  <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 space-y-1" data-testid="carnivore-conflict-warning">
+                  <div className="p-3 bg-[var(--kb-warn-bg)] border border-[var(--kb-warn-border)] rounded-xl text-xs text-[var(--kb-warn-ink)] space-y-1" data-testid="carnivore-conflict-warning">
                     <p className="font-bold">⚠️ Недостаточно карнивор-блюд для выбранных ограничений</p>
                     <p>
                       {pool.length === 0
                         ? `Карнивор-рецепты для этой комбинации ограничений ещё готовятся. Доступно 0 блюд из ${draftMealsPerDay} требуемых на день.`
                         : `С выбранными ограничениями доступно только ${pool.length} блюд, а требуется минимум ${draftMealsPerDay} на день.`}
                     </p>
-                    <p className="text-[11px] text-amber-800">
+                    <p className="text-[11px] text-[var(--kb-warn-ink)]">
                       Ваши настройки сохранятся. Для составления меню вы можете выбрать режим «Кето», уменьшить количество приёмов пищи на день или дождаться выхода новых карнивор-рецептов. Пожалуйста, не отменяйте медицинские исключения аллергенов.
                     </p>
                   </div>
@@ -1980,7 +2020,7 @@ export default function PilotApp() {
               className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm uppercase tracking-wider transition-all shadow-sm ${
                 draftConfirmed18
                   ? 'bg-[#5F7161] text-white hover:bg-[#4E5E50] cursor-pointer'
-                  : 'bg-stone-300 text-stone-500 cursor-not-allowed'
+                  : 'bg-stone-300 text-[var(--kb-text-3)] cursor-not-allowed'
               }`}
             >
               Составить меню и начать →
@@ -2029,6 +2069,8 @@ export default function PilotApp() {
       onToggleRangeChecked={handleToggleRangeChecked}
       onOpenSettings={handleOpenSettings}
       subscription={subscription}
+      subscriptionError={subscriptionError}
+      onRetrySubscription={() => setSubscriptionRetry(value => value + 1)}
       onUpdateSubscription={setSubscription}
       sessionToken={sessionToken}
     />

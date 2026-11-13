@@ -43,3 +43,8 @@
 @media (hover: hover) { .recipe-plate__ingredient:hover { transform: translateY(-2px); } }
 @media (max-width: 360px) { .food-recipe .recipe-plate { padding: 18px; border-radius: 22px; } .recipe-plate__eyebrow { font-size: 9px; } }
 @media (prefers-reduced-motion: reduce) { .recipe-plate__quantity { animation: none; } .food-recipe .recipe-plate__ingredient { transition: none; transform: none; } }
+
+.recipe-plate__macros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+.recipe-plate__macros div { border: 1px solid var(--kb-border); border-radius: 12px; padding: 12px; }
+.recipe-plate__macros dt { color: var(--kb-text-2); font-size: .8rem; }
+.recipe-plate__macros dd { margin: 4px 0 0; color: var(--kb-text-1); font-size: 1.2rem; font-weight: 700; }

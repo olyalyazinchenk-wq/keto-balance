@@ -19,6 +19,8 @@ export interface FoodTodayProps {
   localSubscription?: any;
   onNavigateToSupport?: () => void;
   onSelectApproach?: (approach: 'keto' | 'carnivore') => void;
+  sessionToken?: string;
+  onNavigate?: (screen: 'menu' | 'shopping' | 'support') => void;
 }
 
 function FoodPhoto({ card }: { card: FoodCard }) {
@@ -52,6 +54,8 @@ export function FoodToday({
   localSubscription,
   onNavigateToSupport,
   onSelectApproach,
+  sessionToken,
+  onNavigate,
 }: FoodTodayProps) {
   const open = (id: string) => {
     triggerHaptic('impact_light');
@@ -287,7 +291,7 @@ export function FoodToday({
 
       {/* 5. Обучение и гайды */}
       <section className="ff-home-guides" aria-label="Обучение и гайды">
-        <EducationGuides />
+        <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={onNavigate} />
       </section>
 
       {/* 6. Условия доступа и подписка */}

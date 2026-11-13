@@ -28,6 +28,7 @@ export interface PortionVariantFixture {
   yieldNote: string;
   ingredients: PortionIngredientFixture[];
   nutritionStatus: '[УТОЧНИТЬ]';
+  nutrition?: import('../../core/keto-engine/recipeNutrition').ReviewedRecipeNutrition;
 }
 
 export interface RecipeViewModel {

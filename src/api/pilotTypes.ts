@@ -110,4 +110,6 @@ export interface PilotCatalogV1 {
   released_ids: string[];
   recipes: Recipe[];
   nutrition_status: 'unverified';
+  access?: 'preview' | 'full';
+  preview_released_ids?: string[];
 }

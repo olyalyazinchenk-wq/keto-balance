@@ -1,0 +1,482 @@
+{
+  "dataset": "CoFID 2021",
+  "publisher": "Public Health England",
+  "accessedAt": "2026-11-13",
+  "url": "https://www.gov.uk/government/publications/composition-of-foods-integrated-dataset-cofid",
+  "downloadUrl": "https://assets.publishing.service.gov.uk/media/60538b91e90e07527df82ae4/McCance_Widdowsons_Composition_of_Foods_Integrated_Dataset_2021..xlsx",
+  "sha256": "436e9445ef2adb2a75f3d7edd51302de3adad25385f9795fc94ba58bd030e97d",
+  "license": "Open Government Licence v3.0; Crown copyright",
+  "licenseUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "cautions": [
+    "UK generic products; ingredient/state/brand mapping requires author review",
+    "Tr is trace and N is unknown; neither converted to zero",
+    "Carbohydrate expressed as monosaccharide equivalents: method must be reconciled before admission; no automatic engine import"
+  ],
+  "records": [
+    {
+      "recordId": "18-469",
+      "foodName": "Beef, mince, raw",
+      "description": "10 samples",
+      "reference": "Reviewed 2013. LGC, Nutrient analysis of carcase beef, 1992-1993. Vitamin D data from LGC, Determination of 25-OH vitamin D in selected foodstuffs, 1997",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 19.7,
+          "raw": "19.7"
+        },
+        "fat": {
+          "value": 16.2,
+          "raw": "16.2"
+        },
+        "carbohydrate": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "fiberAOAC": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "energyKcal": {
+          "value": 225.0,
+          "raw": "225"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "18-508",
+      "foodName": "Beef, mince, raw, extra lean",
+      "description": "10 samples",
+      "reference": "Fat and water content updated 2013, based on manufacturers' data; LGC, Nutrient analysis of carcase beef, 1992-1993",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 21.9,
+          "raw": "21.9"
+        },
+        "fat": {
+          "value": 4.2,
+          "raw": "4.2"
+        },
+        "carbohydrate": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "fiberAOAC": {
+          "value": null,
+          "raw": null
+        },
+        "energyKcal": {
+          "value": 130.0,
+          "raw": "130"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "13-502",
+      "foodName": "Broccoli, green, raw",
+      "description": "22 samples, autumn and winter, UK grown and imported, pre-packed and loose, Calabrese",
+      "reference": "DH, Nutrient analysis of fruit and vegetables, 2013",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 4.3,
+          "raw": "4.3"
+        },
+        "fat": {
+          "value": 0.6,
+          "raw": "0.6"
+        },
+        "carbohydrate": {
+          "value": 3.2,
+          "raw": "3.2"
+        },
+        "fiberAOAC": {
+          "value": 4.0,
+          "raw": "4.0"
+        },
+        "energyKcal": {
+          "value": 34.0,
+          "raw": "34"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "17-685",
+      "foodName": "Butter, salted",
+      "description": "Average of UK/Irish, Danish, French, New Zealand",
+      "reference": "LGC, Nutrient analysis of ‘other’ milk and cream, 1998; and industry data, 2013. Fats and fatty acids as Fatty Acid Supplement 17-013, 1998. Vitamin K1 Bolton-Smith et al, Br J Nutr, 83, 2000",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 0.6,
+          "raw": "0.6"
+        },
+        "fat": {
+          "value": 82.2,
+          "raw": "82.2"
+        },
+        "carbohydrate": {
+          "value": 0.6,
+          "raw": "0.6"
+        },
+        "fiberAOAC": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "energyKcal": {
+          "value": 744.0,
+          "raw": "744"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "13-512",
+      "foodName": "Cauliflower, raw",
+      "description": "22 samples, autumn and winter, UK grown and imported, pre-packed and loose",
+      "reference": "DH, Nutrient analysis of fruit and vegetables, 2013",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 2.5,
+          "raw": "2.5"
+        },
+        "fat": {
+          "value": 0.4,
+          "raw": "0.4"
+        },
+        "carbohydrate": {
+          "value": 4.4,
+          "raw": "4.4"
+        },
+        "fiberAOAC": {
+          "value": 1.8,
+          "raw": "1.8"
+        },
+        "energyKcal": {
+          "value": 30.0,
+          "raw": "30"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "12-346",
+      "foodName": "Cheese, Cheddar, English",
+      "description": "20 samples of English cheddar, including mild and mature, spring and autumn",
+      "reference": "Reviewed 2013. LGC, Nutrient analysis of cheese, 1999. Vitamin K1 Bolton-Smith et al, Br J Nutr, 83, 2000",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 25.4,
+          "raw": "25.4"
+        },
+        "fat": {
+          "value": 34.9,
+          "raw": "34.9"
+        },
+        "carbohydrate": {
+          "value": 0.1,
+          "raw": "0.1"
+        },
+        "fiberAOAC": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "energyKcal": {
+          "value": 416.0,
+          "raw": "416"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "13-627",
+      "foodName": "Courgette, raw",
+      "description": "11 samples from UK and Spain, ends trimmed",
+      "reference": "PHE, Nutrient analysis of fresh and processed fruit and vegetables with respect to fibre, 2017",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 1.3,
+          "raw": "1.3"
+        },
+        "fat": {
+          "value": 0.2,
+          "raw": "0.2"
+        },
+        "carbohydrate": {
+          "value": 2.3,
+          "raw": "2.2999999999999998"
+        },
+        "fiberAOAC": {
+          "value": 0.5,
+          "raw": "0.5"
+        },
+        "energyKcal": {
+          "value": 16.0,
+          "raw": "16"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "12-937",
+      "foodName": "Eggs, chicken, whole, raw",
+      "description": "12 samples from 3 egg distribution centres, including enriched cage, barn, free-range and organic",
+      "reference": "DH, Nutrient analysis of eggs, 2012",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 12.6,
+          "raw": "12.6"
+        },
+        "fat": {
+          "value": 9.0,
+          "raw": "9.0"
+        },
+        "carbohydrate": {
+          "value": null,
+          "raw": "Tr"
+        },
+        "fiberAOAC": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "energyKcal": {
+          "value": 131.0,
+          "raw": "131"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "17-010",
+      "foodName": "Lard",
+      "description": "6 samples, 3 brands",
+      "reference": "Reviewed 2013. MW1, 1940; Miscellaneous Foods Supplement, 1994; and Fatty Acids Supplement, 1998",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": null,
+          "raw": "Tr"
+        },
+        "fat": {
+          "value": 99.0,
+          "raw": "99.0"
+        },
+        "carbohydrate": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "fiberAOAC": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "energyKcal": {
+          "value": 891.0,
+          "raw": "891"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "14-277",
+      "foodName": "Lemon juice, fresh",
+      "description": "Analysis and literature sources",
+      "reference": "Reviewed 2013. MW4, 1978",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 0.3,
+          "raw": "0.3"
+        },
+        "fat": {
+          "value": null,
+          "raw": "Tr"
+        },
+        "carbohydrate": {
+          "value": 1.6,
+          "raw": "1.6"
+        },
+        "fiberAOAC": {
+          "value": null,
+          "raw": "N"
+        },
+        "energyKcal": {
+          "value": 7.0,
+          "raw": "7"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "17-038",
+      "foodName": "Oil, olive",
+      "description": "Mean of 35 samples; including virgin and extra virgin olive oil",
+      "reference": "Reviewed 2013. Miscellaneous Foods Supplement, 1994; and Fatty Acids Supplement, 1998. Vitamin K1 from Bolton-Smith et al Br.J. Nutr.83, 2000",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": null,
+          "raw": "Tr"
+        },
+        "fat": {
+          "value": 99.9,
+          "raw": "99.9"
+        },
+        "carbohydrate": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "fiberAOAC": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "energyKcal": {
+          "value": 899.0,
+          "raw": "899"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "18-557",
+      "foodName": "Pork, belly joint/slices, raw, lean and fat",
+      "description": "12 samples",
+      "reference": "LGC, Nutrient analysis of retail cuts of pork, 1992-1993",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 19.1,
+          "raw": "19.1"
+        },
+        "fat": {
+          "value": 20.2,
+          "raw": "20.2"
+        },
+        "carbohydrate": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "fiberAOAC": {
+          "value": 0.0,
+          "raw": "0"
+        },
+        "energyKcal": {
+          "value": 258.0,
+          "raw": "258"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "16-356",
+      "foodName": "Salmon, farmed, flesh only, raw",
+      "description": "10 samples, fresh fillets",
+      "reference": "Direct Laboratories, Nutrient analysis catch up project, 2003",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 20.4,
+          "raw": "20.4"
+        },
+        "fat": {
+          "value": 15.0,
+          "raw": "15.0"
+        },
+        "carbohydrate": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "fiberAOAC": {
+          "value": 0.2,
+          "raw": "0.2"
+        },
+        "energyKcal": {
+          "value": 217.0,
+          "raw": "217"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "16-360",
+      "foodName": "Salmon, wild, flesh only, raw",
+      "description": "10 samples, fresh steaks",
+      "reference": "Direct Laboratories, Nutrient analysis catch up project, 2003",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 22.1,
+          "raw": "22.1"
+        },
+        "fat": {
+          "value": 10.1,
+          "raw": "10.1"
+        },
+        "carbohydrate": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "fiberAOAC": {
+          "value": 0.0,
+          "raw": "0.0"
+        },
+        "energyKcal": {
+          "value": 179.0,
+          "raw": "179"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    },
+    {
+      "recordId": "13-521",
+      "foodName": "Spinach, baby, raw",
+      "description": "16 samples, autumn and winter, UK grown and imported",
+      "reference": "DH, Nutrient analysis of fruit and vegetables, 2013",
+      "footnote": null,
+      "per100g": {
+        "protein": {
+          "value": 2.6,
+          "raw": "2.6"
+        },
+        "fat": {
+          "value": 0.6,
+          "raw": "0.6"
+        },
+        "carbohydrate": {
+          "value": 0.2,
+          "raw": "0.2"
+        },
+        "fiberAOAC": {
+          "value": 1.0,
+          "raw": "1.0"
+        },
+        "energyKcal": {
+          "value": 16.0,
+          "raw": "16"
+        }
+      },
+      "status": "candidate_only",
+      "carbohydrateBasis": "available_monosaccharide_equivalents_requires_method_review"
+    }
+  ]
+}

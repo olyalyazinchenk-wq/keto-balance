@@ -29,16 +29,16 @@ const DEFAULT_TARIFFS: TariffConfig[] = [
     id: 'sub_month',
     badge: 'ЕДИНЫЙ ТАРИФ · ПОЛНЫЙ ДОСТУП',
     title: 'Кето Баланс Premium',
-    price: 1900,
-    periodLabel: '1 900 ₽ / месяц',
-    description: 'Полный доступ ко всем возможностям приложения на 30 дней',
+    price: 990,
+    periodLabel: '990 ₽ / 30 дней',
+    description: 'Месячный рацион, рецепты, покупки и обучение на 30 дней. Без автоматического продления.',
     isPopular: true,
     highlights: [
-      'Все проверенные кето и карнивор рецепты',
-      'Персональные рационы на 7 дней без ограничений',
+      'Каталог допущенных рецептов выбранного подхода',
+      'Персональный рацион на календарный месяц',
       'Умный автосписок покупок с расчётом на порции',
       'Конструктор замен блюд из каталога',
-      'Личный дневник питания и база знаний',
+      'Восемь микро-гайдов о питании и работе с приложением',
     ],
   },
 ];
@@ -147,6 +147,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
     setErrorMessage(null);
     try {
       const token = sessionToken || '';
+      if (!token) throw new Error('Для проверки доступа откройте приложение заново.');
       if (token) {
         const initResp = await purchaseSubscription(token, selectedTariffId || 'sub_month');
         const confirmResp = await confirmDemoPayment(token, initResp.order_id);
@@ -155,33 +156,12 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
         onClose();
         return;
       }
-    } catch (e) {
-      console.warn('[Paywall] Demo API error:', e);
+    } catch (e: any) {
+      setErrorMessage(e?.message || 'Не удалось подтвердить демонстрационный доступ. Повторите попытку.');
+    } finally {
+      setIsLoading(false);
     }
 
-    // Direct synthetic fallback for isolated preview testing
-    const syntheticSub: SubscriptionState = {
-      is_premium: true,
-      tier: 'sub_month',
-      status: 'active',
-      expires_at: new Date(Date.now() + 30 * 86400000).toISOString(),
-      available_products:
-        availableProducts && availableProducts.length > 0
-          ? availableProducts
-          : [
-              {
-                id: 'sub_month',
-                title: 'Кето Баланс Premium (1 месяц)',
-                price_rub: 1900,
-                period: 'month',
-              },
-            ],
-    };
-
-    triggerHaptic('success');
-    onSuccess(syntheticSub);
-    setIsLoading(false);
-    onClose();
   };
 
   const selectedTariff = DEFAULT_TARIFFS.find((t) => t.id === selectedTariffId) || DEFAULT_TARIFFS[0];
@@ -199,14 +179,14 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
       }}
     >
       <div
-        className="relative w-full max-w-md max-h-[92vh] sm:max-h-[88vh] flex flex-col bg-stone-50 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-stone-200"
+        className="relative w-full max-w-md max-h-[92vh] sm:max-h-[88vh] flex flex-col bg-[var(--kb-bg)] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-[var(--kb-border)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Close Button */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-3 bg-white border-b border-stone-200">
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 bg-[var(--kb-surface)] border-b border-[var(--kb-border)]">
           <div className="flex items-center gap-2">
             <span className="text-xl">🥑</span>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#255c48]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--kb-primary)]">
               Кето Баланс · Доступ
             </span>
           </div>
@@ -217,7 +197,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
               triggerHaptic('selection');
               onClose();
             }}
-            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 active:scale-95 transition-all text-base font-bold cursor-pointer"
+            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-[var(--kb-surface-muted)] text-[var(--kb-text-2)] hover:bg-stone-200 active:scale-95 transition-all text-base font-bold cursor-pointer"
             aria-label="Закрыть окно оплаты"
           >
             ✕
@@ -230,49 +210,49 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
           <div className="text-center space-y-1.5">
             <h1
               id="paywall-title"
-              className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900"
+              className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--kb-text-1)]"
             >
-              Открой свой <span className="text-[#255c48]">Кето Баланс</span>
+              Открой свой <span className="text-[var(--kb-primary)]">Кето Баланс</span>
             </h1>
-            <p className="text-xs sm:text-sm text-stone-600 max-w-xs mx-auto leading-relaxed">
-              Вкусное кето и карнивор питание без срывов, подсчёта калорий и потери времени у плиты.
+            <p className="text-xs sm:text-sm text-[var(--kb-text-2)] max-w-xs mx-auto leading-relaxed">
+              Блюда по дням, подходящие замены и покупки на ближайшую неделю.
             </p>
           </div>
 
           {/* Value Propositions / Benefits */}
-          <div className="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-sm space-y-2.5">
-            <div className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1">
+          <div className="bg-[var(--kb-surface)] rounded-2xl p-4 border border-[var(--kb-border)] shadow-sm space-y-2.5">
+            <div className="text-xs font-bold uppercase tracking-wider text-[var(--kb-text-3)] mb-1">
               Что входит в Premium:
             </div>
-            <div className="grid gap-2 text-xs sm:text-sm text-stone-700">
+            <div className="grid gap-2 text-xs sm:text-sm text-[var(--kb-text-2)]">
               <div className="flex items-start gap-2.5">
-                <span className="text-[#255c48] font-bold">✓</span>
+                <span className="text-[var(--kb-primary)] font-bold">✓</span>
                 <span>
-                  <strong>37+ авторских рецептов</strong> с пошаговыми фото и таймерами
+                  <strong>Допущенные рецепты</strong> с составом, шагами и кухонными таймерами
                 </span>
               </div>
               <div className="flex items-start gap-2.5">
-                <span className="text-[#255c48] font-bold">✓</span>
+                <span className="text-[var(--kb-primary)] font-bold">✓</span>
                 <span>
-                  <strong>Персональные рационы</strong> на 7 дней (кето или карнивор)
+                  <strong>Персональные рационы</strong> на календарный месяц (кето или карнивор)
                 </span>
               </div>
               <div className="flex items-start gap-2.5">
-                <span className="text-[#255c48] font-bold">✓</span>
+                <span className="text-[var(--kb-primary)] font-bold">✓</span>
                 <span>
                   <strong>Умный список покупок</strong> с сортировкой по отделам
                 </span>
               </div>
               <div className="flex items-start gap-2.5">
-                <span className="text-[#255c48] font-bold">✓</span>
+                <span className="text-[var(--kb-primary)] font-bold">✓</span>
                 <span>
-                  <strong>Конструктор блюд</strong> из того, что есть в холодильнике
+                  <strong>Замены блюд</strong> с учётом выбранных ограничений
                 </span>
               </div>
               <div className="flex items-start gap-2.5">
-                <span className="text-[#255c48] font-bold">✓</span>
+                <span className="text-[var(--kb-primary)] font-bold">✓</span>
                 <span>
-                  <strong>Поддержка автора</strong> и доступ ко всем обновлениям меню
+                  <strong>Восемь микро-гайдов</strong> и личные вопросы автору
                 </span>
               </div>
             </div>
@@ -280,14 +260,14 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
 
           {/* Error Banner */}
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-xl text-xs font-medium">
+            <div className="p-3 bg-[var(--kb-danger-bg)] border border-[var(--kb-danger-border)] text-[var(--kb-danger-ink)] rounded-xl text-xs font-medium">
               ⚠️ {errorMessage}
             </div>
           )}
 
           {/* Tariff Selection Card (Single Approved Tariff) */}
           <div className="space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-stone-500">
+            <div className="text-xs font-bold uppercase tracking-wider text-[var(--kb-text-3)]">
               Утверждённый тариф:
             </div>
             {DEFAULT_TARIFFS.map((tariff) => {
@@ -300,8 +280,8 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
                   onClick={() => handleSelectTariff(tariff.id)}
                   className={`relative p-4 rounded-2xl cursor-pointer transition-all border ${
                     isSelected
-                      ? 'bg-emerald-50/50 border-[#255c48] ring-2 ring-[#255c48]/30 shadow-md'
-                      : 'bg-white border-stone-200 hover:border-stone-300 shadow-sm'
+                      ? 'bg-[var(--kb-surface-muted)] border-[#255c48] ring-2 ring-[#255c48]/30 shadow-md'
+                      : 'bg-[var(--kb-surface)] border-[var(--kb-border)] hover:border-stone-300 shadow-sm'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -309,36 +289,36 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
                       {tariff.badge}
                     </span>
                     <div className="w-4 h-4 rounded-full border border-[#255c48] bg-[#255c48] flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--kb-surface)]" />
                     </div>
                   </div>
 
                   <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="font-bold text-stone-900 text-sm sm:text-base">
+                    <h3 className="font-bold text-[var(--kb-text-1)] text-sm sm:text-base">
                       {tariff.title}
                     </h3>
                     <div className="text-right">
-                      <span className="font-extrabold text-stone-900 text-sm sm:text-base">
+                      <span className="font-extrabold text-[var(--kb-text-1)] text-sm sm:text-base">
                         {tariff.periodLabel}
                       </span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-stone-500 mt-1 leading-snug">
+                  <p className="text-xs text-[var(--kb-text-3)] mt-1 leading-snug">
                     {tariff.description}
                   </p>
 
-                  <ul className="mt-3 pt-3 border-t border-stone-200/80 space-y-1 text-xs text-stone-700 animate-fade-in">
+                  <ul className="mt-3 pt-3 border-t border-[var(--kb-border)] space-y-1 text-xs text-[var(--kb-text-2)] animate-fade-in">
                     {tariff.highlights.map((item, idx) => (
                       <li key={idx} className="flex items-start gap-1.5">
-                        <span className="text-[#255c48] text-[10px] mt-0.5">●</span>
+                        <span className="text-[var(--kb-primary)] text-[10px] mt-0.5">●</span>
                         <span>{item}</span>
                       </li>
                     ))}
                   </ul>
 
                   {isCurrent && (
-                    <div className="mt-2 text-[11px] font-semibold text-[#255c48]">
+                    <div className="mt-2 text-[11px] font-semibold text-[var(--kb-primary)]">
                       ✓ Ваш текущий тариф
                     </div>
                   )}
@@ -348,20 +328,20 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
           </div>
 
           {/* Transparent Commercial Information */}
-          <div className="grid grid-cols-2 gap-2 text-[11px] text-stone-500 py-1">
-            <div className="flex items-center gap-1.5 justify-center p-2 rounded-xl bg-stone-100/70 border border-stone-200/60 text-center">
+          <div className="grid grid-cols-2 gap-2 text-[11px] text-[var(--kb-text-3)] py-1">
+            <div className="flex items-center gap-1.5 justify-center p-2 rounded-xl bg-[var(--kb-surface-muted)] border border-[var(--kb-border)] text-center">
 
               <span>Оплата Telegram Stars</span>
             </div>
-            <div className="flex items-center gap-1.5 justify-center p-2 rounded-xl bg-stone-100/70 border border-stone-200/60 text-center">
+            <div className="flex items-center gap-1.5 justify-center p-2 rounded-xl bg-[var(--kb-surface-muted)] border border-[var(--kb-border)] text-center">
               <span>⚙️</span>
-              <span>Отмена в любой момент</span>
+              <span>Без автопродления</span>
             </div>
           </div>
         </div>
 
         {/* Action Footer */}
-        <div className="p-4 bg-white border-t border-stone-200 space-y-2">
+        <div className="p-4 bg-[var(--kb-surface)] border-t border-[var(--kb-border)] space-y-2">
           {/* Main Purchase CTA */}
           <button
             type="button"
@@ -388,7 +368,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
               data-testid="paywall-demo-activate-btn"
               disabled={isLoading}
               onClick={handleInstantDemoActivate}
-              className="w-full py-2.5 px-3 rounded-xl font-semibold text-xs text-[#255c48] bg-emerald-50 hover:bg-emerald-100 active:scale-[0.98] border border-emerald-200 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 px-3 rounded-xl font-semibold text-xs text-[var(--kb-primary)] bg-emerald-50 hover:bg-emerald-100 active:scale-[0.98] border border-emerald-200 transition-all cursor-pointer flex items-center justify-center gap-1.5"
             >
               <span>⚡ Демонстрация — деньги не списываются</span>
             </button>

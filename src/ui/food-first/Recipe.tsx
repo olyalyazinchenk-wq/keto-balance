@@ -1,6 +1,6 @@
 import './recipe-shopping-food.css';
 import './menu-food.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Check,
   BookOpen,
@@ -14,6 +14,7 @@ import {
 } from './state';
 import { RecipePlate } from './RecipePlate';
 import { triggerHaptic } from '../../tma/telegram';
+import { timerDeadline, remainingTimerSeconds } from './kitchenTimer';
 
 export interface RecipeScreenProps {
   recipe: RecipeViewModel;
@@ -41,30 +42,66 @@ export function RecipeScreen({
   const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
   const [timerRunning, setTimerRunning] = useState<boolean>(false);
   const [timerLabel, setTimerLabel] = useState<string>('Таймер у плиты');
+  const [timerCompleted, setTimerCompleted] = useState(false);
+  const deadlineRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!timerRunning || timerSecondsLeft <= 0) {
-      if (timerSecondsLeft <= 0 && timerRunning) {
+    deadlineRef.current = null;
+    setTimerSecondsLeft(0);
+    setTimerRunning(false);
+    setTimerCompleted(false);
+    setTimerLabel('Таймер у плиты');
+  }, [recipe.id]);
+
+  useEffect(() => {
+    if (!timerRunning) return;
+    const refresh = () => {
+      if (deadlineRef.current === null) return;
+      const remaining = remainingTimerSeconds(deadlineRef.current);
+      setTimerSecondsLeft(remaining);
+      if (remaining <= 0) {
+        deadlineRef.current = null;
         setTimerRunning(false);
+        setTimerCompleted(true);
         triggerHaptic('notification_success');
       }
-      return;
-    }
-    const id = window.setInterval(() => {
-      setTimerSecondsLeft((prev) => (prev > 1 ? prev - 1 : 0));
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [timerRunning, timerSecondsLeft]);
+    };
+    refresh();
+    const id = window.setInterval(refresh, 1000);
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('pageshow', refresh);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('pageshow', refresh);
+    };
+  }, [timerRunning]);
 
   const startStepTimer = (minutes: number, stepIndex?: number) => {
     triggerHaptic('selection');
     setTimerSecondsLeft(minutes * 60);
+    deadlineRef.current = timerDeadline(minutes * 60);
+    setTimerCompleted(false);
     setTimerLabel(
       stepIndex !== undefined
         ? `Шаг ${stepIndex + 1} · ${minutes} мин`
         : `Таймер · ${minutes} мин`
     );
     setTimerRunning(true);
+  };
+
+  const toggleTimer = () => {
+    triggerHaptic('selection');
+    if (timerRunning) {
+      const remaining = remainingTimerSeconds(deadlineRef.current);
+      deadlineRef.current = null;
+      setTimerSecondsLeft(remaining);
+      setTimerRunning(false);
+      if (remaining === 0) setTimerCompleted(true);
+    } else if (timerSecondsLeft > 0) {
+      deadlineRef.current = timerDeadline(timerSecondsLeft);
+      setTimerRunning(true);
+    }
   };
 
   const formatTimerMMSS = (totalSec: number) => {
@@ -148,9 +185,9 @@ export function RecipeScreen({
               <span className="text-[var(--kb-border)]" aria-hidden="true">|</span>
               <span
                 className="text-[var(--kb-text-3)]"
-                title={`Статус расчёта нутриентов: ${variant.nutritionStatus}`}
+                title={variant.nutrition?.status === 'reviewed' ? 'Расчёт по подтверждённому составу' : `Статус расчёта нутриентов: ${variant.nutritionStatus}`}
               >
-                КБЖУ уточняется автором
+                {variant.nutrition?.status === 'reviewed' ? 'КБЖУ по подтверждённому составу' : 'КБЖУ уточняется автором'}
               </span>
             </div>
 
@@ -259,7 +296,7 @@ export function RecipeScreen({
           </div>
 
           {/* Плашка таймера, если он запущен */}
-          {(timerRunning || timerSecondsLeft > 0) && (
+          {(timerRunning || timerSecondsLeft > 0 || timerCompleted) && (
             <div
               className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between gap-3"
               role="timer"
@@ -267,7 +304,7 @@ export function RecipeScreen({
               data-testid="kitchen-timer-display"
             >
               <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-200">
-                <Clock className="w-5 h-5 animate-pulse" aria-hidden="true" />
+                <Clock className="w-5 h-5" aria-hidden="true" />
                 <div>
                   <span className="text-xs font-semibold uppercase tracking-wider block">
                     {timerLabel}
@@ -275,25 +312,26 @@ export function RecipeScreen({
                   <span className="text-2xl font-bold font-mono">
                     {formatTimerMMSS(timerSecondsLeft)}
                   </span>
+                  {timerCompleted && <span role="status" className="block text-sm font-semibold">Время вышло — проверьте блюдо</span>}
+                  <p className="text-xs mt-1">При возврате на этот экран время уточняется. Сигнал в фоне не гарантируется; при выходе из рецепта таймер сбрасывается.</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button
+                {!timerCompleted && <button
                   type="button"
                   className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white"
-                  onClick={() => {
-                    triggerHaptic('selection');
-                    setTimerRunning((prev) => !prev);
-                  }}
+                  onClick={toggleTimer}
                 >
                   {timerRunning ? 'Пауза' : 'Продолжить'}
-                </button>
+                </button>}
                 <button
                   type="button"
                   className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
                   onClick={() => {
                     triggerHaptic('impact_light');
                     setTimerRunning(false);
+                    deadlineRef.current = null;
+                    setTimerCompleted(false);
                     setTimerSecondsLeft(0);
                   }}
                 >

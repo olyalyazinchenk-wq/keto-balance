@@ -39,6 +39,8 @@ export interface FoodFirstAppProps {
   onToggleRangeChecked?: (rangeKey: string, itemId: string) => void;
   onOpenSettings?: (targetApproach?: 'keto' | 'carnivore') => void;
   subscription?: SubscriptionState | null;
+  subscriptionError?: string;
+  onRetrySubscription?: () => void;
   onUpdateSubscription?: (sub: SubscriptionState) => void;
   sessionToken?: string;
 }
@@ -85,6 +87,8 @@ export function FoodFirstApp({
   onToggleRangeChecked,
   onOpenSettings,
   subscription,
+  subscriptionError,
+  onRetrySubscription,
   onUpdateSubscription,
   sessionToken,
 }: FoodFirstAppProps) {
@@ -98,9 +102,7 @@ export function FoodFirstApp({
   );
 
   useEffect(() => {
-    if (subscription) {
-      setLocalSubscription(subscription);
-    }
+    setLocalSubscription(subscription || null);
   }, [subscription]);
 
   const [isPaywallOpen, setIsPaywallOpen] = useState<boolean>(false);
@@ -196,12 +198,13 @@ export function FoodFirstApp({
   const handleReplaceSlot = useCallback(
     (dayIndex: number, slotKey: string, nextRecipeId: string) => {
       if (!state.menu) return;
+      if (!isPremium) { handleOpenPaywall(); return; }
       const targetDay = state.menu.days[dayIndex];
       if (targetDay) {
         onReplaceRecipe(targetDay.date, slotKey, nextRecipeId);
       }
     },
-    [state.menu, onReplaceRecipe]
+    [state.menu, onReplaceRecipe, isPremium, handleOpenPaywall]
   );
 
   // Hash synchronization
@@ -373,6 +376,10 @@ export function FoodFirstApp({
       selectedDayIndex={selectedDayIndex}
       selectedDayLabel={selectedDayLabel}
     >
+      {subscriptionError && <aside className="ff-proof__notice" role="alert" data-testid="subscription-error">
+        <p>{subscriptionError}</p>
+        <button type="button" className="ff-proof__help-btn" onClick={onRetrySubscription}>Проверить доступ ещё раз</button>
+      </aside>}
       {/* Notice header */}
       {noticeText && <aside className="ff-proof__notice" data-testid="pilot-sync-banner" role="status" aria-live="polite">
         {noticeText}
@@ -380,6 +387,8 @@ export function FoodFirstApp({
 
       {currentScreen === 'today' && (
         <FoodToday
+          sessionToken={sessionToken}
+          onNavigate={navigateTo}
           dateLabel={selectedDayLabel}
           primary={primaryCard}
           others={otherCards}
@@ -427,7 +436,7 @@ export function FoodFirstApp({
             navigateTo('shopping');
           }}
           onEditSettings={onOpenSettings ? () => onOpenSettings() : undefined}
-          onRebuildMenu={onRebuildMenu}
+          onRebuildMenu={async () => { if (!isPremium) { handleOpenPaywall(); return; } await onRebuildMenu(); }}
           catalogRecipes={catalog.recipes}
           admittedRecipeIds={effectiveCatalogIds}
         />
@@ -491,7 +500,7 @@ export function FoodFirstApp({
           >
             ← Вернуться назад
           </button>
-          <PrivateSupportPage />
+          <PrivateSupportPage sessionToken={sessionToken} />
         </div>
       )}
 
@@ -511,7 +520,7 @@ export function FoodFirstApp({
             <button type="button" className="ff-action" data-testid="more-open-paywall-btn" onClick={handleOpenPaywall}>Условия доступа и подписка</button>
           </section>
           <section><h2>Дневник появится позже</h2><p>Личные записи пока недоступны. Сейчас здесь можно найти материалы о питании.</p></section>
-          <EducationGuides />
+          <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />
         </div>
       )}
 
