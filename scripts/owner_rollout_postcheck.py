@@ -62,14 +62,25 @@ import asyncio,os,json,logging
 logging.disable(logging.CRITICAL)
 from telegram import Bot
 from telegram.request import HTTPXRequest
+from bot.config import ADMIN_ID
+from bot.bot import get_current_webapp_url, get_main_keyboard
 async def main():
  proxy=os.getenv('KETO_BOT_PROXY'); assert proxy
  token=os.getenv('KETO_BOT_TOKEN') or os.getenv('TELEGRAM_BOT_TOKEN'); assert token
  async with Bot(token,request=HTTPXRequest(proxy=proxy,connect_timeout=15,read_timeout=20)) as bot:
   user=await bot.get_me(); webhook=await bot.get_webhook_info()
   assert user.username=='keto_balance_userbot' and not webhook.url
+  expected=get_current_webapp_url(); assert expected=='https://84.54.56.73.nip.io/'
+  global_menu=(await bot.get_chat_menu_button()).to_dict()
+  owner_menu=(await bot.get_chat_menu_button(chat_id=ADMIN_ID)).to_dict()
+  assert global_menu.get('web_app',{}).get('url')==expected
+  assert owner_menu.get('web_app',{}).get('url')==expected
+  urls=[button.web_app.url for row in get_main_keyboard().inline_keyboard for button in row if button.web_app]
+  assert urls and all(url==expected for url in urls)
   print(json.dumps({'getMe':'ok','bot_username':user.username,'configured_proxy_used':True,
-   'webhook_configured':False,'pending_updates':webhook.pending_update_count,'customer_messages_sent':0}))
+   'webhook_configured':False,'pending_updates':webhook.pending_update_count,'customer_messages_sent':0,
+   'global_menu_url':global_menu['web_app']['url'],'owner_menu_url':owner_menu['web_app']['url'],
+   'main_keyboard_urls':urls,'main_app_botfather_config':'not exposed by Bot API; not inspected'}))
 asyncio.run(main())
 '''
     request = subprocess.run(['docker', 'exec', '-e', 'KETO_LOAD_DOTENV=0', 'ketobalance-cloud-bot',
