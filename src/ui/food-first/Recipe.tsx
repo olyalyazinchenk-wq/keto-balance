@@ -12,8 +12,7 @@ import type {
 import {
   extractStepTimerMinutes,
 } from './state';
-import { RecipeArtwork } from './RecipeArtwork';
-import { photoForRecipe } from './model';
+import { RecipePlate } from './RecipePlate';
 import { triggerHaptic } from '../../tma/telegram';
 
 export interface RecipeScreenProps {
@@ -173,48 +172,18 @@ export function RecipeScreen({
                 </span>
               </button>
 
-              <div
-                role="group"
-                aria-label="Выбор числа порций"
-                className="inline-flex items-center border border-[var(--kb-border)] bg-[var(--kb-surface)] p-0.5"
-              >
-                {([1, 2, 4] as const).map((p) => {
-                  const active = portions === p;
-                  const pVariant = recipe.portionsVariants[p];
-                  const label = pVariant ? pVariant.yieldNote : `${p}×`;
-                  return (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic('selection');
-                        setPortions(p);
-                      }}
-                      data-testid={`recipe-portions-${p}x`}
-                      aria-pressed={active}
-                      className={`min-h-[38px] px-2.5 sm:px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] tabular-nums kb-focus-ring kb-transition-scale ${
-                        active
-                          ? 'bg-[var(--kb-day-active-bg)] text-[var(--kb-text-1)]'
-                          : 'text-[var(--kb-text-3)] hover:text-[var(--kb-text-1)]'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           </div>
 
           <div className="col-span-4 md:col-span-5">
-            <RecipeArtwork
+            <RecipePlate
               key={recipe.id}
-              imageUrl={photoForRecipe(recipe.id)}
-              artworkKey={recipe.artworkKey}
-              caption={recipe.artworkCaption || recipe.title}
-              prepMinutes={recipe.prepMinutes}
-              slotLabel={recipe.slotLabel}
-              size="compact"
+              recipe={recipe}
+              variant={variant}
+              checkedIngredients={checkedIngredients}
+              onToggleIngredient={onToggleIngredient}
+              selectedPortions={portions}
+              onSelectPortions={(p) => { triggerHaptic('selection'); setPortions(p); }}
             />
           </div>
         </div>
