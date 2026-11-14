@@ -111,13 +111,16 @@ test('sessionStorage handles invalid JSON or empty params safely without throwin
   }
 });
 
-test('local telegram SDK asset exists and main.tsx loads /telegram-web-app.js with CDN fallback', () => {
+test('local telegram SDK asset exists and loadTelegramSdk loads /telegram-web-app.js with CDN fallback', () => {
   assert.ok(fs.existsSync('public/telegram-web-app.js'), 'public/telegram-web-app.js must exist');
   const stat = fs.statSync('public/telegram-web-app.js');
   assert.ok(stat.size > 50000, 'public/telegram-web-app.js must be a valid bundle (>50KB)');
 
+  const loaderSource = fs.readFileSync('src/tma/loadTelegramSdk.ts', 'utf8');
+  assert.match(loaderSource, /script\.src\s*=\s*'\/telegram-web-app\.js'/, 'loader must load local /telegram-web-app.js');
+  assert.match(loaderSource, /https:\/\/telegram\.org\/js\/telegram-web-app\.js/, 'loader must have CDN fallback');
+
   const mainSource = fs.readFileSync('src/main.tsx', 'utf8');
-  assert.match(mainSource, /script\.src\s*=\s*'\/telegram-web-app\.js'/, 'main.tsx must load local /telegram-web-app.js');
-  assert.match(mainSource, /https:\/\/telegram\.org\/js\/telegram-web-app\.js/, 'main.tsx must have CDN fallback');
+  assert.match(mainSource, /loadTelegramSDK\(\)/, 'main.tsx must invoke loadTelegramSDK');
 });
 

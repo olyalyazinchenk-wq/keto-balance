@@ -4,24 +4,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '../..');
+const { loadTs } = require(path.join(ROOT, 'tests/helpers/load-ts.cjs'));
 
-test('Behavioral verification: local SDK refusal and transition to CDN fallback', async (t) => {
-  const mainSource = fs.readFileSync(path.join(ROOT, 'src/main.tsx'), 'utf8');
+// Load the ACTUAL application module under test
+const sdkLoaderMod = loadTs(path.join(ROOT, 'src/tma/loadTelegramSdk.ts'));
+const { loadTelegramSDK } = sdkLoaderMod;
 
-  // Verify static AST contract in main.tsx
-  assert.match(
-    mainSource,
-    /script\.src\s*=\s*'\/telegram-web-app\.js'/,
-    'Initial script source must point to local /telegram-web-app.js'
-  );
-  assert.match(
-    mainSource,
-    /if\s*\(!script\.src\.includes\('telegram\.org'\)\)\s*\{[\s\S]*?script\.src\s*=\s*'https:\/\/telegram\.org\/js\/telegram-web-app\.js';[\s\S]*?return;\s*\}/,
-    'On local SDK error, script.src must transition to official telegram.org CDN'
-  );
+test('Behavioral verification: real loadTelegramSDK application code execution', async (t) => {
+  assert.equal(typeof loadTelegramSDK, 'function', 'loadTelegramSDK must be an exported function');
 
-  // Behavioral simulation of DOM script loader
-  await t.test('simulates local script error triggering transition to telegram.org CDN', async () => {
+  await t.test('executes real application code: local script error triggers transition to telegram.org CDN', async () => {
     let appendedScript = null;
     let clearTimerCalled = false;
     let clearedTimerId = null;
@@ -29,13 +21,12 @@ test('Behavioral verification: local SDK refusal and transition to CDN fallback'
     const mockDocument = {
       createElement: (tag) => {
         if (tag !== 'script') throw new Error(`Unexpected tag: ${tag}`);
-        const el = {
+        return {
           async: false,
           src: '',
           onload: null,
           onerror: null,
         };
-        return el;
       },
       head: {
         appendChild: (child) => {
@@ -46,6 +37,7 @@ test('Behavioral verification: local SDK refusal and transition to CDN fallback'
 
     let timerIdSeq = 100;
     const mockWindow = {
+      Telegram: undefined,
       setTimeout: (cb, ms) => {
         assert.equal(ms, 5000, 'Fallback timeout must be 5000ms');
         return ++timerIdSeq;
@@ -56,46 +48,11 @@ test('Behavioral verification: local SDK refusal and transition to CDN fallback'
       },
     };
 
-    // Instantiate and execute loader logic with mocked DOM
-    function executeLoader(doc, win) {
-      return new Promise((resolve) => {
-        const script = doc.createElement('script');
-        let fallbackTimer = win.setTimeout(() => {
-          fallbackTimer = null;
-          resolve('timed_out');
-        }, 5000);
-
-        const onScriptLoaded = () => {
-          if (fallbackTimer !== null) {
-            win.clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
-          resolve('loaded');
-        };
-
-        const onScriptError = () => {
-          if (!script.src.includes('telegram.org')) {
-            script.src = 'https://telegram.org/js/telegram-web-app.js';
-            return;
-          }
-          if (fallbackTimer !== null) {
-            win.clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
-          resolve('error_resolved');
-        };
-
-        script.async = true;
-        script.src = '/telegram-web-app.js';
-        script.onload = onScriptLoaded;
-        script.onerror = onScriptError;
-        doc.head.appendChild(script);
-      });
-    }
-
-    const loadPromise = executeLoader(mockDocument, mockWindow);
+    // Execute the ACTUAL function from src/tma/loadTelegramSdk.ts
+    const loadPromise = loadTelegramSDK(mockDocument, mockWindow);
 
     // 1. Initially appended script points to local bundle
+    assert.ok(appendedScript, 'A script element must have been appended');
     assert.equal(appendedScript.src, '/telegram-web-app.js');
     assert.equal(typeof appendedScript.onerror, 'function');
     assert.equal(typeof appendedScript.onload, 'function');
@@ -103,7 +60,7 @@ test('Behavioral verification: local SDK refusal and transition to CDN fallback'
     // 2. Simulate failure of local SDK (e.g. 404, network error, or CSP refusal)
     appendedScript.onerror();
 
-    // 3. Verify immediate behavioral transition to official CDN
+    // 3. Verify immediate behavioral transition to official CDN inside the real code
     assert.equal(
       appendedScript.src,
       'https://telegram.org/js/telegram-web-app.js',
@@ -112,68 +69,49 @@ test('Behavioral verification: local SDK refusal and transition to CDN fallback'
 
     // 4. Simulate successful loading from CDN
     appendedScript.onload();
-    const result = await loadPromise;
+    await loadPromise;
 
-    assert.equal(result, 'loaded', 'Loader must resolve successfully once CDN script loads');
     assert.equal(clearTimerCalled, true, 'Fallback timer must be canceled on successful CDN load');
     assert.equal(clearedTimerId, timerIdSeq, 'The active timer ID must be cleared');
   });
 
-  await t.test('simulates both local and CDN failure resolving safely without crashing', async () => {
+  await t.test('executes real application code: both local and CDN failure resolves safely without crashing', async () => {
     let appendedScript = null;
     const mockDocument = {
       createElement: () => ({ async: false, src: '', onload: null, onerror: null }),
       head: { appendChild: (c) => { appendedScript = c; } },
     };
     const mockWindow = {
-      setTimeout: (cb) => 200,
+      Telegram: undefined,
+      setTimeout: () => 200,
       clearTimeout: () => {},
     };
 
-    function executeLoader(doc, win) {
-      return new Promise((resolve) => {
-        const script = doc.createElement('script');
-        let fallbackTimer = win.setTimeout(() => {
-          fallbackTimer = null;
-          resolve('timed_out');
-        }, 5000);
+    // Execute the ACTUAL function from src/tma/loadTelegramSdk.ts
+    const loadPromise = loadTelegramSDK(mockDocument, mockWindow);
 
-        const onScriptLoaded = () => {
-          if (fallbackTimer !== null) {
-            win.clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
-          resolve('loaded');
-        };
-
-        const onScriptError = () => {
-          if (!script.src.includes('telegram.org')) {
-            script.src = 'https://telegram.org/js/telegram-web-app.js';
-            return;
-          }
-          if (fallbackTimer !== null) {
-            win.clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
-          resolve('error_resolved');
-        };
-
-        script.async = true;
-        script.src = '/telegram-web-app.js';
-        script.onload = onScriptLoaded;
-        script.onerror = onScriptError;
-        doc.head.appendChild(script);
-      });
-    }
-
-    const loadPromise = executeLoader(mockDocument, mockWindow);
     // First error: local fails -> switches to CDN
     appendedScript.onerror();
     assert.equal(appendedScript.src, 'https://telegram.org/js/telegram-web-app.js');
 
-    // Second error: CDN also fails -> safely resolves fallback without rejection
+    // Second error: CDN also fails -> safely resolves without throw or crash
     appendedScript.onerror();
-    const result = await loadPromise;
-    assert.equal(result, 'error_resolved');
+    await loadPromise;
+  });
+
+  await t.test('executes real application code: bypasses script injection if Telegram.WebApp already exists', async () => {
+    let createElementCalled = false;
+    const mockDocument = {
+      createElement: () => { createElementCalled = true; return {}; },
+      head: { appendChild: () => {} },
+    };
+    const mockWindow = {
+      Telegram: {
+        WebApp: { initData: 'existing-data' },
+      },
+    };
+
+    await loadTelegramSDK(mockDocument, mockWindow);
+    assert.equal(createElementCalled, false, 'If Telegram.WebApp already present, no script tag should be injected');
   });
 });
