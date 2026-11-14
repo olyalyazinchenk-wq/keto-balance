@@ -10,6 +10,29 @@ const { loadTs } = require(path.join(ROOT, 'tests/helpers/load-ts.cjs'));
 const sdkLoaderMod = loadTs(path.join(ROOT, 'src/tma/loadTelegramSdk.ts'));
 const { loadTelegramSDK } = sdkLoaderMod;
 
+test('SDK loading notifies mounted application both before and after timeout', async () => {
+  for (const timedOut of [false, true]) {
+    const cache = new Map();
+    const sdk = loadTs(path.join(ROOT, 'src/tma/loadTelegramSdk.ts'), cache);
+    const bridge = loadTs(path.join(ROOT, 'src/tma/telegram.ts'), cache);
+    let script, timeout, notifications = 0;
+    const tg = { initData: 'signed-data' };
+    const unsubscribe = bridge.onLateTelegramSDK((value) => {
+      assert.equal(value, tg);
+      notifications++;
+    });
+    const win = { setTimeout: cb => { timeout = cb; return 1; }, clearTimeout: () => {} };
+    const doc = { createElement: () => ({}), head: { appendChild: value => { script = value; } } };
+    const loading = sdk.loadTelegramSDK(doc, win);
+    if (timedOut) timeout();
+    win.Telegram = { WebApp: tg };
+    script.onload();
+    await loading;
+    unsubscribe();
+    assert.equal(notifications, 1);
+  }
+});
+
 test('Behavioral verification: real loadTelegramSDK application code execution', async (t) => {
   assert.equal(typeof loadTelegramSDK, 'function', 'loadTelegramSDK must be an exported function');
 

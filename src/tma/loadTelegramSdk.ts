@@ -24,9 +24,8 @@ export async function loadTelegramSDK(
         currentWin.clearTimeout(fallbackTimer);
         fallbackTimer = null;
       }
-      if (timedOut) {
-        handleLateTelegramSDK(currentWin.Telegram?.WebApp);
-      } else {
+      handleLateTelegramSDK(currentWin.Telegram?.WebApp);
+      if (!timedOut) {
         resolve();
       }
     };

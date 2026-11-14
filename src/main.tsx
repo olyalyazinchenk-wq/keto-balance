@@ -15,8 +15,9 @@ function RootApp() {
   return <PilotApp />;
 }
 
-void loadTelegramSDK().finally(() => ReactDOM.createRoot(document.getElementById('root')!).render(
+void loadTelegramSDK();
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <RootApp />
   </React.StrictMode>,
-));
+);
