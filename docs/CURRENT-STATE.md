@@ -23,13 +23,25 @@
    - Внешний сетевой тест `live-browser-direct.spec.ts` вынесен под флаг `RUN_LIVE_TEST=1` и проверяет живой хост `84.54.56.73.nip.io` с полной TLS-валидацией.
    - В `walkthrough-all-scenarios.spec.ts` добавлены строгие проверки сохранения месячного меню (≥ 28 дней на клиенте и в БД), перезагрузки со сквозным таймером и истечения времени таймера.
 
-### Результаты машинной верификации (Clean Build: `728b479efa9d9502`)
+### Результаты машинной верификации и статус закрытого деплоя
+- **Установленная боевая сборка (Live Build):** `584f4489df4c70f8`, source `7e576df25d9be95a48b670fa500f96e8b4d5b808`, clean (`dirty: false`).
+- **Бэкенд:** `a74570ef10a53821`, каталог `666c79712f63128f`.
+- **Контейнеры на ВМ Cloud.ru (`84.54.56.73`):**
+  - `ketobalance-owner-app`: запущен, healthy (`127.0.0.1:18183 -> 18081`).
+  - `ketobalance-cloud-bot`: запущен, healthy (единственный poller, команды зарегистрированы, меню настроено).
+  - Предыдущие версии сохранены остановленными для мгновенного отката:
+    - `ketobalance-owner-app-before-release-584f4489df4c70f8`
+    - `ketobalance-cloud-bot-before-release-584f4489df4c70f8`
+  - Команда отката при необходимости:
+    `sudo -n python3 /home/user1/.local/share/ketobalance/releases/owner-release-584f4489df4c70f8/owner_rollout.py rollback`
+- **База данных:** схема и данные не модифицировались, проверены до и после деплоя (`user_states`: 1, `shopping_states`: 1, `user_profiles`: 1, integrity: ok, FK: 0).
+- **Внешний HTTPS-доступ:** `https://84.54.56.73.nip.io/api/version` подтверждён по TLS с проверкой сертификата, отдаёт Build ID `584f4489df4c70f8`.
 - `node scripts/project.mjs typecheck`: **0 errors (PASS)**.
 - `node scripts/project.mjs unit`: **353 PASS, 0 fail** (139 сьютов).
 - `.\.venv-p0\Scripts\python.exe scripts/run_backend_tests.py`: **398 PASS, 0 fail, 0 errors, 0 skipped** (67.3с с I/O Guard).
 - `npx playwright test --config=playwright.full.config.ts`: **27 PASS, 0 fail** (13 файлов, 1.3 мин).
 - `live-browser-direct.spec.ts` (TLS live check): **1 PASS, 0 fail** (200 OK, сертификат проверен).
-- Clean isolated build receipt: Build ID `728b479efa9d9502`, source fingerprint `fc32bfc37363bf487faf2dab1ebd81121e2b17d9c27f80c74ef772555f6a8b6f`.
+- Clean isolated build receipt: Build ID `584f4489df4c70f8`, source fingerprint `ebace4fac75c252bd4a8bea3f152ce2d10b3f54772803cbb027ffc4d8ffe7ef1`.
 
 Реализованы и подтверждены машинной верификацией ключевые инженерные доработки интерфейса:
 1. **Кухонный таймер вынесен на уровень приложения (`src/ui/food-first/KitchenTimerWidget.tsx`):**

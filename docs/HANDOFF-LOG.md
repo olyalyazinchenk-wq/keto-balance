@@ -16,10 +16,13 @@
   - `.\.venv-p0\Scripts\python.exe scripts/run_backend_tests.py`: 398 PASS, 0 fail, 0 errors, 0 skipped (67.3с с I/O Guard).
   - `npx playwright test --config=playwright.full.config.ts`: 27 PASS, 0 fail (13 файлов, 1.3 мин).
   - `live-browser-direct.spec.ts`: 1 PASS, 0 fail (строгий 200 OK по HTTPS с валидацией TLS).
-  - Чистая изолированная сборка: Build ID `728b479efa9d9502`, source fingerprint `fc32bfc37363bf487faf2dab1ebd81121e2b17d9c27f80c74ef772555f6a8b6f`.
-- **Дальнейшие шаги**:
-  - Фиксация коммита в Git и push в ветку PR `release/owner-ready-20261113`.
-  - Закрытый деплой приложения и бэкенда в существующие контейнеры с сохранением базы данных и poller.
+  - Чистая изолированная сборка: Build ID `584f4489df4c70f8`, source fingerprint `ebace4fac75c252bd4a8bea3f152ce2d10b3f54772803cbb027ffc4d8ffe7ef1`, gitSha `7e576df25d9be95a48b670fa500f96e8b4d5b808`, clean.
+- **Статус закрытого деплоя**:
+  - Коммит опубликован в ветку `release/owner-ready-20261113` (PR #27).
+  - Контейнеры `ketobalance-owner-app` и `ketobalance-cloud-bot` успешно обновлены на ВМ Cloud.ru (`84.54.56.73`) с новым фронтендом и бэкендом (`payments_enabled: false`).
+  - Данные пользователей (профиль, меню и список покупок Ольги) сохранены в неизменном виде (целостность БД проверена).
+  - Предыдущие контейнеры сохранены остановленными (`-before-release-584f4489df4c70f8`) для мгновенного отката при необходимости.
+  - Внешний доступ по HTTPS (`https://84.54.56.73.nip.io/api/version`) подтверждён браузером и curl: Build ID `584f4489df4c70f8`.
 
 ## 14.11.2026,19:27МСК — только кето
 Владелец снял карнивор с текущего продукта и выпуска. Source66d55a9/livebuilddf66a0fd7da3097a установлены app+bot с прежними настройками, без миграций. Каталог/пользовательские данные сохранены. Новое меню keto; старые совместимые меню читаются. КБЖУ/редакторский пакет теперь20кето,16карнивор-заготовок не являются блокером выпуска.345unit/397backend/20E2E+29targeted/final20E2E PASS; независимыйreviewPASS. Внешние байты/гайд8/getMe/menuURL PASS, актуальные свидетельства и откат в CURRENT-STATE. Реальная телефонная приёмка и24ч остаются открытыми; платежи выключены.

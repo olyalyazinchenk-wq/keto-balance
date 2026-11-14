@@ -41,4 +41,4 @@
 - `Shopping.tsx`: исправлен контраст кнопок выбора диапазона, полей дат и добавления продукта в тёмной теме.
 - `PilotApp.tsx`: честное отображение пустого/сбойного списка месяцев каталога с кнопкой повтора вместо придуманного месяца.
 - `tests/frontend/*`: модульные тесты таймера и границ подписки переведены на реальный импорт TypeScript/React через `loadTs` и `ReactDOMServer`.
-- Полный набор Playwright: 27/27 PASS (13 файлов, 1.3 мин), внешний TLS direct check: 1/1 PASS, unit: 353 PASS, backend: 398 PASS (67.3с с I/O Guard). Изолированная сборка `728b479efa9d9502` PASS.
+- Полный набор Playwright: 27/27 PASS (13 файлов, 1.3 мин), внешний TLS direct check: 1/1 PASS, unit: 353 PASS, backend: 398 PASS (67.3с с I/O Guard). Изолированная сборка `584f4489df4c70f8` (gitSha `7e576df...`, clean) развёрнута в закрытом контуре на ВМ Cloud.ru (`ketobalance-owner-app` и `ketobalance-cloud-bot`, healthy, база данных и единственный poller сохранены, откат обеспечен).
