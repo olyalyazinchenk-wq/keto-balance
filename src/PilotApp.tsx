@@ -1984,32 +1984,52 @@ export default function PilotApp() {
                     });
                   }
 
-                  const now = new Date();
-                  const currYear = now.getFullYear();
-                  const currMonthIdx = now.getMonth();
-                  const currMonthDays = new Date(currYear, currMonthIdx + 1, 0).getDate();
-                  const currMonthKey = `${currYear}-${String(currMonthIdx + 1).padStart(2, '0')}`;
-                  const currMonthName = now.toLocaleString('ru-RU', { month: 'long' });
-                  const currLabel = currMonthName.charAt(0).toUpperCase() + currMonthName.slice(1);
+                  if (catalog?.catalog_month) {
+                    const mKey = catalog.catalog_month;
+                    const [yStr, mStr] = mKey.split('-');
+                    const y = parseInt(yStr, 10);
+                    const m = parseInt(mStr, 10);
+                    const dCount = new Date(y, m, 0).getDate();
+                    const dateObj = new Date(y, m - 1, 1);
+                    const rawName = dateObj.toLocaleString('ru-RU', { month: 'long' });
+                    const capitalized = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+                    const isSelected = draftPlanDays >= 28 && draftPlanDays <= 31 && (draftMonth === mKey || !draftMonth);
 
-                  const isCurrSelected = (draftPlanDays >= 28 && draftPlanDays <= 31) && (draftMonth === currMonthKey || !draftMonth);
+                    return (
+                      <button
+                        key={catalog.catalog_id || mKey}
+                        type="button"
+                        data-testid="settings-days-month"
+                        onClick={() => {
+                          setDraftPlanDays(dCount as any);
+                          setDraftMonth(mKey);
+                        }}
+                        className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
+                          isSelected
+                            ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
+                            : 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
+                        }`}
+                      >
+                        {capitalized} ({dCount} дн.)
+                      </button>
+                    );
+                  }
 
                   return (
-                    <button
-                      type="button"
-                      data-testid="settings-days-month"
-                      onClick={() => {
-                        setDraftPlanDays(currMonthDays as any);
-                        setDraftMonth(currMonthKey);
-                      }}
-                      className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
-                        isCurrSelected
-                          ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
-                          : 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
-                      }`}
+                    <div
+                      className="col-span-full p-2.5 rounded-xl border border-[var(--kb-border)] bg-[var(--kb-surface-muted)] text-xs text-[var(--kb-text-2)] flex items-center justify-between gap-2"
+                      data-testid="catalogs-load-error-notice"
                     >
-                      {currLabel} ({currMonthDays} дн.)
-                    </button>
+                      <span>Месячные подборки временно недоступны. Прежний рацион сохранён.</span>
+                      <button
+                        type="button"
+                        onClick={() => void refreshCatalogRegistry()}
+                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#5F7161] text-white hover:bg-[#4E5E50] flex-shrink-0"
+                        data-testid="retry-catalogs-btn"
+                      >
+                        Повторить
+                      </button>
+                    </div>
                   );
                 })()}
               </div>

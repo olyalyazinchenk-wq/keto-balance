@@ -391,64 +391,69 @@ export function RecipeScreen({
             </div>
           )}
 
-          <ol className="space-y-4">
-            {recipe.steps.map((step, idx) => {
-              const stepKey = `${recipe.id}:step:${idx}`;
-              const isChecked = Boolean(checkedSteps[stepKey]);
-              const timerMins = extractStepTimerMinutes(step);
-              return (
-                <li
-                  key={stepKey}
-                  data-testid={`recipe-step-item-${idx}`}
-                  className={`p-3.5 rounded-xl border transition-all ${
-                    isChecked
-                      ? 'bg-stone-50 border-stone-200 opacity-60 dark:bg-stone-900/30 dark:border-stone-800'
-                      : 'bg-[var(--kb-surface)] border-[var(--kb-border)]'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic('impact_light');
-                        onToggleStep(stepKey);
-                      }}
-                      aria-pressed={isChecked}
-                      data-testid={`recipe-step-toggle-${idx}`}
-                      aria-label={`Шаг ${idx + 1}: ${isChecked ? 'готово' : 'отметить готовым'}`}
-                      className={`mt-0.5 w-11 h-11 rounded-md border flex items-center justify-center shrink-0 ${
+          {(() => {
+            const hasAnyStepTimer = recipe.steps.some((s) => extractStepTimerMinutes(s) !== null);
+            return (
+              <ol className="space-y-4">
+                {recipe.steps.map((step, idx) => {
+                  const stepKey = `${recipe.id}:step:${idx}`;
+                  const isChecked = Boolean(checkedSteps[stepKey]);
+                  const timerMins = extractStepTimerMinutes(step) ?? (!hasAnyStepTimer && idx === 0 ? (recipe.prepMinutes || 5) : null);
+                  return (
+                    <li
+                      key={stepKey}
+                      data-testid={`recipe-step-item-${idx}`}
+                      className={`p-3.5 rounded-xl border transition-all ${
                         isChecked
-                          ? 'bg-emerald-600 border-emerald-600 text-white'
-                          : 'border-stone-300 bg-white dark:bg-stone-800 dark:border-stone-600'
+                          ? 'bg-stone-50 border-stone-200 opacity-60 dark:bg-stone-900/30 dark:border-stone-800'
+                          : 'bg-[var(--kb-surface)] border-[var(--kb-border)]'
                       }`}
                     >
-                      {isChecked && <Check className="w-4 h-4" aria-hidden="true" />}
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-[15px] leading-relaxed ${isChecked ? 'line-through text-stone-400' : 'text-[var(--kb-text-1)]'}`}>
-                        <strong className="mr-1.5">{idx + 1}.</strong>
-                        {step}
-                      </p>
-                      {timerMins !== null && (
+                      <div className="flex items-start gap-3">
                         <button
                           type="button"
                           onClick={() => {
-                            triggerHaptic('selection');
-                            startStepTimer(timerMins, idx);
+                            triggerHaptic('impact_light');
+                            onToggleStep(stepKey);
                           }}
-                          data-testid={`start-step-timer-btn-${idx}`}
-                          className="mt-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 inline-flex items-center gap-1.5 hover:underline"
+                          aria-pressed={isChecked}
+                          data-testid={`recipe-step-toggle-${idx}`}
+                          aria-label={`Шаг ${idx + 1}: ${isChecked ? 'готово' : 'отметить готовым'}`}
+                          className={`mt-0.5 w-11 h-11 rounded-md border flex items-center justify-center shrink-0 ${
+                            isChecked
+                              ? 'bg-emerald-600 border-emerald-600 text-white'
+                              : 'border-stone-300 bg-white dark:bg-stone-800 dark:border-stone-600'
+                          }`}
                         >
-                          <Clock className="w-3.5 h-3.5" aria-hidden="true" />
-                          <span>Запустить таймер: {timerMins} мин</span>
+                          {isChecked && <Check className="w-4 h-4" aria-hidden="true" />}
                         </button>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-[15px] leading-relaxed ${isChecked ? 'line-through text-stone-400' : 'text-[var(--kb-text-1)]'}`}>
+                            <strong className="mr-1.5">{idx + 1}.</strong>
+                            {step}
+                          </p>
+                          {timerMins !== null && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                triggerHaptic('selection');
+                                startStepTimer(timerMins, idx);
+                              }}
+                              data-testid={`start-step-timer-btn-${idx}`}
+                              className="mt-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 inline-flex items-center gap-1.5 hover:underline"
+                            >
+                              <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                              <span>Запустить таймер: {timerMins} мин</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            );
+          })()}
 
           {/* Заметки, хранение и запись */}
           <div className="pt-4 border-t border-[var(--kb-border)] space-y-4">

@@ -9,6 +9,7 @@ export interface AppShellProps {
   visualDirection?: VisualDirection; onChangeVisualDirection?: (dir: VisualDirection) => void;
   theme?: 'light' | 'dark'; onToggleTheme?: () => void; shoppingNeedsRefresh: boolean;
   selectedDayIndex?: number; selectedDayLabel?: string; children: React.ReactNode;
+  hasFloatingTimer?: boolean;
 }
 const PRIMARY_NAV = [
   { id: 'today', label: 'Сегодня', Icon: Calendar },
@@ -16,7 +17,7 @@ const PRIMARY_NAV = [
   { id: 'shopping', label: 'Покупки', Icon: ShoppingBag },
   { id: 'more', label: 'Ещё', Icon: MoreHorizontal },
 ] as const;
-export function AppShell({ activeScreen, canGoBack, onGoBack, onNavigate, onOpenSupport, shoppingNeedsRefresh, children }: AppShellProps) {
+export function AppShell({ activeScreen, canGoBack, onGoBack, onNavigate, onOpenSupport, shoppingNeedsRefresh, hasFloatingTimer, children }: AppShellProps) {
   useEffect(() => setupTelegramApp(), []);
   useEffect(() => {
     if (canGoBack) return bindBackButton(onGoBack);
@@ -25,7 +26,7 @@ export function AppShell({ activeScreen, canGoBack, onGoBack, onNavigate, onOpen
   const isNavHighlighted = (id: ScreenId) => activeScreen === id ||
     (id === 'menu' && activeScreen === 'recipe') ||
     (id === 'more' && ['settings', 'start', 'access', 'support', 'diary'].includes(activeScreen));
-  return <div className="ff-proof" data-testid="food-app-shell">
+  return <div className={`ff-proof${hasFloatingTimer ? ' ff-proof--with-timer' : ''}`} data-testid="food-app-shell">
     <header className="ff-proof__header">
       <span className="ff-proof__brand">Кето Баланс</span>
       <div className="ff-header-actions">

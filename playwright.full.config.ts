@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
+  testIgnore: process.env.RUN_LIVE_TEST ? [] : ['**/live-browser-direct.spec.ts'],
   timeout: 30000,
   expect: {
     timeout: 5000,

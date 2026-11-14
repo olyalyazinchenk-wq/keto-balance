@@ -299,8 +299,8 @@ export function ShoppingScreen({
                       }}
                       className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
                         selectedRange === w.id
-                          ? 'border-[var(--kb-primary)] bg-[#EDF1E6] text-[#1B211B] font-bold'
-                          : 'border-[var(--kb-border)] bg-white text-[var(--kb-text-2)] hover:bg-stone-50'
+                          ? 'border-[var(--kb-primary)] bg-[var(--kb-surface-muted)] text-[var(--kb-text-1)] font-bold'
+                          : 'border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
                       }`}
                     >
                       {w.label}
@@ -316,8 +316,8 @@ export function ShoppingScreen({
                     }}
                     className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
                       selectedRange === 'all'
-                        ? 'border-[var(--kb-primary)] bg-[#EDF1E6] text-[#1B211B] font-bold'
-                        : 'border-[var(--kb-border)] bg-white text-[var(--kb-text-2)] hover:bg-stone-50'
+                        ? 'border-[var(--kb-primary)] bg-[var(--kb-surface-muted)] text-[var(--kb-text-1)] font-bold'
+                        : 'border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
                     }`}
                   >
                     Весь месяц ({menuDays ? menuDays.length : 0} дн.)
@@ -331,8 +331,8 @@ export function ShoppingScreen({
                     }}
                     className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
                       selectedRange === 'custom' || selectedRange.startsWith('custom')
-                        ? 'border-[var(--kb-primary)] bg-[#EDF1E6] text-[#1B211B] font-bold'
-                        : 'border-[var(--kb-border)] bg-white text-[var(--kb-text-2)] hover:bg-stone-50'
+                        ? 'border-[var(--kb-primary)] bg-[var(--kb-surface-muted)] text-[var(--kb-text-1)] font-bold'
+                        : 'border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
                     }`}
                   >
                     Свой диапазон
@@ -340,7 +340,7 @@ export function ShoppingScreen({
                 </div>
                 {showCustomPicker && (
                   <div
-                    className="mt-2 p-2.5 rounded-lg border border-[var(--kb-border)] bg-stone-50 text-xs space-y-2"
+                    className="mt-2 p-2.5 rounded-lg border border-[var(--kb-border)] bg-[var(--kb-surface-muted)] text-xs space-y-2"
                     data-testid="custom-range-picker"
                   >
                     <div className="flex flex-wrap items-center gap-2">
@@ -351,7 +351,7 @@ export function ShoppingScreen({
                           data-testid="custom-range-start"
                           value={customStartDate}
                           onChange={(e) => setCustomStartDate(e.target.value)}
-                          className="px-2 py-1 rounded border border-[var(--kb-border)] bg-white text-xs"
+                          className="px-2 py-1 rounded border border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-1)] text-xs"
                         />
                       </label>
                       <label className="flex items-center gap-1">
@@ -361,7 +361,7 @@ export function ShoppingScreen({
                           data-testid="custom-range-end"
                           value={customEndDate}
                           onChange={(e) => setCustomEndDate(e.target.value)}
-                          className="px-2 py-1 rounded border border-[var(--kb-border)] bg-white text-xs"
+                          className="px-2 py-1 rounded border border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-1)] text-xs"
                         />
                       </label>
                       <button
@@ -507,7 +507,7 @@ export function ShoppingScreen({
                 placeholder="Название (например, Кокосовые сливки)"
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
-                className="px-3 py-2 text-sm rounded-lg border border-[var(--kb-border)] bg-white dark:bg-stone-900"
+                className="px-3 py-2 text-sm rounded-lg border border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-1)]"
                 required
               />
               <input
@@ -515,12 +515,12 @@ export function ShoppingScreen({
                 placeholder="Количество (например, 200 мл)"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
-                className="px-3 py-2 text-sm rounded-lg border border-[var(--kb-border)] bg-white dark:bg-stone-900"
+                className="px-3 py-2 text-sm rounded-lg border border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-1)]"
               />
               <select
                 value={customDept}
                 onChange={(e) => setCustomDept(e.target.value as any)}
-                className="px-3 py-2 text-sm rounded-lg border border-[var(--kb-border)] bg-white dark:bg-stone-900"
+                className="px-3 py-2 text-sm rounded-lg border border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-1)]"
               >
                 {DEPARTMENTS.map((d) => (
                   <option key={d} value={d}>{d}</option>

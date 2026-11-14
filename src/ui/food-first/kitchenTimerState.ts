@@ -19,6 +19,18 @@ export interface ActiveKitchenTimer {
   startedAt: number;
 }
 
+/**
+ * Safely accesses window.localStorage without throwing SecurityError in restricted environments.
+ */
+export function getSafeStorage(): Storage | null {
+  try {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage || null;
+  } catch {
+    return null;
+  }
+}
+
 export function getTimerStorageKey(userId?: string | number | null): string {
   const normalized = userId !== undefined && userId !== null && String(userId).trim() !== ''
     ? String(userId).trim()
@@ -26,11 +38,103 @@ export function getTimerStorageKey(userId?: string | number | null): string {
   return `kb:timer:${normalized}`;
 }
 
+/**
+ * Strict validator for timer records loaded from storage.
+ * Ensures all types are primitive and values are within valid bounds.
+ */
+export function validateTimerRecord(parsed: any, expectedUser: string): ActiveKitchenTimer | null {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return null;
+  }
+
+  // recipeId: must be non-empty string
+  if (typeof parsed.recipeId !== 'string' || !parsed.recipeId.trim() || parsed.recipeId.length > 128) {
+    return null;
+  }
+
+  // recipeTitle: must be string, cannot be an object or number
+  if (typeof parsed.recipeTitle !== 'string' || !parsed.recipeTitle.trim() || parsed.recipeTitle.length > 256) {
+    return null;
+  }
+
+  // label: must be string
+  if (typeof parsed.label !== 'string' || !parsed.label.trim() || parsed.label.length > 256) {
+    return null;
+  }
+
+  // userId check: strict user isolation
+  const recordUser = typeof parsed.userId === 'string' ? parsed.userId.trim() : 'anonymous';
+  if (recordUser !== expectedUser) {
+    return null;
+  }
+
+  // remainingSeconds: finite number >= 0 and <= 86400 (24h)
+  if (typeof parsed.remainingSeconds !== 'number' || !Number.isFinite(parsed.remainingSeconds) || parsed.remainingSeconds < 0 || parsed.remainingSeconds > 86400) {
+    return null;
+  }
+
+  // totalDurationSeconds: finite number > 0 and <= 86400
+  const totalDuration = typeof parsed.totalDurationSeconds === 'number' && Number.isFinite(parsed.totalDurationSeconds)
+    ? parsed.totalDurationSeconds
+    : parsed.remainingSeconds;
+  if (totalDuration <= 0 || totalDuration > 86400) {
+    return null;
+  }
+
+  // isPaused and isCompleted: must be booleans
+  if (typeof parsed.isPaused !== 'boolean' || typeof parsed.isCompleted !== 'boolean') {
+    return null;
+  }
+
+  // deadline: must be null or finite number > 0
+  let deadline: number | null = null;
+  if (parsed.deadline !== null && parsed.deadline !== undefined) {
+    if (typeof parsed.deadline !== 'number' || !Number.isFinite(parsed.deadline) || parsed.deadline <= 0) {
+      return null;
+    }
+    deadline = parsed.deadline;
+  }
+
+  // Invariant: if running (not paused, not completed, remaining > 0), deadline must be present
+  if (!parsed.isPaused && !parsed.isCompleted && parsed.remainingSeconds > 0 && deadline === null) {
+    return null;
+  }
+
+  // stepIndex: optional integer >= 0
+  let stepIndex: number | undefined = undefined;
+  if (parsed.stepIndex !== undefined && parsed.stepIndex !== null) {
+    if (typeof parsed.stepIndex !== 'number' || !Number.isInteger(parsed.stepIndex) || parsed.stepIndex < 0 || parsed.stepIndex > 200) {
+      return null;
+    }
+    stepIndex = parsed.stepIndex;
+  }
+
+  // startedAt: must be finite number > 0
+  const startedAt = typeof parsed.startedAt === 'number' && Number.isFinite(parsed.startedAt) && parsed.startedAt > 0
+    ? parsed.startedAt
+    : Date.now();
+
+  return {
+    userId: expectedUser,
+    recipeId: parsed.recipeId.trim(),
+    recipeTitle: parsed.recipeTitle.trim(),
+    stepIndex,
+    label: parsed.label.trim(),
+    totalDurationSeconds: Math.floor(totalDuration),
+    deadline,
+    remainingSeconds: Math.floor(parsed.remainingSeconds),
+    isPaused: parsed.isPaused,
+    isCompleted: parsed.isCompleted,
+    startedAt,
+  };
+}
+
 export function saveActiveTimer(timer: ActiveKitchenTimer): void {
-  if (typeof window === 'undefined' || !window.localStorage) return;
+  const storage = getSafeStorage();
+  if (!storage) return;
   try {
     const key = getTimerStorageKey(timer.userId);
-    window.localStorage.setItem(key, JSON.stringify(timer));
+    storage.setItem(key, JSON.stringify(timer));
   } catch (e) {
     console.warn('[KitchenTimer] Failed to persist timer to localStorage:', e);
   }
@@ -40,20 +144,18 @@ export function loadActiveTimer(
   userId?: string | number | null,
   now: number = Date.now()
 ): ActiveKitchenTimer | null {
-  if (typeof window === 'undefined' || !window.localStorage) return null;
+  const storage = getSafeStorage();
+  if (!storage) return null;
+  const key = getTimerStorageKey(userId);
   try {
-    const key = getTimerStorageKey(userId);
-    const raw = window.localStorage.getItem(key);
+    const raw = storage.getItem(key);
     if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (
-      !parsed ||
-      typeof parsed !== 'object' ||
-      typeof parsed.recipeId !== 'string' ||
-      typeof parsed.remainingSeconds !== 'number'
-    ) {
-      // Safe fallback on corrupted record
-      window.localStorage.removeItem(key);
+    let parsed: any;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      // Corrupted JSON -> remove key and fail safe
+      try { storage.removeItem(key); } catch {}
       return null;
     }
 
@@ -61,25 +163,14 @@ export function loadActiveTimer(
       ? String(userId).trim()
       : 'anonymous';
 
-    if (parsed.userId && parsed.userId !== expectedUser) {
-      // Strict user isolation: do not expose another user's timer
+    const timer = validateTimerRecord(parsed, expectedUser);
+    if (!timer) {
+      // Corrupted or invalid fields -> clean up and return null
+      try { storage.removeItem(key); } catch {}
       return null;
     }
 
-    const timer: ActiveKitchenTimer = {
-      userId: expectedUser,
-      recipeId: parsed.recipeId,
-      recipeTitle: parsed.recipeTitle || 'Рецепт',
-      stepIndex: typeof parsed.stepIndex === 'number' ? parsed.stepIndex : undefined,
-      label: parsed.label || 'Таймер у плиты',
-      totalDurationSeconds: Number(parsed.totalDurationSeconds) || parsed.remainingSeconds,
-      deadline: parsed.deadline !== null && Number.isFinite(parsed.deadline) ? parsed.deadline : null,
-      remainingSeconds: Math.max(0, Math.floor(parsed.remainingSeconds)),
-      isPaused: Boolean(parsed.isPaused),
-      isCompleted: Boolean(parsed.isCompleted),
-      startedAt: Number(parsed.startedAt) || now,
-    };
-
+    // If running, recompute remainingSeconds based on current time vs absolute deadline
     if (!timer.isPaused && timer.deadline !== null) {
       const remaining = remainingTimerSeconds(timer.deadline, now);
       timer.remainingSeconds = remaining;
@@ -92,27 +183,25 @@ export function loadActiveTimer(
 
     return timer;
   } catch {
-    // Corrupted record safely ignored
-    try {
-      const key = getTimerStorageKey(userId);
-      window.localStorage.removeItem(key);
-    } catch {}
+    // Top-level safety: never crash the caller on storage issues
+    try { storage.removeItem(key); } catch {}
     return null;
   }
 }
 
 export function clearActiveTimer(userId?: string | number | null): void {
-  if (typeof window === 'undefined' || !window.localStorage) return null as any;
+  const storage = getSafeStorage();
+  if (!storage) return;
   try {
     const key = getTimerStorageKey(userId);
-    window.localStorage.removeItem(key);
+    storage.removeItem(key);
   } catch (e) {
     console.warn('[KitchenTimer] Failed to clear timer from localStorage:', e);
   }
 }
 
 export function formatTimerMMSS(totalSeconds: number): string {
-  const safeSec = Math.max(0, Math.floor(totalSeconds));
+  const safeSec = Math.max(0, Math.floor(Number.isFinite(totalSeconds) ? totalSeconds : 0));
   const m = Math.floor(safeSec / 60);
   const s = safeSec % 60;
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;

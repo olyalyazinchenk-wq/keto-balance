@@ -66,8 +66,8 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
         window.location.hostname === '127.0.0.1' ||
         window.location.hostname === 'localhost'));
 
-  // Server state governs payment availability
-  const isPayOpen = Boolean(paymentsEnabled);
+  // Server state governs payment availability, with demo preview permitted on loopback/test
+  const isPayOpen = Boolean(paymentsEnabled || isDemo);
 
   useEffect(() => {
     if (!isOpen) return;

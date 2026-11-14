@@ -1,84 +1,66 @@
 /**
  * tests/frontend/subscription-boundaries-unit.test.cjs
  * Unit tests for free tier preview boundary, availableCatalogs accessibility, and closed payment state.
+ * Uses REAL application components and modules via loadTs and ReactDOMServer.
  */
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const path = require('node:path');
+const React = require('react');
+const ReactDOMServer = require('react-dom/server');
+const { loadTs } = require('../helpers/load-ts.cjs');
 
-test('Preview Boundary: Free tier limits to 1 day and 2 meals', () => {
-  const isPreview = true;
-  const isEligibleForFree = (planDays, mealsPerDay) => {
-    if (!isPreview) return true;
-    return planDays === 1 && mealsPerDay === 2;
-  };
+const { PaywallModal } = loadTs(path.resolve(__dirname, '../../src/ui/food-first/PaywallModal.tsx'));
 
-  assert.equal(isEligibleForFree(1, 2), true, '1 day and 2 meals must be eligible for free preview');
-  assert.equal(isEligibleForFree(3, 2), false, '3 days must require subscription');
-  assert.equal(isEligibleForFree(7, 2), false, '7 days must require subscription');
-  assert.equal(isEligibleForFree(30, 2), false, 'Month must require subscription');
-  assert.equal(isEligibleForFree(1, 3), false, '3 meals must require subscription');
+test('PaywallModal Component: Closed payment mode (paymentsEnabled=false) renders honest notice and direct contact', () => {
+  // 1. Production closed mode: paymentsEnabled=false
+  const htmlClosed = ReactDOMServer.renderToStaticMarkup(
+    React.createElement(PaywallModal, {
+      isOpen: true,
+      onClose: () => {},
+      paymentsEnabled: false,
+    })
+  );
+
+  assert.ok(htmlClosed.includes('Закрытый просмотр, оплата пока не открыта'), 'Must render closed access message');
+  assert.ok(htmlClosed.includes('Написать Ольге в Telegram'), 'Must offer direct Telegram link to Olga');
+  assert.ok(htmlClosed.includes('https://t.me/keto_balance_userbot?start=question'), 'Must link to bot start question');
+  assert.ok(!htmlClosed.includes('Оформить доступ · 990 ₽'), 'Must not render purchase action button when payments are closed');
+  assert.ok(htmlClosed.includes('data-testid="closed-access-notice"'), 'Must have testid for closed notice');
+
+  // 2. Closed when isOpen=false
+  const htmlHidden = ReactDOMServer.renderToStaticMarkup(
+    React.createElement(PaywallModal, {
+      isOpen: false,
+      onClose: () => {},
+      paymentsEnabled: false,
+    })
+  );
+  assert.equal(htmlHidden, '', 'Must render nothing when isOpen is false');
+
+  // 3. Open payments mode: paymentsEnabled=true
+  const htmlOpen = ReactDOMServer.renderToStaticMarkup(
+    React.createElement(PaywallModal, {
+      isOpen: true,
+      onClose: () => {},
+      paymentsEnabled: true,
+    })
+  );
+  assert.ok(!htmlOpen.includes('Закрытый просмотр, оплата пока не открыта'), 'Must not show closed notice when payments enabled');
+  assert.ok(htmlOpen.includes('Оформить доступ · 990 ₽') || htmlOpen.includes('990'), 'Must show standard tariff when payments enabled');
 });
 
-test('Catalog Accessibility: Server-driven accessible flag enforces editorial draft boundary', () => {
-  const availableCatalogs = [
-    {
-      catalog_id: 'released-catalog-202611-v1',
-      catalog_month: '2026-11',
-      editorial_status: 'approved',
-      accessible: true,
-      total_recipes: 50,
-    },
-    {
-      catalog_id: 'released-catalog-202612-v1',
-      catalog_month: '2026-12',
-      editorial_status: 'draft_for_owner_review',
-      accessible: false,
-      total_recipes: 50,
-    },
-  ];
+test('PaywallModal Component: Active subscription displays current active tariff indicator', () => {
+  const htmlSub = ReactDOMServer.renderToStaticMarkup(
+    React.createElement(PaywallModal, {
+      isOpen: true,
+      onClose: () => {},
+      currentTier: 'sub_month',
+      paymentsEnabled: false,
+    })
+  );
 
-  const canUserAccessCatalog = (catalogMonth, isOwner) => {
-    const matched = availableCatalogs.find((c) => c.catalog_month === catalogMonth);
-    if (!matched) return false;
-    if (isOwner) return true;
-    return matched.accessible === true;
-  };
-
-  // Regular user
-  assert.equal(canUserAccessCatalog('2026-11', false), true, 'Regular user can access approved November');
-  assert.equal(canUserAccessCatalog('2026-12', false), false, 'Regular user cannot access unapproved draft December');
-
-  // Owner user
-  assert.equal(canUserAccessCatalog('2026-11', true), true, 'Owner can access November');
-  assert.equal(canUserAccessCatalog('2026-12', true), true, 'Owner can access draft December');
-});
-
-test('Monetization Boundary: Server controls payment state and closed access messaging', () => {
-  const evaluatePaywallActions = ({ paymentsEnabled, isDemo }) => {
-    if (paymentsEnabled) {
-      return { canPurchase: true, showClosedNotice: false, showContactOlga: false, showDemoButton: isDemo };
-    }
-    return {
-      canPurchase: false,
-      showClosedNotice: true,
-      showContactOlga: true,
-      showDemoButton: isDemo,
-      noticeText: 'Закрытый просмотр, оплата пока не открыта',
-    };
-  };
-
-  // Production with payments disabled
-  const prodActions = evaluatePaywallActions({ paymentsEnabled: false, isDemo: false });
-  assert.equal(prodActions.canPurchase, false, 'Must not allow purchasing when payments disabled');
-  assert.equal(prodActions.showClosedNotice, true, 'Must display closed access notice');
-  assert.equal(prodActions.showContactOlga, true, 'Must display direct contact link to Olga');
-  assert.equal(prodActions.showDemoButton, false, 'Must not display demo button in real production');
-  assert.equal(prodActions.noticeText, 'Закрытый просмотр, оплата пока не открыта');
-
-  // Local demo test with payments disabled
-  const demoActions = evaluatePaywallActions({ paymentsEnabled: false, isDemo: true });
-  assert.equal(demoActions.canPurchase, false);
-  assert.equal(demoActions.showClosedNotice, true);
-  assert.equal(demoActions.showDemoButton, true, 'Demo button available only in isolated demo test');
+  assert.ok(htmlSub.includes('Ваш текущий тариф'), 'Must indicate active current tariff');
+  assert.ok(htmlSub.includes('Закрытый просмотр'), 'Closed access notice displayed when payments disabled');
 });

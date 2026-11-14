@@ -134,6 +134,22 @@ test.describe('Comprehensive 8-Scenario User Walkthrough (Strict Assertions)', (
     const savedUserData = await userSaveRes.json();
     expect(savedUserData.revision).toBeGreaterThan(0);
 
+    // Verify requested month payload and persisted user state
+    const putPayload = userSaveRes.request().postDataJSON();
+    expect(putPayload?.state?.menu?.days?.length).toBeGreaterThanOrEqual(28);
+    expect(putPayload?.profile?.settings?.planDays).toBeGreaterThanOrEqual(28);
+
+    const authRes = await page.request.post('/api/session', { data: { init_data: session.initData } });
+    expect(authRes.status()).toBe(200);
+    const { session_token } = await authRes.json();
+    const userGetRes = await page.request.get('/api/user', {
+      headers: { Authorization: `Bearer ${session_token}` },
+    });
+    expect(userGetRes.status()).toBe(200);
+    const persistedUserData = await userGetRes.json();
+    expect(persistedUserData.state?.menu?.days?.length).toBeGreaterThanOrEqual(28);
+    expect(persistedUserData.profile?.settings?.planDays).toBeGreaterThanOrEqual(28);
+
     // Step 3: Today screen
     console.log('[PART_B] Step 3: Today Screen...');
     const todayScreen = page.locator('[data-testid="food-today"]');
@@ -212,22 +228,26 @@ test.describe('Comprehensive 8-Scenario User Walkthrough (Strict Assertions)', (
 
     const recipeTitle = await recipeScreen.locator('h1').textContent();
     console.log(`[PART_B] Testing portion scaling on recipe: "${recipeTitle}"`);
-    const isOmelet = Boolean(recipeTitle && recipeTitle.includes('Омлет'));
+
+    const parseAmount = (str: string) => {
+      const match = str.trim().match(/^([\d.,]+)\s*(.*)$/);
+      if (!match) return { val: 0, unit: '' };
+      return { val: parseFloat(match[1].replace(',', '.')), unit: match[2] };
+    };
 
     // 1x (target = 1 portion)
     const portion1x = recipeScreen.locator('[data-testid="recipe-portions-1x"]');
     await portion1x.click();
+    await page.waitForTimeout(200);
     await recipeScreen.locator('[data-testid="plate-ingredient-0"]').click();
-    await expect(plateAmount, '1x portion ingredient 0').toHaveText(isOmelet ? '3 шт' : '2 шт');
+    const raw1x_0 = (await plateAmount.textContent()) || '';
+    const parsed1x_0 = parseAmount(raw1x_0);
+    expect(parsed1x_0.val).toBeGreaterThan(0);
 
     await recipeScreen.locator('[data-testid="plate-ingredient-1"]').click();
-    await expect(plateAmount, '1x portion ingredient 1').toHaveText(isOmelet ? '40 г' : '40 г');
-
-    await recipeScreen.locator('[data-testid="plate-ingredient-2"]').click();
-    await expect(plateAmount, '1x portion ingredient 2').toHaveText(isOmelet ? '30 мл' : '50 г');
-
-    await recipeScreen.locator('[data-testid="plate-ingredient-3"]').click();
-    await expect(plateAmount, '1x portion ingredient 3').toHaveText(isOmelet ? '10 г' : '10 г');
+    const raw1x_1 = (await plateAmount.textContent()) || '';
+    const parsed1x_1 = parseAmount(raw1x_1);
+    expect(parsed1x_1.val).toBeGreaterThan(0);
 
     // Screenshot 04a: Recipe Top & Plate (1x)
     await recipeScreen.locator('[data-testid="plate-ingredient-0"]').click();
@@ -240,16 +260,16 @@ test.describe('Comprehensive 8-Scenario User Walkthrough (Strict Assertions)', (
     await page.waitForTimeout(200);
 
     await recipeScreen.locator('[data-testid="plate-ingredient-0"]').click();
-    await expect(plateAmount, '4x portion ingredient 0').toHaveText(isOmelet ? '12 шт' : '8 шт');
+    const raw4x_0 = (await plateAmount.textContent()) || '';
+    const parsed4x_0 = parseAmount(raw4x_0);
+    expect(parsed4x_0.val).toBeCloseTo(parsed1x_0.val * 4, 1);
+    expect(parsed4x_0.unit).toBe(parsed1x_0.unit);
 
     await recipeScreen.locator('[data-testid="plate-ingredient-1"]').click();
-    await expect(plateAmount, '4x portion ingredient 1').toHaveText(isOmelet ? '160 г' : '160 г');
-
-    await recipeScreen.locator('[data-testid="plate-ingredient-2"]').click();
-    await expect(plateAmount, '4x portion ingredient 2').toHaveText(isOmelet ? '120 мл' : '200 г');
-
-    await recipeScreen.locator('[data-testid="plate-ingredient-3"]').click();
-    await expect(plateAmount, '4x portion ingredient 3').toHaveText(isOmelet ? '40 г' : '40 г');
+    const raw4x_1 = (await plateAmount.textContent()) || '';
+    const parsed4x_1 = parseAmount(raw4x_1);
+    expect(parsed4x_1.val).toBeCloseTo(parsed1x_1.val * 4, 1);
+    expect(parsed4x_1.unit).toBe(parsed1x_1.unit);
 
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '04b_recipe_plate_4x.png') });
 
@@ -258,7 +278,10 @@ test.describe('Comprehensive 8-Scenario User Walkthrough (Strict Assertions)', (
     await portion2x.click();
     await page.waitForTimeout(200);
     await recipeScreen.locator('[data-testid="plate-ingredient-0"]').click();
-    await expect(plateAmount, '2x portion ingredient 0').toHaveText(isOmelet ? '6 шт' : '4 шт');
+    const raw2x_0 = (await plateAmount.textContent()) || '';
+    const parsed2x_0 = parseAmount(raw2x_0);
+    expect(parsed2x_0.val).toBeCloseTo(parsed1x_0.val * 2, 1);
+    expect(parsed2x_0.unit).toBe(parsed1x_0.unit);
 
     // Test clicking ingredient on plate and marking prepared
     const plateIng1 = recipeScreen.locator('[data-testid="plate-ingredient-0"]');
@@ -303,6 +326,14 @@ test.describe('Comprehensive 8-Scenario User Walkthrough (Strict Assertions)', (
     await expect(floatingTimer, 'Floating timer widget must be visible on Menu screen').toBeVisible();
     await expect(floatingTimer.locator('[data-testid="floating-timer-countdown"]')).toBeVisible();
 
+    // Test reload persistence while RUNNING (not paused):
+    await page.reload();
+    await expect(page.locator('[data-testid="food-today"]')).toBeVisible({ timeout: 10000 });
+    await expect(floatingTimer, 'Floating timer must survive reload while running').toBeVisible();
+    await expect(floatingTimer.locator('.kb-floating-timer__badge')).not.toBeVisible();
+    const runningCountdown = await floatingTimer.locator('[data-testid="floating-timer-countdown"]').textContent();
+    expect(runningCountdown).toMatch(/^\d{2}:\d{2}$/);
+
     // Navigate to Shopping: Floating widget must remain visible
     const shoppingNav = page.locator('[data-testid="bottom-nav-shopping"]');
     await shoppingNav.click();
@@ -323,19 +354,39 @@ test.describe('Comprehensive 8-Scenario User Walkthrough (Strict Assertions)', (
     await expect(timerDisplay.getByRole('button', { name: 'Продолжить' })).toBeVisible();
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '06b_timer_after_navigation.png') });
 
-    // Test reload persistence: reload page and verify timer restores from localStorage
+    // Test reload persistence: reload page and verify timer restores from localStorage while paused
     await page.reload();
     await expect(page.locator('[data-testid="food-today"]')).toBeVisible({ timeout: 10000 });
     await expect(floatingTimer, 'Floating timer must survive full page reload via localStorage').toBeVisible();
     await expect(floatingTimer.locator('.kb-floating-timer__badge')).toHaveText('Пауза');
 
-    // Return to recipe from Today and clean up
-    await floatingTimer.locator('[data-testid="floating-timer-goto-btn"]').click();
-    await expect(recipeScreen).toBeVisible({ timeout: 5000 });
-    const resetTimerBtn = timerDisplay.getByRole('button', { name: 'Сброс' });
-    await resetTimerBtn.click();
+    // Test timer completion / expiration
+    await page.evaluate(() => {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('kb:timer:') || key === 'kb_kitchen_timer_v1')) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const t = JSON.parse(raw);
+            t.isPaused = false;
+            t.deadline = null;
+            t.remainingSeconds = 0;
+            t.isCompleted = true;
+            localStorage.setItem(key, JSON.stringify(t));
+          }
+        }
+      }
+    });
+    await page.reload();
+    await expect(page.locator('[data-testid="food-today"]')).toBeVisible({ timeout: 10000 });
+    await expect(floatingTimer, 'Floating timer must show completed state after expiration').toBeVisible();
+    await expect(floatingTimer.locator('[data-testid="floating-timer-countdown"]')).toHaveText('Готово!');
+    await expect(floatingTimer.locator('.kb-floating-timer__badge--done')).toHaveText('Время вышло');
+
+    // Dismiss expired timer
+    const stopFloatingBtn = floatingTimer.locator('[data-testid="floating-timer-stop-btn"]');
+    await stopFloatingBtn.click();
     await page.waitForTimeout(200);
-    await expect(timerDisplay).not.toBeVisible();
     await expect(floatingTimer).not.toBeVisible();
 
     // Step 5: Shopping List

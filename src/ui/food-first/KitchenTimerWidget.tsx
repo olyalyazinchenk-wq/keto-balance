@@ -53,7 +53,7 @@ export const KitchenTimerWidget: React.FC<KitchenTimerWidgetProps> = ({
       data-testid="floating-kitchen-timer"
       role="status"
       aria-live="polite"
-      aria-label={`Кухонный таймер: ${timer.recipeTitle}, ${formatTimerMMSS(timer.remainingSeconds)}`}
+      aria-label={`Кухонный таймер: ${typeof timer.recipeTitle === 'string' ? timer.recipeTitle : 'Рецепт'}, ${formatTimerMMSS(timer.remainingSeconds)}`}
     >
       <div className="kb-floating-timer__main" onClick={handleGoToRecipe} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleGoToRecipe(); }}>
         <div className="kb-floating-timer__indicator" aria-hidden="true">
@@ -62,10 +62,10 @@ export const KitchenTimerWidget: React.FC<KitchenTimerWidgetProps> = ({
         <div className="kb-floating-timer__info">
           <div className="kb-floating-timer__title-row">
             <span className="kb-floating-timer__title" data-testid="floating-timer-title">
-              {timer.recipeTitle}
+              {typeof timer.recipeTitle === 'string' ? timer.recipeTitle : 'Рецепт'}
             </span>
             <span className="kb-floating-timer__step">
-              {timer.label}
+              {typeof timer.label === 'string' ? timer.label : 'Таймер'}
             </span>
           </div>
           <div className="kb-floating-timer__status-row">

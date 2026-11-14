@@ -4,7 +4,15 @@
   --ff-green: var(--kb-primary, #255c48); --ff-line: var(--kb-border, #dce4dd);
   color:var(--ff-ink); font:400 16px/1.5 'Golos Text','Segoe UI',Arial,sans-serif;
   max-width:1180px; min-height:100dvh; margin:auto; background:var(--ff-bg);
-  padding-bottom:calc(84px + var(--kb-safe-bottom,0px));
+  padding-bottom:calc(84px + var(--kb-safe-bottom,0px) + var(--kb-timer-inset, 0px));
+}
+.ff-proof--with-timer {
+  --kb-timer-inset: 96px;
+}
+@media (max-width: 360px) {
+  .ff-proof--with-timer {
+    --kb-timer-inset: 120px;
+  }
 }
 .ff-proof *, .ff-proof *::before, .ff-proof *::after {box-sizing:border-box}
 .ff-proof h1,.ff-proof h2,.ff-proof h3 {font-family:inherit;letter-spacing:-.025em}

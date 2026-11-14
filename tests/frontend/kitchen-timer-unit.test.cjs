@@ -1,10 +1,13 @@
 /**
  * tests/frontend/kitchen-timer-unit.test.cjs
- * Node test runner unit tests for kitchen timer logic, persistence, user isolation, and edge cases.
+ * Node test runner unit tests using REAL TypeScript modules via loadTs helper.
+ * Tests pure timer calculation, persistence, user isolation, SecurityError handling, and corrupt JSON safety.
  */
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const path = require('node:path');
+const { loadTs } = require('../helpers/load-ts.cjs');
 
 // Mock browser environment for unit test
 class MockLocalStorage {
@@ -30,83 +33,20 @@ global.window = {
   localStorage: mockStorage,
 };
 
-// Require transpiled or compiled kitchenTimer and kitchenTimerState
-// We can test the pure logic directly
-function timerDeadline(seconds, now = Date.now()) {
-  if (!Number.isFinite(seconds) || seconds <= 0 || !Number.isFinite(now)) return null;
-  const deadline = now + seconds * 1000;
-  return Number.isFinite(deadline) ? deadline : null;
-}
+// Load REAL application modules directly
+const { timerDeadline, remainingTimerSeconds } = loadTs(path.resolve(__dirname, '../../src/ui/food-first/kitchenTimer.ts'));
+const {
+  saveActiveTimer,
+  loadActiveTimer,
+  clearActiveTimer,
+  getTimerStorageKey,
+  validateTimerRecord,
+  getSafeStorage,
+} = loadTs(path.resolve(__dirname, '../../src/ui/food-first/kitchenTimerState.ts'));
 
-function remainingTimerSeconds(deadline, now = Date.now()) {
-  if (deadline === null || !Number.isFinite(deadline) || !Number.isFinite(now)) return 0;
-  return Math.max(0, Math.ceil((deadline - now) / 1000));
-}
-
-function getTimerStorageKey(userId) {
-  const normalized = userId !== undefined && userId !== null && String(userId).trim() !== ''
-    ? String(userId).trim()
-    : 'anonymous';
-  return `kb:timer:${normalized}`;
-}
-
-function saveActiveTimer(timer) {
-  const key = getTimerStorageKey(timer.userId);
-  mockStorage.setItem(key, JSON.stringify(timer));
-}
-
-function loadActiveTimer(userId, now = Date.now()) {
-  const key = getTimerStorageKey(userId);
-  const raw = mockStorage.getItem(key);
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object' || typeof parsed.recipeId !== 'string' || typeof parsed.remainingSeconds !== 'number') {
-      mockStorage.removeItem(key);
-      return null;
-    }
-    const expectedUser = userId !== undefined && userId !== null && String(userId).trim() !== ''
-      ? String(userId).trim()
-      : 'anonymous';
-    if (parsed.userId && parsed.userId !== expectedUser) {
-      return null;
-    }
-    const timer = {
-      userId: expectedUser,
-      recipeId: parsed.recipeId,
-      recipeTitle: parsed.recipeTitle || 'Рецепт',
-      stepIndex: typeof parsed.stepIndex === 'number' ? parsed.stepIndex : undefined,
-      label: parsed.label || 'Таймер у плиты',
-      totalDurationSeconds: Number(parsed.totalDurationSeconds) || parsed.remainingSeconds,
-      deadline: parsed.deadline !== null && Number.isFinite(parsed.deadline) ? parsed.deadline : null,
-      remainingSeconds: Math.max(0, Math.floor(parsed.remainingSeconds)),
-      isPaused: Boolean(parsed.isPaused),
-      isCompleted: Boolean(parsed.isCompleted),
-      startedAt: Number(parsed.startedAt) || now,
-    };
-    if (!timer.isPaused && timer.deadline !== null) {
-      const remaining = remainingTimerSeconds(timer.deadline, now);
-      timer.remainingSeconds = remaining;
-      if (remaining <= 0) {
-        timer.remainingSeconds = 0;
-        timer.isCompleted = true;
-        timer.deadline = null;
-      }
-    }
-    return timer;
-  } catch {
-    mockStorage.removeItem(key);
-    return null;
-  }
-}
-
-function clearActiveTimer(userId) {
-  mockStorage.removeItem(getTimerStorageKey(userId));
-}
-
-test('Kitchen Timer: Absolute deadline and countdown calculation', (t) => {
+test('Kitchen Timer: Absolute deadline and countdown calculation (real kitchenTimer.ts)', () => {
   const fixedNow = 1731600000000;
-  
+
   // 1. Normal deadline
   const deadline = timerDeadline(300, fixedNow); // 5 minutes
   assert.equal(deadline, fixedNow + 300000);
@@ -129,7 +69,7 @@ test('Kitchen Timer: Absolute deadline and countdown calculation', (t) => {
   assert.equal(remainingTimerSeconds(null, fixedNow), 0);
 });
 
-test('Kitchen Timer: Persistence and background reload restoration', (t) => {
+test('Kitchen Timer: Persistence and background reload restoration (real kitchenTimerState.ts)', () => {
   mockStorage.clear();
   const t0 = 1731600000000;
   const initialTimer = {
@@ -165,7 +105,7 @@ test('Kitchen Timer: Persistence and background reload restoration', (t) => {
   assert.equal(finished.deadline, null);
 });
 
-test('Kitchen Timer: Strict user isolation', (t) => {
+test('Kitchen Timer: Strict user isolation', () => {
   mockStorage.clear();
   const t0 = 1731600000000;
   const timerUserA = {
@@ -198,7 +138,7 @@ test('Kitchen Timer: Strict user isolation', (t) => {
   assert.equal(loadActiveTimer('user_A', t0), null);
 });
 
-test('Kitchen Timer: Corrupted localStorage record is safely handled without throwing', (t) => {
+test('Kitchen Timer: Corrupted localStorage record is safely handled without throwing', () => {
   mockStorage.clear();
   // Corrupt string
   mockStorage.setItem('kb:timer:user_corrupt', '{not-valid-json');
@@ -210,9 +150,28 @@ test('Kitchen Timer: Corrupted localStorage record is safely handled without thr
   mockStorage.setItem('kb:timer:user_incomplete', JSON.stringify({ foo: 'bar' }));
   const res2 = loadActiveTimer('user_incomplete');
   assert.equal(res2, null, 'Must safely return null on incomplete object');
+
+  // Object with non-string recipeTitle (P2 counterexample)
+  mockStorage.setItem(
+    'kb:timer:user_obj_title',
+    JSON.stringify({
+      userId: 'user_obj_title',
+      recipeId: 'k1',
+      recipeTitle: { bad: 'object' },
+      label: 'Таймер',
+      remainingSeconds: 60,
+      totalDurationSeconds: 60,
+      isPaused: true,
+      isCompleted: false,
+      deadline: null,
+    })
+  );
+  const res3 = loadActiveTimer('user_obj_title');
+  assert.equal(res3, null, 'Must safely reject object recipeTitle');
+  assert.equal(mockStorage.getItem('kb:timer:user_obj_title'), null, 'Corrupted key must be cleaned up');
 });
 
-test('Kitchen Timer: Pause and resume preserves exact elapsed seconds', (t) => {
+test('Kitchen Timer: Pause and resume preserves exact elapsed seconds', () => {
   mockStorage.clear();
   const t0 = 1731600000000;
   const timer = {
@@ -264,4 +223,29 @@ test('Kitchen Timer: Pause and resume preserves exact elapsed seconds', (t) => {
   const runningAgain = loadActiveTimer('user_pause_test', tAfterResume);
   assert.ok(runningAgain);
   assert.equal(runningAgain.remainingSeconds, 400);
+});
+
+test('Kitchen Timer: SecurityError on storage getter is safely handled (P1 counterexample)', () => {
+  // Save original window.localStorage descriptor
+  const origDescriptor = Object.getOwnPropertyDescriptor(global.window, 'localStorage');
+  try {
+    // Configure window.localStorage getter to throw SecurityError (e.g. private browsing / sandboxed iframe)
+    Object.defineProperty(global.window, 'localStorage', {
+      get() {
+        const err = new Error('Access is denied for this document');
+        err.name = 'SecurityError';
+        throw err;
+      },
+      configurable: true,
+    });
+
+    assert.equal(getSafeStorage(), null, 'getSafeStorage must return null on SecurityError');
+    assert.doesNotThrow(() => loadActiveTimer('user_sec'), 'loadActiveTimer must not throw on storage access denial');
+    assert.equal(loadActiveTimer('user_sec'), null);
+    assert.doesNotThrow(() => saveActiveTimer({ userId: 'user_sec', recipeId: 'k1', recipeTitle: 'Title', label: 'L', remainingSeconds: 10, totalDurationSeconds: 10, isPaused: false, isCompleted: false, deadline: 1000, startedAt: 1 }), 'saveActiveTimer must not throw on storage access denial');
+    assert.doesNotThrow(() => clearActiveTimer('user_sec'), 'clearActiveTimer must not throw on storage access denial');
+  } finally {
+    // Restore mockStorage
+    Object.defineProperty(global.window, 'localStorage', origDescriptor || { value: mockStorage, configurable: true, writable: true });
+  }
 });

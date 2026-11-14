@@ -112,4 +112,5 @@ export interface PilotCatalogV1 {
   nutrition_status: 'unverified';
   access?: 'preview' | 'full';
   preview_released_ids?: string[];
+  catalog_month?: string;
 }

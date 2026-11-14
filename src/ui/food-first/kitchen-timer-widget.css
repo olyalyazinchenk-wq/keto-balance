@@ -36,7 +36,40 @@
 
 .kb-floating-timer--completed {
   border-color: #255c48;
-  background: #f4f8f5;
+  background: var(--kb-surface-muted, #f4f8f5);
+}
+
+[data-kb-theme="dark"] .kb-floating-timer--completed {
+  border-color: #3d8b6e;
+  background: #142820;
+}
+
+[data-kb-theme="dark"] .kb-floating-timer__indicator {
+  background: #192c24;
+  color: #72c29b;
+}
+
+[data-kb-theme="dark"] .kb-floating-timer--completed .kb-floating-timer__indicator {
+  background: #255c48;
+  color: #ffffff;
+}
+
+[data-kb-theme="dark"] .kb-floating-timer__badge {
+  background: #1f332a;
+  color: var(--kb-text-2, #a3b899);
+}
+
+[data-kb-theme="dark"] .kb-floating-timer__badge--done {
+  background: #193826;
+  color: #72c29b;
+}
+
+[data-kb-theme="dark"] .kb-floating-timer__countdown {
+  color: #72c29b;
+}
+
+[data-kb-theme="dark"] .kb-floating-timer--completed .kb-floating-timer__countdown {
+  color: #9fe2c0;
 }
 
 .kb-floating-timer--paused {

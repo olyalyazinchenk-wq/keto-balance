@@ -478,6 +478,10 @@ export function FoodFirstApp({
     return true;
   }, [activeRecipe, catalog.recipes, catalog.released_ids, catalog.test_only, profile.settings]);
 
+  const isRenderingRecipeScreenForTimer = currentScreen === 'recipe' &&
+    Boolean(activeRecipe && isRecipeEligible && activeRecipeId === activeTimer?.recipeId);
+  const showFloatingTimer = Boolean(activeTimer && !isRenderingRecipeScreenForTimer);
+
   return (
     <AppShell
       activeScreen={currentScreen}
@@ -488,6 +492,7 @@ export function FoodFirstApp({
       shoppingNeedsRefresh={state.shopping_stale}
       selectedDayIndex={selectedDayIndex}
       selectedDayLabel={selectedDayLabel}
+      hasFloatingTimer={showFloatingTimer}
     >
       {subscriptionError && <aside className="ff-proof__notice" role="alert" data-testid="subscription-error">
         <p>{subscriptionError}</p>
@@ -652,7 +657,7 @@ export function FoodFirstApp({
         paymentsEnabled={localSubscription?.payments_enabled}
       />
 
-      {activeTimer && (currentScreen !== 'recipe' || activeRecipeId !== activeTimer.recipeId) && (
+      {showFloatingTimer && activeTimer && (
         <KitchenTimerWidget
           timer={activeTimer}
           onOpenRecipe={handleOpenRecipe}
