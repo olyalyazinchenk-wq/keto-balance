@@ -1,0 +1,45 @@
+{
+  "savedAt": "2026-10-31T00:28:28.936840+00:00",
+  "inspectedHead": "5f39a90f3eb59295869e389acc2a9add4b6e0ad0",
+  "receipts": [
+    {
+      "file": "api-bypass.json",
+      "sha256": "51d5143227025d9555a53ccfdc51e342e1dbf8f5ddb0bfd1a894c99c004729d8"
+    },
+    {
+      "file": "frontend-typecheck.json",
+      "sha256": "74c0837d6ea91e4100bb5c8202b6eec6361f9d1f06ab0431001c69dbee85daad"
+    },
+    {
+      "file": "backend-subset.json",
+      "sha256": "b3e94e6fbdeb8443c5ecf959ae0912bbb532785e7c41f0b938a0addfe7d50457"
+    },
+    {
+      "file": "browser.json",
+      "sha256": "313cac5b7478ae2163cf1d0e1833f5857ef1c32d3877649eab137370a93fb197"
+    },
+    {
+      "file": "public-network-followup.json",
+      "sha256": "d0931755906736bf6d368954469e30644e835f110ef276b4d38e38fa34fa55e0"
+    }
+  ],
+  "sourceHashes": {
+    "bot/server.py": "c986dc2375537bdb668e1641f58813de5405b58a350f5588f226224c425639bd",
+    "bot/auth.py": "237380b72040b76e23d52b92a6b61cbe5138ac042444fa85dedf73db3bc4f9bd",
+    "bot/app_db.py": "ba939603598ca6066bd6e1246a1b96d05b1e9b3cb169475f3758a1983a1fe78b",
+    "bot/app_settings.py": "5e6298a3ce5f478930339f1eb5b8ed5baa2157454123d23ee2c3f192ffc03f40",
+    "src/App.tsx": "0c914e7e393e168f89ac2845db0a0d28245c17c5c0fb8dcd032288aeff1c1823",
+    "src/ui/food-first/FoodFirstApp.tsx": "05fbee1dbd73959cf92520a1e6e21d475e2254610fd60863a309f7c5015ea7a1",
+    "src/ui/food-first/recipesAdapter.ts": "ded37d37212acfb5ab73200f94e8389b91cef991b43fc29e4e44f01fc81ff5e0",
+    "src/data/releasedRecipeIds.ts": "b3cd0718e82d3a072539218634bce4a5f1a66d0439c789c2271eb15015f6e0f9",
+    "src/adapters/menuController.ts": "904257c003ad276a42719782fbb7d56eede262980e3e2eec52ea4b1a87ce3547",
+    "tests/e2e/food-flow.spec.ts": "4c0e4a0f80d874d8d25e12472ded98ae8fda0a07ed17836ee638099ff6117be7",
+    "tests/e2e/persistence.spec.ts": "3a75b6ba0d5a7d80787855570b5524e81aa73d67b170942e5ce6b608049fe32e",
+    "tests/e2e/support.spec.ts": "0d9f3fbf9e40769a5c50030b17a6cc60ce5bfb1f713fd0d7194b5dabd1e722e8"
+  },
+  "browserChecks": 6,
+  "layoutChecks": 15,
+  "horizontalOverflowChecksFailed": 0,
+  "apiRequestsAttemptedByInspectedUiFlow": 0,
+  "scope": "Review only; no real DB/env or user data read; no services restarted; current_tunnel_url changed automatically while checking"
+}

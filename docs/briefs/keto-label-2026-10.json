@@ -1,0 +1,51 @@
+{
+  "slug": "keto-label",
+  "kicker": "кето · этикетка",
+  "cta": "чек-лист в закрепе",
+  "out": "media/hooks/variants",
+  "platforms": [
+    "shorts",
+    "yt_16x9",
+    "telegram"
+  ],
+  "variants": [
+    {
+      "name": "hook",
+      "scenes": 1
+    },
+    {
+      "name": "teaser",
+      "scenes": 2
+    },
+    {
+      "name": "full",
+      "scenes": 3
+    }
+  ],
+  "scenes": [
+    {
+      "clip": "media/flow/label_closeup_01.mp4",
+      "t": 1.2,
+      "dur": 3.0,
+      "l1": "СМОТРИ НА 100 Г",
+      "l2": "А НЕ НА ПОРЦИЮ",
+      "kicker": "кето · этикетка"
+    },
+    {
+      "clip": "media/flow/label_closeup_01.mp4",
+      "t": 4.0,
+      "dur": 3.0,
+      "l1": "САХАР В СОУСЕ",
+      "l2": "ЭТО ЛОВУШКА",
+      "kicker": "кето · ловушки"
+    },
+    {
+      "clip": "media/flow/scales_avocado_01.mp4",
+      "t": 1.5,
+      "dur": 3.0,
+      "l1": "ВЕСЬ РАСЧЁТ",
+      "l2": "НА ВЕСАХ",
+      "kicker": "кето · граммовка"
+    }
+  ]
+}

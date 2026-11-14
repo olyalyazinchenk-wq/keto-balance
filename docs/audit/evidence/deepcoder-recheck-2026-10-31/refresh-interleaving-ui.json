@@ -1,0 +1,13 @@
+{
+  "scope": "Actual fresh built bundle with synthetic route transport; shopping refresh reply deliberately delayed. Not a live backend, server or Telegram test.",
+  "build_id": "c145c16cbf4fdc16",
+  "full_probe_receipt": "C:/Users/HP/AppData/Local/hermes/cache/scratch/deepcoder-review-_yyezbxb/ui-probes-full.json",
+  "harness_exit_code": 0,
+  "refresh_custom_item_interleaving": {
+    "visible_before_release": 1,
+    "visible_after_success": 0,
+    "shopping_save_status": 200,
+    "mock_backend_contains_custom_item": true,
+    "unhandled": []
+  }
+}

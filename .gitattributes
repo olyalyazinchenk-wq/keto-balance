@@ -1,0 +1,2 @@
+# Historical catalog bytes are part of the saved-menu contract on every OS.
+catalogs/archive/*.json -text

@@ -1,0 +1,7 @@
+{
+  "scope": "Current src/scripts/bot files compared to SHA-256 prefixes in the source manifest of the independently rebuilt artifact",
+  "build_id": "e7d04da9d43a7f50",
+  "source_files_compared": 100,
+  "mismatches": [],
+  "exit_code": 0
+}

@@ -106,7 +106,7 @@ test('Recipe eligibility and safety filtering (P05)', async (t) => {
     assert.equal(isRecipeAllowed(validRecipe, { disliked: 12345 }), false, 'Non-array disliked must refuse');
     assert.equal(isRecipeAllowed(validRecipe, { allergies: [123] }), false, 'Non-string item in allergies must refuse');
 
-    // Invalid nutrients
+    // Negative nutrients
     const negativeKcalRecipe = {
       id: 'syn_neg',
       title: 'Отрицательные калории',
@@ -116,5 +116,69 @@ test('Recipe eligibility and safety filtering (P05)', async (t) => {
       ing: [['Говядина', '200 г']]
     };
     assert.equal(isRecipeAllowed(negativeKcalRecipe, null), false, 'Negative calories must be refused');
+  });
+
+  await t.test('plant milk and compound dairy additives verification', () => {
+    const dairyProfile = { allergies: ['Молочные продукты'] };
+
+    // Чистое растительное молоко допустимо
+    const pureCoco = {
+      id: 'syn_coco',
+      title: 'Чиа пудинг на кокосовом молоке',
+      mode: 'keto',
+      ing: [['Кокосовое молоко 17%', '150 мл'], ['Семена чиа', '30 г']]
+    };
+    assert.equal(isRecipeAllowed(pureCoco, dairyProfile), true, 'Pure coconut milk must be allowed for dairy allergy');
+
+    const pureAlmond = {
+      id: 'syn_almond',
+      title: 'Миндальный напиток',
+      mode: 'keto',
+      ing: [['Миндальное молоко без сахара', '200 мл']]
+    };
+    assert.equal(isRecipeAllowed(pureAlmond, dairyProfile), true, 'Pure almond milk must be allowed for dairy allergy');
+
+    // Составные ингредиенты с молочными добавками ОБЯЗАНЫ блокироваться
+    const cocoWithDryMilk = {
+      id: 'syn_coco_cow',
+      title: 'Кокосовый напиток с добавками',
+      mode: 'keto',
+      ing: [['Кокосовое молоко с сухим коровьим молоком', '150 мл']]
+    };
+    assert.equal(isRecipeAllowed(cocoWithDryMilk, dairyProfile), false, 'Coconut milk with dry cow milk must be blocked for dairy allergy');
+
+    const almondWithWhey = {
+      id: 'syn_almond_whey',
+      title: 'Миндальный коктейль',
+      mode: 'keto',
+      ing: [['Миндальное молоко с молочной сывороткой', '200 мл']]
+    };
+    assert.equal(isRecipeAllowed(almondWithWhey, dairyProfile), false, 'Almond milk with whey must be blocked for dairy allergy');
+
+    const cocoWithButter = {
+      id: 'syn_coco_butter',
+      title: 'Кокосовый крем',
+      mode: 'keto',
+      ing: [['Кокосовые сливки со сливочным маслом', '50 г']]
+    };
+    assert.equal(isRecipeAllowed(cocoWithButter, dairyProfile), false, 'Coconut cream with butter must be blocked for dairy allergy');
+
+    // Сырокопчёный бекон не блокируется ложно из-за корня «сыр»
+    const curedBacon = {
+      id: 'syn_bacon',
+      title: 'Яичница с сырокопчёным беконом',
+      mode: 'keto',
+      ing: [['Бекон сырокопчёный', '80 г'], ['Огурцы', '100 г']]
+    };
+    assert.equal(isRecipeAllowed(curedBacon, dairyProfile), true, 'Cured bacon must not be falsely blocked by dairy filter');
+
+    // Неоднозначный или неуточнённый состав блокируется до выяснения
+    const ambiguousPlant = {
+      id: 'syn_ambig',
+      title: 'Растительный напиток',
+      mode: 'keto',
+      ing: [['Растительное молоко [уточнить состав]', '150 мл']]
+    };
+    assert.equal(isRecipeAllowed(ambiguousPlant, dairyProfile), false, 'Ambiguous composition must be refused');
   });
 });

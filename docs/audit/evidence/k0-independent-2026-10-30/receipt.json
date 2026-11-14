@@ -1,0 +1,41 @@
+{
+  "root": "C:/Users/HP/Keto-balance/design/argon-food-first-work",
+  "output": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\k0-independent-review-fLBrGd",
+  "observedAt": "2026-10-30T13:33:36.258Z",
+  "buildScope": "Original Vite config; envDir=false and private public-env prefix; no .env reads; not default npm lifecycle; no server or browser launched",
+  "checks": [
+    {
+      "name": "typecheck",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "isolated-vite-build",
+      "result": "completed"
+    }
+  ],
+  "sourceBefore": {
+    "src/utils/selectedDay.ts": "15fe4585e260f55fdcc0ca4b7c2e1e45eac9d5d238b7defed8bb3baa8566b21c",
+    "src/utils/selectedDay.test.ts": "b92535a1a8bce98e0cff04b5a50e2cd27fa86fdab81abb892bc0b90adbe3af9c",
+    "src/App.tsx": "1a1e3b595b382613ae37b7aa25e045458751073b8365d5d56bc71f873e6b13f4",
+    "vite.config.ts": "ce2ab14c5e1edc28facbab4aedf137f191fb218164247c2804a6d32b00e8808f",
+    "package.json": "cdfe237973d188758d84bd5081325d0b4e612c13f7c2a568e8e08bf7b4d15c85",
+    "index.html": "6e78a228ab95a77ec01e3ebf37e75bfad3b4ac51b20b1dfc3d9f4afc681740e7",
+    "tsconfig.json": "cbc914147cc208c35cb5f6d405f0f0bc3c1c76ae76bf45bbc4f588b924492d2a"
+  },
+  "sourceAfter": {
+    "src/utils/selectedDay.ts": "15fe4585e260f55fdcc0ca4b7c2e1e45eac9d5d238b7defed8bb3baa8566b21c",
+    "src/utils/selectedDay.test.ts": "b92535a1a8bce98e0cff04b5a50e2cd27fa86fdab81abb892bc0b90adbe3af9c",
+    "src/App.tsx": "1a1e3b595b382613ae37b7aa25e045458751073b8365d5d56bc71f873e6b13f4",
+    "vite.config.ts": "ce2ab14c5e1edc28facbab4aedf137f191fb218164247c2804a6d32b00e8808f",
+    "package.json": "cdfe237973d188758d84bd5081325d0b4e612c13f7c2a568e8e08bf7b4d15c85",
+    "index.html": "6e78a228ab95a77ec01e3ebf37e75bfad3b4ac51b20b1dfc3d9f4afc681740e7",
+    "tsconfig.json": "cbc914147cc208c35cb5f6d405f0f0bc3c1c76ae76bf45bbc4f588b924492d2a"
+  },
+  "changed": [],
+  "assetHashes": {
+    "index-D7bPaZD4.css": "b277df191eb5c4d9836384ff13d8f5b083ae067dc5efc0ad7196bc0401710808",
+    "index-D8nE2u50.js": "1c745a6021392152508aa067b9b3eb68825e676ddfe0d76570368c6f089fe32f"
+  }
+}

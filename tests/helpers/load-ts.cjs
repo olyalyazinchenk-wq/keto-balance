@@ -12,22 +12,31 @@ function loadTs(file, cache = new Map()) {
   cache.set(absolute, module);
   const nativeRequire = createRequire(absolute);
   const localRequire = name => {
+    if (name.endsWith('.css')) return {};
     if (name.startsWith('.')) {
       const base = path.resolve(path.dirname(absolute), name);
-      for (const candidate of [base, `${base}.ts`]) {
-        if (candidate.endsWith('.ts') && fs.existsSync(candidate)) return loadTs(candidate, cache);
+      for (const candidate of [base, `${base}.ts`, `${base}.tsx`, `${base}.js`]) {
+        if ((candidate.endsWith('.ts') || candidate.endsWith('.tsx') || candidate.endsWith('.js')) && fs.existsSync(candidate)) {
+          return loadTs(candidate, cache);
+        }
       }
     }
     return nativeRequire(name);
   };
   const output = ts.transpileModule(fs.readFileSync(absolute, 'utf8'), {
-    compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS },
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2020,
+      module: ts.ModuleKind.CommonJS,
+      jsx: ts.JsxEmit.React,
+      esModuleInterop: true,
+    },
   }).outputText;
   const wrapper = vm.runInThisContext(
-    `(function (exports, require, module, __filename, __dirname) {\n${output}\n})`,
+    `(function (exports, require, module, __filename, __dirname, React) {\nconst React_1 = React;\n${output}\n})`,
     { filename: absolute }
   );
-  wrapper(module.exports, localRequire, module, absolute, path.dirname(absolute));
+  const React = nativeRequire('react');
+  wrapper(module.exports, localRequire, module, absolute, path.dirname(absolute), React);
   return module.exports;
 }
 

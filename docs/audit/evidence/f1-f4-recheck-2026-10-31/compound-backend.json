@@ -1,0 +1,25 @@
+{
+  "exit_code": 0,
+  "scope": "Actual FastAPI TestClient + current CAS storage in own fresh synthetic SQLite; replay of UI-generated payloads with another client advancing user revision. No live service or Telegram.",
+  "observed": {
+    "shop_put_status": 200,
+    "user_put_status": 409,
+    "restored_plan_days": 3,
+    "restored_menu_days": 3,
+    "restored_shopping_stale": false,
+    "restored_shopping_revision": 2,
+    "restored_shopping_matches_failed_new_plan": true,
+    "restored_old_menu_recipe_ids": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+    ],
+    "failed_new_plan_recipe_ids": [
+      "k1",
+      "k2",
+      "k3"
+    ]
+  }
+}

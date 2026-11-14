@@ -1,0 +1,50 @@
+.food-recipe .recipe-plate {
+  position: relative; isolation: isolate; min-width: 0; padding: 24px;
+  border: 1px solid var(--kb-border); border-radius: 28px;
+  background: var(--kb-surface-muted); color: var(--kb-text-1);
+  box-shadow: 0 16px 40px -28px #102d2455;
+}
+.food-recipe header .food-grid > :last-child:has(.recipe-plate) { order: 0; }
+.recipe-plate__portions { display: flex; padding: 4px; gap: 4px; background: var(--kb-surface); border: 1px solid var(--kb-border); border-radius: 16px; }
+.food-recipe .recipe-plate__portions button { flex: 1; min-width: 0; padding: 10px 6px; min-height: 44px; font-size: 12px; color: var(--kb-text-2); border-radius: 12px; }
+.food-recipe .recipe-plate__portions button[aria-pressed="true"] { background: var(--kb-primary); color: var(--kb-on-primary); }
+.recipe-plate__heading { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+.recipe-plate__eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--kb-text-3); }
+.recipe-plate__yield { padding: 5px 9px; background: var(--kb-surface); border: 1px solid var(--kb-border); border-radius: 20px; font-size: 12px; font-weight: 600; }
+.recipe-plate h2 { margin: 16px 0 8px; font-size: clamp(23px, 4vw, 32px); line-height: 1.08; letter-spacing: -.04em; font-weight: 700; color: var(--kb-text-1); }
+.food-recipe .recipe-plate__intro { font-size: 14px; line-height: 1.5; color: var(--kb-text-2); margin: 0 0 18px; }
+.recipe-plate__photo-wrap { position: relative; margin: 20px auto; width: min(100%, 210px); }
+.recipe-plate__photo { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 50%; border: 8px solid var(--kb-surface); box-shadow: 0 16px 28px -16px #102d2470; }
+.recipe-plate__photo-label { display: block; text-align: center; padding-top: 12px; font-size: 11px; color: var(--kb-text-3); }
+.recipe-plate__ingredients { display: flex; flex-wrap: wrap; gap: 7px; }
+.food-recipe .recipe-plate__ingredient { display: inline-flex; align-items: center; gap: 7px; max-width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid var(--kb-border); background: var(--kb-surface); color: var(--kb-text-2); border-radius: 14px; text-align: left; font-size: 12px; line-height: 1.3; transition: background-color .18s ease, color .18s ease, transform .18s ease; }
+.recipe-plate__ingredient > span:last-child { overflow-wrap: anywhere; min-width: 0; }
+.food-recipe .recipe-plate__ingredient[aria-pressed="true"] { background: var(--kb-primary); color: var(--kb-on-primary); border-color: var(--kb-primary); }
+.recipe-plate__ingredient-mark { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 18px; font-size: 10px; font-variant-numeric: tabular-nums; opacity: .85; }
+.recipe-plate__detail { margin-top: 16px; padding: 18px; border-radius: 18px; background: var(--kb-surface); border: 1px solid var(--kb-border); }
+.recipe-plate__category { color: var(--kb-text-3); font-size: 11px; font-weight: 600; }
+.recipe-plate__quantity { display: flex; flex-direction: column; gap: 3px; margin: 8px 0; animation: plate-quantity-in .24s ease-out both; }
+.recipe-plate__quantity strong { font-size: clamp(28px, 6vw, 42px); letter-spacing: -.05em; line-height: 1.12; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.recipe-plate__quantity > span { font-size: 16px; font-weight: 500; }
+.recipe-plate__basis { display: block; color: var(--kb-text-3); font-size: 12px; line-height: 1.45; }
+.food-recipe .recipe-plate__prepare { margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; min-height: 48px; border-radius: 14px; background: var(--kb-primary); color: var(--kb-on-primary); font-size: 13px; font-weight: 600; line-height: 1.4; }
+.food-recipe .recipe-plate__prepare[aria-pressed="true"] { background: var(--kb-surface); color: var(--kb-text-1); border: 1px solid var(--kb-primary); }
+.recipe-plate button:focus-visible, .recipe-plate summary:focus-visible { outline: 3px solid var(--kb-primary); outline-offset: 3px; }
+.recipe-plate__progress-label { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; font-size: 12px; color: var(--kb-text-2); font-variant-numeric: tabular-nums; }
+.recipe-plate__progress { appearance: none; display: block; border: 0; border-radius: 10px; width: 100%; height: 6px; overflow: hidden; margin-top: 8px; background: var(--kb-border); color: var(--kb-primary); }
+.recipe-plate__progress::-webkit-progress-bar { background: var(--kb-border); border-radius: 10px; }
+.recipe-plate__progress::-webkit-progress-value { background: var(--kb-primary); border-radius: 10px; }
+.recipe-plate__progress::-moz-progress-bar { background: var(--kb-primary); border-radius: 10px; }
+.recipe-plate__nutrition { margin-top: 18px; border-top: 1px solid var(--kb-border); padding-top: 12px; font-size: 12px; color: var(--kb-text-3); }
+.recipe-plate__nutrition summary { cursor: pointer; min-height: 44px; align-content: center; }
+.food-recipe .recipe-plate__nutrition p { font-size: 12px; line-height: 1.6; margin: 4px 0 0; color: var(--kb-text-2); }
+.recipe-plate__empty { color: var(--kb-text-2); padding-block: 16px; }
+@keyframes plate-quantity-in { from { opacity: .25; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@media (hover: hover) { .recipe-plate__ingredient:hover { transform: translateY(-2px); } }
+@media (max-width: 360px) { .food-recipe .recipe-plate { padding: 18px; border-radius: 22px; } .recipe-plate__eyebrow { font-size: 9px; } }
+@media (prefers-reduced-motion: reduce) { .recipe-plate__quantity { animation: none; } .food-recipe .recipe-plate__ingredient { transition: none; transform: none; } }
+
+.recipe-plate__macros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+.recipe-plate__macros div { border: 1px solid var(--kb-border); border-radius: 12px; padding: 12px; }
+.recipe-plate__macros dt { color: var(--kb-text-2); font-size: .8rem; }
+.recipe-plate__macros dd { margin: 4px 0 0; color: var(--kb-text-1); font-size: 1.2rem; font-weight: 700; }

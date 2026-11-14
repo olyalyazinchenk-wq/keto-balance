@@ -1,0 +1,16 @@
+FROM keto-balance-web@sha256:8da981b6eba5c58f65094af8c6f850b15224dacc0b5439decc010d46e57cc8f9
+WORKDIR /app
+
+# Copy updated application code, verified candidate catalog, and built frontend
+COPY bot ./bot
+COPY bot_data.json ./bot_data.json
+COPY docs ./docs
+COPY scripts ./scripts
+COPY dist ./dist
+
+EXPOSE 18081
+
+HEALTHCHECK --interval=20s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:18081/api/health || exit 1
+
+CMD ["python", "scripts/run_staging.py", "--host", "0.0.0.0", "--port", "18081", "--persistent", "--lifetime", "0", "--catalog", "/app/dist/released-catalog.json"]

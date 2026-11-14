@@ -1,5 +1,7 @@
 import os
 os.environ['KETO_LOAD_DOTENV'] = '0'
+import tempfile
+from pathlib import Path
 import unittest
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock, patch
@@ -8,6 +10,16 @@ from bot.private_support import PENDING, KNOWN
 
 
 class TestSupportIntegration(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.db = Path(self.temp.name) / 'private-support.db'
+        self.db_patch = patch('bot.private_support._db', return_value=self.db)
+        self.db_patch.start()
+
+    def tearDown(self):
+        self.db_patch.stop()
+        self.temp.cleanup()
+
     async def test_numeric_question_precedes_calculation(self):
         msg = NS(text='70', reply_text=AsyncMock(), reply_html=AsyncMock())
         update = NS(message=msg, effective_chat=NS(type='private'), effective_user=NS(id=101))
@@ -65,3 +77,19 @@ class TestSupportIntegration(unittest.IsolatedAsyncioTestCase):
         recipes.assert_awaited_once_with(update, ctx)
         self.assertNotIn(PENDING, ctx.user_data)
         bot.send_message.assert_not_awaited()
+
+    async def test_legacy_weight_input_does_not_run_unapproved_calculation(self):
+        msg = NS(text='70', reply_text=AsyncMock())
+        update = NS(message=msg, callback_query=None, effective_chat=NS(type='private'), effective_user=NS(id=101))
+        context = NS(user_data={}, bot_data={})
+        with patch.object(app, 'calculate_nutrition', side_effect=AssertionError('legacy calculation forbidden')), patch.object(app, 'save_calculation', side_effect=AssertionError('legacy DB write forbidden')), patch.object(app, 'get_current_webapp_url', return_value='https://example.test'):
+            await app.text_message_handler(update, context)
+        self.assertIn('Индивидуальные нормы', msg.reply_text.call_args.args[0])
+
+    async def test_legacy_recipe_callback_routes_to_admitted_app(self):
+        query = NS(data='rec_c1',from_user=NS(id=101),answer=AsyncMock(),edit_message_text=AsyncMock())
+        update = NS(message=None,callback_query=query,effective_chat=NS(type='private'),effective_user=NS(id=101))
+        context = NS(user_data={},bot_data={})
+        with patch.object(app,'format_recipe_card',side_effect=AssertionError('unadmitted raw recipe forbidden')),patch.object(app,'get_current_webapp_url',return_value='https://example.test'):
+            await app.callback_handler(update,context)
+        self.assertIn('рацион на месяц',query.edit_message_text.call_args.args[0])

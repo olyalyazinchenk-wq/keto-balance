@@ -1,0 +1,9 @@
+{
+  "exit_code": 0,
+  "scope": "Actual in-process HTTP handlers on a fresh reviewer-owned synthetic DB; database intentionally reused across two test app instances to test prior-session policy. No service or real Telegram.",
+  "prior_non_owner_token_get_user_status": 200,
+  "prior_non_owner_token_get_session_status": 200,
+  "configured_session_max_lifetime_seconds": 1,
+  "owner_session_expiry_exceeds_configured_lifetime": true,
+  "owner_session_expiry_exceeds_one_hour": true
+}

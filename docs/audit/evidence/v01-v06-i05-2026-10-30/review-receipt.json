@@ -1,0 +1,34 @@
+{
+  "observedAt": "2026-10-30T19:14:39.363300+00:00",
+  "policyCommand": [
+    "C:\\Users\\HP\\Keto-balance\\.venv-p0\\Scripts\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "tests.backend.test_product_gate_policy",
+    "tests.backend.test_verify_script",
+    "-v"
+  ],
+  "policyExit": 0,
+  "policyStdout": "",
+  "policyStderr": "test_each_suite_is_run_separately (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_each_suite_is_run_separately) ... ok\ntest_failed_synthetic_child_blocks (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_failed_synthetic_child_blocks) ... ok\ntest_k1_does_not_require_deferred_private_features (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_k1_does_not_require_deferred_private_features) ... ok\ntest_k2_requires_identity_and_user_isolation (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_k2_requires_identity_and_user_isolation) ... ok\ntest_k3_requires_refund_and_billing (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_k3_requires_refund_and_billing) ... ok\ntest_missing_required_suite_blocks (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_missing_required_suite_blocks) ... ok\ntest_zero_or_skipped_suite_is_not_success (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_zero_or_skipped_suite_is_not_success) ... ok\ntest_e2e_zero_selection_blocks (tests.backend.test_verify_script.TestVerifyP0Script.test_e2e_zero_selection_blocks) ... ok\ntest_empty_and_skipped_collections_block (tests.backend.test_verify_script.TestVerifyP0Script.test_empty_and_skipped_collections_block) ... ok\ntest_missing_e2e_script_blocks (tests.backend.test_verify_script.TestVerifyP0Script.test_missing_e2e_script_blocks) ... ok\ntest_missing_suite_blocks_before_process (tests.backend.test_verify_script.TestVerifyP0Script.test_missing_suite_blocks_before_process) ... ok\ntest_nonzero_child_blocks (tests.backend.test_verify_script.TestVerifyP0Script.test_nonzero_child_blocks) ... ok\ntest_policy_does_not_invoke_real_runner (tests.backend.test_verify_script.TestVerifyP0Script.test_policy_does_not_invoke_real_runner) ... ok\ntest_unknown_stage_is_not_success (tests.backend.test_verify_script.TestVerifyP0Script.test_unknown_stage_is_not_success) ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 0.134s\n\nOK\n",
+  "forwardingProbe": {
+    "inherited_pythonpath_removed": false,
+    "actual_child_executed": false,
+    "scope": "Mocked subprocess call inspects real run_step forwarding; no application import"
+  },
+  "sourceHashes": {
+    "scripts/verification.py": "be3d2e74ed61a388e7ec64ef7dde17414a06e085430fc772f5b777e93a93d5aa",
+    "tests/backend/test_product_gate_policy.py": "0f7813d385be9d70ee8411271f64ee5c8cd1204fcdf5586f3e3e6c4a81745657",
+    "bot/config.py": "d49138834679616fd8229edfbd799ca75bb97939ac4074f59483acfab7cf7af2",
+    "tests/backend/test_import_safety.py": "53fb62c4662c3e2800f683a8c822e838b50f760ccd66d53140f59d227c1a2f2d",
+    "package.json": "df46a0c2a2c2f81b2c522f0b1eb359ac2a0837c8a5dcfc639d22074e4613dddc",
+    "vite.config.ts": "f2fc44fa1327fb01868a7e228118ede458ccad42ee99d16001b9b69df6b868b5"
+  },
+  "sourceUnchangedDuringChecks": true,
+  "loaderEvidence": "vite-loader-receipt.json",
+  "fullBuildExecuted": false,
+  "fullBackendDiscoveryExecuted": false,
+  "reviewPassed": false,
+  "reason": "I05 frontend env isolation remains unproven; inherited PYTHONPATH isolation regressed; reported import test is missing"
+}

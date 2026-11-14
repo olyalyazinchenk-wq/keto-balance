@@ -46,11 +46,18 @@ const DAIRY_KEYWORDS = [
   "сливк",
   "сметан",
   "творог",
+  "творож",
   "моцарелл",
   "сливочное масло",
+  "сливочн",
   "топленое масло",
   "топлен",
+  "гхи",
   "молок",
+  "молочн",
+  "коровь",
+  "козь",
+  "овечь",
   "лактоз",
   "маскарпон",
   "пармезан",
@@ -60,6 +67,23 @@ const DAIRY_KEYWORDS = [
   "йогурт",
   "кефир",
   "ряженк",
+  "сыворот",
+  "казеин",
+  "простокваш",
+  "ацидофил",
+  "пахта",
+];
+
+const PLANT_MILK_PATTERNS = [
+  /кокосов[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*|масл[а-яё]*|мук[а-яё]*|стружк[а-яё]*|урбеч[а-яё]*)/g,
+  /миндальн[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*|масл[а-яё]*|мук[а-яё]*|паст[а-яё]*)/g,
+  /растительн[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*|масл[а-яё]*)/g,
+  /соев[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*|масл[а-яё]*)/g,
+  /овсян[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*)/g,
+  /кедров[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*)/g,
+  /фундучн[а-яё]*\s+(?:молок[а-яё]*|сливк[а-яё]*)/g,
+  /маков[а-яё]*\s+(?:молок[а-яё]*)/g,
+  /кунжутн[а-яё]*\s+(?:молок[а-яё]*)/g,
 ];
 
 const FISH_KEYWORDS = [
@@ -67,12 +91,15 @@ const FISH_KEYWORDS = [
   "скумбри",
   "семг",
   "тунец",
+  "тунц",
   "рыб",
   "лосос",
   "треск",
   "форел",
   "минтай",
+  "минта",
   "сельд",
+  "селед",
   "селедк",
   "шпрот",
   "сардин",
@@ -80,13 +107,15 @@ const FISH_KEYWORDS = [
 
 const NUTS_KEYWORDS = [
   "орех",
+  "ореш",
   "миндал",
   "фундук",
+  "фундуч",
   "кешью",
   "пекан",
   "грецк",
   "арахис",
-  "фисташк",
+  "фисташ",
   "макадам",
 ];
 
@@ -98,8 +127,21 @@ function ingredientHasAllergen(ingNorm: string, cat: AllergyCategory): boolean {
   switch (cat) {
     case "eggs":
       return ingNorm.includes("яиц") || ingNorm.includes("яичн") || ingNorm.includes("яйц");
-    case "dairy":
-      return containsAnyKeyword(ingNorm, DAIRY_KEYWORDS);
+    case "dairy": {
+      // 1. Убираем "сырокопчёный", "сыровяленый", "сырой" (корень "сыр" = сырой/необработанный, а не молочный сыр)
+      let dairyInspect = ingNorm
+        .replace(/сырокопч[её]н[а-яё]*/g, " ")
+        .replace(/сыровял[её]н[а-яё]*/g, " ")
+        .replace(/(?:^|\s)сыр(ой|ая|ое|ые|ого|ую|ым|ых|ому)(?=$|\s)/g, " ");
+
+      // 2. Убираем признанные формы чистого растительного молока/сливок/масла/муки
+      for (const pattern of PLANT_MILK_PATTERNS) {
+        dairyInspect = dairyInspect.replace(pattern, " ");
+      }
+
+      // 3. Проверяем остаток на любые молочные компоненты (включая сухое молоко, коровье молоко, сыворотку, казеин)
+      return containsAnyKeyword(dairyInspect, DAIRY_KEYWORDS);
+    }
     case "fish":
       return containsAnyKeyword(ingNorm, FISH_KEYWORDS);
     case "nuts":
@@ -110,10 +152,13 @@ function ingredientHasAllergen(ingNorm: string, cat: AllergyCategory): boolean {
 function ingredientHasDisliked(ingNorm: string, disNorm: string): boolean {
   if (disNorm === "печень и субпродукты" || disNorm === "субпродукты" || disNorm === "печень") {
     return (
-      ingNorm.includes("печень") ||
+      ingNorm.includes("печен") ||
       ingNorm.includes("сердц") ||
+      ingNorm.includes("сердеч") ||
+      ingNorm.includes("сердец") ||
       ingNorm.includes("субпродукт") ||
-      ingNorm.includes("костный бульон")
+      ingNorm.includes("костный бульон") ||
+      (ingNorm.includes("костн") && ingNorm.includes("бульон"))
     );
   }
   if (disNorm === "грибы" || disNorm === "гриб") {
@@ -132,16 +177,30 @@ function ingredientHasDisliked(ingNorm: string, disNorm: string): boolean {
     return ingNorm === "лук" || ingNorm.startsWith("лук ") || ingNorm.includes(" лук");
   }
   if (disNorm === "болгарский перец" || disNorm === "перец") {
-    return ingNorm.includes("болгарский перец") || ingNorm.includes("перец болгарский");
+    return (
+      (ingNorm.includes("болгарск") && (ingNorm.includes("перец") || ingNorm.includes("перц"))) ||
+      (ingNorm.includes("сладк") && (ingNorm.includes("перец") || ingNorm.includes("перц")))
+    );
   }
   if (disNorm === "морепродукты" || disNorm === "морепродукт") {
     return (
-      ingNorm.includes("креветк") ||
+      ingNorm.includes("кревет") ||
       ingNorm.includes("кальмар") ||
       ingNorm.includes("миди") ||
       ingNorm.includes("осьминог") ||
-      ingNorm.includes("гребешк") ||
+      ingNorm.includes("гребеш") ||
+      ingNorm.includes("краб") ||
       ingNorm.includes("морепродукт")
+    );
+  }
+  if (disNorm === "свинина" || disNorm === "свиной") {
+    return (
+      ingNorm.includes("свинин") ||
+      ingNorm.includes("свин") ||
+      ingNorm.includes("бекон") ||
+      ingNorm.includes("сало") ||
+      ingNorm.includes("ветчин") ||
+      ingNorm.includes("грудинк")
     );
   }
   // Для прочих пользовательских продуктов
@@ -172,6 +231,17 @@ export function isRecipeAllowed(recipe: Recipe, profile?: UserProfile | null): b
   if (!profile) return true;
 
   // 2. Проверка повреждённых ограничений в профиле
+  if (profile.cookTime !== undefined && profile.cookTime !== null) {
+    if (typeof profile.cookTime !== "number" || isNaN(profile.cookTime) || profile.cookTime < 0 || profile.cookTime > 240) {
+      return false;
+    }
+    if (profile.cookTime > 0) {
+      if (typeof recipe.time !== "number" || isNaN(recipe.time) || recipe.time <= 0 || recipe.time > profile.cookTime) {
+        return false;
+      }
+    }
+  }
+
   if (profile.allergyNote !== undefined && profile.allergyNote !== null) {
     if (typeof profile.allergyNote !== "string") return false;
     if (profile.allergyNote.trim().length > 0) return false;
@@ -217,14 +287,17 @@ export function isRecipeAllowed(recipe: Recipe, profile?: UserProfile | null): b
   for (const [ingName] of recipe.ing) {
     const ingNorm = normalizeStr(ingName);
 
-    // При активных аллергиях непроверенный/неизвестный состав блокирует рекомендацию
+    // При активных аллергиях непроверенный, неуточнённый или неоднозначный состав блокирует рекомендацию
     if (activeCategories.length > 0) {
       if (
         ingNorm.includes("неизвестн") ||
         ingNorm.includes("состав") ||
         ingNorm.includes("непроверен") ||
         ingNorm.includes("не проверен") ||
-        ingNorm.includes("секретн")
+        ingNorm.includes("секретн") ||
+        ingNorm.includes("уточнить") ||
+        ingNorm.includes("уточняется") ||
+        ingNorm.includes("неоднозначн")
       ) {
         return false;
       }

@@ -1,0 +1,11 @@
+{
+  "check": "typecheck",
+  "exit": 0,
+  "command": [
+    "node",
+    "C:\\Users\\HP\\Keto-balance\\design\\argon-food-first-work\\node_modules\\typescript\\bin\\tsc",
+    "--noEmit"
+  ],
+  "stdout": "",
+  "stderr": ""
+}

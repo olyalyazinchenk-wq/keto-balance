@@ -1,0 +1,6 @@
+{
+  "name": "KetoPulse — Кето-питание в Telegram",
+  "description": "Мини-приложение Telegram для контроля чистого углеводного баланса (Net Carbs), макронутриентов, интервального голодания, кето-рецептов и списка покупок.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

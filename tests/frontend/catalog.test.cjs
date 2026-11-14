@@ -5,11 +5,11 @@ const { loadTs } = require('../helpers/load-ts.cjs');
 test('Catalog integrity baseline (P05)', async (t) => {
   const { RECIPES } = loadTs('src/data/recipes.ts');
 
-  await t.test('has exactly 37 recipes: 21 keto and 16 carnivore', () => {
-    assert.equal(RECIPES.length, 37);
+  await t.test('has exactly 50 recipes: 34 keto and 16 carnivore', () => {
+    assert.equal(RECIPES.length, 50);
     const keto = RECIPES.filter(r => r.mode === 'keto');
     const carnivore = RECIPES.filter(r => r.mode === 'carnivore');
-    assert.equal(keto.length, 21);
+    assert.equal(keto.length, 34);
     assert.equal(carnivore.length, 16);
   });
 
@@ -32,7 +32,7 @@ test('Catalog integrity baseline (P05)', async (t) => {
   await t.test('all recipes have valid required fields and nutrients', () => {
     for (const r of RECIPES) {
       assert.ok(r.title && r.title.length > 0, `Recipe ${r.id} missing title`);
-      assert.ok(['breakfast', 'lunch', 'dinner', 'snack', 'prep', 'dessert'].includes(r.cat), `Recipe ${r.id} invalid cat: ${r.cat}`);
+      assert.ok(['breakfast', 'lunch', 'dinner', 'snack', 'prep', 'dessert', 'soup', 'salad'].includes(r.cat), `Recipe ${r.id} invalid cat: ${r.cat}`);
       assert.ok(typeof r.kcal === 'number' && r.kcal > 0, `Recipe ${r.id} invalid kcal`);
       assert.ok(typeof r.p === 'number' && r.p >= 0, `Recipe ${r.id} invalid protein`);
       assert.ok(typeof r.f === 'number' && r.f >= 0, `Recipe ${r.id} invalid fat`);
@@ -40,5 +40,44 @@ test('Catalog integrity baseline (P05)', async (t) => {
       assert.ok(Array.isArray(r.ing) && r.ing.length > 0, `Recipe ${r.id} missing ingredients`);
       assert.ok(Array.isArray(r.steps) && r.steps.length > 0, `Recipe ${r.id} missing steps`);
     }
+  });
+
+  await t.test('keto-engine validates all recipes without fatal calculation errors', () => {
+    const engine = loadTs('src/core/keto-engine/index.ts');
+    for (const r of RECIPES) {
+      const profile = engine.calculateMacroProfile({
+        protein: r.p,
+        fat: r.f,
+        carbs: r.nc,
+        declaredCalories: r.kcal,
+      });
+      assert.equal(profile.validation.isValid, true, `Recipe ${r.id} failed macro validation`);
+      assert.ok(profile.calculatedCalories > 0, `Recipe ${r.id} calculated calories must be > 0`);
+      assert.ok(!Number.isNaN(profile.ratios.proteinPct), `Recipe ${r.id} proteinPct is NaN`);
+      assert.ok(!Number.isNaN(profile.ratios.fatPct), `Recipe ${r.id} fatPct is NaN`);
+      assert.ok(!Number.isNaN(profile.ratios.carbsPct), `Recipe ${r.id} carbsPct is NaN`);
+    }
+  });
+
+  await t.test('catalog validation script succeeds and generates comprehensive report', async () => {
+    const { runCatalogValidation } = await import('../../scripts/validate-catalog.mjs');
+    const report = runCatalogValidation();
+    assert.equal(report.summary.status, 'PASSED');
+    assert.equal(report.summary.errorCount, 0, 'No calculation errors in catalog');
+    assert.equal(report.summary.botSyncErrors, 0, 'Zero bot data sync errors');
+    assert.equal(report.summary.totalRecipes, 50);
+    assert.ok(report.summary.maxCalorieDiscrepancy < 60, 'Max discrepancy within tolerance');
+  });
+
+  await t.test('keto-engine catches corrupted recipe macros and blocks publication', () => {
+    const engine = loadTs('src/core/keto-engine/index.ts');
+    const badProfile = engine.calculateMacroProfile({
+      protein: -10,
+      fat: 20,
+      carbs: 5,
+      declaredCalories: 300,
+    });
+    assert.equal(badProfile.validation.isValid, false, 'Negative protein must be invalid');
+    assert.ok(badProfile.validation.issues.some(i => i.field === 'protein' && i.severity === 'error'));
   });
 });

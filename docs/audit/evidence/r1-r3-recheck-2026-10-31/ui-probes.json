@@ -1,0 +1,96 @@
+{
+  "scope": "Actual fresh built JS/CSS with private route-fulfilled/aborted synthetic API. Not a live server, native E2E or Telegram check.",
+  "build_id": "661a8799ae54a838",
+  "invalid_restore": {
+    "settings_form_visible": true,
+    "today_visible": false,
+    "confirmed18_preserved": true,
+    "error": "⚠️ Сохранённое меню несовместимо с текущими настройками, а составить новое меню невозможно. Пожалуйста, измените параметры или ограничения.",
+    "unhandled": []
+  },
+  "network_sticky": {
+    "before": "Ошибка синхронизации с сервером",
+    "after": "Ошибка синхронизации с сервером",
+    "shopping_puts": 0,
+    "unhandled": []
+  },
+  "conflict_sticky": {
+    "before": "Конфликт версий. Обновите страницу",
+    "after": "Конфликт версий. Обновите страницу",
+    "shopping_puts": 0,
+    "unhandled": []
+  },
+  "duplicate_restore": {
+    "banner": "Список покупок не согласован с меню · требуется обновление",
+    "user_puts": [
+      {
+        "expected_revision": 4,
+        "status": 200
+      }
+    ],
+    "stored_first_day_ids": [
+      "k4",
+      "k3",
+      "k1"
+    ],
+    "unhandled": []
+  },
+  "refresh_custom_item_interleaving": {
+    "visible_before_release": 1,
+    "visible_after_success": 1,
+    "shopping_save_status": 200,
+    "mock_backend_contains_custom_item": true,
+    "unhandled": []
+  },
+  "queued_checkbox_interleaving": {
+    "after_user_checks_AB": {
+      "a": "true",
+      "b": "true"
+    },
+    "after_older_A_completes": {
+      "a": "true",
+      "b": "false"
+    },
+    "after_user_unchecks_A": {
+      "a": "false",
+      "b": "false"
+    },
+    "expected_final": {
+      "a": false,
+      "b": true
+    },
+    "final_visible": {
+      "a": "false",
+      "b": "false"
+    },
+    "final_mock_backend": {
+      "a": false,
+      "b": false
+    },
+    "reloaded_visible": {
+      "a": "false",
+      "b": "false"
+    },
+    "put_calls": [
+      {
+        "status": 200,
+        "expected_revision": 2,
+        "a": true,
+        "b": false
+      },
+      {
+        "status": 200,
+        "expected_revision": 3,
+        "a": true,
+        "b": true
+      },
+      {
+        "status": 200,
+        "expected_revision": 4,
+        "a": false,
+        "b": false
+      }
+    ],
+    "expectation_pass": false
+  }
+}

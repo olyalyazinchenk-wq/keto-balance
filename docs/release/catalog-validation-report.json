@@ -1,0 +1,1523 @@
+{
+  "timestamp": "2026-11-08T07:23:12.931Z",
+  "engine": "src/core/keto-engine",
+  "catalogPath": "src/data/recipes.ts",
+  "botDataPath": null,
+  "summary": {
+    "totalRecipes": 50,
+    "passedCount": 50,
+    "warningCount": 0,
+    "errorCount": 0,
+    "botSyncErrors": 0,
+    "maxCalorieDiscrepancy": 26,
+    "avgCalorieDiscrepancy": 11.1,
+    "status": "PASSED"
+  },
+  "discrepancies": [],
+  "recipes": [
+    {
+      "id": "k1",
+      "title": "Сливочная яичница с беконом и шпинатом",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 520,
+        "p": 24,
+        "f": 44,
+        "nc": 3
+      },
+      "calculated": {
+        "kcal": 504,
+        "ratios": {
+          "proteinPct": 19,
+          "fatPct": 78.6,
+          "carbsPct": 2.4,
+          "proteinCalories": 96,
+          "fatCalories": 396,
+          "carbsCalories": 12,
+          "totalCalories": 504
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 16,
+        "pctDiff": 3.1
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k2",
+      "title": "Омлет с сыром и зеленью",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 410,
+        "p": 26,
+        "f": 32,
+        "nc": 2
+      },
+      "calculated": {
+        "kcal": 400,
+        "ratios": {
+          "proteinPct": 26,
+          "fatPct": 72,
+          "carbsPct": 2,
+          "proteinCalories": 104,
+          "fatCalories": 288,
+          "carbsCalories": 8,
+          "totalCalories": 400
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 10,
+        "pctDiff": 2.4
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k3",
+      "title": "Ленивые сырники в духовке (кето)",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 342,
+        "p": 22,
+        "f": 26,
+        "nc": 5
+      },
+      "calculated": {
+        "kcal": 342,
+        "ratios": {
+          "proteinPct": 25.7,
+          "fatPct": 68.4,
+          "carbsPct": 5.8,
+          "proteinCalories": 88,
+          "fatCalories": 234,
+          "carbsCalories": 20,
+          "totalCalories": 342
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k4",
+      "title": "Авокадо-тосты на кето-хлебе",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 440,
+        "p": 12,
+        "f": 38,
+        "nc": 6
+      },
+      "calculated": {
+        "kcal": 414,
+        "ratios": {
+          "proteinPct": 11.6,
+          "fatPct": 82.6,
+          "carbsPct": 5.8,
+          "proteinCalories": 48,
+          "fatCalories": 342,
+          "carbsCalories": 24,
+          "totalCalories": 414
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 26,
+        "pctDiff": 5.9
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k5",
+      "title": "Яичные маффины с овощами и сыром",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 300,
+        "p": 20,
+        "f": 22,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 294,
+        "ratios": {
+          "proteinPct": 27.2,
+          "fatPct": 67.3,
+          "carbsPct": 5.4,
+          "proteinCalories": 80,
+          "fatCalories": 198,
+          "carbsCalories": 16,
+          "totalCalories": 294
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 6,
+        "pctDiff": 2
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k6",
+      "title": "Куриный суп с брокколи и сливками",
+      "mode": "keto",
+      "cat": "soup",
+      "declared": {
+        "kcal": 390,
+        "p": 28,
+        "f": 26,
+        "nc": 6
+      },
+      "calculated": {
+        "kcal": 370,
+        "ratios": {
+          "proteinPct": 30.3,
+          "fatPct": 63.2,
+          "carbsPct": 6.5,
+          "proteinCalories": 112,
+          "fatCalories": 234,
+          "carbsCalories": 24,
+          "totalCalories": 370
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 20,
+        "pctDiff": 5.1
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k7",
+      "title": "Запечённая скумбрия с лимоном и травами",
+      "mode": "keto",
+      "cat": "lunch",
+      "declared": {
+        "kcal": 460,
+        "p": 32,
+        "f": 34,
+        "nc": 2
+      },
+      "calculated": {
+        "kcal": 442,
+        "ratios": {
+          "proteinPct": 29,
+          "fatPct": 69.2,
+          "carbsPct": 1.8,
+          "proteinCalories": 128,
+          "fatCalories": 306,
+          "carbsCalories": 8,
+          "totalCalories": 442
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 18,
+        "pctDiff": 3.9
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k8",
+      "title": "Салат с тунцом, яйцом и огурцом",
+      "mode": "keto",
+      "cat": "salad",
+      "declared": {
+        "kcal": 340,
+        "p": 30,
+        "f": 22,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 334,
+        "ratios": {
+          "proteinPct": 35.9,
+          "fatPct": 59.3,
+          "carbsPct": 4.8,
+          "proteinCalories": 120,
+          "fatCalories": 198,
+          "carbsCalories": 16,
+          "totalCalories": 334
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 6,
+        "pctDiff": 1.8
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k9",
+      "title": "Котлеты из индейки с кабачком",
+      "mode": "keto",
+      "cat": "lunch",
+      "declared": {
+        "kcal": 320,
+        "p": 30,
+        "f": 20,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 316,
+        "ratios": {
+          "proteinPct": 38,
+          "fatPct": 57,
+          "carbsPct": 5.1,
+          "proteinCalories": 120,
+          "fatCalories": 180,
+          "carbsCalories": 16,
+          "totalCalories": 316
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 4,
+        "pctDiff": 1.3
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k10",
+      "title": "Лодочки из кабачка с фаршем и сыром",
+      "mode": "keto",
+      "cat": "lunch",
+      "declared": {
+        "kcal": 410,
+        "p": 28,
+        "f": 28,
+        "nc": 6
+      },
+      "calculated": {
+        "kcal": 388,
+        "ratios": {
+          "proteinPct": 28.9,
+          "fatPct": 64.9,
+          "carbsPct": 6.2,
+          "proteinCalories": 112,
+          "fatCalories": 252,
+          "carbsCalories": 24,
+          "totalCalories": 388
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 22,
+        "pctDiff": 5.4
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k11",
+      "title": "Грибной крем-суп со сливками",
+      "mode": "keto",
+      "cat": "soup",
+      "declared": {
+        "kcal": 280,
+        "p": 9,
+        "f": 24,
+        "nc": 5
+      },
+      "calculated": {
+        "kcal": 272,
+        "ratios": {
+          "proteinPct": 13.2,
+          "fatPct": 79.4,
+          "carbsPct": 7.4,
+          "proteinCalories": 36,
+          "fatCalories": 216,
+          "carbsCalories": 20,
+          "totalCalories": 272
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 8,
+        "pctDiff": 2.9
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k12",
+      "title": "Курица в сливочно-чесночном соусе",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 480,
+        "p": 34,
+        "f": 34,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 458,
+        "ratios": {
+          "proteinPct": 29.7,
+          "fatPct": 66.8,
+          "carbsPct": 3.5,
+          "proteinCalories": 136,
+          "fatCalories": 306,
+          "carbsCalories": 16,
+          "totalCalories": 458
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 22,
+        "pctDiff": 4.6
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k13",
+      "title": "Запечённая горбуша под сыром",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 390,
+        "p": 36,
+        "f": 24,
+        "nc": 3
+      },
+      "calculated": {
+        "kcal": 372,
+        "ratios": {
+          "proteinPct": 38.7,
+          "fatPct": 58.1,
+          "carbsPct": 3.2,
+          "proteinCalories": 144,
+          "fatCalories": 216,
+          "carbsCalories": 12,
+          "totalCalories": 372
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 18,
+        "pctDiff": 4.6
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k14",
+      "title": "Говядина, тушённая с капустой",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 420,
+        "p": 32,
+        "f": 28,
+        "nc": 7
+      },
+      "calculated": {
+        "kcal": 408,
+        "ratios": {
+          "proteinPct": 31.4,
+          "fatPct": 61.8,
+          "carbsPct": 6.9,
+          "proteinCalories": 128,
+          "fatCalories": 252,
+          "carbsCalories": 28,
+          "totalCalories": 408
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 12,
+        "pctDiff": 2.9
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k15",
+      "title": "Свинина с квашеной капустой (один противень)",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 450,
+        "p": 30,
+        "f": 32,
+        "nc": 6
+      },
+      "calculated": {
+        "kcal": 432,
+        "ratios": {
+          "proteinPct": 27.8,
+          "fatPct": 66.7,
+          "carbsPct": 5.6,
+          "proteinCalories": 120,
+          "fatCalories": 288,
+          "carbsCalories": 24,
+          "totalCalories": 432
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 18,
+        "pctDiff": 4
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k16",
+      "title": "Фаршированные перцы «по-кето»",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 380,
+        "p": 28,
+        "f": 24,
+        "nc": 8
+      },
+      "calculated": {
+        "kcal": 360,
+        "ratios": {
+          "proteinPct": 31.1,
+          "fatPct": 60,
+          "carbsPct": 8.9,
+          "proteinCalories": 112,
+          "fatCalories": 216,
+          "carbsCalories": 32,
+          "totalCalories": 360
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 20,
+        "pctDiff": 5.3
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k17",
+      "title": "Запеканка «как лазанья» с кабачком",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 440,
+        "p": 30,
+        "f": 30,
+        "nc": 8
+      },
+      "calculated": {
+        "kcal": 422,
+        "ratios": {
+          "proteinPct": 28.4,
+          "fatPct": 64,
+          "carbsPct": 7.6,
+          "proteinCalories": 120,
+          "fatCalories": 270,
+          "carbsCalories": 32,
+          "totalCalories": 422
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 18,
+        "pctDiff": 4.1
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k25",
+      "title": "Кето «Цезарь» с курицей и пармезаном",
+      "mode": "keto",
+      "cat": "salad",
+      "declared": {
+        "kcal": 460,
+        "p": 32,
+        "f": 34,
+        "nc": 3
+      },
+      "calculated": {
+        "kcal": 446,
+        "ratios": {
+          "proteinPct": 28.7,
+          "fatPct": 68.6,
+          "carbsPct": 2.7,
+          "proteinCalories": 128,
+          "fatCalories": 306,
+          "carbsCalories": 12,
+          "totalCalories": 446
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 14,
+        "pctDiff": 3
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k27",
+      "title": "Индейка со шпинатом на сковороде",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 304,
+        "p": 38,
+        "f": 16,
+        "nc": 2
+      },
+      "calculated": {
+        "kcal": 304,
+        "ratios": {
+          "proteinPct": 50,
+          "fatPct": 47.4,
+          "carbsPct": 2.6,
+          "proteinCalories": 152,
+          "fatCalories": 144,
+          "carbsCalories": 8,
+          "totalCalories": 304
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k28",
+      "title": "Курица с кабачком и зеленью",
+      "mode": "keto",
+      "cat": "lunch",
+      "declared": {
+        "kcal": 370,
+        "p": 48,
+        "f": 18,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 370,
+        "ratios": {
+          "proteinPct": 51.9,
+          "fatPct": 43.8,
+          "carbsPct": 4.3,
+          "proteinCalories": 192,
+          "fatCalories": 162,
+          "carbsCalories": 16,
+          "totalCalories": 370
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k18",
+      "title": "Сырные кето-крекеры",
+      "mode": "keto",
+      "cat": "snack",
+      "declared": {
+        "kcal": 260,
+        "p": 12,
+        "f": 22,
+        "nc": 3
+      },
+      "calculated": {
+        "kcal": 258,
+        "ratios": {
+          "proteinPct": 18.6,
+          "fatPct": 76.7,
+          "carbsPct": 4.7,
+          "proteinCalories": 48,
+          "fatCalories": 198,
+          "carbsCalories": 12,
+          "totalCalories": 258
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 2,
+        "pctDiff": 0.8
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c1",
+      "title": "Стейк на сковороде с топлёным маслом",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 620,
+        "p": 45,
+        "f": 48,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 612,
+        "ratios": {
+          "proteinPct": 29.4,
+          "fatPct": 70.6,
+          "carbsPct": 0,
+          "proteinCalories": 180,
+          "fatCalories": 432,
+          "carbsCalories": 0,
+          "totalCalories": 612
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 8,
+        "pctDiff": 1.3
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c2",
+      "title": "Говяжьи котлеты без хлеба и лука",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 480,
+        "p": 34,
+        "f": 36,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 460,
+        "ratios": {
+          "proteinPct": 29.6,
+          "fatPct": 70.4,
+          "carbsPct": 0,
+          "proteinCalories": 136,
+          "fatCalories": 324,
+          "carbsCalories": 0,
+          "totalCalories": 460
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 20,
+        "pctDiff": 4.2
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c3",
+      "title": "Запечённая курица целиком",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 520,
+        "p": 42,
+        "f": 38,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 510,
+        "ratios": {
+          "proteinPct": 32.9,
+          "fatPct": 67.1,
+          "carbsPct": 0,
+          "proteinCalories": 168,
+          "fatCalories": 342,
+          "carbsCalories": 0,
+          "totalCalories": 510
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 10,
+        "pctDiff": 1.9
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c4",
+      "title": "Куриные сердечки на сковороде",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 380,
+        "p": 32,
+        "f": 26,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 362,
+        "ratios": {
+          "proteinPct": 35.4,
+          "fatPct": 64.6,
+          "carbsPct": 0,
+          "proteinCalories": 128,
+          "fatCalories": 234,
+          "carbsCalories": 0,
+          "totalCalories": 362
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 18,
+        "pctDiff": 4.7
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c5",
+      "title": "Говяжья печень со сметаной",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 360,
+        "p": 32,
+        "f": 22,
+        "nc": 2
+      },
+      "calculated": {
+        "kcal": 334,
+        "ratios": {
+          "proteinPct": 38.3,
+          "fatPct": 59.3,
+          "carbsPct": 2.4,
+          "proteinCalories": 128,
+          "fatCalories": 198,
+          "carbsCalories": 8,
+          "totalCalories": 334
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 26,
+        "pctDiff": 7.2
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c6",
+      "title": "Лосось на пару с топлёным маслом",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 480,
+        "p": 36,
+        "f": 36,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 468,
+        "ratios": {
+          "proteinPct": 30.8,
+          "fatPct": 69.2,
+          "carbsPct": 0,
+          "proteinCalories": 144,
+          "fatCalories": 324,
+          "carbsCalories": 0,
+          "totalCalories": 468
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 12,
+        "pctDiff": 2.5
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c7",
+      "title": "Говядина долгого тушения «рваное мясо»",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 450,
+        "p": 38,
+        "f": 32,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 440,
+        "ratios": {
+          "proteinPct": 34.5,
+          "fatPct": 65.5,
+          "carbsPct": 0,
+          "proteinCalories": 152,
+          "fatCalories": 288,
+          "carbsCalories": 0,
+          "totalCalories": 440
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 10,
+        "pctDiff": 2.2
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c8",
+      "title": "Яичница на сале",
+      "mode": "carnivore",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 430,
+        "p": 22,
+        "f": 36,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 412,
+        "ratios": {
+          "proteinPct": 21.4,
+          "fatPct": 78.6,
+          "carbsPct": 0,
+          "proteinCalories": 88,
+          "fatCalories": 324,
+          "carbsCalories": 0,
+          "totalCalories": 412
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 18,
+        "pctDiff": 4.2
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c9",
+      "title": "Запечённая скумбрия (карнивор-версия)",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 460,
+        "p": 32,
+        "f": 34,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 434,
+        "ratios": {
+          "proteinPct": 29.5,
+          "fatPct": 70.5,
+          "carbsPct": 0,
+          "proteinCalories": 128,
+          "fatCalories": 306,
+          "carbsCalories": 0,
+          "totalCalories": 434
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 26,
+        "pctDiff": 5.7
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c10",
+      "title": "Куриные бёдра на противне",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 470,
+        "p": 36,
+        "f": 34,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 450,
+        "ratios": {
+          "proteinPct": 32,
+          "fatPct": 68,
+          "carbsPct": 0,
+          "proteinCalories": 144,
+          "fatCalories": 306,
+          "carbsCalories": 0,
+          "totalCalories": 450
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 20,
+        "pctDiff": 4.3
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c11",
+      "title": "Говяжий фарш с яйцом и маслом",
+      "mode": "carnivore",
+      "cat": "lunch",
+      "declared": {
+        "kcal": 520,
+        "p": 36,
+        "f": 40,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 504,
+        "ratios": {
+          "proteinPct": 28.6,
+          "fatPct": 71.4,
+          "carbsPct": 0,
+          "proteinCalories": 144,
+          "fatCalories": 360,
+          "carbsCalories": 0,
+          "totalCalories": 504
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 16,
+        "pctDiff": 3.1
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c12",
+      "title": "Костный бульон длительного томления",
+      "mode": "carnivore",
+      "cat": "soup",
+      "declared": {
+        "kcal": 90,
+        "p": 8,
+        "f": 6,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 86,
+        "ratios": {
+          "proteinPct": 37.2,
+          "fatPct": 62.8,
+          "carbsPct": 0,
+          "proteinCalories": 32,
+          "fatCalories": 54,
+          "carbsCalories": 0,
+          "totalCalories": 86
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 4,
+        "pctDiff": 4.4
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c13",
+      "title": "Рыбные котлеты из консервов",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 360,
+        "p": 30,
+        "f": 24,
+        "nc": 1
+      },
+      "calculated": {
+        "kcal": 340,
+        "ratios": {
+          "proteinPct": 35.3,
+          "fatPct": 63.5,
+          "carbsPct": 1.2,
+          "proteinCalories": 120,
+          "fatCalories": 216,
+          "carbsCalories": 4,
+          "totalCalories": 340
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 20,
+        "pctDiff": 5.6
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c14",
+      "title": "Запечённые говяжьи сердечки",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 340,
+        "p": 34,
+        "f": 20,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 316,
+        "ratios": {
+          "proteinPct": 43,
+          "fatPct": 57,
+          "carbsPct": 0,
+          "proteinCalories": 136,
+          "fatCalories": 180,
+          "carbsCalories": 0,
+          "totalCalories": 316
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 24,
+        "pctDiff": 7.1
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c15",
+      "title": "Утиные ножки конфи в собственном жиру",
+      "mode": "carnivore",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 560,
+        "p": 34,
+        "f": 46,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 550,
+        "ratios": {
+          "proteinPct": 24.7,
+          "fatPct": 75.3,
+          "carbsPct": 0,
+          "proteinCalories": 136,
+          "fatCalories": 414,
+          "carbsCalories": 0,
+          "totalCalories": 550
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 10,
+        "pctDiff": 1.8
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "c16",
+      "title": "Мясная нарезка и яйца вкрутую (перекус)",
+      "mode": "carnivore",
+      "cat": "snack",
+      "declared": {
+        "kcal": 350,
+        "p": 25,
+        "f": 27,
+        "nc": 0
+      },
+      "calculated": {
+        "kcal": 343,
+        "ratios": {
+          "proteinPct": 29.2,
+          "fatPct": 70.8,
+          "carbsPct": 0,
+          "proteinCalories": 100,
+          "fatCalories": 243,
+          "carbsCalories": 0,
+          "totalCalories": 343
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 7,
+        "pctDiff": 2
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k19",
+      "title": "Яйца, фаршированные сыром и зеленью",
+      "mode": "keto",
+      "cat": "snack",
+      "declared": {
+        "kcal": 240,
+        "p": 15,
+        "f": 19,
+        "nc": 1
+      },
+      "calculated": {
+        "kcal": 235,
+        "ratios": {
+          "proteinPct": 25.5,
+          "fatPct": 72.8,
+          "carbsPct": 1.7,
+          "proteinCalories": 60,
+          "fatCalories": 171,
+          "carbsCalories": 4,
+          "totalCalories": 235
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 5,
+        "pctDiff": 2.1
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k20",
+      "title": "Кето-брауни на кокосовой муке",
+      "mode": "keto",
+      "cat": "dessert",
+      "declared": {
+        "kcal": 310,
+        "p": 8,
+        "f": 28,
+        "nc": 5
+      },
+      "calculated": {
+        "kcal": 304,
+        "ratios": {
+          "proteinPct": 10.5,
+          "fatPct": 82.9,
+          "carbsPct": 6.6,
+          "proteinCalories": 32,
+          "fatCalories": 252,
+          "carbsCalories": 20,
+          "totalCalories": 304
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 6,
+        "pctDiff": 1.9
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k21",
+      "title": "Кокосовые шарики с какао",
+      "mode": "keto",
+      "cat": "dessert",
+      "declared": {
+        "kcal": 220,
+        "p": 4,
+        "f": 20,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 212,
+        "ratios": {
+          "proteinPct": 7.5,
+          "fatPct": 84.9,
+          "carbsPct": 7.5,
+          "proteinCalories": 16,
+          "fatCalories": 180,
+          "carbsCalories": 16,
+          "totalCalories": 212
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 8,
+        "pctDiff": 3.6
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k22",
+      "title": "Сливочно-сырный суп с беконом и брокколи",
+      "mode": "keto",
+      "cat": "soup",
+      "declared": {
+        "kcal": 420,
+        "p": 24,
+        "f": 35,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 427,
+        "ratios": {
+          "proteinPct": 22.5,
+          "fatPct": 73.8,
+          "carbsPct": 3.7,
+          "proteinCalories": 96,
+          "fatCalories": 315,
+          "carbsCalories": 16,
+          "totalCalories": 427
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 7,
+        "pctDiff": 1.7
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k23",
+      "title": "Кето-солянка мясная сборная",
+      "mode": "keto",
+      "cat": "soup",
+      "declared": {
+        "kcal": 380,
+        "p": 34,
+        "f": 26,
+        "nc": 3
+      },
+      "calculated": {
+        "kcal": 382,
+        "ratios": {
+          "proteinPct": 35.6,
+          "fatPct": 61.3,
+          "carbsPct": 3.1,
+          "proteinCalories": 136,
+          "fatCalories": 234,
+          "carbsCalories": 12,
+          "totalCalories": 382
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 2,
+        "pctDiff": 0.5
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k24",
+      "title": "Том Ям с морепродуктами на кокосовом молоке",
+      "mode": "keto",
+      "cat": "soup",
+      "declared": {
+        "kcal": 340,
+        "p": 26,
+        "f": 24,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 336,
+        "ratios": {
+          "proteinPct": 31,
+          "fatPct": 64.3,
+          "carbsPct": 4.8,
+          "proteinCalories": 104,
+          "fatCalories": 216,
+          "carbsCalories": 16,
+          "totalCalories": 336
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 4,
+        "pctDiff": 1.2
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k26",
+      "title": "Греческий салат с оливками и сыром фета",
+      "mode": "keto",
+      "cat": "salad",
+      "declared": {
+        "kcal": 320,
+        "p": 9,
+        "f": 28,
+        "nc": 5
+      },
+      "calculated": {
+        "kcal": 308,
+        "ratios": {
+          "proteinPct": 11.7,
+          "fatPct": 81.8,
+          "carbsPct": 6.5,
+          "proteinCalories": 36,
+          "fatCalories": 252,
+          "carbsCalories": 20,
+          "totalCalories": 308
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 12,
+        "pctDiff": 3.8
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k29",
+      "title": "Говядина с шампиньонами на сковороде",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 434,
+        "p": 46,
+        "f": 26,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 434,
+        "ratios": {
+          "proteinPct": 42.4,
+          "fatPct": 53.9,
+          "carbsPct": 3.7,
+          "proteinCalories": 184,
+          "fatCalories": 234,
+          "carbsCalories": 16,
+          "totalCalories": 434
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k30",
+      "title": "Белая рыба с брокколи и лимоном",
+      "mode": "keto",
+      "cat": "dinner",
+      "declared": {
+        "kcal": 293,
+        "p": 40,
+        "f": 13,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 293,
+        "ratios": {
+          "proteinPct": 54.6,
+          "fatPct": 39.9,
+          "carbsPct": 5.5,
+          "proteinCalories": 160,
+          "fatCalories": 117,
+          "carbsCalories": 16,
+          "totalCalories": 293
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k31",
+      "title": "Салат с курицей, авокадо и огурцом",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 365,
+        "p": 39,
+        "f": 21,
+        "nc": 4
+      },
+      "calculated": {
+        "kcal": 361,
+        "ratios": {
+          "proteinPct": 43.2,
+          "fatPct": 52.4,
+          "carbsPct": 4.4,
+          "proteinCalories": 156,
+          "fatCalories": 189,
+          "carbsCalories": 16,
+          "totalCalories": 361
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 4,
+        "pctDiff": 1.1
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k32",
+      "title": "Говяжьи мини-бифштексы с рукколой",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 412,
+        "p": 37,
+        "f": 28,
+        "nc": 3
+      },
+      "calculated": {
+        "kcal": 412,
+        "ratios": {
+          "proteinPct": 35.9,
+          "fatPct": 61.2,
+          "carbsPct": 2.9,
+          "proteinCalories": 148,
+          "fatCalories": 252,
+          "carbsCalories": 12,
+          "totalCalories": 412
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k33",
+      "title": "Тёплый салат с беконом и авокадо",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 406,
+        "p": 20,
+        "f": 34,
+        "nc": 5
+      },
+      "calculated": {
+        "kcal": 406,
+        "ratios": {
+          "proteinPct": 19.7,
+          "fatPct": 75.4,
+          "carbsPct": 4.9,
+          "proteinCalories": 80,
+          "fatCalories": 306,
+          "carbsCalories": 20,
+          "totalCalories": 406
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    },
+    {
+      "id": "k34",
+      "title": "Кокосовый чиа-пудинг с малиной",
+      "mode": "keto",
+      "cat": "breakfast",
+      "declared": {
+        "kcal": 264,
+        "p": 6,
+        "f": 24,
+        "nc": 6
+      },
+      "calculated": {
+        "kcal": 264,
+        "ratios": {
+          "proteinPct": 9.1,
+          "fatPct": 81.8,
+          "carbsPct": 9.1,
+          "proteinCalories": 24,
+          "fatCalories": 216,
+          "carbsCalories": 24,
+          "totalCalories": 264
+        }
+      },
+      "discrepancy": {
+        "kcalDiff": 0,
+        "pctDiff": 0
+      },
+      "status": "PASS",
+      "issues": []
+    }
+  ],
+  "botSync": {
+    "status": "NOT_RUN",
+    "source": null
+  }
+}

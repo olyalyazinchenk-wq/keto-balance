@@ -15,9 +15,37 @@ playwright-report/
 
 
 *.log
+logs/
+*.lock
+run_tunnel.lock
+.tunnel_cache.json
+
+# Runtime state and local operational artifacts
+.home_pilot_state.json
+.tunnel_ssh_state.json
+current_tunnel_url.txt
+backups/
+data/
+releases/
+scratch/
+*.backup*
+.secrets/
+*.credentials*
+*.key.enc
+
 
 # артефакты и бинарники — не публикуем в репозиторий
 media/
 tools/
 test_audio.mp3
 test_steak.jpg
+.cache/
+scratch-preview.*
+
+# публичные ассеты приложения должны попадать в репозиторий
+!public/media/
+!public/media/**
+
+# исходный код в src/data должен попадать в репозиторий
+!src/data/
+!src/data/**

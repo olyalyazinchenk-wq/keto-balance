@@ -1,0 +1,23 @@
+{
+  "exit_code": 0,
+  "scope": "Actual unmodified in-process FastAPI/CAS storage on fresh reviewer-owned synthetic SQLite. Sequential controlled two-client interleaving; no live server, Telegram or real data.",
+  "persistence": {
+    "partial_user_status": 409,
+    "partial_failure_initially_marked_stale": true,
+    "revision_before_shopping": 3,
+    "revision_after_shopping_side_effect": 3,
+    "older_cached_state_put_status": 200,
+    "stale_after_cached_state_put": false,
+    "saved_batches_after_reload": 1,
+    "shopping_still_matches_x2": true,
+    "shopping_differs_from_x1": true,
+    "checked_item_put_status": 200,
+    "stale_after_checked_item_put": true
+  },
+  "owner_session_policy": {
+    "non_owner_user_status": 403,
+    "non_owner_session_status": 403,
+    "ttl_seconds_approx": 5.03,
+    "ttl_follows_configured_five_seconds": true
+  }
+}

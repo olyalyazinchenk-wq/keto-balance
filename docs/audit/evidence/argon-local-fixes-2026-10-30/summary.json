@@ -1,0 +1,37 @@
+{
+  "workDirectory": "C:\\Users\\HP\\Keto-balance\\design\\argon-food-first-work",
+  "donorRef": "922a7a6d15f65751771956a0c2939d344299a9d8",
+  "testFiles": [
+    "src/utils/clipboard.test.ts",
+    "src/utils/ketoBalanceState.test.ts",
+    "src/utils/shoppingFromMenu.test.ts",
+    "tests/frontend/food-first-model.test.cjs",
+    "tests/frontend/recipe-claims.test.cjs"
+  ],
+  "counts": {
+    "tests": 17,
+    "pass": 17,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "checks": [
+    {
+      "name": "unit",
+      "exit": 0
+    },
+    {
+      "name": "typecheck",
+      "exit": 0
+    },
+    {
+      "name": "build",
+      "exit": 0
+    }
+  ],
+  "sourceUnchangedDuringReview": true,
+  "previewMatchesRebuiltJs": true,
+  "servedJsSha256": "ae611d54a65ccdb5f35267ecd9dbfa99037864a2e463ea044078a9f4df474461",
+  "previewProcessWasNotStartedOrStoppedByThisReview": true
+}

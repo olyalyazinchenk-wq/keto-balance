@@ -1,0 +1,11 @@
+[Unit]
+Description=KetoBalance private encrypted online backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+UMask=0077
+# Shared database name must match the confirmed owner migration before enabling.
+ExecStart=/usr/bin/docker exec ketobalance-owner-app python /app/scripts/owner_backup_cycle.py --source /app/data/staging_pilot.db --dest /app/data/owner-backups --key-file /app/data/.backup-key
+TimeoutStartSec=90

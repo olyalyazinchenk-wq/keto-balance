@@ -1,0 +1,107 @@
+[
+  {
+    "screen": "today",
+    "width": 320,
+    "scroll": 320,
+    "client": 320,
+    "offenders": []
+  },
+  {
+    "screen": "today",
+    "width": 375,
+    "scroll": 375,
+    "client": 375,
+    "offenders": []
+  },
+  {
+    "screen": "today",
+    "width": 390,
+    "scroll": 390,
+    "client": 390,
+    "offenders": []
+  },
+  {
+    "screen": "menu",
+    "width": 320,
+    "scroll": 320,
+    "client": 320,
+    "offenders": [
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "screen": "menu",
+    "width": 375,
+    "scroll": 375,
+    "client": 375,
+    "offenders": [
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "screen": "menu",
+    "width": 390,
+    "scroll": 390,
+    "client": 390,
+    "offenders": [
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "screen": "recipe",
+    "width": 320,
+    "scroll": 320,
+    "client": 320,
+    "offenders": []
+  },
+  {
+    "screen": "recipe",
+    "width": 375,
+    "scroll": 375,
+    "client": 375,
+    "offenders": []
+  },
+  {
+    "screen": "recipe",
+    "width": 390,
+    "scroll": 390,
+    "client": 390,
+    "offenders": []
+  },
+  {
+    "screen": "shopping",
+    "width": 320,
+    "scroll": 369,
+    "client": 320,
+    "offenders": [
+      "border-b border-[var(--kb-border)] pb-6 space-y-4",
+      "flex flex-col sm:flex-row sm:items-center justify-between gap-4",
+      "",
+      "kb-eyebrow text-[var(--kb-text-4)]",
+      "food-title text-2xl sm:text-3xl text-[var(--kb-text-1)]",
+      "text-sm text-[var(--kb-text-2)]",
+      "flex items-center gap-2",
+      "px-3 py-2 text-xs font-semibold rounded-xl border border-[var(--kb-border)] inline-flex items-center gap-1.5"
+    ]
+  },
+  {
+    "screen": "shopping",
+    "width": 375,
+    "scroll": 375,
+    "client": 375,
+    "offenders": []
+  },
+  {
+    "screen": "shopping",
+    "width": 390,
+    "scroll": 390,
+    "client": 390,
+    "offenders": []
+  }
+]

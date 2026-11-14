@@ -1,0 +1,84 @@
+# Docker Compose для независимой миграции «КетоБаланс»
+# Совместим с: Yandex Cloud Compute, Timeweb Cloud, Selectel, Hetzner, Bare Metal
+# Минимальные системные требования: 1 vCPU, 2 ГБ RAM, 30 ГБ SSD.
+
+version: "3.8"
+
+networks:
+  keto_net:
+    driver: bridge
+
+volumes:
+  keto_data:
+  caddy_data:
+  caddy_config:
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    command: ["python", "-m", "uvicorn", "bot.server:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+    environment:
+      APP_STAGE: "production"
+      KETO_DB_PATH: "/app/data/keto_balance.db"
+      KETO_DIST_DIR: "/app/dist"
+      KETO_LOAD_DOTENV: "0"
+      PAYMENT_MODE: "disabled"
+      PAYMENTS_ENABLED: "0"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+      TELEGRAM_WEBHOOK_SECRET_TOKEN: "${TELEGRAM_WEBHOOK_SECRET_TOKEN}"
+      WEBAPP_URL: "https://${WEBAPP_DOMAIN}"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.6"
+          memory: 700M
+    volumes:
+      - keto_data:/app/data
+    networks:
+      - keto_net
+
+  bot:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    command: ["python", "-m", "bot.bot"]
+    environment:
+      APP_STAGE: "production"
+      KETO_DB_PATH: "/app/data/keto_balance.db"
+      KETO_DIST_DIR: "/app/dist"
+      KETO_LOAD_DOTENV: "0"
+      PAYMENT_MODE: "disabled"
+      PAYMENTS_ENABLED: "0"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+      TELEGRAM_WEBHOOK_SECRET_TOKEN: "${TELEGRAM_WEBHOOK_SECRET_TOKEN}"
+      WEBAPP_URL: "https://${WEBAPP_DOMAIN}"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.4"
+          memory: 500M
+    volumes:
+      - keto_data:/app/data
+    depends_on:
+      - web
+    networks:
+      - keto_net
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      WEBAPP_DOMAIN: "${WEBAPP_DOMAIN}"
+    volumes:
+      - ../deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - keto_net

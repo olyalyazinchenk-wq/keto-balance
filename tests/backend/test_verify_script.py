@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -57,6 +58,18 @@ class TestVerifyP0Script(unittest.TestCase):
     def test_unknown_stage_is_not_success(self):
         with self.assertRaises(GateError):
             build_plan(Path('.'), 'invented')
+
+    def test_run_step_strips_inherited_pythonpath(self):
+        with tempfile.TemporaryDirectory() as folder, patch('scripts.verification.subprocess.run') as mock_run:
+            mock_run.return_value.returncode = 0
+            mock_run.return_value.stdout = ''
+            mock_run.return_value.stderr = ''
+            with patch.dict(os.environ, {'PYTHONPATH': '/synthetic/inherited/path'}):
+                step = Step('check-env', (sys.executable, '-c', 'pass'), ())
+                run_step(step, Path(folder))
+                mock_run.assert_called_once()
+                call_env = mock_run.call_args.kwargs['env']
+                self.assertNotIn('PYTHONPATH', call_env)
 
 if __name__ == '__main__':
     unittest.main()

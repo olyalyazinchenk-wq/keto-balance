@@ -79,3 +79,40 @@ def release_safety_hold(user_data: Dict[str, Any]) -> None:
     """Снятие ошибочно установленной отметки (не означает медицинское заключение о здоровье)"""
     user_data.pop("safety_hold", None)
     user_data.pop("safety_hold_reason", None)
+
+
+# Медицинские противопоказания для кето-диеты (K2-Pilot Safety)
+STRICT_CONTRAINDICATIONS = {
+    "type_1_diabetes": "Сахарный диабет 1 типа требует строгого инсулинового протокола под наблюдением эндокринолога.",
+    "pregnancy": "Беременность требует полноценного сбалансированного питания для развития плода.",
+    "breastfeeding": "Период грудного вскармливания несовместим с кетогенным дефицитом углеводов.",
+    "kidney_disease": "Заболевания почек и почечная недостаточность являются строгим противопоказанием.",
+    "liver_failure": "Печеночная недостаточность и декомпенсированные патологии печени исключают кетоз.",
+    "pancreatitis": "Острый или хронический панкреатит несовместим с высоким содержанием жиров в рационе.",
+    "eating_disorder": "Расстройства пищевого поведения (анорексия, булимия) требуют помощи психотерапевта.",
+}
+
+def evaluate_contraindications(conditions: list[str]) -> Tuple[bool, bool, Optional[str], list[str]]:
+    """
+    Анализирует список указанных пользователем состояний здоровья.
+    Возвращает (safe: bool, blocked: bool, reason: Optional[str], detected: list[str]).
+    """
+    if not conditions:
+        return True, False, None, []
+
+    detected = []
+    reasons = []
+
+    for cond in conditions:
+        normalized = cond.strip().lower().replace(" ", "_").replace("-", "_")
+        for key, description in STRICT_CONTRAINDICATIONS.items():
+            if key in normalized or normalized in key:
+                if key not in detected:
+                    detected.append(key)
+                    reasons.append(description)
+
+    if detected:
+        summary_reason = "Кето-диета противопоказана при следующих состояниях: " + "; ".join(reasons)
+        return False, True, summary_reason, detected
+
+    return True, False, None, []

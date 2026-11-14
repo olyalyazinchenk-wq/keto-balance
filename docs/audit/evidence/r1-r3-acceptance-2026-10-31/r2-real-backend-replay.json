@@ -1,0 +1,17 @@
+{
+  "scope": "Exact shopping PUT payloads captured from fresh built browser UI replayed through real unmodified in-process FastAPI and owned synthetic SQLite; new authenticated session GET afterwards",
+  "statuses": [
+    200,
+    200,
+    200
+  ],
+  "actual_final": {
+    "a": false,
+    "b": true
+  },
+  "expected_final": {
+    "a": false,
+    "b": true
+  },
+  "expectation_pass": true
+}

@@ -1,0 +1,50 @@
+{
+  "manifestVersion": "1.0.0",
+  "stage": "k2-pilot",
+  "generatedAt": "2026-10-31T21:40:00+03:00",
+  "integrator": "Gemini 3.8 in Antigravity",
+  "repository": {
+    "path": "C:\\Users\\HP\\Keto-balance",
+    "branch": "design/argon-ui-import",
+    "baselineSha": "5f39a90f3eb59295869e389acc2a9add4b6e0ad0",
+    "dirty": true
+  },
+  "fingerprints": {
+    "frontendBuildId": "c9774a016e0173e8",
+    "catalogHash": "face03d34bf329b2",
+    "backendFingerprint": "317b35e410187a94"
+  },
+  "launchers": {
+    "localPreview": "python scripts/run_local_preview.py --port 18080",
+    "localPreviewUrl": "http://127.0.0.1:18080/?demo_user=1084557944",
+    "ownerStaging": "python scripts/run_staging.py --port 18080 --token-file <PATH_TO_TOKEN_FILE>"
+  },
+  "isolatedBuild": {
+    "scratchDirectory": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\build-run-1793472035849-0bqol6",
+    "distPath": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\build-run-1793472035849-0bqol6\\workspace\\dist",
+    "receiptPath": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\build-run-1793472035849-0bqol6\\build-receipt.json",
+    "sourceManifestPath": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\build-run-1793472035849-0bqol6\\source-manifest.json",
+    "syntheticCatalogPath": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\build-run-1793472035849-0bqol6\\synthetic-test-catalog.json"
+  },
+  "testHarness": {
+    "serverPort": 18080,
+    "serverHost": "127.0.0.1",
+    "livePortsUntouched": [8000, 4387, 8090, 10808, 10809],
+    "verificationScript": "scripts/verification.py",
+    "verificationCommand": "& \".venv-p0/Scripts/python.exe\" -B scripts/verification.py --stage k2-pilot",
+    "gateResult": "PASSED (exit 0)"
+  },
+  "routes": {
+    "today": "/",
+    "menu": "/?tab=menu",
+    "recipe": "/?tab=menu&recipeId=:id",
+    "shopping": "/?tab=shopping",
+    "support": "/?tab=support"
+  },
+  "supportConfig": {
+    "ownerTelegramId": "1084557944",
+    "botUsername": "keto_balance_userbot",
+    "botLink": "https://t.me/keto_balance_userbot?start=question",
+    "supportDeliveryRule": "Ticket saved on server != delivered to Telegram. No unsolicited background messaging without owner approval."
+  }
+}

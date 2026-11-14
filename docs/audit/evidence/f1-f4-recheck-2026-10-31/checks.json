@@ -1,0 +1,121 @@
+{
+  "scope": "Independent native frontend, selected backend under outer IO guard, launcher main with only DB and Server boundaries stubbed; fresh isolated build; TestClient synthetic DB; no live server, bot, tunnel, secrets, real database, or messages",
+  "results": {
+    "frontend": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\frontend.log",
+      "tests": 184,
+      "pass": 184,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "todo": 0,
+      "file_count": 25
+    },
+    "backend-targeted": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\backend-targeted.log",
+      "tests": 29,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "suites": [
+        "tests.backend.test_pilot_auth_regressions",
+        "tests.backend.test_pilot_roundtrip",
+        "tests.backend.test_pilot_harness",
+        "tests.backend.test_release_version",
+        "tests.backend.test_staging_and_demo"
+      ]
+    },
+    "launcher-assembly-probe": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\launcher-assembly-probe.log",
+      "observed": [
+        {
+          "launcher": "run_local_preview.py",
+          "exception": "TypeError",
+          "message": "AppSettings.__init__() got an unexpected keyword argument 'payments_enabled'",
+          "calls": {
+            "db_initialization": 1,
+            "server_construction": 0,
+            "server_run": 0
+          }
+        },
+        {
+          "launcher": "run_staging.py",
+          "exception": "TypeError",
+          "message": "AppSettings.__init__() got an unexpected keyword argument 'payments_enabled'",
+          "calls": {
+            "db_initialization": 1,
+            "server_construction": 0,
+            "server_run": 0
+          }
+        }
+      ]
+    },
+    "typecheck": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\typecheck.log"
+    },
+    "isolated-build": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\isolated-build.log",
+      "paths": {
+        "dist_dir": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\localappdata\\hermes\\cache\\scratch\\build-run-1793457021225-myad8u\\workspace\\dist",
+        "test_catalog_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\localappdata\\hermes\\cache\\scratch\\build-run-1793457021225-myad8u\\synthetic-test-catalog.json",
+        "receipt_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\localappdata\\hermes\\cache\\scratch\\build-run-1793457021225-myad8u\\build-receipt.json",
+        "source_manifest_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\localappdata\\hermes\\cache\\scratch\\build-run-1793457021225-myad8u\\source-manifest.json",
+        "build_id": "e7d04da9d43a7f50",
+        "catalog_hash": "face03d34bf329b2",
+        "backend_fingerprint": "c94db25d7ba234c0"
+      },
+      "build_id": "e7d04da9d43a7f50",
+      "backend_fingerprint": "c94db25d7ba234c0",
+      "catalog_hash": "face03d34bf329b2",
+      "forbidden_backend_files": [],
+      "dist_catalog": {
+        "test_only": false,
+        "recipe_count": 0,
+        "released_ids_count": 0
+      },
+      "sidecar_catalog": {
+        "test_only": true,
+        "recipe_count": 5,
+        "released_ids_count": 5
+      }
+    },
+    "version-and-default-catalog": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\version-and-default-catalog.log",
+      "observed": [
+        {
+          "stage": "test",
+          "version_status": 200,
+          "expected_fingerprint": "c94db25d7ba234c0",
+          "actual_fingerprint": "c94db25d7ba234c0",
+          "match": true,
+          "catalog_status": 200,
+          "catalog_recipes": 0,
+          "test_only": false
+        },
+        {
+          "stage": "staging",
+          "version_status": 200,
+          "expected_fingerprint": "c94db25d7ba234c0",
+          "actual_fingerprint": "c94db25d7ba234c0",
+          "match": true,
+          "catalog_status": 200,
+          "catalog_recipes": 0,
+          "test_only": false
+        }
+      ]
+    },
+    "receipt-accounting": {
+      "claimed_backend_total": 143,
+      "sum_named_suite_counts": 112,
+      "named_suite_count": 26,
+      "ast_test_method_count_not_execution": 143,
+      "file_count": 31
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-10-31T00:17:38.914572+00:00",
+  "frontendFiles": 21,
+  "frontendExit": 0,
+  "frontendSummary": {
+    "tests": 146,
+    "pass": 146,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "typecheckExit": 0,
+  "typecheckOutput": "",
+  "scope": "Existing frontend suite and installed TypeScript, no build/server/bot; no actual env or runtime data read"
+}

@@ -1,0 +1,27 @@
+{
+  "scope": "Pure functions on existing static recipe data; not medical/nutrient calculations or browser/live API proof",
+  "zero_time_limit": {
+    "expected": "No time exclusion",
+    "visible_recipe_count": 1
+  },
+  "restriction_predicate_disagreement": {
+    "canonical_allowed": true,
+    "view_filter_allowed": true
+  },
+  "four_meals_rendered_slots": [
+    "breakfast",
+    "lunch",
+    "dinner",
+    "snack"
+  ],
+  "source_yield": {
+    "serv": 2,
+    "view_one_batch_label": "2 порции"
+  },
+  "quantity_change_flags": {
+    "before_amount": "4 шт.",
+    "after_amount": "8 шт.",
+    "alreadyHave_after": false,
+    "checkedInStore_after": false
+  }
+}

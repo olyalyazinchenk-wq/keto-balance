@@ -1,0 +1,33 @@
+{
+  "ref": "922a7a6d15f65751771956a0c2939d344299a9d8",
+  "testFiles": [
+    "src/utils/ketoBalanceState.test.ts",
+    "tests/frontend/food-first-model.test.cjs"
+  ],
+  "testCounts": {
+    "tests": 12,
+    "pass": 12,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "results": [
+    {
+      "name": "unit",
+      "exit": 0
+    },
+    {
+      "name": "typecheck",
+      "exit": 0
+    },
+    {
+      "name": "build",
+      "exit": 0
+    }
+  ],
+  "latestAtEnd": "922a7a6d15f65751771956a0c2939d344299a9d8",
+  "sameAsLatest": true,
+  "temporaryServerStopped": true,
+  "byteIdenticalSourceBlobs": 37
+}

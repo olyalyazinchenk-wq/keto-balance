@@ -1,0 +1,42 @@
+{
+  "exit_code": 0,
+  "launcher_configuration": "Default dist/catalog discovery from reviewer-owned latest-build-receipt; only lifetime shortened, serving boundary synthetic",
+  "launchers": [
+    {
+      "launcher": "run_local_preview.py",
+      "assembled": true,
+      "timer_callback_fired": true,
+      "synthetic_server_wait_s": 1.34,
+      "catalog_status": 200,
+      "recipes": 5,
+      "version_status": 200,
+      "version_fingerprint": "6014c9aae7939a3b",
+      "auth_status": 200,
+      "pid_files_remaining_in_owned_run": 0,
+      "scope": "Real main, configuration, app, synthetic DB, timer callback and PID cleanup; OS serving boundary substituted, no listener started"
+    },
+    {
+      "launcher": "run_staging.py",
+      "assembled": true,
+      "timer_callback_fired": true,
+      "synthetic_server_wait_s": 1.15,
+      "catalog_status": 200,
+      "recipes": 5,
+      "version_status": 200,
+      "version_fingerprint": "6014c9aae7939a3b",
+      "auth_status": 200,
+      "pid_files_remaining_in_owned_run": 0,
+      "scope": "Real main, configuration, app, synthetic DB, timer callback and PID cleanup; OS serving boundary substituted, no listener started"
+    }
+  ],
+  "guard_policy": {
+    "forbidden_path_variants_allowed": {
+      ".env": false,
+      ".ENV.example": false,
+      "SAMPLE.DB": false
+    },
+    "extensionless_sqlite_outside_root_blocked": true,
+    "application_connect_after_fake_bind_blocked": true,
+    "scope": "Synthetic path/socket boundary probes only; no real forbidden file opens or OS connections"
+  }
+}

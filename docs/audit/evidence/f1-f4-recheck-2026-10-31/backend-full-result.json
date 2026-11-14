@@ -1,0 +1,9 @@
+{
+  "exit_code": 0,
+  "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\backend-full.log",
+  "scope": "Real full backend unittest discovery; outer Python IO audit guard also injected into reviewed Python -c child probes. No serving process, real DB/env/participant data or application network.",
+  "tests": 143,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0
+}

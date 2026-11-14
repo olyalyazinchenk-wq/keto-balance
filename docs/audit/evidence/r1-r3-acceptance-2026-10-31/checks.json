@@ -1,0 +1,86 @@
+{
+  "build_id": "c9774a016e0173e8",
+  "native_backend": {
+    "exit_code": 0,
+    "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-51tfowfr\\backend-full.log",
+    "scope": "Real full backend unittest discovery; outer Python IO audit guard also injected into reviewed Python -c child probes. No serving process, real DB/env/participant data or application network.",
+    "tests": 155,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "native_frontend": {
+    "exit_code": 0,
+    "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-51tfowfr\\frontend.log",
+    "tests": 187,
+    "pass": 187,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0,
+    "file_count": 25
+  },
+  "typecheck_exit": 0,
+  "build_exit": 0,
+  "source_file_count": 100,
+  "source_mismatches": [],
+  "addressed_scope": "R1-R3 only; diagnostic assertions distinct from native test totals",
+  "checks": [
+    {
+      "name": "R1/three_day_correct_x1",
+      "passed": true
+    },
+    {
+      "name": "R1/three_day_correct_x2",
+      "passed": true
+    },
+    {
+      "name": "R1/one_day_correct",
+      "passed": true
+    },
+    {
+      "name": "R1/three_day_menu_one_day_quantities",
+      "passed": true
+    },
+    {
+      "name": "R1/one_day_missing_ingredient",
+      "passed": true
+    },
+    {
+      "name": "R1/normalized_unit_correct",
+      "passed": true
+    },
+    {
+      "name": "R1/wrong_unit_same_raw_number",
+      "passed": true
+    },
+    {
+      "name": "R2/custom_item_during_refresh",
+      "passed": true
+    },
+    {
+      "name": "R2/queued_checkbox_edits",
+      "passed": true
+    },
+    {
+      "name": "R3/nonzero_revision_bootstrap_repair",
+      "passed": true
+    },
+    {
+      "name": "R2/queued_already_have_edits",
+      "passed": true
+    }
+  ],
+  "targeted_passed": 11,
+  "targeted_failed": 0,
+  "targeted_total": 11,
+  "acceptance_exit_code": 0,
+  "native_e2e_and_whole_k2_gate": "not rerun by reviewer",
+  "operational_preview": "not launched; launcher serving boundary stubbed",
+  "safety": "Owned synthetic DB/fixtures, isolated browser routes; no real participant files, Telegram/bot/payment/external AI or application listener; no product edits/commit/push/deploy",
+  "executor_receipt_json": {
+    "valid": false,
+    "error": "Extra data: line 61 column 5 (char 3560)",
+    "severity": "reporting-only, not a blocker for owner-approved local preview A"
+  }
+}

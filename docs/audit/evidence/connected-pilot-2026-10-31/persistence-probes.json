@@ -1,0 +1,36 @@
+{
+  "scope": "Only synthetic SQLite in this probe run; no production DB/env/network; deterministic scheduling wrapper around unchanged product SQL",
+  "explicit_null_profile_result_is_null": false,
+  "partial_put_model_accepted": true,
+  "partial_put_implicit_profile": null,
+  "partial_put_implicit_state": null,
+  "concurrent_CAS": {
+    "read_observations": [
+      {
+        "revision": 0,
+        "in_transaction_at_read": false
+      },
+      {
+        "revision": 0,
+        "in_transaction_at_read": false
+      }
+    ],
+    "outcomes": [
+      {
+        "worker": "synthetic_A",
+        "status": "ok",
+        "revision": 1
+      },
+      {
+        "worker": "synthetic_B",
+        "status": "ok",
+        "revision": 1
+      }
+    ],
+    "final_revision": 1,
+    "final_item_ids": [
+      "synthetic_B"
+    ],
+    "all_threads_finished": true
+  }
+}

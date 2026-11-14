@@ -1,0 +1,67 @@
+{
+  "slug": "keto-mistakes",
+  "kicker": "кето · ошибки",
+  "cta": "сохрани чек-лист",
+  "out": "media/hooks/variants",
+  "platforms": [
+    "tiktok",
+    "reels",
+    "shorts"
+  ],
+  "variants": [
+    {
+      "name": "hook",
+      "scenes": 1
+    },
+    {
+      "name": "teaser",
+      "scenes": 2
+    },
+    {
+      "name": "full",
+      "scenes": 5
+    }
+  ],
+  "scenes": [
+    {
+      "clip": "media/flow/hands_slice_ripe_avocado_01.mp4",
+      "t": 0.6,
+      "dur": 3.0,
+      "l1": "ОШИБКА 1",
+      "l2": "МАЛО БЕЛКА",
+      "kicker": "кето · завтрак"
+    },
+    {
+      "clip": "media/flow/salmon_plate_01.mp4",
+      "t": 1.0,
+      "dur": 3.0,
+      "l1": "ОШИБКА 2",
+      "l2": "МАСЛО ВМЕСТО ЕДЫ",
+      "kicker": "кето · тарелка"
+    },
+    {
+      "clip": "media/flow/label_closeup_01.mp4",
+      "t": 1.2,
+      "dur": 3.0,
+      "l1": "ОШИБКА 3",
+      "l2": "НЕ ЧИТАЮ ЭТИКЕТКИ",
+      "kicker": "кето · проверка"
+    },
+    {
+      "clip": "media/flow/scales_avocado_01.mp4",
+      "t": 1.0,
+      "dur": 3.0,
+      "l1": "ОШИБКА 4",
+      "l2": "ВЕС НА ГЛАЗ",
+      "kicker": "кето · граммовка"
+    },
+    {
+      "clip": "media/flow/hands_slice_ripe_avocado_01.mp4",
+      "t": 4.0,
+      "dur": 3.0,
+      "l1": "ОШИБКА 5",
+      "l2": "ВТОРОЙ ЗАВТРАК",
+      "kicker": "кето · режим"
+    }
+  ]
+}

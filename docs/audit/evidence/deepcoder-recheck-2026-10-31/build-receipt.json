@@ -1,0 +1,40 @@
+{
+  "dist_dir": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\localappdata\\hermes\\cache\\scratch\\build-run-1793465232853-956rnq\\workspace\\dist",
+  "test_catalog_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\localappdata\\hermes\\cache\\scratch\\build-run-1793465232853-956rnq\\synthetic-test-catalog.json",
+  "receipt_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\localappdata\\hermes\\cache\\scratch\\build-run-1793465232853-956rnq\\build-receipt.json",
+  "source_manifest_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\localappdata\\hermes\\cache\\scratch\\build-run-1793465232853-956rnq\\source-manifest.json",
+  "build_id": "c145c16cbf4fdc16",
+  "git_sha": "5f39a90f3eb59295869e389acc2a9add4b6e0ad0",
+  "dirty": true,
+  "catalog_hash": "face03d34bf329b2",
+  "backend_fingerprint": "6014c9aae7939a3b",
+  "source_manifest_count": 100,
+  "commands": [
+    {
+      "cmd": "node scripts/validate-catalog.mjs",
+      "exitCode": 0,
+      "durationMs": 581
+    },
+    {
+      "cmd": "node node_modules/typescript/bin/tsc --noEmit --incremental false --pretty false",
+      "exitCode": 0,
+      "durationMs": 5092
+    },
+    {
+      "cmd": "node node_modules/vite/bin/vite.js build --outDir dist",
+      "exitCode": 0,
+      "durationMs": 4978
+    },
+    {
+      "cmd": "node scripts/export-release-catalog.mjs",
+      "exitCode": 0,
+      "durationMs": 486
+    },
+    {
+      "cmd": "node scripts/stamp-release.mjs",
+      "exitCode": 0,
+      "durationMs": 96
+    }
+  ],
+  "built_at": "2026-10-31T16:47:25.594Z"
+}

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <title>КетоБаланс — месяц меню и покупки на неделю</title>
+  <script src="assets/gsap.min.js"></script>
+  <style>
+    @font-face { font-family: 'Golos Text'; src: url('assets/GolosText-Variable.ttf') format('truetype'); font-weight: 400 900; font-display: block; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 1080px; height: 1920px; overflow: hidden; background: #F5F7F3; }
+    body { font-family: 'Golos Text', sans-serif; color: #1C2821; }
+    #root { width: 1080px; height: 1920px; position: relative; overflow: hidden; }
+    .scene { position: absolute; inset: 0; width: 100%; height: 100%; background: #F5F7F3; overflow: hidden; }
+    .scene + .scene { opacity: 0; }
+    .scene-content { width: 100%; height: 100%; padding: 52px 72px 46px; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
+    .masthead { width: 100%; display: flex; justify-content: space-between; align-items: center; color: #255C48; font-size: 32px; font-weight: 700; min-height: 44px; }
+    .step { padding: 8px 16px; border: 2px solid #DCE4DD; border-radius: 14px; font-size: 28px; font-variant-numeric: tabular-nums; }
+    .heading { min-height: 174px; max-width: 936px; display: flex; align-items: center; }
+    h1, h2 { font-size: 78px; font-weight: 800; line-height: 1.06; letter-spacing: -.035em; }
+    .instruction { font-size: 36px; font-weight: 400; line-height: 1.3; color: #526159; min-height: 94px; max-width: 910px; }
+    .device { align-self: center; width: 620px; height: 1342px; flex: 0 0 1342px; border: 3px solid #DCE4DD; border-radius: 34px; overflow: hidden; background: #FFFFFF; box-shadow: 0 20px 55px #255C481A; }
+    .device img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .footer { font-size: 28px; line-height: 1.25; color: #526159; max-width: 936px; margin-top: auto; }
+  </style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="24" data-width="1080" data-height="1920" data-fps="30">
+    <section id="scene1" class="scene" data-scene="month">
+      <!-- Occlusion at the 0.42 s dissolve is intentional; each settled scene is inspected separately. -->
+      <div class="scene-content" data-layout-allow-occlusion data-hold>
+        <div class="masthead" data-layout-allow-overlap><span>КетоБаланс</span><span class="step">01 / 04</span></div>
+        <div class="heading"><h1>Месяц меню — по дням</h1></div>
+        <p class="instruction">В параметрах выберите месяц, подход и ограничения. Составьте меню.</p>
+        <div class="device"><img src="assets/01-month.png" alt="Настоящий экран месячного кето-меню с неделями и днями" /></div>
+        <p class="footer">Далее — выберите неделю и нужный день.</p>
+      </div>
+    </section>
+    <section id="scene2" class="scene" data-scene="replace" data-layout-allow-occlusion>
+      <div class="scene-content" data-layout-allow-occlusion data-hold>
+        <div class="masthead" data-layout-allow-overlap><span>КетоБаланс</span><span class="step">02 / 04</span></div>
+        <div class="heading"><h2>Меняйте блюда под себя</h2></div>
+        <p class="instruction">Нажмите «Заменить», выберите блюдо и затем «Поставить в план».</p>
+        <div class="device"><img src="assets/02-replace.png" alt="Настоящее окно выбора подходящего блюда для замены" /></div>
+        <p class="footer">Ограничения питания остаются в силе.</p>
+      </div>
+    </section>
+    <section id="scene3" class="scene" data-scene="shopping" data-layout-allow-occlusion>
+      <div class="scene-content" data-layout-allow-occlusion data-hold>
+        <div class="masthead" data-layout-allow-overlap><span>КетоБаланс</span><span class="step">03 / 04</span></div>
+        <div class="heading"><h2>Покупайте на неделю</h2></div>
+        <p class="instruction">Откройте «Покупки» и выберите неделю. После замены обновите корзину.</p>
+        <div class="device"><img src="assets/03-shopping.png" alt="Настоящий список покупок с выбранной неделей месяца" /></div>
+        <p class="footer">Отмечайте покупки и продукты, которые есть дома.</p>
+      </div>
+    </section>
+    <section id="scene4" class="scene" data-scene="cooking" data-layout-allow-occlusion>
+      <div class="scene-content" data-hold>
+        <div class="masthead"><span>КетоБаланс</span><span class="step">04 / 04</span></div>
+        <div class="heading"><h2>Готовьте шаг за шагом</h2></div>
+        <p class="instruction">Откройте рецепт, выберите порции, отмечайте шаги и запускайте таймер.</p>
+        <div class="device"><img src="assets/04-cooking.png" alt="Настоящий экран шагов приготовления с работающим таймером" /></div>
+        <p class="footer">Сигнал таймера в фоне не гарантируется.</p>
+      </div>
+    </section>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    const starts = [0, 6, 12, 18];
+    starts.forEach((start, index) => {
+      const selector = '#scene' + (index + 1);
+      if (index > 0) {
+        // This scene-container dissolve is the transition; content does not exit beforehand.
+        tl.to('#scene' + index, { opacity: 0, duration: .42, ease: 'sine.inOut' }, start);
+        tl.to(selector, { opacity: 1, duration: .42, ease: 'sine.inOut' }, start);
+      }
+      tl.from(selector + ' .masthead', { y: 12, opacity: index === 0 ? 1 : 0, duration: .35, ease: 'power2.out' }, start + .12);
+      tl.from(selector + ' .heading', { y: 30, opacity: index === 0 ? 1 : 0, duration: .5, ease: 'power3.out' }, start + .2);
+      tl.from(selector + ' .instruction', { x: -18, opacity: 0, duration: .4, ease: 'sine.out' }, start + .35);
+      tl.from(selector + ' .device', { y: 32, scale: .99, opacity: 0, duration: .55, ease: 'power2.out' }, start + .42);
+      tl.from(selector + ' .footer', { y: 14, opacity: 0, duration: .4, ease: 'sine.out' }, start + .58);
+    });
+    tl.to('#scene4', { opacity: 0, duration: .4, ease: 'sine.inOut' }, 23.6);
+    window.__timelines.main = tl;
+  </script>
+</body>
+</html>

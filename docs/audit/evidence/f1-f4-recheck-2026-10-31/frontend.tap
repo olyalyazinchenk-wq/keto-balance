@@ -1,0 +1,1135 @@
+TAP version 13
+# [33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html\#vite-cjs-node-api-deprecated for more details.[39m
+# Subtest: default validation never reads implicit runtime bot data
+ok 1 - default validation never reads implicit runtime bot data
+  ---
+  duration_ms: 1071.1971
+  type: 'test'
+  ...
+# Subtest: required sync fails when no explicit fixture is supplied
+ok 2 - required sync fails when no explicit fixture is supplied
+  ---
+  duration_ms: 178.6668
+  type: 'test'
+  ...
+# Subtest: malformed explicit bot fixture is rejected
+ok 3 - malformed explicit bot fixture is rejected
+  ---
+  duration_ms: 286.33
+  type: 'test'
+  ...
+# Subtest: an explicit empty fixture cannot pass bot synchronization
+ok 4 - an explicit empty fixture cannot pass bot synchronization
+  ---
+  duration_ms: 119.8462
+  type: 'test'
+  ...
+# Subtest: missing static catalog fails rather than returning an empty success
+ok 5 - missing static catalog fails rather than returning an empty success
+  ---
+  duration_ms: 54.6407
+  type: 'test'
+  ...
+# Subtest: vite config isolates envDir from root backend env
+ok 6 - vite config isolates envDir from root backend env
+  ---
+  duration_ms: 1.1992
+  type: 'test'
+  ...
+# Subtest: vite loadEnv respects isolated envDir without accessing root .env
+ok 7 - vite loadEnv respects isolated envDir without accessing root .env
+  ---
+  duration_ms: 45.7228
+  type: 'test'
+  ...
+# Subtest: Catalog integrity baseline (P05)
+    # Subtest: has exactly 42 recipes: 26 keto and 16 carnivore
+    ok 1 - has exactly 42 recipes: 26 keto and 16 carnivore
+      ---
+      duration_ms: 3.0161
+      type: 'test'
+      ...
+    # Subtest: all recipe IDs are unique and follow conventions
+    ok 2 - all recipe IDs are unique and follow conventions
+      ---
+      duration_ms: 0.7365
+      type: 'test'
+      ...
+    # Subtest: k4 does not have erroneous "без яиц" tag while containing eggs
+    ok 3 - k4 does not have erroneous "без яиц" tag while containing eggs
+      ---
+      duration_ms: 0.286
+      type: 'test'
+      ...
+    # Subtest: all recipes have valid required fields and nutrients
+    ok 4 - all recipes have valid required fields and nutrients
+      ---
+      duration_ms: 4.476
+      type: 'test'
+      ...
+    # Subtest: keto-engine validates all recipes without fatal calculation errors
+    ok 5 - keto-engine validates all recipes without fatal calculation errors
+      ---
+      duration_ms: 405.6506
+      type: 'test'
+      ...
+    # Subtest: catalog validation script succeeds and generates comprehensive report
+    ok 6 - catalog validation script succeeds and generates comprehensive report
+      ---
+      duration_ms: 246.683
+      type: 'test'
+      ...
+    # Subtest: keto-engine catches corrupted recipe macros and blocks publication
+    ok 7 - keto-engine catches corrupted recipe macros and blocks publication
+      ---
+      duration_ms: 101.9316
+      type: 'test'
+      ...
+    1..7
+ok 8 - Catalog integrity baseline (P05)
+  ---
+  duration_ms: 1165.5439
+  type: 'test'
+  ...
+# Subtest: Recipe eligibility and safety filtering (P05)
+    # Subtest: k2 (omlet) is blocked for egg allergy
+    ok 1 - k2 (omlet) is blocked for egg allergy
+      ---
+      duration_ms: 9.8605
+      type: 'test'
+      ...
+    # Subtest: k14 (beef with cabbage) is blocked for dairy allergy due to ghee (топлёное масло)
+    ok 2 - k14 (beef with cabbage) is blocked for dairy allergy due to ghee (топлёное масло)
+      ---
+      duration_ms: 0.3608
+      type: 'test'
+      ...
+    # Subtest: c6 (steamed salmon) is blocked for fish allergy
+    ok 3 - c6 (steamed salmon) is blocked for fish allergy
+      ---
+      duration_ms: 0.2388
+      type: 'test'
+      ...
+    # Subtest: k11 (mushroom cream soup) is blocked for disliked mushrooms
+    ok 4 - k11 (mushroom cream soup) is blocked for disliked mushrooms
+      ---
+      duration_ms: 0.3553
+      type: 'test'
+      ...
+    # Subtest: non-empty allergyNote safely refuses automatic matching
+    ok 5 - non-empty allergyNote safely refuses automatic matching
+      ---
+      duration_ms: 0.2229
+      type: 'test'
+      ...
+    # Subtest: unknown allergy category safely refuses automatic matching
+    ok 6 - unknown allergy category safely refuses automatic matching
+      ---
+      duration_ms: 0.2135
+      type: 'test'
+      ...
+    # Subtest: profile without restrictions does not zero out the catalog
+    ok 7 - profile without restrictions does not zero out the catalog
+      ---
+      duration_ms: 3.7902
+      type: 'test'
+      ...
+    # Subtest: synthetic recipe fixtures for variations and edge cases
+    ok 8 - synthetic recipe fixtures for variations and edge cases
+      ---
+      duration_ms: 0.534
+      type: 'test'
+      ...
+    # Subtest: unverified composition and damaged restrictions refuse automatic matching
+    ok 9 - unverified composition and damaged restrictions refuse automatic matching
+      ---
+      duration_ms: 0.6846
+      type: 'test'
+      ...
+    1..9
+ok 9 - Recipe eligibility and safety filtering (P05)
+  ---
+  duration_ms: 707.2079
+  type: 'test'
+  ...
+# Subtest: clipboard result is honest for success, rejection and absent API
+ok 10 - clipboard result is honest for success, rejection and absent API
+  ---
+  duration_ms: 3.7002
+  type: 'test'
+  ...
+# Subtest: flow projects requested date and displays true recipe identity
+ok 11 - flow projects requested date and displays true recipe identity
+  ---
+  duration_ms: 1.6927
+  type: 'test'
+  ...
+# Subtest: selecting next date changes slots and recipes without dayIndex-as-date corruption
+ok 12 - selecting next date changes slots and recipes without dayIndex-as-date corruption
+  ---
+  duration_ms: 6.0065
+  type: 'test'
+  ...
+# Subtest: selected day resolution preserves valid choice and falls back on invalid
+ok 13 - selected day resolution preserves valid choice and falls back on invalid
+  ---
+  duration_ms: 0.3827
+  type: 'test'
+  ...
+# Subtest: food-first ui components have clean import boundary without demo fixtures or express
+ok 14 - food-first ui components have clean import boundary without demo fixtures or express
+  ---
+  duration_ms: 9.2806
+  type: 'test'
+  ...
+# Subtest: main.tsx and PilotApp.tsx do not import or execute legacy global loadStore
+ok 15 - main.tsx and PilotApp.tsx do not import or execute legacy global loadStore
+  ---
+  duration_ms: 1.0834
+  type: 'test'
+  ...
+# Subtest: legacy App.tsx returns PilotApp without breaking typecheck
+ok 16 - legacy App.tsx returns PilotApp without breaking typecheck
+  ---
+  duration_ms: 1.1923
+  type: 'test'
+  ...
+# Subtest: food-first shell covers the four-screen journey and keeps navigation semantics
+ok 17 - food-first shell covers the four-screen journey and keeps navigation semantics
+  ---
+  duration_ms: 1.649
+  type: 'test'
+  ...
+# Subtest: replacement rebuilds ingredients without inventing conversions
+ok 18 - replacement rebuilds ingredients without inventing conversions
+  ---
+  duration_ms: 2.5109
+  type: 'test'
+  ...
+# Subtest: keeps custom items and exact matching checkmarks; rejects missing recipes
+ok 19 - keeps custom items and exact matching checkmarks; rejects missing recipes
+  ---
+  duration_ms: 0.8019
+  type: 'test'
+  ...
+# Subtest: smart aggregation sums identical ingredients across meals and days without duplicate rows
+ok 20 - smart aggregation sums identical ingredients across meals and days without duplicate rows
+  ---
+  duration_ms: 0.4324
+  type: 'test'
+  ...
+# Subtest: scaling portions multiplier scales amounts and resets checkmarks when amount changes (R4)
+ok 21 - scaling portions multiplier scales amounts and resets checkmarks when amount changes (R4)
+  ---
+  duration_ms: 0.5658
+  type: 'test'
+  ...
+# Subtest: preserves identity, raw ingredients and source yield without nutrients
+ok 22 - preserves identity, raw ingredients and source yield without nutrients
+  ---
+  duration_ms: 7.6891
+  type: 'test'
+  ...
+# Subtest: keeps requested slot keys even if recipe category is different
+ok 23 - keeps requested slot keys even if recipe category is different
+  ---
+  duration_ms: 0.6738
+  type: 'test'
+  ...
+# Subtest: rejects a selected date absent from the current menu
+ok 24 - rejects a selected date absent from the current menu
+  ---
+  duration_ms: 0.5186
+  type: 'test'
+  ...
+# Subtest: does not silently replace an unknown recipe reference
+ok 25 - does not silently replace an unknown recipe reference
+  ---
+  duration_ms: 0.2863
+  type: 'test'
+  ...
+# Subtest: recipe uses the same reviewed photo as the menu; unknown photos retain fallback
+ok 26 - recipe uses the same reviewed photo as the menu; unknown photos retain fallback
+  ---
+  duration_ms: 45.352
+  type: 'test'
+  ...
+# Subtest: daily rhythm displays actual preparation state, not fabricated eaten meals
+ok 27 - daily rhythm displays actual preparation state, not fabricated eaten meals
+  ---
+  duration_ms: 12.3578
+  type: 'test'
+  ...
+# Subtest: shopping exposes accessible progress that reflects checked and home items
+ok 28 - shopping exposes accessible progress that reflects checked and home items
+  ---
+  duration_ms: 11.9353
+  type: 'test'
+  ...
+# Subtest: test harness loads and runs node:test
+ok 29 - test harness loads and runs node:test
+  ---
+  duration_ms: 1.1689
+  type: 'test'
+  ...
+# Subtest: loadTs can load a typescript fixture
+ok 30 - loadTs can load a typescript fixture
+  ---
+  duration_ms: 139.1312
+  type: 'test'
+  ...
+# Subtest: Honesty baseline and removal of simulated services (P08)
+    # Subtest: NavigatorPage does not simulate OCR or hardcode carbs/sugar responses
+    ok 1 - NavigatorPage does not simulate OCR or hardcode carbs/sugar responses
+      ---
+      duration_ms: 1.9832
+      type: 'test'
+      ...
+    # Subtest: NutritionistPage delegates to honest private support without simulated sending
+    ok 2 - NutritionistPage delegates to honest private support without simulated sending
+      ---
+      duration_ms: 0.7264
+      type: 'test'
+      ...
+    # Subtest: AdminPage states that server administration is disconnected and is out of standard navigation
+    ok 3 - AdminPage states that server administration is disconnected and is out of standard navigation
+      ---
+      duration_ms: 0.2997
+      type: 'test'
+      ...
+    # Subtest: RemindersPage states that notifications are not sent
+    ok 4 - RemindersPage states that notifications are not sent
+      ---
+      duration_ms: 9.7078
+      type: 'test'
+      ...
+    # Subtest: Privacy policy distinguishes localStorage and SQLite
+    ok 5 - Privacy policy distinguishes localStorage and SQLite
+      ---
+      duration_ms: 1.2078
+      type: 'test'
+      ...
+    1..5
+ok 31 - Honesty baseline and removal of simulated services (P08)
+  ---
+  duration_ms: 18.4419
+  type: 'test'
+  ...
+# Subtest: keto-engine: Net Carbs Calculation (Чистые углеводы)
+    # Subtest: calculates basic net carbs as total carbs minus fiber
+    ok 1 - calculates basic net carbs as total carbs minus fiber
+      ---
+      duration_ms: 1.5858
+      type: 'test'
+      ...
+    # Subtest: handles missing fiber and polyols gracefully
+    ok 2 - handles missing fiber and polyols gracefully
+      ---
+      duration_ms: 0.2515
+      type: 'test'
+      ...
+    # Subtest: deducts 100% of erythritol (0% net carb impact)
+    ok 3 - deducts 100% of erythritol (0% net carb impact)
+      ---
+      duration_ms: 0.5272
+      type: 'test'
+      ...
+    # Subtest: deducts 100% of erythritol using Russian name (эритрит/эритритол)
+    ok 4 - deducts 100% of erythritol using Russian name (эритрит/эритритол)
+      ---
+      duration_ms: 0.3529
+      type: 'test'
+      ...
+    # Subtest: deducts 50% of maltitol (50% glycemic impact)
+    ok 5 - deducts 50% of maltitol (50% glycemic impact)
+      ---
+      duration_ms: 2.97
+      type: 'test'
+      ...
+    # Subtest: deducts 25% of maltitol syrup (75% glycemic impact)
+    ok 6 - deducts 25% of maltitol syrup (75% glycemic impact)
+      ---
+      duration_ms: 0.4095
+      type: 'test'
+      ...
+    # Subtest: handles polyols as array of details with custom absorption
+    ok 7 - handles polyols as array of details with custom absorption
+      ---
+      duration_ms: 0.6286
+      type: 'test'
+      ...
+    # Subtest: handles generic numeric polyol with default absorption (0.5)
+    ok 8 - handles generic numeric polyol with default absorption (0.5)
+      ---
+      duration_ms: 0.3784
+      type: 'test'
+      ...
+    # Subtest: clamps negative net carbs to 0 when fiber exceeds carbs
+    ok 9 - clamps negative net carbs to 0 when fiber exceeds carbs
+      ---
+      duration_ms: 0.3418
+      type: 'test'
+      ...
+    # Subtest: does not mutate input objects
+    ok 10 - does not mutate input objects
+      ---
+      duration_ms: 0.3256
+      type: 'test'
+      ...
+    1..10
+ok 32 - keto-engine: Net Carbs Calculation (Чистые углеводы)
+  ---
+  duration_ms: 10.9649
+  type: 'test'
+  ...
+# Subtest: keto-engine: Total Calories Calculation (Общая калорийность)
+    # Subtest: calculates standard Atwater calories: 4*P + 9*F + 4*C
+    ok 1 - calculates standard Atwater calories: 4*P + 9*F + 4*C
+      ---
+      duration_ms: 0.3353
+      type: 'test'
+      ...
+    # Subtest: handles zero macros returning 0 kcal without errors
+    ok 2 - handles zero macros returning 0 kcal without errors
+      ---
+      duration_ms: 0.2031
+      type: 'test'
+      ...
+    # Subtest: handles missing or negative values by sanitizing to 0
+    ok 3 - handles missing or negative values by sanitizing to 0
+      ---
+      duration_ms: 0.14
+      type: 'test'
+      ...
+    1..3
+ok 33 - keto-engine: Total Calories Calculation (Общая калорийность)
+  ---
+  duration_ms: 1.2034
+  type: 'test'
+  ...
+# Subtest: keto-engine: Macro Ratios & Zero-Division Handling (Доли БЖУ в калораже)
+    # Subtest: calculates percentage shares accurately for keto distribution
+    ok 1 - calculates percentage shares accurately for keto distribution
+      ---
+      duration_ms: 0.4252
+      type: 'test'
+      ...
+    # Subtest: handles zero calorie edge case without division by zero or NaN
+    ok 2 - handles zero calorie edge case without division by zero or NaN
+      ---
+      duration_ms: 0.2753
+      type: 'test'
+      ...
+    # Subtest: respects explicit totalCalories parameter if passed
+    ok 3 - respects explicit totalCalories parameter if passed
+      ---
+      duration_ms: 0.1853
+      type: 'test'
+      ...
+    1..3
+ok 34 - keto-engine: Macro Ratios & Zero-Division Handling (Доли БЖУ в калораже)
+  ---
+  duration_ms: 1.3859
+  type: 'test'
+  ...
+# Subtest: keto-engine: Validation and Edge Cases
+    # Subtest: validates correct macros as valid without errors
+    ok 1 - validates correct macros as valid without errors
+      ---
+      duration_ms: 0.4578
+      type: 'test'
+      ...
+    # Subtest: catches negative numbers as validation errors
+    ok 2 - catches negative numbers as validation errors
+      ---
+      duration_ms: 0.2208
+      type: 'test'
+      ...
+    # Subtest: flags fiber > carbs as a warning
+    ok 3 - flags fiber > carbs as a warning
+      ---
+      duration_ms: 0.1725
+      type: 'test'
+      ...
+    # Subtest: flags large discrepancy between declared and calculated calories
+    ok 4 - flags large discrepancy between declared and calculated calories
+      ---
+      duration_ms: 0.1981
+      type: 'test'
+      ...
+    1..4
+ok 35 - keto-engine: Validation and Edge Cases
+  ---
+  duration_ms: 1.6741
+  type: 'test'
+  ...
+# Subtest: keto-engine: Full Macro Profile Integration (calculateMacroProfile)
+    # Subtest: computes complete profile on realistic keto recipe
+    ok 1 - computes complete profile on realistic keto recipe
+      ---
+      duration_ms: 0.3933
+      type: 'test'
+      ...
+    # Subtest: computes profile without declaredCalories and passes options through
+    ok 2 - computes profile without declaredCalories and passes options through
+      ---
+      duration_ms: 0.2462
+      type: 'test'
+      ...
+    1..2
+ok 36 - keto-engine: Full Macro Profile Integration (calculateMacroProfile)
+  ---
+  duration_ms: 0.9877
+  type: 'test'
+  ...
+# Subtest: keto-engine: Polyols Edge Cases & Helper Functions
+    # Subtest: normalizePolyolName handles whitespace, hyphens, underscores and empty values
+    ok 1 - normalizePolyolName handles whitespace, hyphens, underscores and empty values
+      ---
+      duration_ms: 0.1439
+      type: 'test'
+      ...
+    # Subtest: getPolyolAbsorptionCoefficient handles custom coefficients and clamping
+    ok 2 - getPolyolAbsorptionCoefficient handles custom coefficients and clamping
+      ---
+      duration_ms: 0.2866
+      type: 'test'
+      ...
+    # Subtest: calculatePolyolDeduction handles null or empty inputs
+    ok 3 - calculatePolyolDeduction handles null or empty inputs
+      ---
+      duration_ms: 3.3394
+      type: 'test'
+      ...
+    # Subtest: calculatePolyolDeduction handles non-positive numeric polyols
+    ok 4 - calculatePolyolDeduction handles non-positive numeric polyols
+      ---
+      duration_ms: 0.2529
+      type: 'test'
+      ...
+    # Subtest: calculatePolyolDeduction handles numeric polyols with options
+    ok 5 - calculatePolyolDeduction handles numeric polyols with options
+      ---
+      duration_ms: 0.1606
+      type: 'test'
+      ...
+    # Subtest: calculatePolyolDeduction sanitizes default options
+    ok 6 - calculatePolyolDeduction sanitizes default options
+      ---
+      duration_ms: 4.0661
+      type: 'test'
+      ...
+    # Subtest: calculatePolyolDeduction handles array elements with null, invalid amounts and custom calories
+    ok 7 - calculatePolyolDeduction handles array elements with null, invalid amounts and custom calories
+      ---
+      duration_ms: 0.4396
+      type: 'test'
+      ...
+    # Subtest: calculatePolyolDeduction handles object with non-numeric amount
+    ok 8 - calculatePolyolDeduction handles object with non-numeric amount
+      ---
+      duration_ms: 0.2004
+      type: 'test'
+      ...
+    1..8
+ok 37 - keto-engine: Polyols Edge Cases & Helper Functions
+  ---
+  duration_ms: 9.9971
+  type: 'test'
+  ...
+# Subtest: keto-engine: Calculations Module Edge Cases
+    # Subtest: calculateNetCarbs edge cases and options
+    ok 1 - calculateNetCarbs edge cases and options
+      ---
+      duration_ms: 0.2122
+      type: 'test'
+      ...
+    # Subtest: calculateCalories edge cases and useNetCarbs
+    ok 2 - calculateCalories edge cases and useNetCarbs
+      ---
+      duration_ms: 0.2671
+      type: 'test'
+      ...
+    # Subtest: calculateMacroRatios edge cases
+    ok 3 - calculateMacroRatios edge cases
+      ---
+      duration_ms: 0.1668
+      type: 'test'
+      ...
+    # Subtest: validateMacros edge cases (NaN, polyols > carbs, negative declaredCalories)
+    ok 4 - validateMacros edge cases (NaN, polyols > carbs, negative declaredCalories)
+      ---
+      duration_ms: 0.44
+      type: 'test'
+      ...
+    1..4
+ok 38 - keto-engine: Calculations Module Edge Cases
+  ---
+  duration_ms: 1.7291
+  type: 'test'
+  ...
+# Subtest: keto-engine: Reference Keto Diet Foods (Эталонные продукты)
+    # Subtest: Авокадо Хасс (100г): чистые углеводы ~1.8г, fatPct >= 75%
+    ok 1 - Авокадо Хасс (100г): чистые углеводы ~1.8г, fatPct >= 75%
+      ---
+      duration_ms: 0.2654
+      type: 'test'
+      ...
+    # Subtest: Сливочное масло 82.5% (100г): чистый жир, практически нулевые углеводы
+    ok 2 - Сливочное масло 82.5% (100г): чистый жир, практически нулевые углеводы
+      ---
+      duration_ms: 0.22
+      type: 'test'
+      ...
+    # Subtest: Стейк Рибай / говядина (100г): carnivore-кето, 0г углеводов
+    ok 3 - Стейк Рибай / говядина (100г): carnivore-кето, 0г углеводов
+      ---
+      duration_ms: 0.4436
+      type: 'test'
+      ...
+    # Subtest: Минеральная вода / соль: нулевой калораж без деления на ноль
+    ok 4 - Минеральная вода / соль: нулевой калораж без деления на ноль
+      ---
+      duration_ms: 0.2061
+      type: 'test'
+      ...
+    # Subtest: Яйцо куриное вареное (100г): эталон кето-белка и жира
+    ok 5 - Яйцо куриное вареное (100г): эталон кето-белка и жира
+      ---
+      duration_ms: 0.1768
+      type: 'test'
+      ...
+    # Subtest: Грецкий орех (100г): клетчатка снижает чистые углеводы с 13.7г до 7.0г
+    ok 6 - Грецкий орех (100г): клетчатка снижает чистые углеводы с 13.7г до 7.0г
+      ---
+      duration_ms: 0.1735
+      type: 'test'
+      ...
+    # Subtest: Лосось дикий / сёмга (100г): чистый карнивор/кето белок и омега-3
+    ok 7 - Лосось дикий / сёмга (100г): чистый карнивор/кето белок и омега-3
+      ---
+      duration_ms: 0.1582
+      type: 'test'
+      ...
+    # Subtest: Сливки 33% (100г): высокий процент жира
+    ok 8 - Сливки 33% (100г): высокий процент жира
+      ---
+      duration_ms: 0.1635
+      type: 'test'
+      ...
+    # Subtest: Кето-десерт с эритритом и миндальной мукой (100г): вычет клетчатки и 100% эритрита
+    ok 9 - Кето-десерт с эритритом и миндальной мукой (100г): вычет клетчатки и 100% эритрита
+      ---
+      duration_ms: 2.8713
+      type: 'test'
+      ...
+    # Subtest: Кето-шоколад на мальтитоле (100г): мальтитол вычитается на 50%
+    ok 10 - Кето-шоколад на мальтитоле (100г): мальтитол вычитается на 50%
+      ---
+      duration_ms: 0.4426
+      type: 'test'
+      ...
+    1..10
+ok 39 - keto-engine: Reference Keto Diet Foods (Эталонные продукты)
+  ---
+  duration_ms: 6.3574
+  type: 'test'
+  ...
+# Subtest: keto-engine: Comprehensive All Known Polyols Glycemic Coefficients
+    # Subtest: correctly calculates net carbs for polyol: erythritol
+    ok 1 - correctly calculates net carbs for polyol: erythritol
+      ---
+      duration_ms: 0.2958
+      type: 'test'
+      ...
+    # Subtest: correctly calculates net carbs for polyol: allulose
+    ok 2 - correctly calculates net carbs for polyol: allulose
+      ---
+      duration_ms: 0.3939
+      type: 'test'
+      ...
+    # Subtest: correctly calculates net carbs for polyol: mannitol
+    ok 3 - correctly calculates net carbs for polyol: mannitol
+      ---
+      duration_ms: 0.2224
+      type: 'test'
+      ...
+    # Subtest: correctly calculates net carbs for polyol: lactitol
+    ok 4 - correctly calculates net carbs for polyol: lactitol
+      ---
+      duration_ms: 0.6176
+      type: 'test'
+      ...
+    # Subtest: correctly calculates net carbs for polyol: xylitol
+    ok 5 - correctly calculates net carbs for polyol: xylitol
+      ---
+      duration_ms: 0.2549
+      type: 'test'
+      ...
+    # Subtest: correctly calculates net carbs for polyol: isomalt
+    ok 6 - correctly calculates net carbs for polyol: isomalt
+      ---
+      duration_ms: 0.1101
+      type: 'test'
+      ...
+    # Subtest: correctly calculates net carbs for polyol: maltitol
+    ok 7 - correctly calculates net carbs for polyol: maltitol
+      ---
+      duration_ms: 0.104
+      type: 'test'
+      ...
+    # Subtest: correctly calculates net carbs for polyol: maltitol_syrup
+    ok 8 - correctly calculates net carbs for polyol: maltitol_syrup
+      ---
+      duration_ms: 0.158
+      type: 'test'
+      ...
+    # Subtest: correctly calculates net carbs for polyol: sorbitol
+    ok 9 - correctly calculates net carbs for polyol: sorbitol
+      ---
+      duration_ms: 0.1298
+      type: 'test'
+      ...
+    # Subtest: correctly calculates net carbs for polyol: glycerol
+    ok 10 - correctly calculates net carbs for polyol: glycerol
+      ---
+      duration_ms: 0.1196
+      type: 'test'
+      ...
+    1..10
+ok 40 - keto-engine: Comprehensive All Known Polyols Glycemic Coefficients
+  ---
+  duration_ms: 4.6379
+  type: 'test'
+  ...
+# Subtest: empty release manifest blocks generation
+ok 41 - empty release manifest blocks generation
+  ---
+  duration_ms: 9.0108
+  type: 'test'
+  ...
+# Subtest: existing but unreleased recipe is never generated
+ok 42 - existing but unreleased recipe is never generated
+  ---
+  duration_ms: 2.0661
+  type: 'test'
+  ...
+# Subtest: replacement and displayed catalog use the same release set
+ok 43 - replacement and displayed catalog use the same release set
+  ---
+  duration_ms: 0.5613
+  type: 'test'
+  ...
+# Subtest: unknown approved reference blocks instead of being ignored
+ok 44 - unknown approved reference blocks instead of being ignored
+  ---
+  duration_ms: 0.2523
+  type: 'test'
+  ...
+# Subtest: revoked current recipe does not silently receive a replacement
+ok 45 - revoked current recipe does not silently receive a replacement
+  ---
+  duration_ms: 0.31
+  type: 'test'
+  ...
+# Subtest: explore is not coerced into personal menu generation
+ok 46 - explore is not coerced into personal menu generation
+  ---
+  duration_ms: 0.2483
+  type: 'test'
+  ...
+# Subtest: preview mode activates demo pool when release manifest is empty
+ok 47 - preview mode activates demo pool when release manifest is empty
+  ---
+  duration_ms: 4.565
+  type: 'test'
+  ...
+# Subtest: Menu generation with stable slots (P06)
+    # Subtest: slot keys conform to contract for 2, 3, 4 meals
+    ok 1 - slot keys conform to contract for 2, 3, 4 meals
+      ---
+      duration_ms: 3.499
+      type: 'test'
+      ...
+    # Subtest: validates 2x3x3 combinations of mode x numDays x meals and numeric created
+    ok 2 - validates 2x3x3 combinations of mode x numDays x meals and numeric created
+      ---
+      duration_ms: 9.819
+      type: 'test'
+      ...
+    # Subtest: strictly respects allergies during menu generation
+    ok 3 - strictly respects allergies during menu generation
+      ---
+      duration_ms: 2.3761
+      type: 'test'
+      ...
+    # Subtest: replacementCandidates strictly restricts replacements to current menu mode
+    ok 4 - replacementCandidates strictly restricts replacements to current menu mode
+      ---
+      duration_ms: 77.9089
+      type: 'test'
+      ...
+    # Subtest: safely throws on invalid inputs, corrupted profiles, and insufficient pools
+    ok 5 - safely throws on invalid inputs, corrupted profiles, and insufficient pools
+      ---
+      duration_ms: 0.5329
+      type: 'test'
+      ...
+    1..5
+ok 48 - Menu generation with stable slots (P06)
+  ---
+  duration_ms: 474.3749
+  type: 'test'
+  ...
+# Subtest: KetoClient Unit Tests
+    # Subtest: protected calls without token immediately throw UnauthorizedError
+    ok 1 - protected calls without token immediately throw UnauthorizedError
+      ---
+      duration_ms: 109.7887
+      type: 'test'
+      ...
+    # Subtest: createSession sends init_data, stores token in memory, and returns session info
+    ok 2 - createSession sends init_data, stores token in memory, and returns session info
+      ---
+      duration_ms: 11.771
+      type: 'test'
+      ...
+    # Subtest: 401 response invokes onUnauthorized and clears token
+    ok 3 - 401 response invokes onUnauthorized and clears token
+      ---
+      duration_ms: 0.8848
+      type: 'test'
+      ...
+    # Subtest: 409 response throws ConflictError with server detail
+    ok 4 - 409 response throws ConflictError with server detail
+      ---
+      duration_ms: 4.209
+      type: 'test'
+      ...
+    # Subtest: network error throws ApiError with status 0
+    ok 5 - network error throws ApiError with status 0
+      ---
+      duration_ms: 0.9538
+      type: 'test'
+      ...
+    # Subtest: malformed JSON response throws ApiError
+    ok 6 - malformed JSON response throws ApiError
+      ---
+      duration_ms: 0.9809
+      type: 'test'
+      ...
+    1..6
+ok 49 - KetoClient Unit Tests
+  ---
+  duration_ms: 132.3118
+  type: 'test'
+  ...
+# Subtest: Pilot Preferences and Eligibility Behavior Tests
+    # Subtest: maps restriction tokens correctly to canonical UserProfile
+    ok 1 - maps restriction tokens correctly to canonical UserProfile
+      ---
+      duration_ms: 1.8502
+      type: 'test'
+      ...
+    # Subtest: rejects unknown restriction token
+    ok 2 - rejects unknown restriction token
+      ---
+      duration_ms: 0.6367
+      type: 'test'
+      ...
+    # Subtest: rejects out of range prepTimeMax
+    ok 3 - rejects out of range prepTimeMax
+      ---
+      duration_ms: 3.9668
+      type: 'test'
+      ...
+    # Subtest: eligibility guard enforces prepTimeMax limit (cookTime)
+    ok 4 - eligibility guard enforces prepTimeMax limit (cookTime)
+      ---
+      duration_ms: 1.1961
+      type: 'test'
+      ...
+    # Subtest: eligibility guard blocks recipes with restricted ingredients
+    ok 5 - eligibility guard blocks recipes with restricted ingredients
+      ---
+      duration_ms: 0.4239
+      type: 'test'
+      ...
+    # Subtest: isMenuCompatibleWithProfile detects incompatible menu when limits change
+    ok 6 - isMenuCompatibleWithProfile detects incompatible menu when limits change
+      ---
+      duration_ms: 0.7654
+      type: 'test'
+      ...
+    # Subtest: filterRecipesBySettings matches canonical eligibility and handles prepTimeMax=0
+    ok 7 - filterRecipesBySettings matches canonical eligibility and handles prepTimeMax=0
+      ---
+      duration_ms: 254.8868
+      type: 'test'
+      ...
+    1..7
+ok 50 - Pilot Preferences and Eligibility Behavior Tests
+  ---
+  duration_ms: 266.5941
+  type: 'test'
+  ...
+# Subtest: PilotState and SerializedSaveQueue Unit Tests
+    # Subtest: SerializedSaveQueue executes tasks sequentially in FIFO order
+    ok 1 - SerializedSaveQueue executes tasks sequentially in FIFO order
+      ---
+      duration_ms: 45.0408
+      type: 'test'
+      ...
+    # Subtest: SerializedSaveQueue continues after rejected task
+    ok 2 - SerializedSaveQueue continues after rejected task
+      ---
+      duration_ms: 1.3138
+      type: 'test'
+      ...
+    # Subtest: user cache keys are strictly isolated by verified user id
+    ok 3 - user cache keys are strictly isolated by verified user id
+      ---
+      duration_ms: 4.8652
+      type: 'test'
+      ...
+    # Subtest: read and write user cache with mock localStorage
+    ok 4 - read and write user cache with mock localStorage
+      ---
+      duration_ms: 3.8888
+      type: 'test'
+      ...
+    # Subtest: resolveDayMenuSlots renders 4 slots when mealsPerDay=4 including snack
+    ok 5 - resolveDayMenuSlots renders 4 slots when mealsPerDay=4 including snack
+      ---
+      duration_ms: 336.7486
+      type: 'test'
+      ...
+    # Subtest: rebuildShoppingFromMenu resets checkmarks when amount changes
+    ok 6 - rebuildShoppingFromMenu resets checkmarks when amount changes
+      ---
+      duration_ms: 65.6464
+      type: 'test'
+      ...
+    # Subtest: recipesAdapter preserves Recipe.serv in portionsVariants and yieldNote
+    ok 7 - recipesAdapter preserves Recipe.serv in portionsVariants and yieldNote
+      ---
+      duration_ms: 167.8701
+      type: 'test'
+      ...
+    # Subtest: recipesAdapter handles unverified or missing serv as [УТОЧНИТЬ] and portions 0
+    ok 8 - recipesAdapter handles unverified or missing serv as [УТОЧНИТЬ] and portions 0
+      ---
+      duration_ms: 196.5482
+      type: 'test'
+      ...
+    # Subtest: isMenuCompatibleWithProfile strictly validates mode and admitted pool
+    ok 9 - isMenuCompatibleWithProfile strictly validates mode and admitted pool
+      ---
+      duration_ms: 96.0913
+      type: 'test'
+      ...
+    # Subtest: filterRecipesBySettings enforces approach mode and allows prepTimeMax=0
+    ok 10 - filterRecipesBySettings enforces approach mode and allows prepTimeMax=0
+      ---
+      duration_ms: 168.654
+      type: 'test'
+      ...
+    # Subtest: createMenuController replacement candidates strictly filters by mode and day duplicates
+    ok 11 - createMenuController replacement candidates strictly filters by mode and day duplicates
+      ---
+      duration_ms: 154.0663
+      type: 'test'
+      ...
+    1..11
+ok 51 - PilotState and SerializedSaveQueue Unit Tests
+  ---
+  duration_ms: 1248.0083
+  type: 'test'
+  ...
+# Subtest: Catalog Release Exporter Unit Tests
+    # Subtest: exports empty locked catalog when RELEASED_RECIPE_IDS is empty
+    ok 1 - exports empty locked catalog when RELEASED_RECIPE_IDS is empty
+      ---
+      duration_ms: 313.4324
+      type: 'test'
+      ...
+    # Subtest: rejects duplicate IDs in released list
+    ok 2 - rejects duplicate IDs in released list
+      ---
+      duration_ms: 79.506
+      type: 'test'
+      ...
+    # Subtest: rejects recipe ID missing from catalog
+    ok 3 - rejects recipe ID missing from catalog
+      ---
+      duration_ms: 118.7434
+      type: 'test'
+      ...
+    # Subtest: rejects missing approval record in production mode
+    ok 4 - rejects missing approval record in production mode
+      ---
+      duration_ms: 133.1462
+      type: 'test'
+      ...
+    # Subtest: rejects stale content hash
+    ok 5 - rejects stale content hash
+      ---
+      duration_ms: 121.5015
+      type: 'test'
+      ...
+    # Subtest: exports valid synthetic catalog when testOnly is true
+    ok 6 - exports valid synthetic catalog when testOnly is true
+      ---
+      duration_ms: 94.1828
+      type: 'test'
+      ...
+    # Subtest: computeRecipeHash detects changes in nested subs object
+    ok 7 - computeRecipeHash detects changes in nested subs object
+      ---
+      duration_ms: 3.5118
+      type: 'test'
+      ...
+    # Subtest: exportReleaseCatalog requires non-empty sourceHash in approval
+    ok 8 - exportReleaseCatalog requires non-empty sourceHash in approval
+      ---
+      duration_ms: 101.044
+      type: 'test'
+      ...
+    1..8
+ok 52 - Catalog Release Exporter Unit Tests
+  ---
+  duration_ms: 1579.2126
+  type: 'test'
+  ...
+# Subtest: Replacement candidates and UI constraints (P07)
+    # Subtest: excludes current recipe and recipes already used on the current day
+    ok 1 - excludes current recipe and recipes already used on the current day
+      ---
+      duration_ms: 25.5298
+      type: 'test'
+      ...
+    # Subtest: strictly filters candidates by user profile allergies
+    ok 2 - strictly filters candidates by user profile allergies
+      ---
+      duration_ms: 5.8257
+      type: 'test'
+      ...
+    # Subtest: returns empty array when no eligible candidates exist without fallback to forbidden dishes
+    ok 3 - returns empty array when no eligible candidates exist without fallback to forbidden dishes
+      ---
+      duration_ms: 7.6499
+      type: 'test'
+      ...
+    # Subtest: places preferred category first in candidate list
+    ok 4 - places preferred category first in candidate list
+      ---
+      duration_ms: 0.5603
+      type: 'test'
+      ...
+    # Subtest: never crosses mode boundary between keto and carnivore
+    ok 5 - never crosses mode boundary between keto and carnivore
+      ---
+      duration_ms: 0.5617
+      type: 'test'
+      ...
+    1..5
+ok 53 - Replacement candidates and UI constraints (P07)
+  ---
+  duration_ms: 509.8555
+  type: 'test'
+  ...
+# Subtest: route normalization preserves supported callers
+ok 54 - route normalization preserves supported callers
+  ---
+  duration_ms: 1.5729
+  type: 'test'
+  ...
+# Subtest: active navigation is not empty for leading slash
+ok 55 - active navigation is not empty for leading slash
+  ---
+  duration_ms: 0.2934
+  type: 'test'
+  ...
+# Subtest: Emergency safety stop-protocol and hold state (P09)
+    # Subtest: detects explicit emergency symptoms
+    ok 1 - detects explicit emergency symptoms
+      ---
+      duration_ms: 1.1473
+      type: 'test'
+      ...
+    # Subtest: detects mixed symptom + diet queries
+    ok 2 - detects mixed symptom + diet queries
+      ---
+      duration_ms: 0.4188
+      type: 'test'
+      ...
+    # Subtest: respects explicit negations without false alarms
+    ok 3 - respects explicit negations without false alarms
+      ---
+      duration_ms: 0.2113
+      type: 'test'
+      ...
+    # Subtest: does not trigger on standard diet questions
+    ok 4 - does not trigger on standard diet questions
+      ---
+      duration_ms: 0.4653
+      type: 'test'
+      ...
+    # Subtest: manages safety hold lifecycle
+    ok 5 - manages safety hold lifecycle
+      ---
+      duration_ms: 0.7247
+      type: 'test'
+      ...
+    1..5
+ok 56 - Emergency safety stop-protocol and hold state (P09)
+  ---
+  duration_ms: 240.0391
+  type: 'test'
+  ...
+# Subtest: private support bridge is honest and wired to the real route
+ok 57 - private support bridge is honest and wired to the real route
+  ---
+  duration_ms: 2.451
+  type: 'test'
+  ...
+# Subtest: support is reachable before onboarding without opening other sections
+ok 58 - support is reachable before onboarding without opening other sections
+  ---
+  duration_ms: 2.7017
+  type: 'test'
+  ...
+# Subtest: initTelegram handles undefined tg safely without throwing
+ok 59 - initTelegram handles undefined tg safely without throwing
+  ---
+  duration_ms: 1.6636
+  type: 'test'
+  ...
+# Subtest: initTelegram attaches listeners and updates CSS variables
+ok 60 - initTelegram attaches listeners and updates CSS variables
+  ---
+  duration_ms: 0.9503
+  type: 'test'
+  ...
+# Subtest: bindBackButton handles missing button and manages click subscriptions
+ok 61 - bindBackButton handles missing button and manages click subscriptions
+  ---
+  duration_ms: 0.423
+  type: 'test'
+  ...
+# Subtest: syncNativeColors calls supported versioned methods safely
+ok 62 - syncNativeColors calls supported versioned methods safely
+  ---
+  duration_ms: 5.0306
+  type: 'test'
+  ...
+1..62
+# tests 184
+# suites 0
+# pass 184
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9833.375
+

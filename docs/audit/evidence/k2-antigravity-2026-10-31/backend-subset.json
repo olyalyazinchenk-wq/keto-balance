@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-10-31T00:19:01.126716+00:00",
+  "scope": "Only three inspected backend test suites; all DBs explicit temporary paths; no live endpoints or real credentials",
+  "command": [
+    "C:\\Users\\HP\\Keto-balance\\.venv-p0\\Scripts\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "tests.backend.test_auth",
+    "tests.backend.test_session_api",
+    "tests.backend.test_user_api",
+    "-v"
+  ],
+  "exit": 0,
+  "stdout": "",
+  "stderr": "C:\\Users\\HP\\Keto-balance\\.venv-p0\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa\ntest_empty_string_fails (tests.backend.test_auth.TestAuth.test_empty_string_fails) ... ok\ntest_expired_auth_date_fails (tests.backend.test_auth.TestAuth.test_expired_auth_date_fails) ... ok\ntest_missing_hash_fails (tests.backend.test_auth.TestAuth.test_missing_hash_fails) ... ok\ntest_tampered_hash_fails (tests.backend.test_auth.TestAuth.test_tampered_hash_fails) ... ok\ntest_valid_init_data_passes (tests.backend.test_auth.TestAuth.test_valid_init_data_passes) ... ok\ntest_wrong_bot_token_fails (tests.backend.test_auth.TestAuth.test_wrong_bot_token_fails) ... ok\ntest_create_session_with_invalid_init_data_fails (tests.backend.test_session_api.TestSessionApi.test_create_session_with_invalid_init_data_fails) ... ok\ntest_create_session_with_valid_init_data (tests.backend.test_session_api.TestSessionApi.test_create_session_with_valid_init_data) ... ok\ntest_get_session_missing_or_invalid_bearer_token (tests.backend.test_session_api.TestSessionApi.test_get_session_missing_or_invalid_bearer_token) ... ok\ntest_shopping_state_isolation (tests.backend.test_user_api.TestUserApi.test_shopping_state_isolation) ... ok\ntest_user_isolation_cross_access_blocked (tests.backend.test_user_api.TestUserApi.test_user_isolation_cross_access_blocked) ... ok\ntest_user_profile_and_state_roundtrip (tests.backend.test_user_api.TestUserApi.test_user_profile_and_state_roundtrip) ... ok\n\n----------------------------------------------------------------------\nRan 12 tests in 0.874s\n\nOK\n"
+}

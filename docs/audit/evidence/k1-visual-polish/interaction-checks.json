@@ -1,0 +1,23 @@
+{
+  "shopping": {
+    "before": "0",
+    "after": "2",
+    "fill": "2%"
+  },
+  "photo": {
+    "src": "/media/food-first/hero.webp",
+    "loaded": true
+  },
+  "timer": {
+    "first": "04:00",
+    "second": "03:59",
+    "pause": "03:59",
+    "noOverflow320and375": true
+  },
+  "rhythm": "All 4 preparation steps checked; breakfast shows Приготовлено after navigation/reload",
+  "dayStrip": {
+    "scrollbar": "none",
+    "snap": "x mandatory",
+    "webkit": "none"
+  }
+}

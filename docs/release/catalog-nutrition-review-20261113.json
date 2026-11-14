@@ -1,0 +1,5628 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-11-13",
+  "status": "awaiting_owner_review",
+  "summary": {
+    "recipes": 50,
+    "starterRecipes": 36,
+    "remainingRecipes": 14,
+    "reviewedNutritionRecipes": 0,
+    "assignedPhotos": 5,
+    "sourceCandidates": 15,
+    "usdaSourceProfiles": 49,
+    "completeProposedNutritionCandidates": 36,
+    "unchangedOriginalRecipesWithApprovedNutrition": 0
+  },
+  "sourceCandidatesFile": "nutrition-source-candidates-20261113.json",
+  "method": "Original compositions retained; exact metric unit conversions only. New independent all-gram formulations are computed through unchanged keto-engine as candidates, never used to imply grams for old piece/spoon quantities.",
+  "recipes": [
+    {
+      "id": "k1",
+      "title": "Сливочная яичница с беконом и шпинатом",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 12,
+      "recipeSha256": "a06d924bbcc5d4d187f3eac99f950fa7da24884fc8bd5a33aef8dd937b3ef576",
+      "photo": "/media/food-first/eggs-bacon-spinach.webp",
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Яйца",
+          "originalAmount": "4 шт",
+          "normalizedAmount": {
+            "value": 4,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Бекон",
+          "originalAmount": "80 г",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 80,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Шпинат",
+          "originalAmount": "100 г",
+          "normalizedAmount": {
+            "value": 100,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 100,
+          "sourceCandidateRecordIds": [
+            "13-521"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Сливочное масло",
+          "originalAmount": "20 г",
+          "normalizedAmount": {
+            "value": 20,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 20,
+          "sourceCandidateRecordIds": [
+            "17-685"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Разогрейте сковороду и обжарьте бекон 3–4 минуты до хруста.",
+        "Добавьте шпинат и масло, прогрейте минуту.",
+        "Вбейте яйца, готовьте на слабом огне до нужной текстуры.",
+        "Посолите и подавайте сразу."
+      ],
+      "substitutions": {
+        "Бекон": "ветчина или пропущенный шаг",
+        "Шпинат": "любая зелень"
+      },
+      "storage": "Свежей — до 1 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k1-nutrition-v2",
+        "candidateInputSha256": "a17b17bb98c4932e6f247a023ecd4749220270048dbd0a01c793b5d8914fdbff",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k2",
+      "title": "Омлет с сыром и зеленью",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 1,
+      "timeMinutes": 10,
+      "recipeSha256": "6ff02c2a504c34ad4bc33e9553cf601414016e85c874a2705cdb280be96848c8",
+      "photo": "/media/food-first/omelet-cheese-herbs.webp",
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Яйца",
+          "originalAmount": "3 шт",
+          "normalizedAmount": {
+            "value": 3,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Сыр твёрдый",
+          "originalAmount": "40 г",
+          "normalizedAmount": {
+            "value": 40,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 40,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сливки 33%",
+          "originalAmount": "30 мл",
+          "normalizedAmount": {
+            "value": 30,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Зелень (укроп, петрушка)",
+          "originalAmount": "10 г",
+          "normalizedAmount": {
+            "value": 10,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 10,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Сливочное масло",
+          "originalAmount": "10 г",
+          "normalizedAmount": {
+            "value": 10,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 10,
+          "sourceCandidateRecordIds": [
+            "17-685"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Взбейте яйца со сливками и солью.",
+        "Вылейте на сковороду с маслом, готовьте под крышкой 3–4 минуты.",
+        "Посыпьте сыром и зеленью, сложите пополам."
+      ],
+      "substitutions": {
+        "Сливки 33%": "вода или сметана",
+        "Сыр твёрдый": "моцарелла"
+      },
+      "storage": "Лучше есть сразу.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k2-nutrition-v2",
+        "candidateInputSha256": "c482c1402bf35b8fe09da49b9824f32e5d622eaf0bfe38cdecbec2454e9296f4",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k3",
+      "title": "Ленивые сырники в духовке (кето)",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 3,
+      "timeMinutes": 35,
+      "recipeSha256": "7382820bc2de91984b97b1a68b82b0ab7af16b0c845b18590ab2e9e69913fcb4",
+      "photo": "/media/food-first/baked-cottage-cheese.webp",
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Творог 5%",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Яйца",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Кокосовая мука",
+          "originalAmount": "3 ст. л.",
+          "normalizedAmount": {
+            "value": 3,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Эритрит",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Сметана",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Смешайте творог, яйца, муку и подсластитель.",
+        "Сформируйте сырники и выложите на противень.",
+        "Запекайте 25 минут при 180°C.",
+        "Подавайте со сметаной."
+      ],
+      "substitutions": {
+        "Кокосовая мука": "миндальная мука",
+        "Эритрит": "немного обычного сахара, если не строго"
+      },
+      "storage": "3 дня в холодильнике, до месяца в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Замена эритрита на обычный сахар не должна предлагаться как эквивалентная кето-замена; масса подсластителя, полиолы и бренд муки требуют отдельной проверки."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k3-nutrition-v2",
+        "candidateInputSha256": "13581b84fef539543598b932ed8613236eb1bff4a09ecb2c869ff73ed8832590",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k4",
+      "title": "Авокадо-тосты на кето-хлебе",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 10,
+      "recipeSha256": "45713c3be990cee65dcbcba971d0b8fa7ab623c19be4efac842bb186f4f2b91b",
+      "photo": "/media/food-first/avocado-flatbread.webp",
+      "allergensExcludedByCurrentFilter": [
+        "eggs"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Авокадо",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Кокосовая мука",
+          "originalAmount": "40 г",
+          "normalizedAmount": {
+            "value": 40,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 40,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Яйца",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Оливковое масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Быстро замесите тесто из муки, яиц и масла, испеките 2 лепёшки.",
+        "Разомните авокадо с солью и специями.",
+        "Намажьте на тёплые лепёшки."
+      ],
+      "substitutions": {
+        "Авокадо": "творожный сыр со специями"
+      },
+      "storage": "Лепёшки — 2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Не описаны температура и способ выпекания лепёшек; проверить, укладывается ли рецепт в 10 минут."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k4-nutrition-v2",
+        "candidateInputSha256": "b5b65ca0ba24b9cfd0b6ab66182e46882de6bce2ee1849414a9246ae32040346",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k5",
+      "title": "Яичные маффины с овощами и сыром",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 4,
+      "timeMinutes": 30,
+      "recipeSha256": "0f0dcd93c80ca08d7bdfc62863b53987199b4d00626390612ca06b10c4afa9a4",
+      "photo": "/media/food-first/egg-muffins.webp",
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Яйца",
+          "originalAmount": "6 шт",
+          "normalizedAmount": {
+            "value": 6,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Болгарский перец",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Шпинат",
+          "originalAmount": "80 г",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 80,
+          "sourceCandidateRecordIds": [
+            "13-521"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Сыр твёрдый",
+          "originalAmount": "60 г",
+          "normalizedAmount": {
+            "value": 60,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 60,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Взбейте яйца, добавьте нарезанные овощи и сыр.",
+        "Разлейте по формам для маффинов.",
+        "Запекайте 20 минут при 180°C."
+      ],
+      "substitutions": {
+        "Шпинат": "кабачок или брокколи"
+      },
+      "storage": "4 дня в холодильнике, месяц в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k5-nutrition-v2",
+        "candidateInputSha256": "13c165eb5957ad321060a7c6ca2eb2cabb47c1f8ff7a45253a65d876e3214aa1",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k6",
+      "title": "Куриный суп с брокколи и сливками",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 4,
+      "timeMinutes": 40,
+      "recipeSha256": "e4b45ad7b8a72effe83532cb248ca8b58629427fef5a2cf8af23fd793b9e2f99",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Куриная грудка",
+          "originalAmount": "500 г",
+          "normalizedAmount": {
+            "value": 500,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 500,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Брокколи",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [
+            "13-502"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сливки 33%",
+          "originalAmount": "150 мл",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Лук",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Отварите курицу 20 минут, достаньте и разберите.",
+        "В бульон добавьте лук и брокколи, варите 10 минут.",
+        "Верните курицу, влейте сливки, прогрейте."
+      ],
+      "substitutions": {
+        "Куриная грудка": "куриные бёдра"
+      },
+      "storage": "3 дня в холодильнике, месяц в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "Для исходного выхода4 точно определить съедобную массу куриной грудки и жирность/массу сливок."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k6-nutrition-v2",
+        "candidateInputSha256": "caf1120712f8e98472197044ffff50ae31cc5fbe345b0b427c12dc7808ca83eb",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k7",
+      "title": "Запечённая скумбрия с лимоном и травами",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 30,
+      "recipeSha256": "8c0e78c208ca7e084481254401d03febafbb7cd7909a092a296676e68bd3556e",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "fish"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Скумбрия",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Оливковое масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Зелень (укроп, петрушка)",
+          "originalAmount": "20 г",
+          "normalizedAmount": {
+            "value": 20,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 20,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Смажьте рыбу маслом и специями.",
+        "Запекайте 20–25 минут при 190°C.",
+        "Подавайте с зеленью."
+      ],
+      "substitutions": {
+        "Скумбрия": "любая недорогая рыба"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k7-nutrition-v2",
+        "candidateInputSha256": "e5ce80d2a5ce6285c5a1c503e2b98fdc52699d42e663b30ce12cf1296ff9d58c",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k8",
+      "title": "Салат с тунцом, яйцом и огурцом",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 10,
+      "recipeSha256": "0b52cc0d4d909c40c3ad668c4cd50e16bcc5cbfb9d7774324b49c0c04680c475",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "fish"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Тунец консервированный",
+          "originalAmount": "1 банка",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "банка"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Яйца",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Огурцы",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Зелень (укроп, петрушка)",
+          "originalAmount": "20 г",
+          "normalizedAmount": {
+            "value": 20,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 20,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Оливковое масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Отварите яйца и нарежьте.",
+        "Смешайте с тунцом, огурцом и зеленью.",
+        "Заправьте маслом."
+      ],
+      "substitutions": {
+        "Тунец консервированный": "отварная курица"
+      },
+      "storage": "Съесть в день приготовления.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k8-nutrition-v2",
+        "candidateInputSha256": "39affe82eac28acb1800ad13d108c9040381b1571b44bfd3ed01d565bf9870dc",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k9",
+      "title": "Котлеты из индейки с кабачком",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 4,
+      "timeMinutes": 35,
+      "recipeSha256": "0ce4cf6513b6a58424b0229c92c228dfff244bdae2db791637317c3af3e0fb1f",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Индейка (фарш)",
+          "originalAmount": "600 г",
+          "normalizedAmount": {
+            "value": 600,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 600,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Кабачок",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "13-627"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Яйца",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Лук",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Натрите кабачок и отожмите.",
+        "Смешайте с фаршем, яйцом и луком.",
+        "Обжарьте или запеките котлеты 20–25 минут."
+      ],
+      "substitutions": {
+        "Индейка (фарш)": "куриный фарш"
+      },
+      "storage": "3 дня в холодильнике, месяц в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k9-nutrition-v2",
+        "candidateInputSha256": "d171e0dd6e14e81a18499f8f2418684f1b08e91a68bb726ba55f6b7f3051d725",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k10",
+      "title": "Лодочки из кабачка с фаршем и сыром",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 3,
+      "timeMinutes": 45,
+      "recipeSha256": "cc1fb1c11eae74e24fe2bf9437d57b6d760698466a6d71e85c2c1dc8d10bfb61",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Кабачок",
+          "originalAmount": "3 шт",
+          "normalizedAmount": {
+            "value": 3,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "13-627"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Фарш говяжий",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [
+            "18-469",
+            "18-508"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сыр твёрдый",
+          "originalAmount": "80 г",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 80,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Лук",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Разрежьте кабачки вдоль, выньте середину.",
+        "Обжарьте фарш с луком и мякотью кабачка.",
+        "Нафаршируйте, посыпьте сыром и запекайте 25 минут при 180°C."
+      ],
+      "substitutions": {
+        "Кабачок": "баклажан"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k10-nutrition-v2",
+        "candidateInputSha256": "7568b843e301362769cbad2be9932836332c0a0c7bb33d716fe8c66d9e3ebc09",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k11",
+      "title": "Грибной крем-суп со сливками",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 3,
+      "timeMinutes": 25,
+      "recipeSha256": "62a006fdae5c36863547bad6245f86b89faf209a42a93c9b01289c8973e291b7",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Шампиньоны",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Сливки 33%",
+          "originalAmount": "200 мл",
+          "normalizedAmount": {
+            "value": 200,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Лук",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Сливочное масло",
+          "originalAmount": "30 г",
+          "normalizedAmount": {
+            "value": 30,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 30,
+          "sourceCandidateRecordIds": [
+            "17-685"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Обжарьте лук и грибы 10 минут.",
+        "Добавьте немного воды и сливок, прогрейте.",
+        "Пробейте блендером до кремовой текстуры."
+      ],
+      "substitutions": {
+        "Сливки 33%": "сливки 10%"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k11-nutrition-v2",
+        "candidateInputSha256": "17b398bbfbfdcbbb2336a8fd4de05418b9e84ddeee4263b23958caaa53cebf78",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k12",
+      "title": "Курица в сливочно-чесночном соусе",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 3,
+      "timeMinutes": 30,
+      "recipeSha256": "30749f0701236300775498298518285ee8acb39c56ee576c9b5c18d6e97f8e4c",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Куриные бёдра",
+          "originalAmount": "600 г",
+          "normalizedAmount": {
+            "value": 600,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 600,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Сливки 33%",
+          "originalAmount": "200 мл",
+          "normalizedAmount": {
+            "value": 200,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сыр твёрдый",
+          "originalAmount": "50 г",
+          "normalizedAmount": {
+            "value": 50,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 50,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Зелень (укроп, петрушка)",
+          "originalAmount": "20 г",
+          "normalizedAmount": {
+            "value": 20,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 20,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Обжарьте курицу до золотистой корочки.",
+        "Влейте сливки, добавьте сыр и специи.",
+        "Тушите 15 минут под крышкой."
+      ],
+      "substitutions": {
+        "Куриные бёдра": "куриная грудка"
+      },
+      "storage": "3 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k12-nutrition-v2",
+        "candidateInputSha256": "6854a10c97f110cd5a17e8010a2a786d196a21d97058fad4114e9b496b64c7e1",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k13",
+      "title": "Запечённая горбуша под сыром",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 3,
+      "timeMinutes": 30,
+      "recipeSha256": "b7c2afb375280693989d5c5730b419b9924339be3abf9787b4b6f294de701c15",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy",
+        "fish"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Горбуша",
+          "originalAmount": "600 г",
+          "normalizedAmount": {
+            "value": 600,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 600,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Сыр твёрдый",
+          "originalAmount": "80 г",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 80,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сметана",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Выложите рыбу в форму, смажьте сметаной со специями.",
+        "Посыпьте сыром.",
+        "Запекайте 20–25 минут при 180°C."
+      ],
+      "substitutions": {
+        "Горбуша": "любая белая рыба"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k13-nutrition-v2",
+        "candidateInputSha256": "0762a0f3911c22e57b720dd02a351cfd8b1434da085636adb2bb9ea593838eb1",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k14",
+      "title": "Говядина, тушённая с капустой",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 4,
+      "timeMinutes": 60,
+      "recipeSha256": "a15bfe5409810bc135915127eceab9c47651f0dd7dda4963ddf1be1867de064f",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Говядина",
+          "originalAmount": "600 г",
+          "normalizedAmount": {
+            "value": 600,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 600,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Капуста",
+          "originalAmount": "600 г",
+          "normalizedAmount": {
+            "value": 600,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 600,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Лук",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Топлёное масло",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Обжарьте говядину кусочками до корочки.",
+        "Добавьте лук, затем капусту.",
+        "Тушите под крышкой 40–50 минут до мягкости."
+      ],
+      "substitutions": {
+        "Говядина": "свинина или курица"
+      },
+      "storage": "3 дня в холодильнике, месяц в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "Требуется уточнение части туши/жирности говядины, а не усреднённая запись «говядина»."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k14-nutrition-v2",
+        "candidateInputSha256": "85694e462336f16bf2595a88afadbf1efa3b1d1763afc7cce100936c1d8fafdd",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k15",
+      "title": "Свинина с квашеной капустой (один противень)",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 4,
+      "timeMinutes": 50,
+      "recipeSha256": "538a923e05c65796907f400642e9e0c32a4997a31aa58967abcafc98c5d5ce89",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Свинина",
+          "originalAmount": "600 г",
+          "normalizedAmount": {
+            "value": 600,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 600,
+          "sourceCandidateRecordIds": [
+            "18-557"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Капуста",
+          "originalAmount": "500 г",
+          "normalizedAmount": {
+            "value": 500,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 500,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Лук",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Топлёное масло",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Выложите мясо и крупно нарезанную капусту на противень.",
+        "Смажьте маслом и специями.",
+        "Запекайте 40 минут при 190°C, один раз перемешав."
+      ],
+      "substitutions": {
+        "Свинина": "куриные бёдра"
+      },
+      "storage": "3 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k15-nutrition-v2",
+        "candidateInputSha256": "49dd21c0b5127d594caaa404fde0527caa334973d73415fbcc9522fa236d55b5",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k16",
+      "title": "Фаршированные перцы «по-кето»",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 4,
+      "timeMinutes": 50,
+      "recipeSha256": "e57b15c3465ace9408287b1c64fb8ec789eea2ac2970b2d098157d15e70bbfa2",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Болгарский перец",
+          "originalAmount": "4 шт",
+          "normalizedAmount": {
+            "value": 4,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Фарш говяжий",
+          "originalAmount": "500 г",
+          "normalizedAmount": {
+            "value": 500,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 500,
+          "sourceCandidateRecordIds": [
+            "18-469",
+            "18-508"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сыр твёрдый",
+          "originalAmount": "80 г",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 80,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Лук",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Смешайте фарш с луком и специями.",
+        "Нафаршируйте перцы.",
+        "Запекайте 35 минут при 180°C, за 10 минут до конца посыпьте сыром."
+      ],
+      "substitutions": {
+        "Болгарский перец": "кабачок (лодочки)"
+      },
+      "storage": "3 дня в холодильнике, месяц в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k16-nutrition-v2",
+        "candidateInputSha256": "b6c9b03ca547469b0938c4577392577baae1eceb7a87886d4fa1217cb04cacda",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k17",
+      "title": "Запеканка «как лазанья» с кабачком",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 4,
+      "timeMinutes": 55,
+      "recipeSha256": "99756d6fc75546040ba445394c973cef39cddbc4a2147678a25371b86a1ca4c9",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Кабачок",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "13-627"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Фарш говяжий",
+          "originalAmount": "500 г",
+          "normalizedAmount": {
+            "value": 500,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 500,
+          "sourceCandidateRecordIds": [
+            "18-469",
+            "18-508"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сыр твёрдый",
+          "originalAmount": "120 г",
+          "normalizedAmount": {
+            "value": 120,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 120,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Сметана",
+          "originalAmount": "3 ст. л.",
+          "normalizedAmount": {
+            "value": 3,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Нарежьте кабачки тонкими пластинами.",
+        "Выложите слоями: кабачок, фарш, сметана, сыр.",
+        "Запекайте 40 минут при 180°C."
+      ],
+      "substitutions": {
+        "Кабачок": "баклажан"
+      },
+      "storage": "3 дня в холодильнике, месяц в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k17-nutrition-v2",
+        "candidateInputSha256": "530587375addc49ca894e63b046d3c60b6ce57bd46480b0cbea8ebede3ca2f8c",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k25",
+      "title": "Кето «Цезарь» с курицей и пармезаном",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 15,
+      "recipeSha256": "5c013b62be401b89cbf424f1a088d97a206301197f8e65d08f1e3cd507f95fe7",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Куриное филе обжаренное",
+          "originalAmount": "250 г",
+          "normalizedAmount": {
+            "value": 250,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 250,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Салат Романо или Айсберг",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Пармезан тертый",
+          "originalAmount": "40 г",
+          "normalizedAmount": {
+            "value": 40,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 40,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Бекон жареный",
+          "originalAmount": "50 г",
+          "normalizedAmount": {
+            "value": 50,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 50,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Домашний кето-майонез",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 5,
+          "name": "Чеснок и сок лимона",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Листья салата промойте, обсушите и нарвите руками в салатник.",
+        "Нарежьте теплую куриную грудку и хрустящий бекон ломтиками.",
+        "Смешайте майонез, измельченный чеснок и немного лимонного сока для соуса Цезарь.",
+        "Заправьте салат соусом, перемешайте и щедро посыпьте тертым пармезаном."
+      ],
+      "substitutions": {
+        "Пармезан": "любой выдержанный твердый сыр"
+      },
+      "storage": "хранить заправленным до 12 часов.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "Курица и бекон уже обжаренные: использовать таблицы готового продукта, не сырые; нужен состав домашнего майонеза."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k25-nutrition-v2",
+        "candidateInputSha256": "28d4dad3e70147009ef1354ee1243cbe583ef84d7cedfafefc16a42300b8030d",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k27",
+      "title": "Индейка со шпинатом на сковороде",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 15,
+      "recipeSha256": "89c99d44f162f2ac0841ebae67e9b28bea9214c376030319ab8cde4eef25fea4",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Филе индейки",
+          "originalAmount": "300 г",
+          "normalizedAmount": {
+            "value": 300,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 300,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Шпинат свежий",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [
+            "13-521"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Оливковое масло",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Чеснок",
+          "originalAmount": "1 зубчик",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Нарежьте филе индейки небольшими тонкими полосками.",
+        "Разогрейте оливковое масло на сковороде, обжарьте измельчённый чеснок 30 секунд.",
+        "Добавьте кусочки индейки и обжаривайте на среднем огне 7–10 минут до готовности.",
+        "Выложите шпинат, посолите, добавьте специи и прогрейте всё вместе ещё 2 минуты до увядания зелени."
+      ],
+      "substitutions": {
+        "Филе индейки": "куриное филе",
+        "Шпинат свежий": "любая листовая зелень или руккола"
+      },
+      "storage": "До 2 дней в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k27-nutrition-v2",
+        "candidateInputSha256": "b5b748f2768a413bf1844ce3b81a4cec03ed0e2e0f07c3f678eb665b618edf8f",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k28",
+      "title": "Курица с кабачком и зеленью",
+      "mode": "keto",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 25,
+      "recipeSha256": "e67282c91617cb2a8a04aea5c820441ebfbd99461bbb4475ccb9b5e35c1b5d4d",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Куриное филе",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Кабачок",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "13-627"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Оливковое масло",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Зелень (укроп, петрушка)",
+          "originalAmount": "20 г",
+          "normalizedAmount": {
+            "value": 20,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 20,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Нарежьте куриное филе кубиками, а кабачок — полукружиями.",
+        "Разогрейте оливковое масло в глубокой сковороде и обжарьте курицу 8–10 минут до золотистой корочки.",
+        "Добавьте кабачок, посолите, приправьте травами и тушите под крышкой 8–10 минут.",
+        "Посыпьте свежей рубленой зеленью, перемешайте и подавайте."
+      ],
+      "substitutions": {
+        "Куриное филе": "филе индейки",
+        "Кабачок": "стручковая фасоль или брокколи"
+      },
+      "storage": "До 3 дней в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "k28-nutrition-v2",
+        "candidateInputSha256": "41b718f33984bcf55def34c818918c9c3c63bb776f41cf8771f4934bce898686",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k18",
+      "title": "Сырные кето-крекеры",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 4,
+      "timeMinutes": 25,
+      "recipeSha256": "2e0025fccb1c263e59d2a1c93f2ec09eb71cf70447b3a773c828de59780ea1e1",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Сыр твёрдый",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Яйца",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Кокосовая мука",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Специи и соль",
+          "originalAmount": "щепотка",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Смешайте все ингредиенты в тесто.",
+        "Раскатайте тонко и нарежьте.",
+        "Выпекайте 12–15 минут при 180°C."
+      ],
+      "substitutions": {
+        "Кокосовая мука": "миндальная мука"
+      },
+      "storage": "До 5 дней в контейнере.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "c1",
+      "title": "Стейк на сковороде с топлёным маслом",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 1,
+      "timeMinutes": 15,
+      "recipeSha256": "707f7d3a51b4912570a737d3d2a9263c35e372ca4435f94925eccecc1e1f7322",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Стейк рибай",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Топлёное масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по желанию",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Достаньте стейк за 20 минут до готовки.",
+        "Жарьте на сильном огне по 3–4 минуты с каждой стороны.",
+        "Дайте отдохнуть 5 минут с маслом."
+      ],
+      "substitutions": {
+        "Стейк рибай": "любой стейк по бюджету"
+      },
+      "storage": "Съесть сразу.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "Прожарка3–4мин зависит от толщины и массы стейка; время не гарантирует готовность."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c1-nutrition-v2",
+        "candidateInputSha256": "307289036ff0b6d590cc3265e1e60e12663c41053197416b47189c0d45af77dd",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c2",
+      "title": "Говяжьи котлеты без хлеба и лука",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 3,
+      "timeMinutes": 25,
+      "recipeSha256": "8c2271230d86958a72b0fa1d1a6c30794ca0fab06a0781360a19d9d59c4790af",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Фарш говяжий",
+          "originalAmount": "600 г",
+          "normalizedAmount": {
+            "value": 600,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 600,
+          "sourceCandidateRecordIds": [
+            "18-469",
+            "18-508"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Яйца",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Топлёное масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Смешайте фарш с яйцом и солью.",
+        "Сформируйте котлеты.",
+        "Обжарьте по 5–6 минут с каждой стороны."
+      ],
+      "substitutions": {
+        "Яйца": "пропустить, если переносите без них"
+      },
+      "storage": "3 дня в холодильнике, месяц в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c2-nutrition-v2",
+        "candidateInputSha256": "88c403322888e6bf4cf1e2e4f380ffc6f772641383dfa48b6d3bba8ddfb56d7e",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c3",
+      "title": "Запечённая курица целиком",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 4,
+      "timeMinutes": 80,
+      "recipeSha256": "27ea5ff5235f6ac9622b2dd40296aa17b685a8b15f49db8b087b0f35254120ba",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Курица целая",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Топлёное масло",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Смажьте курицу маслом и солью.",
+        "Запекайте 60–70 минут при 190°C.",
+        "Разделите на порции, остатки — на следующие дни."
+      ],
+      "substitutions": {
+        "Курица целая": "куриные бёдра"
+      },
+      "storage": "3 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "Целая тушка: сырой вес включает несъедобные кости; нужен фактический выход мяса."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c3-nutrition-v2",
+        "candidateInputSha256": "06d76c21e3965cb2fc624ddd5c4fa24ea1ac095db3c74629a00557c6588708b9",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c4",
+      "title": "Куриные сердечки на сковороде",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 20,
+      "recipeSha256": "35a632d155aac6804c620f62f4acaed63651549805eafc3bf3ff8afef1cd33a9",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Куриные сердечки",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Топлёное масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Разрежьте сердечки пополам и промойте.",
+        "Обжарьте на сильном огне 8–10 минут.",
+        "Посолите в конце."
+      ],
+      "substitutions": {
+        "Куриные сердечки": "говяжьи сердца"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c4-nutrition-v2",
+        "candidateInputSha256": "32ba64526e0764b1f0c5b82e44df81796710827487fdb5da7bd80d2b00b64cec",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c5",
+      "title": "Говяжья печень со сметаной",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 20,
+      "recipeSha256": "0c8177d6fca46ad11f33863e4d8cf15a879fb8f46603224b00258e58ae45c4cb",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Говяжья печень",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Сметана",
+          "originalAmount": "3 ст. л.",
+          "normalizedAmount": {
+            "value": 3,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Топлёное масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Нарежьте печень, обсушите.",
+        "Обжарьте 6–8 минут.",
+        "Добавьте сметану и прогрейте 2 минуты."
+      ],
+      "substitutions": {
+        "Говяжья печень": "куриная печень"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c5-nutrition-v2",
+        "candidateInputSha256": "1386ff11cf071234da30304e9e4fb782d7c2bd98eab0a36f6d769327444cd5c7",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c6",
+      "title": "Лосось на пару с топлёным маслом",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 20,
+      "recipeSha256": "b6416c22fa075c32e9d475a9c61b62e36661f64d7bdea362d48c13a6e442dc3c",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy",
+        "fish"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Сёмга",
+          "originalAmount": "2 стейка",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "16-356",
+            "16-360"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Топлёное масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по желанию",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Готовьте рыбу на пару 12–15 минут.",
+        "Подавайте с растопленным маслом."
+      ],
+      "substitutions": {
+        "Сёмга": "любая жирная рыба"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c6-nutrition-v2",
+        "candidateInputSha256": "5bbb84240f95709c420d4633f16158b6fc09ef5888e9eb57f2326255f80395a6",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c7",
+      "title": "Говядина долгого тушения «рваное мясо»",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 6,
+      "timeMinutes": 180,
+      "recipeSha256": "7868f12b55ef8e601ed3863877e74b1ce2434544272d2ce4c497c43a59efd919",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Говядина",
+          "originalAmount": "1 кг",
+          "normalizedAmount": {
+            "value": 1000,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 1000,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Костный бульон",
+          "originalAmount": "300 мл",
+          "normalizedAmount": {
+            "value": 300,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Обжарьте мясо целым куском.",
+        "Залейте бульоном и тушите 2,5–3 часа на слабом огне.",
+        "Разберите на волокна, храните в бульоне."
+      ],
+      "substitutions": {
+        "Говядина": "любой жёсткий отруб (дешевле)"
+      },
+      "storage": "4 дня в холодильнике, 2 месяца в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c7-nutrition-v2",
+        "candidateInputSha256": "cee71ac20eb67e151a125d1f0eb1335a53ba0828e2a1579f898990fc78481e09",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c8",
+      "title": "Яичница на сале",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 1,
+      "timeMinutes": 10,
+      "recipeSha256": "d5d728e34623130978601e1458827479b87e94a23c5046d802b1ee597252441c",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Яйца",
+          "originalAmount": "3 шт",
+          "normalizedAmount": {
+            "value": 3,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Сало",
+          "originalAmount": "40 г",
+          "normalizedAmount": {
+            "value": 40,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 40,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Вытопите сало на сковороде.",
+        "Пожарьте яйца на вытопленном жире."
+      ],
+      "substitutions": {
+        "Сало": "топлёное масло"
+      },
+      "storage": "Съесть сразу.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c8-nutrition-v2",
+        "candidateInputSha256": "c33dd53d909a7d5d5b68abf42781e80e16b4dc734691b83a965779b7e37c9c1d",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c9",
+      "title": "Запечённая скумбрия (карнивор-версия)",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 30,
+      "recipeSha256": "8b934a6e34a8fdc6eb74804364368ae25202ca29459418ece5e9995c564a5521",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "fish"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Скумбрия",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Посолите рыбу.",
+        "Запекайте 20–25 минут при 190°C."
+      ],
+      "substitutions": {
+        "Скумбрия": "любая жирная рыба"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c9-nutrition-v2",
+        "candidateInputSha256": "e07e6526eebdc283761fa54efbaabcd37346a55e3d9b9683e703033fdd838b78",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c10",
+      "title": "Куриные бёдра на противне",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 3,
+      "timeMinutes": 45,
+      "recipeSha256": "b1f3c618e77e96ce2a4e982fd2c90ed09cfa1201fe2cd89348c346adf31aa71d",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Куриные бёдра",
+          "originalAmount": "800 г",
+          "normalizedAmount": {
+            "value": 800,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 800,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Топлёное масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Выложите бёдра на противень кожей вверх.",
+        "Смажьте маслом и посолите.",
+        "Запекайте 35–40 минут при 200°C."
+      ],
+      "substitutions": {
+        "Куриные бёдра": "голени"
+      },
+      "storage": "3 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c10-nutrition-v2",
+        "candidateInputSha256": "50dd5e74544964a73ecebce04340fb82c8d56ad6071a566043ad31889b6b323c",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c11",
+      "title": "Говяжий фарш с яйцом и маслом",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 15,
+      "recipeSha256": "b4c6dd35a797cdf716b580fd8c1296c078b3213de7abc9494b17eacf120cce51",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Фарш говяжий",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [
+            "18-469",
+            "18-508"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Яйца",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сливочное масло",
+          "originalAmount": "30 г",
+          "normalizedAmount": {
+            "value": 30,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 30,
+          "sourceCandidateRecordIds": [
+            "17-685"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Обжарьте фарш до готовности.",
+        "Добавьте масло и перемешайте.",
+        "Подавайте с жареным яйцом."
+      ],
+      "substitutions": {
+        "Фарш говяжий": "фарш из индейки"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c11-nutrition-v2",
+        "candidateInputSha256": "c23c004dca8886346583768ee35f576312af1095344aaf8f39090e935003f123",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c12",
+      "title": "Костный бульон длительного томления",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 6,
+      "timeMinutes": 240,
+      "recipeSha256": "ced2c565d45d62c94181a94d865c5954b676c534162971c3be80551f470ab287",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Костный бульон",
+          "originalAmount": "1,5 л",
+          "normalizedAmount": {
+            "value": 1500,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Томите кости на слабом огне 4–12 часов.",
+        "Процедите и охладите.",
+        "Разлейте порциями и заморозьте."
+      ],
+      "substitutions": {
+        "Костный бульон": "любые кости и остатки птицы"
+      },
+      "storage": "4 дня в холодильнике, 3 месяца в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "В составе указан уже готовый бульон, а шаги готовят его из костей. Указать кости/воду/выход или переписать способ;4–12ч расходится с time240."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c12-nutrition-v2",
+        "candidateInputSha256": "912b1f74df694817977c2dbe4785b8dc9856db6af0b5a79d05734bbe6fb40462",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c13",
+      "title": "Рыбные котлеты из консервов",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 2,
+      "timeMinutes": 25,
+      "recipeSha256": "7f0416c0614c44c0d05c022aee4b5d58d577081c9dbe25313ece79b98a2a4a66",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy",
+        "fish"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Тунец консервированный",
+          "originalAmount": "2 банки",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "банки"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Яйца",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Топлёное масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Смешайте рыбу с яйцами.",
+        "Сформируйте котлеты.",
+        "Обжарьте по 3–4 минуты с каждой стороны."
+      ],
+      "substitutions": {
+        "Тунец консервированный": "консервированная скумбрия"
+      },
+      "storage": "2 дня в холодильнике, месяц в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c13-nutrition-v2",
+        "candidateInputSha256": "4999a96ea533cc35502d7fbac4d30d3343407c706320f53c80f9f5fa253e2780",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c14",
+      "title": "Запечённые говяжьи сердечки",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 3,
+      "timeMinutes": 40,
+      "recipeSha256": "656e64d64d2a96e5f4070f0036f8ea3cdd2a16a5e986cae5cb6e63f4cd24ad77",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Говяжьи сердца",
+          "originalAmount": "600 г",
+          "normalizedAmount": {
+            "value": 600,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 600,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Топлёное масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Нарежьте сердечки, посолите.",
+        "Запекайте 30 минут при 190°C."
+      ],
+      "substitutions": {
+        "Говяжьи сердца": "куриные сердечки"
+      },
+      "storage": "3 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c14-nutrition-v2",
+        "candidateInputSha256": "b3d1b7831a02bd656cc4c95226cabb2fbe8d17b83f3ab89d04c30cfb21bd28fa",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c15",
+      "title": "Утиные ножки конфи в собственном жиру",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 3,
+      "timeMinutes": 150,
+      "recipeSha256": "497496ba8dcbb54cdc03146b64bd563a0ecdf94b9710baee41c51ce7f6c91d37",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Утка",
+          "originalAmount": "3 ножки",
+          "normalizedAmount": {
+            "value": 3,
+            "unit": "ножки"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Посолите ножки и оставьте на 30 минут.",
+        "Томите в жире при 130°C 2 часа.",
+        "Перед подачей обжарьте кожу до хруста."
+      ],
+      "substitutions": {
+        "Утка": "куриные бёдра (упрощённо)"
+      },
+      "storage": "3 дня в холодильнике под жиром.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Для строгого карнивора определить допустимость растительных специй; не менять состав автоматически.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "Конфи требует жира, которого нет в составе; уточнить массу ножек и учёт вытопленного/удалённого жира."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c15-nutrition-v2",
+        "candidateInputSha256": "e8a6458923a7f1ff20c3b610f19db25b2ea532b02e66dd4bd638b0c0e28e002d",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "c16",
+      "title": "Мясная нарезка и яйца вкрутую (перекус)",
+      "mode": "carnivore",
+      "priority": "starter_36",
+      "basePortions": 1,
+      "timeMinutes": 10,
+      "recipeSha256": "3892bdd3a13fde0a8dbbe21c5d1a501c6752dd924222c66b40ecac0156a97ad5",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Яйца",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Бекон",
+          "originalAmount": "60 г",
+          "normalizedAmount": {
+            "value": 60,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 60,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сыр твёрдый",
+          "originalAmount": "40 г",
+          "normalizedAmount": {
+            "value": 40,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 40,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Отварите яйца заранее.",
+        "Соберите тарелку из готовых продуктов.",
+        "Храните перекус в контейнере."
+      ],
+      "substitutions": {
+        "Сыр твёрдый": "пропустить, если строгая версия"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "Готовая мясная нарезка и сыр: фиксировать бренд/состав, не предполагать отсутствие сахара/растительных добавок."
+      ],
+      "proposedNutritionCandidate": {
+        "file": "nutrition-candidates-v2-20261113.json",
+        "candidateId": "c16-nutrition-v2",
+        "candidateInputSha256": "00f7c8ac04143265dfbbf1b43056bf9e065d80becba52f18bf3dbbbbf2806274",
+        "status": "independent_formulation_candidate_not_approved",
+        "completeMassInputs": true,
+        "outputsAvailableForPortions": [
+          1,
+          2,
+          4
+        ],
+        "cookingVerified": false,
+        "ownerApproved": false
+      }
+    },
+    {
+      "id": "k19",
+      "title": "Яйца, фаршированные сыром и зеленью",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 2,
+      "timeMinutes": 15,
+      "recipeSha256": "edb49684c8bc3537f9e9bc3b0477f152087cce5f3fbd68ca99195ee9d62aad77",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Яйца",
+          "originalAmount": "4 шт",
+          "normalizedAmount": {
+            "value": 4,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Сыр твёрдый",
+          "originalAmount": "40 г",
+          "normalizedAmount": {
+            "value": 40,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 40,
+          "sourceCandidateRecordIds": [
+            "12-346"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сметана",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Зелень (укроп, петрушка)",
+          "originalAmount": "10 г",
+          "normalizedAmount": {
+            "value": 10,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 10,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Отварите яйца, разрежьте пополам.",
+        "Разомните желтки с сыром, сметаной и зеленью.",
+        "Наполните половинки."
+      ],
+      "substitutions": {
+        "Сметана": "сливочное масло"
+      },
+      "storage": "2 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k20",
+      "title": "Кето-брауни на кокосовой муке",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 6,
+      "timeMinutes": 40,
+      "recipeSha256": "dc0913081078d0b110b9535e01d4bbde4acb4d2f6bd441f18700c818d672c5df",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "eggs",
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Кокосовая мука",
+          "originalAmount": "60 г",
+          "normalizedAmount": {
+            "value": 60,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 60,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Какао-порошок",
+          "originalAmount": "30 г",
+          "normalizedAmount": {
+            "value": 30,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 30,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Яйца",
+          "originalAmount": "3 шт",
+          "normalizedAmount": {
+            "value": 3,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "12-937"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Сливочное масло",
+          "originalAmount": "80 г",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 80,
+          "sourceCandidateRecordIds": [
+            "17-685"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Эритрит",
+          "originalAmount": "80 г",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 80,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Растопите масло, смешайте с яйцами и подсластителем.",
+        "Добавьте муку и какао.",
+        "Выпекайте 20–25 минут при 170°C."
+      ],
+      "substitutions": {
+        "Эритрит": "стевия по вкусу"
+      },
+      "storage": "4 дня в холодильнике, месяц в морозилке.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k21",
+      "title": "Кокосовые шарики с какао",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 4,
+      "timeMinutes": 15,
+      "recipeSha256": "20d5b394153a9218762f624998e485eb0fb92d24bd60b0eff084c34c8c1163e3",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Кокосовая мука",
+          "originalAmount": "60 г",
+          "normalizedAmount": {
+            "value": 60,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 60,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Какао-порошок",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сливки 33%",
+          "originalAmount": "80 мл",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Эритрит",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Смешайте все ингредиенты в плотную массу.",
+        "Скатайте шарики.",
+        "Охладите 30 минут."
+      ],
+      "substitutions": {
+        "Сливки 33%": "кокосовое масло"
+      },
+      "storage": "5 дней в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "Охлаждение30мин отсутствует в заявленном времени15мин. ID конфликтует с другим блюдом в архиве202612-v1."
+      ]
+    },
+    {
+      "id": "k22",
+      "title": "Сливочно-сырный суп с беконом и брокколи",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 4,
+      "timeMinutes": 25,
+      "recipeSha256": "8b88b8d7328ddada1a236b39e7fe9c8c1becdbc4313ea6a291d2fc4d754c8fe4",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Куриный или костный бульон",
+          "originalAmount": "600 мл",
+          "normalizedAmount": {
+            "value": 600,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Сливочный сыр или чеддер",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Сливки 33%",
+          "originalAmount": "100 мл",
+          "normalizedAmount": {
+            "value": 100,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Брокколи",
+          "originalAmount": "300 г",
+          "normalizedAmount": {
+            "value": 300,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 300,
+          "sourceCandidateRecordIds": [
+            "13-502"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Бекон",
+          "originalAmount": "100 г",
+          "normalizedAmount": {
+            "value": 100,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 100,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 5,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Обжарьте бекон на сковороде до хрустящей корочки и нарежьте кусочками.",
+        "В сотейнике доведите бульон до кипения, добавьте соцветия брокколи и варите 7–8 минут.",
+        "Добавьте сливочный сыр и сливки, взбейте часть супа погружным блендером для кремовой текстуры.",
+        "Разлейте по тарелкам и посыпьте хрустящим беконом."
+      ],
+      "substitutions": {
+        "Сливочный сыр": "тертый твердый сыр (чеддер/гауда)"
+      },
+      "storage": "3 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения.",
+        "Два альтернативных сыра и два бульона не имеют единого КБЖУ. ID конфликтует с другим блюдом в архиве202612-v1."
+      ]
+    },
+    {
+      "id": "k23",
+      "title": "Кето-солянка мясная сборная",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 5,
+      "timeMinutes": 35,
+      "recipeSha256": "75df702eb49acc4bf7f74b6b32718a140866e40c28bdda81795d9911f996f121",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Мясной или костный бульон",
+          "originalAmount": "1,2 л",
+          "normalizedAmount": {
+            "value": 1200,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Отварная говядина",
+          "originalAmount": "250 г",
+          "normalizedAmount": {
+            "value": 250,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 250,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Копченая грудинка или бекон",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Охотничьи колбаски",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Соленые (бочковые) огурцы",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 5,
+          "name": "Оливки или маслины",
+          "originalAmount": "50 г",
+          "normalizedAmount": {
+            "value": 50,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 50,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 6,
+          "name": "Томатная паста без сахара",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 7,
+          "name": "Лимон и зелень",
+          "originalAmount": "для подачи",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Нарежьте соломкой отварное мясо, грудинку и колбаски. Обжарьте их на сковороде.",
+        "Огурцы нарежьте соломкой и припустите в сотейнике с парой ложек бульона и томатной пастой 5 минут.",
+        "В кипящий бульон выложите мясо и огурцы, варите на медленном огне 15 минут.",
+        "За 2 минуты до готовности добавьте оливки. Подавайте со сметаной, долькой лимона и зеленью."
+      ],
+      "substitutions": {
+        "Охотничьи колбаски": "любые качественные мясные деликатесы без сахара"
+      },
+      "storage": "4 дня в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k24",
+      "title": "Том Ям с морепродуктами на кокосовом молоке",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 2,
+      "timeMinutes": 20,
+      "recipeSha256": "7ea94605d300206fc3b3ee20cc727c6a3082557f45fe992b0be66631f3592482",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "fish"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Креветки очищенные",
+          "originalAmount": "250 г",
+          "normalizedAmount": {
+            "value": 250,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 250,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Кокосовое молоко жирное",
+          "originalAmount": "250 мл",
+          "normalizedAmount": {
+            "value": 250,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Рыбный или куриный бульон",
+          "originalAmount": "300 мл",
+          "normalizedAmount": {
+            "value": 300,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Шампиньоны",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Паста Том Ям",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 5,
+          "name": "Лайм и свежая кинза",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "В сотейнике слегка прогрейте пасту Том Ям, затем влейте бульон и кокосовое молоко.",
+        "Доведите до кипения, добавьте нарезанные шампиньоны и варите 4–5 минут.",
+        "Добавьте креветки и варите ровно 2–3 минуты, чтобы они остались сочными.",
+        "Снимите с огня, заправьте соком лайма и посыпьте рубленой кинзой."
+      ],
+      "substitutions": {
+        "Креветки": "куриное филе или кусочки сёмги"
+      },
+      "storage": "лучше употреблять свежеприготовленным.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k26",
+      "title": "Греческий салат с оливками и сыром фета",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 2,
+      "timeMinutes": 10,
+      "recipeSha256": "c00c1c9e8af96de5c0d2a0dfcc29b682c394d70d76cd42f6b98a182e9778366b",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "dairy"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Огурцы свежие",
+          "originalAmount": "2 шт",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Сыр Фета или брынза",
+          "originalAmount": "120 г",
+          "normalizedAmount": {
+            "value": 120,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 120,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Оливки Каламата",
+          "originalAmount": "60 г",
+          "normalizedAmount": {
+            "value": 60,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 60,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Красный лук",
+          "originalAmount": "0.5 шт",
+          "normalizedAmount": {
+            "value": 0.5,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Оливковое масло Extra Virgin",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 5,
+          "name": "Орегано и морская соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Крупно нарежьте свежие огурцы и тонко полукольцами красный лук.",
+        "Выложите овощи в салатник, добавьте целые оливки.",
+        "Сверху выложите кубики сыра фета.",
+        "Полейте ароматным оливковым маслом и посыпьте сухим орегано."
+      ],
+      "substitutions": {
+        "Фета": "брынза или моцарелла"
+      },
+      "storage": "лучше съедать сразу.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k29",
+      "title": "Говядина с шампиньонами на сковороде",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 2,
+      "timeMinutes": 20,
+      "recipeSha256": "63af2e786f21dfbf2750810637e830a2764721e540ed503f2c1794f16533df31",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Говядина",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Шампиньоны",
+          "originalAmount": "250 г",
+          "normalizedAmount": {
+            "value": 250,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 250,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Лук",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Оливковое масло",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Нарежьте говядину тонкими полосками поперёк волокон, а шампиньоны — пластинками.",
+        "На сильно разогретой сковороде с оливковым маслом быстро обжарьте мясо 5–7 минут.",
+        "Добавьте нарезанный лук и шампиньоны, готовьте ещё 8–10 минут, пока не выпарится сок.",
+        "Посолите, поперчите, перемешайте и снимите с огня."
+      ],
+      "substitutions": {
+        "Говядина": "свиная вырезка",
+        "Шампиньоны": "вешенки или лесные грибы"
+      },
+      "storage": "До 3 дней в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k30",
+      "title": "Белая рыба с брокколи и лимоном",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 2,
+      "timeMinutes": 20,
+      "recipeSha256": "f88ec937d659673fae5d58e1bfae0701ccb9bd8a9f18da7c1c83957e1a4d0d69",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [
+        "fish"
+      ],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Треска",
+          "originalAmount": "400 г",
+          "normalizedAmount": {
+            "value": 400,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 400,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Брокколи",
+          "originalAmount": "300 г",
+          "normalizedAmount": {
+            "value": 300,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 300,
+          "sourceCandidateRecordIds": [
+            "13-502"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Оливковое масло",
+          "originalAmount": "2 ст. л.",
+          "normalizedAmount": {
+            "value": 2,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Лимон",
+          "originalAmount": "0.5 шт",
+          "normalizedAmount": {
+            "value": 0.5,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Разделите брокколи на соцветия, опустите в кипящую подсоленную воду на 3 минуты и откиньте на дуршлаг.",
+        "Филе трески нарежьте порционными кусочками, сбрызните лимонным соком, посолите и поперчите.",
+        "Разогрейте оливковое масло на сковороде, обжарьте треску по 4–5 минут с каждой стороны.",
+        "Выложите к рыбе брокколи, прогрейте всё вместе 2 минуты и подавайте."
+      ],
+      "substitutions": {
+        "Треска": "минтай, хек или судак",
+        "Брокколи": "цветная капуста или стручковая фасоль"
+      },
+      "storage": "До 2 дней в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k31",
+      "title": "Салат с курицей, авокадо и огурцом",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 2,
+      "timeMinutes": 10,
+      "recipeSha256": "2d9ce4769a2ffd8ec17b1d2d98761ff43ff051f4c2f34991bc3e381c54d31324",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Куриное филе (готовое)",
+          "originalAmount": "240 г",
+          "normalizedAmount": {
+            "value": 240,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 240,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Авокадо спелое",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Огурцы свежие",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Оливковое масло Extra Virgin",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Лимонный сок",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "14-277"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 5,
+          "name": "Зелень (укроп, петрушка)",
+          "originalAmount": "15 г",
+          "normalizedAmount": {
+            "value": 15,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 15,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 6,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Убедитесь, что куриное филе заранее полностью приготовлено и правильно охлаждено.",
+        "Нарежьте огурец полукружиями, а мякоть авокадо и куриное филе — аккуратными кубиками.",
+        "Выложите ингредиенты в салатник, добавьте мелко нарезанную зелень.",
+        "Полейте оливковым маслом и лимонным соком, посолите, аккуратно перемешайте и подавайте сразу."
+      ],
+      "substitutions": {
+        "Куриное филе (готовое)": "запечённое филе индейки",
+        "Авокадо спелое": "оливки без косточек"
+      },
+      "storage": "Употребить сразу после заправки; без заправки заготовки хранятся до 2 дней в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k32",
+      "title": "Говяжьи мини-бифштексы с рукколой",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 2,
+      "timeMinutes": 20,
+      "recipeSha256": "816c8d1c374ed26db56f9979842add18ab82603011bd27425a889e6f15282f56",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Фарш говяжий",
+          "originalAmount": "300 г",
+          "normalizedAmount": {
+            "value": 300,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 300,
+          "sourceCandidateRecordIds": [
+            "18-469",
+            "18-508"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Руккола свежая",
+          "originalAmount": "60 г",
+          "normalizedAmount": {
+            "value": 60,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 60,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Огурцы свежие",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Оливковое масло",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Приправьте говяжий фарш солью и свежемолотым перцем, тщательно вымешайте и сформируйте 4 плоских мини-бифштекса.",
+        "Разогрейте оливковое масло на сковороде на среднем огне.",
+        "Обжаривайте мини-бифштексы по 4–5 минут с каждой стороны до полной прожарки.",
+        "Промойте и обсушите рукколу, нарежьте огурец ломтиками.",
+        "Подавайте горячие бифштексы на подушке из свежей рукколы и огурца."
+      ],
+      "substitutions": {
+        "Фарш говяжий": "фарш из индейки или нежирной свинины",
+        "Руккола свежая": "шпинат или листовой салат"
+      },
+      "storage": "Готовые бифштексы хранятся до 3 дней в холодильнике; свежую зелень добавлять перед подачей.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k33",
+      "title": "Тёплый салат с беконом и авокадо",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 2,
+      "timeMinutes": 15,
+      "recipeSha256": "a1d8fe264baa0e8e03682b1b64f7241ab3e76d6027766b546e1bbd16f5426ef6",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Бекон сырокопчёный",
+          "originalAmount": "100 г",
+          "normalizedAmount": {
+            "value": 100,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 100,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Авокадо спелое",
+          "originalAmount": "1 шт",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "шт"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Листья салата",
+          "originalAmount": "100 г",
+          "normalizedAmount": {
+            "value": 100,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 100,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Огурцы свежие",
+          "originalAmount": "150 г",
+          "normalizedAmount": {
+            "value": 150,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 150,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 4,
+          "name": "Лимонный сок",
+          "originalAmount": "1 ст. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ст. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "14-277"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 5,
+          "name": "Оливковое масло Extra Virgin",
+          "originalAmount": "1 ч. л.",
+          "normalizedAmount": {
+            "value": 1,
+            "unit": "ч. л."
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [
+            "17-038"
+          ],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 6,
+          "name": "Специи и соль",
+          "originalAmount": "по вкусу",
+          "normalizedAmount": null,
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна съедобная масса, масса ложки/штуки либо фиксированный состав.",
+            "Зафиксировать конкретный продукт/смесь, состояние и состав.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "Нарежьте бекон полосками и обжарьте на сухой сковороде 4–5 минут до аппетитного хруста.",
+        "Промойте и обсушите листья салата, нарвите их крупно в салатник.",
+        "Нарежьте огурцы ломтиками, а мякоть авокадо — кубиками.",
+        "Выложите на зелень овощи и горячий хрустящий бекон.",
+        "Сбрызните лимонным соком и ложкой оливкового масла, слегка посолите и подавайте тёплым."
+      ],
+      "substitutions": {
+        "Бекон сырокопчёный": "куриная ветчина или сыровяленая говядина",
+        "Листья салата": "шпинат или пекинская капуста"
+      },
+      "storage": "Лучше употреблять сразу тёплым; заготовки овощей хранятся до 24 часов.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    },
+    {
+      "id": "k34",
+      "title": "Кокосовый чиа-пудинг с малиной",
+      "mode": "keto",
+      "priority": "remaining_14",
+      "basePortions": 2,
+      "timeMinutes": 10,
+      "recipeSha256": "8113893bc5938ab504cd8585cab6f30ba98140071c7d0508170b7653a5cdabb7",
+      "photo": null,
+      "allergensExcludedByCurrentFilter": [],
+      "ingredients": [
+        {
+          "index": 0,
+          "name": "Семена чиа",
+          "originalAmount": "40 г",
+          "normalizedAmount": {
+            "value": 40,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 40,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Кокосовое молоко без сахара",
+          "originalAmount": "200 мл",
+          "normalizedAmount": {
+            "value": 200,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Вода питьевая",
+          "originalAmount": "80 мл",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "мл"
+          },
+          "edibleGramsCandidate": null,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Нужна подтверждённая плотность либо взвешивание.",
+            "Источник и соответствие продукту не утверждены."
+          ]
+        },
+        {
+          "index": 3,
+          "name": "Малина свежая или размороженная",
+          "originalAmount": "80 г",
+          "normalizedAmount": {
+            "value": 80,
+            "unit": "г"
+          },
+          "edibleGramsCandidate": 80,
+          "sourceCandidateRecordIds": [],
+          "status": "candidate_only",
+          "issues": [
+            "Источник и соответствие продукту не утверждены."
+          ]
+        }
+      ],
+      "steps": [
+        "В стеклянной банке или миске соедините семена чиа, кокосовое молоко и воду.",
+        "Тщательно перемешайте венчиком или вилкой в течение 1–2 минут, чтобы семена распределились без комочков.",
+        "Оставьте на 10 минут, перемешайте ещё раз и уберите в холодильник минимум на 3–4 часа (или на ночь) для полного набухания.",
+        "Утром разложите пудинг по бокалам или креманкам и украсьте сверху свежей или размороженной малиной."
+      ],
+      "substitutions": {
+        "Малина свежая или размороженная": "клубника, черника или ежевика",
+        "Кокосовое молоко без сахара": "миндальное молоко без сахара"
+      },
+      "storage": "До 3 дней в герметичной баночке в холодильнике.",
+      "status": "awaiting_editorial_review",
+      "issues": [
+        "КБЖУ не подтверждены: старые числовые поля не являются основанием публикации.",
+        "Проверить технологию, время готовности и хранение.",
+        "Нет назначенной фотоиллюстрации; доступен честный режим состава без изображения."
+      ]
+    }
+  ],
+  "usdaSourceFile": "nutrition-usda-sources-20261113.json",
+  "proposedCandidateFile": "nutrition-candidates-v2-20261113.json"
+}

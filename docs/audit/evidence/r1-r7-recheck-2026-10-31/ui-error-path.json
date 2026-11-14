@@ -1,0 +1,38 @@
+{
+  "scope": "Adapted built-bundle UI transport-error simulation only; all HTTP fulfilled/aborted in private contexts, not native E2E/server persistence/Telegram proof",
+  "build_id": "ab8b527aa26fba7f",
+  "local_without_identity": {
+    "shows_authorization_required": true,
+    "api_calls": 0
+  },
+  "conflict_after_unrelated_save": {
+    "after_failed_user_put": "Конфликт версий. Обновите страницу",
+    "after_successful_shopping_put": "Тестовый каталог · синтетические данные",
+    "calls": [
+      {
+        "method": "POST",
+        "path": "/api/session"
+      },
+      {
+        "method": "GET",
+        "path": "/api/catalog"
+      },
+      {
+        "method": "GET",
+        "path": "/api/user"
+      },
+      {
+        "method": "GET",
+        "path": "/api/shopping"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/user"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/shopping"
+      }
+    ]
+  }
+}

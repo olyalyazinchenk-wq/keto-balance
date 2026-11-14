@@ -1,0 +1,32 @@
+{
+  "files": [
+    "already-have-queued-checkbox-payloads.json",
+    "already-have-r2-real-backend-replay.json",
+    "already-have-ui-probes-full.json",
+    "backend-full.txt",
+    "build-receipt.json",
+    "build.txt",
+    "checks.json",
+    "consistency-inputs.json",
+    "deepcoder-helper-probes.cjs",
+    "deepcoder-recheck.py",
+    "deepcoder-ui-interleave.cjs",
+    "frontend.tap",
+    "helper-probes.json",
+    "launcher-configuration.txt",
+    "native-receipt.json",
+    "pilot-f1-f4-full-backend.py",
+    "pilot-f1-f4-recheck.py",
+    "queued-checkbox-payloads.json",
+    "r1-backend-consistency.json",
+    "r1-r3-final-already-have-probes.py",
+    "r1-r3-final-current-probes.py",
+    "r2-real-backend-replay.json",
+    "source-manifest.json",
+    "synthetic-payloads.json",
+    "targeted-runner.json",
+    "typecheck.txt",
+    "ui-probes.json"
+  ],
+  "scope": "R1-R3 only; diagnostic assertions distinct from native test totals"
+}

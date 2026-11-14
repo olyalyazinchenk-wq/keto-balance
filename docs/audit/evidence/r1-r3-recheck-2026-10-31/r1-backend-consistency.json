@@ -1,0 +1,197 @@
+{
+  "scope": "Actual current helpers generated payloads -> unmodified in-process FastAPI -> fresh owned SQLite -> reload and new synthetic session. No listening server or real data. Unit fixtures are not nutrition claims.",
+  "cases": [
+    {
+      "name": "three_day_correct_x1",
+      "expected_consistent": true,
+      "predicate_consistent": false,
+      "http_put_statuses": [
+        200,
+        200,
+        200
+      ],
+      "get_shopping_stale": true,
+      "new_session_shopping_stale": true,
+      "persisted_shopping_stale": true,
+      "shopping_roundtrip_exact": true,
+      "expectation_pass": false,
+      "first_item": {
+        "id": "shop-agg-яйца-count-шт",
+        "name": "Яйца",
+        "amountLabel": "27 шт.",
+        "department": "Яйца и молочное",
+        "linkedRecipeTitles": [
+          "Сливочная яичница с беконом и шпинатом",
+          "Омлет с сыром и зеленью",
+          "Ленивые сырники в духовке (кето)"
+        ],
+        "alreadyHave": false,
+        "checkedInStore": false
+      }
+    },
+    {
+      "name": "three_day_correct_x2",
+      "expected_consistent": true,
+      "predicate_consistent": false,
+      "http_put_statuses": [
+        200,
+        200,
+        200
+      ],
+      "get_shopping_stale": true,
+      "new_session_shopping_stale": true,
+      "persisted_shopping_stale": true,
+      "shopping_roundtrip_exact": true,
+      "expectation_pass": false,
+      "first_item": {
+        "id": "shop-agg-яйца-count-шт",
+        "name": "Яйца",
+        "amountLabel": "54 шт.",
+        "department": "Яйца и молочное",
+        "linkedRecipeTitles": [
+          "Сливочная яичница с беконом и шпинатом",
+          "Омлет с сыром и зеленью",
+          "Ленивые сырники в духовке (кето)"
+        ],
+        "alreadyHave": false,
+        "checkedInStore": false
+      }
+    },
+    {
+      "name": "one_day_correct",
+      "expected_consistent": true,
+      "predicate_consistent": true,
+      "http_put_statuses": [
+        200,
+        200,
+        200
+      ],
+      "get_shopping_stale": false,
+      "new_session_shopping_stale": false,
+      "persisted_shopping_stale": false,
+      "shopping_roundtrip_exact": true,
+      "expectation_pass": true,
+      "first_item": {
+        "id": "shop-agg-яйца-count-шт",
+        "name": "Яйца",
+        "amountLabel": "9 шт.",
+        "department": "Яйца и молочное",
+        "linkedRecipeTitles": [
+          "Сливочная яичница с беконом и шпинатом",
+          "Омлет с сыром и зеленью",
+          "Ленивые сырники в духовке (кето)"
+        ],
+        "alreadyHave": false,
+        "checkedInStore": false
+      }
+    },
+    {
+      "name": "three_day_menu_one_day_quantities",
+      "expected_consistent": false,
+      "predicate_consistent": true,
+      "http_put_statuses": [
+        200,
+        200,
+        200
+      ],
+      "get_shopping_stale": false,
+      "new_session_shopping_stale": false,
+      "persisted_shopping_stale": false,
+      "shopping_roundtrip_exact": true,
+      "expectation_pass": false,
+      "first_item": {
+        "id": "shop-agg-яйца-count-шт",
+        "name": "Яйца",
+        "amountLabel": "9 шт.",
+        "department": "Яйца и молочное",
+        "linkedRecipeTitles": [
+          "Сливочная яичница с беконом и шпинатом",
+          "Омлет с сыром и зеленью",
+          "Ленивые сырники в духовке (кето)"
+        ],
+        "alreadyHave": false,
+        "checkedInStore": false
+      }
+    },
+    {
+      "name": "one_day_missing_ingredient",
+      "expected_consistent": false,
+      "predicate_consistent": true,
+      "http_put_statuses": [
+        200,
+        200,
+        200
+      ],
+      "get_shopping_stale": false,
+      "new_session_shopping_stale": false,
+      "persisted_shopping_stale": false,
+      "shopping_roundtrip_exact": true,
+      "expectation_pass": false,
+      "first_item": {
+        "id": "shop-agg-бекон-weight-г",
+        "name": "Бекон",
+        "amountLabel": "80 г",
+        "department": "Мясо, птица и рыба",
+        "linkedRecipeTitles": [
+          "Сливочная яичница с беконом и шпинатом"
+        ],
+        "alreadyHave": false,
+        "checkedInStore": false
+      }
+    },
+    {
+      "name": "normalized_unit_correct",
+      "expected_consistent": true,
+      "predicate_consistent": false,
+      "http_put_statuses": [
+        200,
+        200,
+        200
+      ],
+      "get_shopping_stale": true,
+      "new_session_shopping_stale": true,
+      "persisted_shopping_stale": true,
+      "shopping_roundtrip_exact": true,
+      "expectation_pass": false,
+      "first_item": {
+        "id": "shop-agg-synthetic-unit-fixture-weight-г",
+        "name": "Synthetic unit fixture",
+        "amountLabel": "1 кг",
+        "department": "Масла и бакалея",
+        "linkedRecipeTitles": [
+          "Сливочная яичница с беконом и шпинатом"
+        ],
+        "alreadyHave": false,
+        "checkedInStore": false
+      }
+    },
+    {
+      "name": "wrong_unit_same_raw_number",
+      "expected_consistent": false,
+      "predicate_consistent": true,
+      "http_put_statuses": [
+        200,
+        200,
+        200
+      ],
+      "get_shopping_stale": false,
+      "new_session_shopping_stale": false,
+      "persisted_shopping_stale": false,
+      "shopping_roundtrip_exact": true,
+      "expectation_pass": false,
+      "first_item": {
+        "id": "shop-agg-synthetic-unit-fixture-weight-г",
+        "name": "Synthetic unit fixture",
+        "amountLabel": "1000 кг",
+        "department": "Масла и бакалея",
+        "linkedRecipeTitles": [
+          "Сливочная яичница с беконом и шпинатом"
+        ],
+        "alreadyHave": false,
+        "checkedInStore": false
+      }
+    }
+  ],
+  "passed": 1,
+  "total": 7
+}

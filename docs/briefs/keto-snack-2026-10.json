@@ -1,0 +1,52 @@
+{
+  "slug": "keto-snack",
+  "kicker": "кето · перекус",
+  "cta": "список перекусов в канале",
+  "out": "media/hooks/variants",
+  "platforms": [
+    "tiktok",
+    "reels",
+    "shorts",
+    "telegram"
+  ],
+  "variants": [
+    {
+      "name": "hook",
+      "scenes": 1
+    },
+    {
+      "name": "teaser",
+      "scenes": 2
+    },
+    {
+      "name": "full",
+      "scenes": 3
+    }
+  ],
+  "scenes": [
+    {
+      "clip": "media/flow/hands_slice_ripe_avocado_01.mp4",
+      "t": 1.0,
+      "dur": 3.0,
+      "l1": "СЫТНЫЙ ПЕРЕКУС",
+      "l2": "АВОКАДО И ОРЕХИ",
+      "kicker": "кето · перекус"
+    },
+    {
+      "clip": "media/flow/salmon_plate_01.mp4",
+      "t": 1.5,
+      "dur": 3.0,
+      "l1": "БЕЛОК ГАСИТ ГОЛОД",
+      "l2": "БЕЗ СКАЧКОВ САХАРА",
+      "kicker": "кето · сытость"
+    },
+    {
+      "clip": "media/flow/scales_avocado_01.mp4",
+      "t": 2.0,
+      "dur": 3.0,
+      "l1": "КОНТРОЛЬ ПОРЦИИ",
+      "l2": "СЫТОСТЬ НА 4 ЧАСА",
+      "kicker": "кето · баланс"
+    }
+  ]
+}

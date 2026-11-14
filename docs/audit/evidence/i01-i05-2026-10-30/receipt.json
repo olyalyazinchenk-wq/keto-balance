@@ -1,0 +1,22 @@
+{
+  "observedAt": "2026-10-30T18:07:39.552Z",
+  "validator": {
+    "matchingFixture": "PASSED",
+    "mismatchingFixture": "FAILED as required",
+    "duplicateRejected": true,
+    "nonFiniteRejected": true,
+    "runtimeReadAttempts": 0
+  },
+  "viteEnvProbe": {
+    "scope": "Installed loader on a synthetic scratch .env, not the actual project build",
+    "readAttempts": 1,
+    "blocked": true,
+    "error": "Synthetic env-loader trap"
+  },
+  "sourceUnchanged": true,
+  "sourceHashes": {
+    "scripts/validate-catalog.mjs": "9a68fd7200cb69ac581764e56fa198c4cac09e4d6fedb1988f776f31449b84bc",
+    "tests/frontend/catalog-build-safety.test.cjs": "d0aaa3eb39c9812090af764199cdbf6aa53f980b8e738635f46b7d1f53c7e5d9"
+  },
+  "limitation": "No full project npm build was executed; no actual project .env or bot_data.json was read"
+}

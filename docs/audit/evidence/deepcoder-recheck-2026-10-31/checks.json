@@ -1,0 +1,87 @@
+{
+  "scope": "DeepCoder independent recheck. Native full suites + typecheck + isolated build. Actual launcher assembly/timer and in-process app with synthetic data only; no live preview/listener/bot/tunnel/real secrets or database. No product edits.",
+  "run_root": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb",
+  "results": {
+    "full-backend-wrapper": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\full-backend-wrapper.log"
+    },
+    "backend-full": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\backend-full.log",
+      "scope": "Real full backend unittest discovery; outer Python IO audit guard also injected into reviewed Python -c child probes. No serving process, real DB/env/participant data or application network.",
+      "tests": 152,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\frontend.log",
+      "tests": 186,
+      "pass": 186,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "todo": 0,
+      "file_count": 25
+    },
+    "typecheck": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\typecheck.log"
+    },
+    "isolated-build": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\isolated-build.log",
+      "paths": {
+        "dist_dir": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\localappdata\\hermes\\cache\\scratch\\build-run-1793465232853-956rnq\\workspace\\dist",
+        "test_catalog_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\localappdata\\hermes\\cache\\scratch\\build-run-1793465232853-956rnq\\synthetic-test-catalog.json",
+        "receipt_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\localappdata\\hermes\\cache\\scratch\\build-run-1793465232853-956rnq\\build-receipt.json",
+        "source_manifest_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\localappdata\\hermes\\cache\\scratch\\build-run-1793465232853-956rnq\\source-manifest.json",
+        "build_id": "c145c16cbf4fdc16",
+        "catalog_hash": "face03d34bf329b2",
+        "backend_fingerprint": "6014c9aae7939a3b"
+      },
+      "build_id": "c145c16cbf4fdc16",
+      "backend_fingerprint": "6014c9aae7939a3b",
+      "catalog_hash": "face03d34bf329b2",
+      "forbidden_bot_snapshot_files": []
+    },
+    "source-consistency": {
+      "file_count": 100,
+      "mismatches": []
+    },
+    "launchers-synthetic-lifecycle": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-_yyezbxb\\launchers-synthetic-lifecycle.log",
+      "observed": [
+        {
+          "launcher": "run_local_preview.py",
+          "assembled": true,
+          "timer_callback_fired": true,
+          "synthetic_server_wait_s": 1.37,
+          "catalog_status": 200,
+          "recipes": 5,
+          "version_status": 200,
+          "version_fingerprint": "6014c9aae7939a3b",
+          "auth_status": 200,
+          "pid_files_remaining_in_owned_run": 0,
+          "scope": "Real main, configuration, app, synthetic DB, timer callback and PID cleanup; OS serving boundary substituted, no listener started"
+        },
+        {
+          "launcher": "run_staging.py",
+          "assembled": true,
+          "timer_callback_fired": true,
+          "synthetic_server_wait_s": 1.15,
+          "catalog_status": 200,
+          "recipes": 5,
+          "version_status": 200,
+          "version_fingerprint": "6014c9aae7939a3b",
+          "auth_status": 200,
+          "pid_files_remaining_in_owned_run": 0,
+          "scope": "Real main, configuration, app, synthetic DB, timer callback and PID cleanup; OS serving boundary substituted, no listener started"
+        }
+      ]
+    }
+  }
+}

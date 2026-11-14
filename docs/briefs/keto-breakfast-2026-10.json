@@ -1,0 +1,53 @@
+{
+  "slug": "keto-breakfast",
+  "kicker": "кето · вне дома",
+  "cta": "гид по кафе в канале",
+  "out": "media/hooks/variants",
+  "platforms": [
+    "tiktok",
+    "reels",
+    "shorts",
+    "telegram",
+    "telegram_square"
+  ],
+  "variants": [
+    {
+      "name": "hook",
+      "scenes": 1
+    },
+    {
+      "name": "teaser",
+      "scenes": 2
+    },
+    {
+      "name": "full",
+      "scenes": 3
+    }
+  ],
+  "scenes": [
+    {
+      "clip": "media/flow/salmon_plate_01.mp4",
+      "t": 1.0,
+      "dur": 3.0,
+      "l1": "ЗАВТРАК В КАФЕ",
+      "l2": "БЕРИ ЯЙЦА И ЛОСОСЬ",
+      "kicker": "кето · выбор"
+    },
+    {
+      "clip": "media/flow/label_closeup_01.mp4",
+      "t": 1.5,
+      "dur": 3.0,
+      "l1": "СОУС И ЗАПРАВКА",
+      "l2": "ТАМ СКРЫТЫЙ САХАР",
+      "kicker": "кето · ловушки"
+    },
+    {
+      "clip": "media/flow/hands_slice_ripe_avocado_01.mp4",
+      "t": 0.8,
+      "dur": 3.0,
+      "l1": "ПРОСИ БЕЗ ТОСТА",
+      "l2": "ДОБАВЬ АВОКАДО",
+      "kicker": "кето · замена"
+    }
+  ]
+}

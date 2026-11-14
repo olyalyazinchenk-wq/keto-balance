@@ -10,6 +10,11 @@
 Хаб проекта в Notion: [KETO BALANCE — хаб проекта](https://app.notion.com/p/KETO-BALANCE-4058a9de1d41812a95a8da4b47ca7175)
 
 > **Актуальное состояние, проверки и открытые блокеры: [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md)** — читать первым, если вы агент или новый разработчик.
+>
+> 🧭 **Координация агентов и живой статус**:
+> - **[`docs/LIVE_STATUS.md`](docs/LIVE_STATUS.md)** — оперативная панель статуса: активные ветки, подтверждённые тесты, хеши сборки и порт показа.
+> - **[`docs/TEAMWORK.md`](docs/TEAMWORK.md)** — регламент многоагентной работы: правило «одного писателя», сохранение dirty tree, запреты на несогласованный git push.
+> - **[`docs/handoff/TEMPLATE.md`](docs/handoff/TEMPLATE.md)** — единый 5-компонентный шаблон отчёта о передаче работы.
 
 ## Ресурсы проекта (для любой модели и любого разработчика)
 
@@ -46,7 +51,7 @@ npm run dev            # http://localhost:5173
 
 # проверки
 npm run typecheck      # tsc --noEmit
-npm run test:unit      # node --test tests/frontend/*.test.cjs
+npm run test:unit      # node --test tests/frontend/*.test.cjs (193 теста, pass 193)
 npm run build          # production-сборка в dist/
 
 # бот (нужен .env, см. ниже)

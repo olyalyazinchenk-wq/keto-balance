@@ -1,0 +1,9 @@
+{"dist_dir":"C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\localappdata\\hermes\\cache\\scratch\\build-run-1793457021225-myad8u\\workspace\\dist","test_catalog_path":"C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\localappdata\\hermes\\cache\\scratch\\build-run-1793457021225-myad8u\\synthetic-test-catalog.json","receipt_path":"C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\localappdata\\hermes\\cache\\scratch\\build-run-1793457021225-myad8u\\build-receipt.json","source_manifest_path":"C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-f1-f4-review-gy8wanyk\\localappdata\\hermes\\cache\\scratch\\build-run-1793457021225-myad8u\\source-manifest.json","build_id":"e7d04da9d43a7f50","catalog_hash":"face03d34bf329b2","backend_fingerprint":"c94db25d7ba234c0"}
+
+[ISOLATED_BUILD] Scratch run root: C:\Users\HP\AppData\Local\hermes\cache\scratch\pilot-f1-f4-review-gy8wanyk\localappdata\hermes\cache\scratch\build-run-1793457021225-myad8u
+[BUILD_STEP] node scripts/validate-catalog.mjs
+[BUILD_STEP] node node_modules/typescript/bin/tsc --noEmit --incremental false --pretty false
+[BUILD_STEP] node node_modules/vite/bin/vite.js build --outDir dist
+[BUILD_STEP] node scripts/export-release-catalog.mjs
+[BUILD_STEP] node scripts/stamp-release.mjs
+[ISOLATED_BUILD] Success! Build ID: e7d04da9d43a7f50, Receipt: C:\Users\HP\AppData\Local\hermes\cache\scratch\pilot-f1-f4-review-gy8wanyk\localappdata\hermes\cache\scratch\build-run-1793457021225-myad8u\build-receipt.json

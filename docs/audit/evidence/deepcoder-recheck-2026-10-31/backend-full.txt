@@ -1,0 +1,234 @@
+============================================================
+  КЕТО БАЛАНС: LOCAL BROWSER PREVIEW FOR OLGA
+============================================================
+  Stage:          test (isolated demo auth)
+  Preview URL:    http://127.0.0.1:18081/?demo_user=1084557944
+  Owner ID:       1084557944
+  Auto-Shutdown:  10 seconds (1 hour)
+  Dist Dir:       C:\Users\HP\AppData\Local\hermes\cache\scratch\deepcoder-review-_yyezbxb\full-localappdata\hermes\cache\scratch\test-run-8a54a6e6\tmpr3peph2y (unversioned)
+  Catalog:        5 recipes (synthetic-pilot-v1)
+  Database:       C:\Users\HP\AppData\Local\hermes\cache\scratch\deepcoder-review-_yyezbxb\full-localappdata\hermes\cache\scratch\test-run-8a54a6e6\tmpr3peph2y\staging_test.db
+  PID File:       C:\Users\HP\AppData\Local\hermes\cache\scratch\deepcoder-review-_yyezbxb\full-localappdata\hermes\cache\scratch\test-run-8a54a6e6\tmpr3peph2y\preview.pid (PID 18124)
+============================================================
+
+👉 Откройте в браузере: http://127.0.0.1:18081/?demo_user=1084557944
+
+[PREVIEW] Server terminated cleanly.
+============================================================
+  КЕТО БАЛАНС: OWNER-ONLY STAGING SERVER
+============================================================
+  Stage:          staging
+  Host:           127.0.0.1
+  Port:           18082
+  Owner Allowlist:[1084557944] (non-owners will get HTTP 403)
+  Payments:       DISABLED
+  Demo Auth:      DISABLED
+  Auto-Shutdown:  10 seconds (1 hour)
+  Dist Dir:       C:\Users\HP\AppData\Local\hermes\cache\scratch\deepcoder-review-_yyezbxb\full-localappdata\hermes\cache\scratch\test-run-8a54a6e6\tmpr3peph2y (unversioned)
+  Catalog:        5 recipes (synthetic-pilot-v1)
+  Database:       C:\Users\HP\AppData\Local\hermes\cache\scratch\deepcoder-review-_yyezbxb\full-localappdata\hermes\cache\scratch\test-run-8a54a6e6\tmpr3peph2y\staging_test.db
+  PID File:       C:\Users\HP\AppData\Local\hermes\cache\scratch\deepcoder-review-_yyezbxb\full-localappdata\hermes\cache\scratch\test-run-8a54a6e6\tmpr3peph2y\staging.pid (PID 18124)
+============================================================
+[STAGING] Server terminated cleanly.
+============================================================
+  КЕТО БАЛАНС: OWNER-ONLY STAGING SERVER
+============================================================
+  Stage:          staging
+  Host:           127.0.0.1
+  Port:           18083
+  Owner Allowlist:[1084557944] (non-owners will get HTTP 403)
+  Payments:       DISABLED
+  Demo Auth:      DISABLED
+  Auto-Shutdown:  10 seconds (1 hour)
+  Dist Dir:       C:\Users\HP\AppData\Local\hermes\cache\scratch\deepcoder-review-_yyezbxb\full-localappdata\hermes\cache\scratch\test-run-8a54a6e6\tmpkc56scal (unversioned)
+  Catalog:        5 recipes (synthetic-pilot-v1)
+  Database:       C:\Users\HP\AppData\Local\hermes\cache\scratch\deepcoder-review-_yyezbxb\full-localappdata\hermes\cache\scratch\test-run-8a54a6e6\tmpkc56scal\staging_test.db
+  PID File:       C:\Users\HP\AppData\Local\hermes\cache\scratch\deepcoder-review-_yyezbxb\full-localappdata\hermes\cache\scratch\test-run-8a54a6e6\tmpkc56scal\staging.pid (PID 18124)
+============================================================
+[STAGING] Server terminated cleanly.
+BACKEND_RESULT tests=152 failures=0 errors=0 skipped=0
+
+C:\Users\HP\Keto-balance\.venv-p0\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+test_cascading_delete (tests.backend.test_app_db.TestAppDB.test_cascading_delete) ... ok
+test_session_token_stored_as_hash_only (tests.backend.test_app_db.TestAppDB.test_session_token_stored_as_hash_only) ... ok
+test_state_and_shopping_persistence (tests.backend.test_app_db.TestAppDB.test_state_and_shopping_persistence) ... ok
+test_support_ticket_creation (tests.backend.test_app_db.TestAppDB.test_support_ticket_creation) ... ok
+test_user_creation_and_isolation (tests.backend.test_app_db.TestAppDB.test_user_creation_and_isolation) ... ok
+test_wal_mode_enabled (tests.backend.test_app_db.TestAppDB.test_wal_mode_enabled) ... ok
+test_init_session_validation (tests.backend.test_app_models.TestAppModels.test_init_session_validation) ... ok
+test_pilot_preferences_strict_validation (tests.backend.test_app_models.TestAppModels.test_pilot_preferences_strict_validation) ... ok
+test_pilot_state_menu_and_selected_date_validation (tests.backend.test_app_models.TestAppModels.test_pilot_state_menu_and_selected_date_validation) ... ok
+test_pilot_user_write_revision_validation (tests.backend.test_app_models.TestAppModels.test_pilot_user_write_revision_validation) ... ok
+test_safety_check_response (tests.backend.test_app_models.TestAppModels.test_safety_check_response) ... ok
+test_shopping_payload (tests.backend.test_app_models.TestAppModels.test_shopping_payload) ... ok
+test_support_ticket_length_and_whitespace (tests.backend.test_app_models.TestAppModels.test_support_ticket_length_and_whitespace) ... ok
+test_user_profile_limits (tests.backend.test_app_models.TestAppModels.test_user_profile_limits) ... ok
+test_default_settings_invariants (tests.backend.test_app_settings.TestAppSettings.test_default_settings_invariants) ... ok
+test_pilot_recipe_ids_integrity (tests.backend.test_app_settings.TestAppSettings.test_pilot_recipe_ids_integrity) ... ok
+test_settings_singleton_and_override (tests.backend.test_app_settings.TestAppSettings.test_settings_singleton_and_override) ... ok
+test_empty_string_fails (tests.backend.test_auth.TestAuth.test_empty_string_fails) ... ok
+test_expired_auth_date_fails (tests.backend.test_auth.TestAuth.test_expired_auth_date_fails) ... ok
+test_missing_hash_fails (tests.backend.test_auth.TestAuth.test_missing_hash_fails) ... ok
+test_tampered_hash_fails (tests.backend.test_auth.TestAuth.test_tampered_hash_fails) ... ok
+test_valid_init_data_passes (tests.backend.test_auth.TestAuth.test_valid_init_data_passes) ... ok
+test_wrong_bot_token_fails (tests.backend.test_auth.TestAuth.test_wrong_bot_token_fails) ... ok
+test_backup_and_restore_cycle (tests.backend.test_backup_restore.TestBackupRestore.test_backup_and_restore_cycle) ... ok
+test_both_requests_use_same_explicit_proxy (tests.backend.test_bot_transport.TestBotTransport.test_both_requests_use_same_explicit_proxy) ... ok
+test_direct_mode_has_no_forced_local_proxy (tests.backend.test_bot_transport.TestBotTransport.test_direct_mode_has_no_forced_local_proxy) ... ok
+test_catalog_endpoint_returns_pilot_recipes (tests.backend.test_catalog_api.TestCatalogApi.test_catalog_endpoint_returns_pilot_recipes) ... ok
+test_catalog_recipe_data_structure (tests.backend.test_catalog_api.TestCatalogApi.test_catalog_recipe_data_structure) ... ok
+test_config_variables_exist_and_isolated (tests.backend.test_channel_nutritionist_isolation.TestChannelNutritionistIsolation.test_config_variables_exist_and_isolated)
+Verify all required variables exist independently in bot.config. ... ok
+test_env_example_documents_isolated_variables (tests.backend.test_channel_nutritionist_isolation.TestChannelNutritionistIsolation.test_env_example_documents_isolated_variables)
+Verify configuration documentation fixture documents each variable independently and warns against fallbacks. ... ok
+test_get_nutritionist_url_formats_valid_usernames (tests.backend.test_channel_nutritionist_isolation.TestChannelNutritionistIsolation.test_get_nutritionist_url_formats_valid_usernames)
+get_nutritionist_url properly formats usernames with or without @ and full URLs. ... ok
+test_no_fallback_to_channel_url_when_username_empty (tests.backend.test_channel_nutritionist_isolation.TestChannelNutritionistIsolation.test_no_fallback_to_channel_url_when_username_empty)
+When NUTRITIONIST_USERNAME is missing or empty, must return None, NEVER CHANNEL_URL. ... ok
+test_nutritionist_chat_id_validation (tests.backend.test_channel_nutritionist_isolation.TestChannelNutritionistIsolation.test_nutritionist_chat_id_validation)
+get_nutritionist_chat_id returns positive integer and never channel/group IDs (negative). ... ok
+test_cross_user_deletion_forbidden (tests.backend.test_data_rights.TestDataRights.test_cross_user_deletion_forbidden) ... ok
+test_delete_user_data (tests.backend.test_data_rights.TestDataRights.test_delete_user_data) ... ok
+test_export_user_data (tests.backend.test_data_rights.TestDataRights.test_export_user_data) ... ok
+test_get_db_connection_closed_after_exit (tests.backend.test_database.TestDatabase.test_get_db_connection_closed_after_exit) ... ok
+test_get_db_exception_rolls_back (tests.backend.test_database.TestDatabase.test_get_db_exception_rolls_back) ... ok
+test_temp_db_created_only_on_explicit_init_db (tests.backend.test_database.TestDatabase.test_temp_db_created_only_on_explicit_init_db) ... ok
+test_water_tracker_in_isolated_db (tests.backend.test_database.TestDatabase.test_water_tracker_in_isolated_db) ... ok
+test_import_with_keto_load_dotenv_zero_does_not_require_env (tests.backend.test_import_safety.TestImportSafety.test_import_with_keto_load_dotenv_zero_does_not_require_env)
+When KETO_LOAD_DOTENV=0, importing bot.config respects the flag. ... ok
+test_no_top_level_init_db_in_database_py (tests.backend.test_import_safety.TestImportSafety.test_no_top_level_init_db_in_database_py)
+AST check: bot/database.py must not call init_db() at top level. ... ok
+test_strict_import_safety_in_fresh_process (tests.backend.test_import_safety.TestImportSafety.test_strict_import_safety_in_fresh_process)
+Subprocess strictly records and forbids .env reads, SQLite connections, and network sockets during import. ... ok
+test_error_handler_does_not_log_exception_or_update (tests.backend.test_log_redaction.TestLogRedaction.test_error_handler_does_not_log_exception_or_update) ... ok
+test_post_init_does_not_log_exception (tests.backend.test_log_redaction.TestLogRedaction.test_post_init_does_not_log_exception) ... ok
+test_buy_callback_returns_disabled_notice (tests.backend.test_payment_callbacks.TestPaymentCallbacks.test_buy_callback_returns_disabled_notice) ... ok
+test_confirm_demo_callback_returns_disabled_notice (tests.backend.test_payment_callbacks.TestPaymentCallbacks.test_confirm_demo_callback_returns_disabled_notice) ... ok
+test_plateau_keyboard_has_no_buy_button (tests.backend.test_payment_callbacks.TestPaymentCallbacks.test_plateau_keyboard_has_no_buy_button) ... ok
+test_tariffs_keyboard_has_no_buy_buttons (tests.backend.test_payment_callbacks.TestPaymentCallbacks.test_tariffs_keyboard_has_no_buy_buttons) ... ok
+test_complete_demo_payment_raises_runtime_error (tests.backend.test_payments_disabled.TestPaymentsDisabled.test_complete_demo_payment_raises_runtime_error) ... ok
+test_init_purchase_raises_runtime_error (tests.backend.test_payments_disabled.TestPaymentsDisabled.test_init_purchase_raises_runtime_error) ... ok
+test_no_database_import_in_payments_module (tests.backend.test_payments_disabled.TestPaymentsDisabled.test_no_database_import_in_payments_module)
+payments.py should not import create_order or mark_order_paid from database. ... ok
+test_both_claimed_ids_must_match_verified_session (tests.backend.test_pilot_auth_regressions.TestPilotAuthRegressions.test_both_claimed_ids_must_match_verified_session) ... ok
+test_malformed_authorization_does_not_fall_back_to_guest (tests.backend.test_pilot_auth_regressions.TestPilotAuthRegressions.test_malformed_authorization_does_not_fall_back_to_guest) ... ok
+test_missing_signing_key_does_not_enable_guest (tests.backend.test_pilot_auth_regressions.TestPilotAuthRegressions.test_missing_signing_key_does_not_enable_guest) ... ok
+test_unsigned_magic_strings_never_create_sessions (tests.backend.test_pilot_auth_regressions.TestPilotAuthRegressions.test_unsigned_magic_strings_never_create_sessions) ... ok
+test_unverified_identity_never_authorizes_personal_routes (tests.backend.test_pilot_auth_regressions.TestPilotAuthRegressions.test_unverified_identity_never_authorizes_personal_routes) ... ok
+test_valid_signed_name_containing_mock_is_not_a_bypass_or_rejected (tests.backend.test_pilot_auth_regressions.TestPilotAuthRegressions.test_valid_signed_name_containing_mock_is_not_a_bypass_or_rejected) ... ok
+test_env_and_temp_vars_point_to_scratch (tests.backend.test_pilot_harness.TestPilotHarness.test_env_and_temp_vars_point_to_scratch) ... ok
+test_guard_allows_file_inside_scratch (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_allows_file_inside_scratch) ... ok
+test_guard_allows_stdlib_socketpair_self_pipe (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_allows_stdlib_socketpair_self_pipe) ... ok
+test_guard_blocks_application_bind_and_connect (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_blocks_application_bind_and_connect) ... ok
+test_guard_blocks_external_network (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_blocks_external_network) ... ok
+test_guard_blocks_sqlite_outside_scratch (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_blocks_sqlite_outside_scratch) ... ok
+test_guard_blocks_sqlite_without_extension_outside_scratch (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_blocks_sqlite_without_extension_outside_scratch) ... ok
+test_guard_blocks_unauthorized_bot_data_read (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_blocks_unauthorized_bot_data_read) ... ok
+test_guard_blocks_unauthorized_env_read (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_blocks_unauthorized_env_read) ... ok
+test_guard_blocks_unauthorized_env_variants (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_blocks_unauthorized_env_variants) ... ok
+test_guard_blocks_unauthorized_loopback_connection (tests.backend.test_pilot_harness.TestPilotHarness.test_guard_blocks_unauthorized_loopback_connection) ... ok
+test_concurrent_cas_prevents_lost_update (tests.backend.test_pilot_roundtrip.TestPilotRoundtrip.test_concurrent_cas_prevents_lost_update) ... ok
+test_explicit_null_profile_clears_profile (tests.backend.test_pilot_roundtrip.TestPilotRoundtrip.test_explicit_null_profile_clears_profile) ... ok
+test_menu_and_state_deep_equal_roundtrip (tests.backend.test_pilot_roundtrip.TestPilotRoundtrip.test_menu_and_state_deep_equal_roundtrip) ... ok
+test_missing_required_fields_rejected_by_model (tests.backend.test_pilot_roundtrip.TestPilotRoundtrip.test_missing_required_fields_rejected_by_model) ... ok
+test_cancel_group_length_and_attachment (tests.backend.test_private_support.TestPrivateSupport.test_cancel_group_length_and_attachment) ... ok
+test_channel_and_forbidden_fail_closed (tests.backend.test_private_support.TestPrivateSupport.test_channel_and_forbidden_fail_closed) ... ok
+test_reply_authorization_and_plain_text (tests.backend.test_private_support.TestPrivateSupport.test_reply_authorization_and_plain_text) ... ok
+test_success_only_to_private_owner_plain_text (tests.backend.test_private_support.TestPrivateSupport.test_success_only_to_private_owner_plain_text) ... ok
+test_timeout_distinguishes_before_and_after_send (tests.backend.test_private_support.TestPrivateSupport.test_timeout_distinguishes_before_and_after_send) ... ok
+test_invalid_origins_rejected_before_read (tests.backend.test_probe_entry.TestProbeEntry.test_invalid_origins_rejected_before_read) ... ok
+test_invalid_responses_rejected (tests.backend.test_probe_entry.TestProbeEntry.test_invalid_responses_rejected) ... ok
+test_real_shape_passes (tests.backend.test_probe_entry.TestProbeEntry.test_real_shape_passes) ... ok
+test_wrong_build_rejected (tests.backend.test_probe_entry.TestProbeEntry.test_wrong_build_rejected) ... ok
+test_each_suite_is_run_separately (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_each_suite_is_run_separately) ... ok
+test_failed_synthetic_child_blocks (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_failed_synthetic_child_blocks) ... ok
+test_k1_does_not_require_deferred_private_features (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_k1_does_not_require_deferred_private_features) ... ok
+test_k2_requires_identity_and_user_isolation (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_k2_requires_identity_and_user_isolation) ... ok
+test_k3_requires_refund_and_billing (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_k3_requires_refund_and_billing) ... ok
+test_missing_required_suite_blocks (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_missing_required_suite_blocks) ... ok
+test_zero_or_skipped_suite_is_not_success (tests.backend.test_product_gate_policy.ProductGatePolicyTests.test_zero_or_skipped_suite_is_not_success) ... ok
+test_approved_pilot_recipes_are_accessible (tests.backend.test_release_boundaries.TestReleaseBoundaries.test_approved_pilot_recipes_are_accessible) ... ok
+test_fail_closed_empty_manifest_blocks_all (tests.backend.test_release_boundaries.TestReleaseBoundaries.test_fail_closed_empty_manifest_blocks_all) ... ok
+test_unreleased_recipes_are_blocked_with_404 (tests.backend.test_release_boundaries.TestReleaseBoundaries.test_unreleased_recipes_are_blocked_with_404) ... ok
+test_backend_fingerprint_matches_in_process_computation (tests.backend.test_release_version.TestReleaseVersion.test_backend_fingerprint_matches_in_process_computation) ... ok
+test_hashed_assets_have_immutable_cache_control (tests.backend.test_release_version.TestReleaseVersion.test_hashed_assets_have_immutable_cache_control) ... ok
+test_index_html_has_no_store_cache_control (tests.backend.test_release_version.TestReleaseVersion.test_index_html_has_no_store_cache_control) ... ok
+test_sources_and_secrets_are_never_exposed (tests.backend.test_release_version.TestReleaseVersion.test_sources_and_secrets_are_never_exposed) ... ok
+test_unknown_api_endpoints_remain_404 (tests.backend.test_release_version.TestReleaseVersion.test_unknown_api_endpoints_remain_404) ... ok
+test_version_endpoint_returns_503_when_release_json_missing (tests.backend.test_release_version.TestReleaseVersion.test_version_endpoint_returns_503_when_release_json_missing) ... ok
+test_version_endpoint_returns_release_metadata_and_no_store (tests.backend.test_release_version.TestReleaseVersion.test_version_endpoint_returns_release_metadata_and_no_store) ... ok
+test_detect_explicit_emergency_symptoms (tests.backend.test_safety.TestEmergencySafetyProtocol.test_detect_explicit_emergency_symptoms)
+Явные экстренные симптомы должны надежно детектироваться. ... ok
+test_detect_mixed_queries_with_diet_context (tests.backend.test_safety.TestEmergencySafetyProtocol.test_detect_mixed_queries_with_diet_context)
+Смешанный запрос (диета + симптом) обязан активировать протокол безопасности. ... ok
+test_negation_context_does_not_trigger_emergency (tests.backend.test_safety.TestEmergencySafetyProtocol.test_negation_context_does_not_trigger_emergency)
+Явное отрицание симптома не должно вызывать ложный emergency trigger. ... ok
+test_safe_queries_do_not_trigger_false_positives (tests.backend.test_safety.TestEmergencySafetyProtocol.test_safe_queries_do_not_trigger_false_positives)
+Обычные запросы о питании и рецептах не должны вызывать ложных срабатываний. ... ok
+test_safety_guard_activates_and_persists_hold (tests.backend.test_safety.TestEmergencySafetyProtocol.test_safety_guard_activates_and_persists_hold)
+Safety guard активирует safety_hold и блокирует последующие запросы до явного сброса. ... ok
+test_complete_demo_payment_unconditionally_raises_runtime_error (tests.backend.test_safety.TestPremiumInvariance.test_complete_demo_payment_unconditionally_raises_runtime_error)
+Попытка вызова complete_demo_payment безусловно выбрасывает RuntimeError. ... ok
+test_init_purchase_unconditionally_raises_runtime_error (tests.backend.test_safety.TestPremiumInvariance.test_init_purchase_unconditionally_raises_runtime_error)
+Попытка вызова init_purchase безусловно выбрасывает RuntimeError. ... ok
+test_payment_mode_is_strictly_disabled (tests.backend.test_safety.TestPremiumInvariance.test_payment_mode_is_strictly_disabled)
+Режим платежей должен быть strictly disabled в P0. ... ok
+test_contraindication_blocks_high_risk (tests.backend.test_safety_routing.TestSafetyRouting.test_contraindication_blocks_high_risk) ... ok
+test_emergency_symptoms_trigger_hold (tests.backend.test_safety_routing.TestSafetyRouting.test_emergency_symptoms_trigger_hold) ... ok
+test_negated_symptoms_do_not_trigger_hold (tests.backend.test_safety_routing.TestSafetyRouting.test_negated_symptoms_do_not_trigger_hold) ... ok
+test_safe_profiles_pass (tests.backend.test_safety_routing.TestSafetyRouting.test_safe_profiles_pass) ... ok
+test_assets_routes_never_fallback_to_spa (tests.backend.test_server_security.TestServerSecurity.test_assets_routes_never_fallback_to_spa)
+P04: /assets, /assets/, and missing assets under /assets/* must return 404, never index.html. ... ok
+test_missing_build_returns_503 (tests.backend.test_server_security.TestServerSecurity.test_missing_build_returns_503)
+P04: Missing build (empty or missing dist directory) returns 503 on SPA routes. ... ok
+test_path_traversal_is_blocked_with_synthetic_marker (tests.backend.test_server_security.TestServerSecurity.test_path_traversal_is_blocked_with_synthetic_marker)
+P04: Requests attempting path traversal must return 403 or 404, never files outside dist_dir. ... ok
+test_server_binds_to_localhost_only (tests.backend.test_server_security.TestServerSecurity.test_server_binds_to_localhost_only)
+P04: main() must configure host='127.0.0.1'. ... ok
+test_server_py_has_no_mark_order_paid_import (tests.backend.test_server_security.TestServerSecurity.test_server_py_has_no_mark_order_paid_import)
+P04: bot/server.py must not import or call mark_order_paid. ... ok
+test_unknown_api_endpoints_return_404 (tests.backend.test_server_security.TestServerSecurity.test_unknown_api_endpoints_return_404)
+P04: Unknown API endpoints (/api, /api/, /api/x) must return 404, never falling back to SPA. ... ok
+test_webhook_returns_503_without_db_interaction (tests.backend.test_server_security.TestServerSecurity.test_webhook_returns_503_without_db_interaction)
+P04: Webhook must return 503 Service Unavailable and never modify the database. ... ok
+test_create_session_with_invalid_init_data_fails (tests.backend.test_session_api.TestSessionApi.test_create_session_with_invalid_init_data_fails) ... ok
+test_create_session_with_valid_init_data (tests.backend.test_session_api.TestSessionApi.test_create_session_with_valid_init_data) ... ok
+test_get_session_missing_or_invalid_bearer_token (tests.backend.test_session_api.TestSessionApi.test_get_session_missing_or_invalid_bearer_token) ... ok
+test_demo_session_endpoint_active_only_when_allowed_in_test_stage (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_demo_session_endpoint_active_only_when_allowed_in_test_stage) ... ok
+test_get_user_marks_shopping_stale_when_menu_contains_revoked_recipe (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_get_user_marks_shopping_stale_when_menu_contains_revoked_recipe) ... ok
+test_launcher_main_entrypoints_execute_cleanly (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_launcher_main_entrypoints_execute_cleanly) ... ok
+test_partial_save_marks_shopping_stale (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_partial_save_marks_shopping_stale) ... ok
+test_partial_save_marks_shopping_stale_when_items_empty (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_partial_save_marks_shopping_stale_when_items_empty) ... ok
+test_preview_launcher_refuses_non_loopback_host (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_preview_launcher_refuses_non_loopback_host) ... [ERROR] Non-loopback host '0.0.0.0' is forbidden for preview demo. Must bind to 127.0.0.1.
+ok
+test_session_ttl_uses_session_max_lifetime_seconds (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_session_ttl_uses_session_max_lifetime_seconds) ... ok
+test_staging_launcher_attaches_demo_catalog_when_unspecified (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_staging_launcher_attaches_demo_catalog_when_unspecified) ... ok
+test_staging_owner_allowed_and_non_owner_forbidden (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_staging_owner_allowed_and_non_owner_forbidden) ... ok
+test_staging_owner_allowlist_enforced_on_bearer_token (tests.backend.test_staging_and_demo.TestStagingAndDemo.test_staging_owner_allowlist_enforced_on_bearer_token) ... ok
+test_submit_empty_or_whitespace_message_fails (tests.backend.test_support.TestSupport.test_submit_empty_or_whitespace_message_fails) ... ok
+test_submit_valid_support_ticket (tests.backend.test_support.TestSupport.test_submit_valid_support_ticket) ... ok
+test_unauthenticated_support_submission_fails (tests.backend.test_support.TestSupport.test_unauthenticated_support_submission_fails) ... ok
+test_cancel_callback_clears_real_flow (tests.backend.test_support_integration.TestSupportIntegration.test_cancel_callback_clears_real_flow) ... ok
+test_command_prehandler_cancels_pending (tests.backend.test_support_integration.TestSupportIntegration.test_command_prehandler_cancels_pending) ... ok
+test_keyboard_navigation_cancels_instead_of_sending (tests.backend.test_support_integration.TestSupportIntegration.test_keyboard_navigation_cancels_instead_of_sending) ... ok
+test_numeric_question_precedes_calculation (tests.backend.test_support_integration.TestSupportIntegration.test_numeric_question_precedes_calculation) ... ok
+test_other_callback_cancels_pending (tests.backend.test_support_integration.TestSupportIntegration.test_other_callback_cancels_pending) ... ok
+test_real_reply_rejects_unrelated_target (tests.backend.test_support_integration.TestSupportIntegration.test_real_reply_rejects_unrelated_target) ... ok
+test_start_question_has_no_implicit_consent_or_db_write (tests.backend.test_support_integration.TestSupportIntegration.test_start_question_has_no_implicit_consent_or_db_write) ... ok
+test_shopping_state_isolation_and_cas (tests.backend.test_user_api.TestUserApi.test_shopping_state_isolation_and_cas) ... ok
+test_user_isolation_cross_access_blocked (tests.backend.test_user_api.TestUserApi.test_user_isolation_cross_access_blocked) ... ok
+test_user_profile_and_state_roundtrip (tests.backend.test_user_api.TestUserApi.test_user_profile_and_state_roundtrip) ... ok
+test_e2e_zero_selection_blocks (tests.backend.test_verify_script.TestVerifyP0Script.test_e2e_zero_selection_blocks) ... ok
+test_empty_and_skipped_collections_block (tests.backend.test_verify_script.TestVerifyP0Script.test_empty_and_skipped_collections_block) ... ok
+test_missing_e2e_script_blocks (tests.backend.test_verify_script.TestVerifyP0Script.test_missing_e2e_script_blocks) ... ok
+test_missing_suite_blocks_before_process (tests.backend.test_verify_script.TestVerifyP0Script.test_missing_suite_blocks_before_process) ... ok
+test_nonzero_child_blocks (tests.backend.test_verify_script.TestVerifyP0Script.test_nonzero_child_blocks) ... ok
+test_policy_does_not_invoke_real_runner (tests.backend.test_verify_script.TestVerifyP0Script.test_policy_does_not_invoke_real_runner) ... ok
+test_run_step_strips_inherited_pythonpath (tests.backend.test_verify_script.TestVerifyP0Script.test_run_step_strips_inherited_pythonpath) ... ok
+test_unknown_stage_is_not_success (tests.backend.test_verify_script.TestVerifyP0Script.test_unknown_stage_is_not_success) ... ok
+
+----------------------------------------------------------------------
+Ran 152 tests in 10.633s
+
+OK

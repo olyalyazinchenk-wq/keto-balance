@@ -1,0 +1,31 @@
+# ==============================================================================
+# Caddy Configuration with Automatic HTTPS and Telegram Security Headers
+# ==============================================================================
+
+{$WEBAPP_DOMAIN} {
+    encode zstd gzip
+
+    # Telegram Mini App Security Headers
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "ALLOW-FROM https://web.telegram.org/"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:;"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    }
+
+    # Long-term immutable caching for hashed static assets
+    @assets path /assets/*
+    header @assets Cache-Control "public, max-age=31536000, immutable"
+
+    # Always revalidate index and release metadata
+    @revalidate path / /index.html /release.json
+    header @revalidate Cache-Control "no-store, no-cache, must-revalidate"
+
+    reverse_proxy web:8000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

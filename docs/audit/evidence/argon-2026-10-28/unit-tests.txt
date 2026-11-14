@@ -1,0 +1,63 @@
+Scope: adapted offline audit harness; not native npm test, typecheck, build, HTTP or Telegram.
+Snapshot: 957aa34aa6519ff522bffe898a549224b061d54c
+Command: node --test-reporter=tap docs/audit/evidence/argon-2026-10-28/run-unit-audit.cjs C:\Users\HP\AppData\Local\hermes\cache\scratch\argon-review-2026-10-28
+Exit: 0
+
+TAP version 13
+# Subtest: calculateNetCarbs subtracts fiber and never returns negative
+ok 1 - calculateNetCarbs subtracts fiber and never returns negative
+  ---
+  duration_ms: 2.3237
+  type: 'test'
+  ...
+# Subtest: calculateMealMacros scales per-100g macros accurately by portion weight
+ok 2 - calculateMealMacros scales per-100g macros accurately by portion weight
+  ---
+  duration_ms: 0.3356
+  type: 'test'
+  ...
+# Subtest: summarizeDailyTotals aggregates macros and classifies ketosis corridor
+ok 3 - summarizeDailyTotals aggregates macros and classifies ketosis corridor
+  ---
+  duration_ms: 6.3986
+  type: 'test'
+  ...
+# Subtest: calculateKetoTargets computes Mifflin-St Jeor keto split within bounds
+ok 4 - calculateKetoTargets computes Mifflin-St Jeor keto split within bounds
+  ---
+  duration_ms: 0.5284
+  type: 'test'
+  ...
+# Subtest: calculateGKI classifies glucose ketone index accurately
+ok 5 - calculateGKI classifies glucose ketone index accurately
+  ---
+  duration_ms: 1.3273
+  type: 'test'
+  ...
+# Subtest: calculateFastingProgress identifies autophagy stage after 16 hours
+ok 6 - calculateFastingProgress identifies autophagy stage after 16 hours
+  ---
+  duration_ms: 0.5617
+  type: 'test'
+  ...
+# Subtest: formatTelegramSummary and formatTelegramShoppingList produce structured text
+ok 7 - formatTelegramSummary and formatTelegramShoppingList produce structured text
+  ---
+  duration_ms: 0.3714
+  type: 'test'
+  ...
+# Subtest: Telegram Mini App helpers parse startapp params and build valid t.me links
+ok 8 - Telegram Mini App helpers parse startapp params and build valid t.me links
+  ---
+  duration_ms: 2.2646
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 34.51

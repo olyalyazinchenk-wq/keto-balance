@@ -1,0 +1,18 @@
+{
+  "current-helper": {
+    "exit_code": 0,
+    "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-51tfowfr\\current-helper.log"
+  },
+  "current-r1-backend": {
+    "exit_code": 0,
+    "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-51tfowfr\\current-r1-backend.log"
+  },
+  "current-ui": {
+    "exit_code": 0,
+    "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-51tfowfr\\current-ui.log"
+  },
+  "current-r2-real-backend": {
+    "exit_code": 0,
+    "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-51tfowfr\\current-r2-real-backend.log"
+  }
+}

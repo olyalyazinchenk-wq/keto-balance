@@ -1,0 +1,23 @@
+{
+  "exit_code": 0,
+  "scope": "Synthetic policy-boundary simulations and source-plan inspection only. No actual socket bind/connect, no forbidden file reads.",
+  "observed": {
+    "socket_policy_simulation_only": {
+      "arbitrary_application_bind_registers_port": true,
+      "non_stdlib_connect_boundary_reached": true
+    },
+    "paths_allowed_outside_run_root_simulation": {
+      ".env": false,
+      ".env.example": false,
+      ".ENV.example": true,
+      "sample.db": false,
+      "SAMPLE.DB": true
+    },
+    "k2_backend_plan": {
+      "module_count": 24,
+      "source_test_method_count_not_execution": 110,
+      "contains_staging_and_demo": false,
+      "contains_release_version": false
+    }
+  }
+}

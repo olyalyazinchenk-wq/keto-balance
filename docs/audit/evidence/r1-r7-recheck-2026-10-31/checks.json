@@ -1,0 +1,82 @@
+{
+  "scope": "R1-R7 recheck: native frontend, targeted backend under outer IO guard, independent isolated build in owned LOCALAPPDATA, in-process version probe; no live server/Telegram/tunnel, no real DB/env reads",
+  "results": {
+    "frontend": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\frontend.log",
+      "tests": 180,
+      "pass": 180,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "todo": 0,
+      "file_count": 25
+    },
+    "backend-targeted": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\backend-targeted.log",
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "guard-policy-probe": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\guard-policy-probe.log",
+      "observed": {
+        "paths_allowed_outside_root": {
+          ".env": false,
+          ".env.staging": false,
+          ".env.example": true,
+          "sample.db": false
+        },
+        "runner_exit_when_guard_installation_failed": 1
+      }
+    },
+    "nested-content-hash-probe": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\nested-content-hash-probe.log",
+      "observed": {
+        "nested_ingredient_changed": true,
+        "hash_unchanged": false
+      }
+    },
+    "runbook-cli-probe": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\runbook-cli-probe.log",
+      "help_describes_paths": true
+    },
+    "typecheck": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\typecheck.log"
+    },
+    "isolated-build": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\isolated-build.log",
+      "paths": {
+        "dist_dir": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\localappdata\\hermes\\cache\\scratch\\build-run-1793452943468-0948ym\\workspace\\dist",
+        "test_catalog_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\localappdata\\hermes\\cache\\scratch\\build-run-1793452943468-0948ym\\synthetic-test-catalog.json",
+        "receipt_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\localappdata\\hermes\\cache\\scratch\\build-run-1793452943468-0948ym\\build-receipt.json",
+        "source_manifest_path": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\localappdata\\hermes\\cache\\scratch\\build-run-1793452943468-0948ym\\source-manifest.json",
+        "build_id": "ab8b527aa26fba7f",
+        "catalog_hash": "face03d34bf329b2",
+        "backend_fingerprint": "56991253d8ffe96a"
+      },
+      "build_id": "ab8b527aa26fba7f",
+      "backend_fingerprint": "56991253d8ffe96a",
+      "catalog_hash": "face03d34bf329b2",
+      "forbidden_backend_files": [],
+      "manifest_entries": 98
+    },
+    "version-identity": {
+      "exit_code": 0,
+      "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\pilot-r1r7-recheck-40migkri\\version-identity.log",
+      "observed": {
+        "status_code": 200,
+        "expected_manifest_backend_fingerprint": "56991253d8ffe96a",
+        "actual_api_backend_fingerprint": "a607f3bd5622c5a6",
+        "match": false
+      }
+    }
+  }
+}

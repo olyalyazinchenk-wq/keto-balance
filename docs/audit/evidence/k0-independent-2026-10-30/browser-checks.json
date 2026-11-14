@@ -1,0 +1,38 @@
+{
+  "scope": "Isolated offline file fixture with exact built JS/CSS; synthetic data; network blocked; not HTTP preview/Telegram",
+  "day2_clicked": "День 2 · Простые домашние блюда57 мин у плиты",
+  "day_after_reload": "2",
+  "selected_after_reload": [
+    "День 2 · Простые домашние блюда57 мин у плиты"
+  ],
+  "same_menu_payload": true,
+  "same_shopping_payload": true,
+  "same_visible_cards": true,
+  "same_reopened_recipe": true,
+  "recipe": "Нежный творожный скрэмбл со сливочным маслом и зелёным луком",
+  "invalid999_fallback": "1",
+  "fallback_preserves_menu_and_shopping": true,
+  "journey": [
+    {
+      "route": "today",
+      "scrollWidth": 305,
+      "clientWidth": 305
+    },
+    {
+      "route": "menu",
+      "scrollWidth": 305,
+      "clientWidth": 305
+    },
+    {
+      "route": "recipe",
+      "scrollWidth": 305,
+      "clientWidth": 305
+    },
+    {
+      "route": "shopping",
+      "scrollWidth": 305,
+      "clientWidth": 305
+    }
+  ],
+  "uncaught_errors": []
+}

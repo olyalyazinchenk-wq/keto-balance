@@ -1,0 +1,77 @@
+{
+  "build_id": "661a8799ae54a838",
+  "native_backend": {
+    "exit_code": 0,
+    "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-zh1u79_d\\backend-full.log",
+    "scope": "Real full backend unittest discovery; outer Python IO audit guard also injected into reviewed Python -c child probes. No serving process, real DB/env/participant data or application network.",
+    "tests": 154,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "native_frontend": {
+    "exit_code": 0,
+    "log": "C:\\Users\\HP\\AppData\\Local\\hermes\\cache\\scratch\\deepcoder-review-zh1u79_d\\frontend.log",
+    "tests": 186,
+    "pass": 186,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0,
+    "file_count": 25
+  },
+  "typecheck_exit": 0,
+  "build_exit": 0,
+  "source_file_count": 100,
+  "source_mismatches": [],
+  "addressed_scope": "R1-R3 only; diagnostic assertions distinct from native test totals",
+  "checks": [
+    {
+      "name": "R1/three_day_correct_x1",
+      "passed": false
+    },
+    {
+      "name": "R1/three_day_correct_x2",
+      "passed": false
+    },
+    {
+      "name": "R1/one_day_correct",
+      "passed": true
+    },
+    {
+      "name": "R1/three_day_menu_one_day_quantities",
+      "passed": false
+    },
+    {
+      "name": "R1/one_day_missing_ingredient",
+      "passed": false
+    },
+    {
+      "name": "R1/normalized_unit_correct",
+      "passed": false
+    },
+    {
+      "name": "R1/wrong_unit_same_raw_number",
+      "passed": false
+    },
+    {
+      "name": "R2/custom_item_during_refresh",
+      "passed": true
+    },
+    {
+      "name": "R2/queued_checkbox_edits",
+      "passed": false
+    },
+    {
+      "name": "R3/nonzero_revision_bootstrap_repair",
+      "passed": true
+    }
+  ],
+  "targeted_passed": 3,
+  "targeted_failed": 7,
+  "targeted_total": 10,
+  "acceptance_exit_code": 1,
+  "native_e2e_and_whole_k2_gate": "not rerun by reviewer",
+  "operational_preview": "not launched; launcher serving boundary stubbed",
+  "safety": "Owned synthetic DB/fixtures, isolated browser routes; no real participant files, Telegram/bot/payment/external AI or application listener; no product edits/commit/push/deploy"
+}
