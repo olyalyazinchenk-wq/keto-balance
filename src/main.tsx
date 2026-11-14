@@ -38,6 +38,11 @@ async function loadTelegramSDK() {
     };
 
     const onScriptError = () => {
+      // If local load failed, try official CDN before falling back
+      if (!script.src.includes('telegram.org')) {
+        script.src = 'https://telegram.org/js/telegram-web-app.js';
+        return;
+      }
       if (fallbackTimer !== null) {
         window.clearTimeout(fallbackTimer);
         fallbackTimer = null;
@@ -48,7 +53,7 @@ async function loadTelegramSDK() {
     };
 
     script.async = true;
-    script.src = 'https://telegram.org/js/telegram-web-app.js';
+    script.src = '/telegram-web-app.js';
     script.onload = onScriptLoaded;
     script.onerror = onScriptError;
     document.head.appendChild(script);

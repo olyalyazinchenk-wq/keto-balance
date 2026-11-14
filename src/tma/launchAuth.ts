@@ -23,10 +23,27 @@ export function resolveTelegramLaunchAuth(
 ): TelegramLaunchAuth {
   const query = new URLSearchParams(search.replace(/^\?/, ''));
   const fragment = fragmentParams(hash);
+
+  let sessionInitData: string | null = null;
+  try {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      const rawStored = window.sessionStorage.getItem('__telegram__initParams');
+      if (rawStored) {
+        const parsed = JSON.parse(rawStored);
+        if (parsed && typeof parsed.tgWebAppData === 'string' && parsed.tgWebAppData.trim()) {
+          sessionInitData = parsed.tgWebAppData.trim();
+        }
+      }
+    }
+  } catch {
+    // Ignore storage errors
+  }
+
   const sources = [
     telegramInitData,
     fragment.get('tgWebAppData'),
     query.get('tgWebAppData'),
+    sessionInitData,
     query.get('init_data'),
   ];
   const found = sources.find((value): value is string =>

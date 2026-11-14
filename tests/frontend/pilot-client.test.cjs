@@ -211,4 +211,14 @@ test('KetoClient Unit Tests', async (t) => {
       return true;
     });
   });
+
+  await t.test('pilot app mount guards against premature unauthenticated listCatalogs', async () => {
+    const fs = require('node:fs');
+    const pilotSource = fs.readFileSync(path.join(ROOT, 'src/PilotApp.tsx'), 'utf8');
+    assert.match(
+      pilotSource,
+      /if\s*\(!sessionToken\s*&&\s*!client\.getToken\(\)\)\s*return;/,
+      'PilotApp must guard refreshCatalogRegistry from running before session is established'
+    );
+  });
 });

@@ -74,3 +74,50 @@ test('URL query tgWebAppData is supported and trimmed', () => {
   );
   assert.deepEqual(result, { initData: raw, demoUserId: null });
 });
+
+test('sessionStorage restores tgWebAppData after page reload in Telegram WebView', () => {
+  const raw = 'user=%7B%22id%22%3A1084557944%7D&auth_date=1730000000&hash=session-restored-hash';
+  const originalWindow = global.window;
+  try {
+    const storage = new Map();
+    storage.set('__telegram__initParams', JSON.stringify({ tgWebAppData: raw }));
+    global.window = {
+      sessionStorage: {
+        getItem: (k) => storage.get(k) || null,
+        setItem: (k, v) => storage.set(k, v),
+      },
+    };
+
+    // When hash and query are stripped upon reload, sessionStorage restores initData
+    const result = resolveTelegramLaunchAuth(undefined, '', '');
+    assert.deepEqual(result, { initData: raw, demoUserId: null });
+  } finally {
+    global.window = originalWindow;
+  }
+});
+
+test('sessionStorage handles invalid JSON or empty params safely without throwing', () => {
+  const originalWindow = global.window;
+  try {
+    global.window = {
+      sessionStorage: {
+        getItem: () => 'invalid-json{{{',
+      },
+    };
+    const result = resolveTelegramLaunchAuth(undefined, '', '');
+    assert.deepEqual(result, { initData: '', demoUserId: null });
+  } finally {
+    global.window = originalWindow;
+  }
+});
+
+test('local telegram SDK asset exists and main.tsx loads /telegram-web-app.js with CDN fallback', () => {
+  assert.ok(fs.existsSync('public/telegram-web-app.js'), 'public/telegram-web-app.js must exist');
+  const stat = fs.statSync('public/telegram-web-app.js');
+  assert.ok(stat.size > 50000, 'public/telegram-web-app.js must be a valid bundle (>50KB)');
+
+  const mainSource = fs.readFileSync('src/main.tsx', 'utf8');
+  assert.match(mainSource, /script\.src\s*=\s*'\/telegram-web-app\.js'/, 'main.tsx must load local /telegram-web-app.js');
+  assert.match(mainSource, /https:\/\/telegram\.org\/js\/telegram-web-app\.js/, 'main.tsx must have CDN fallback');
+});
+

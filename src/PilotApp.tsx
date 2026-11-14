@@ -184,6 +184,7 @@ export default function PilotApp() {
   }, [client]);
 
   useEffect(() => {
+    if (!sessionToken && !client.getToken()) return;
     void refreshCatalogRegistry();
   }, [client, sessionToken, userId, refreshCatalogRegistry]);
 
