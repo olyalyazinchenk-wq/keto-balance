@@ -222,7 +222,7 @@ export function formatAppliedConditionsSummary(
 ): string {
   const approachLabel =
     settings.approach === 'carnivore'
-      ? 'Карнивор'
+      ? 'Сохранённый рацион'
       : settings.approach === 'explore'
       ? 'Ознакомление (пример)'
       : 'Кето';

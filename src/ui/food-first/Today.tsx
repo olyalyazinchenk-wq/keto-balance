@@ -67,10 +67,10 @@ export function FoodToday({
       {/* 1. Вводный блок ценности на месяц */}
       <header className="ff-today__heading">
         <div className="ff-hero" data-testid="home-hero-banner">
-          <span className="ff-hero__tag">Персональное питание на месяц</span>
-          <h1>Питание на месяц без ежедневного поиска рецептов</h1>
+          <span className="ff-hero__tag">Кето-меню на месяц</span>
+          <h1>Кето-питание без ежедневного поиска рецептов</h1>
           <p className="ff-hero__desc">
-            Выберите подход, получите блюда по дням, меняйте их под себя и собирайте покупки на удобный период.
+            Укажите предпочтения, получите кето-блюда по дням, меняйте их под себя и собирайте покупки на удобный период.
           </p>
           <button
             type="button"
@@ -237,16 +237,16 @@ export function FoodToday({
         </div>
       </section>
 
-      {/* 4. Знакомство с кето и карнивором */}
-      <section className="ff-approaches" aria-label="Знакомство с кето и карнивором" data-testid="approaches-section">
+      {/* 4. Знакомство с кето */}
+      <section className="ff-approaches" aria-label="Знакомство с кето" data-testid="approaches-section">
         <div className="ff-section-title">
-          <span className="ff-kicker">Два подхода к питанию</span>
-          <h2>Знакомство с кето и карнивором</h2>
+          <span className="ff-kicker">Основы кето-питания</span>
+          <h2>Знакомство с кето</h2>
         </div>
         <p className="ff-approaches__intro">
-          Каждый организм индивидуален. Выберите подход к питанию, который лучше соответствует вашему образу жизни и предпочтениям в продуктах.
+          Узнайте, как устроено кето-меню. Укажите свои предпочтения и ограничения, чтобы подобрать блюда для домашней готовки.
         </p>
-        <div className="ff-approaches-grid">
+        <div>
           <div className="ff-approach-card">
             <span className="ff-approach-card__badge">Низкоуглеводный рацион</span>
             <h3>Кето-рацион</h3>
@@ -264,26 +264,6 @@ export function FoodToday({
               }}
             >
               Настроить Кето-рацион →
-            </button>
-          </div>
-
-          <div className="ff-approach-card">
-            <span className="ff-approach-card__badge ff-approach-card__badge--carnivore">Мясной рацион</span>
-            <h3>Карнивор-рацион</h3>
-            <p>
-              Рацион исключительно из продуктов животного происхождения: мяса, птицы, рыбы, яиц и животных жиров.
-            </p>
-            <button
-              type="button"
-              className="ff-approach-btn"
-              data-testid="choose-carnivore-btn"
-              onClick={() => {
-                triggerHaptic('selection');
-                if (onSelectApproach) onSelectApproach('carnivore');
-                else if (onOpenSettings) onOpenSettings();
-              }}
-            >
-              Настроить Карнивор →
             </button>
           </div>
         </div>

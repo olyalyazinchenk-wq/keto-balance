@@ -71,7 +71,7 @@ export function preferencesToUserProfile(prefs: PilotPreferencesV1 | null): User
 export function approachToMode(approach: string): 'keto' | 'carnivore' {
   if (approach === 'carnivore') return 'carnivore';
   if (approach === 'keto') return 'keto';
-  throw new Error('Режим «Знакомство» носит ознакомительный характер. Для расчёта персонального меню выберите «Кето» или «Карнивор».');
+  throw new Error('Режим «Знакомство» носит ознакомительный характер. Для расчёта персонального меню выберите «Кето».');
 }
 
 export function isMenuCompatibleWithProfile(

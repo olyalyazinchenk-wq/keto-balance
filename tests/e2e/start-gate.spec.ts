@@ -10,7 +10,7 @@ test.describe('E0: Start Gate Screen and Consent Flow', () => {
     // 1. New user sees Start Gate on launch
     const gate = page.locator('[data-testid="start-gate-screen"]');
     await expect(gate).toBeVisible({ timeout: 10000 });
-    await expect(gate.locator('h1')).toContainText('Знакомство с кето и карнивор');
+    await expect(gate.locator('h1')).toContainText('Знакомство с кето');
 
     // Verify verified Argon photos are loaded
     const ketoImage = page.locator('img[src*="keto_salmon_plate.png"]');
@@ -19,12 +19,7 @@ test.describe('E0: Start Gate Screen and Consent Flow', () => {
       .poll(async () => ketoImage.evaluate((el: HTMLImageElement) => el.naturalWidth))
       .toBeGreaterThan(0);
 
-    const carnivoreImage = page.locator('img[src*="carnivore_steak_plate.png"]');
-    await expect(carnivoreImage).toBeVisible();
-    await expect
-      .poll(async () => carnivoreImage.evaluate((el: HTMLImageElement) => el.naturalWidth))
-      .toBeGreaterThan(0);
-
+    await expect(page.locator('#start-choose-carnivore')).toHaveCount(0);
     const continueBtn = page.locator('#start-btn-continue');
     const statusLabel = page.locator('#gate-status');
     const ageCheckbox = page.locator('#gate-checkbox-age');
@@ -79,27 +74,18 @@ test.describe('E0: Start Gate Screen and Consent Flow', () => {
     await expect(page.locator('[data-testid="pilot-settings-form"]')).toBeVisible({ timeout: 10000 });
   });
 
-  test('Choosing carnivore approach carries over to settings form and returning user bypasses gate', async ({
+  test('Keto is the only approach; settings and saved menu persist after returning', async ({
     createSession,
   }) => {
-    const { page } = await createSession({ id: 6102, first_name: 'GateUserCarnivore' });
+    const { page } = await createSession({ id: 6102, first_name: 'GateUserKeto' });
     await page.goto('/');
 
     const gate = page.locator('[data-testid="start-gate-screen"]');
     await expect(gate).toBeVisible({ timeout: 10000 });
 
-    // 6. Choosing an approach (carnivore)
-    const carnivoreBtn = page.locator('#start-choose-carnivore');
     const ketoBtn = page.locator('#start-choose-keto');
-
-    // Default approach is keto
     await expect(ketoBtn).toHaveAttribute('aria-pressed', 'true');
-    await expect(carnivoreBtn).toHaveAttribute('aria-pressed', 'false');
-
-    // Select carnivore
-    await carnivoreBtn.click();
-    await expect(carnivoreBtn).toHaveAttribute('aria-pressed', 'true');
-    await expect(ketoBtn).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('#start-choose-carnivore')).toHaveCount(0);
 
     // Complete gate conditions
     await page.locator('#gate-checkbox-age').check();
@@ -113,8 +99,8 @@ test.describe('E0: Start Gate Screen and Consent Flow', () => {
     const settingsForm = page.locator('[data-testid="pilot-settings-form"]');
     await expect(settingsForm).toBeVisible({ timeout: 10000 });
 
-    const carnivoreApproach = page.locator('[data-testid="settings-approach-carnivore"]');
-    await expect(carnivoreApproach).toHaveClass(/bg-\[#EDF1E6\]/);
+    await expect(page.locator('[data-testid="settings-approach-carnivore"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="settings-approach-keto"]')).toBeVisible();
 
     const confirm18 = page.locator('[data-testid="settings-confirmed-18"]');
     await expect(confirm18).toBeChecked();
@@ -122,7 +108,7 @@ test.describe('E0: Start Gate Screen and Consent Flow', () => {
     const submitBtn = page.locator('[data-testid="submit-settings-btn"]');
     await expect(submitBtn).toBeEnabled();
 
-    // Switch to keto so menu can be generated from synthetic test catalog
+    // Keto is the only available approach.
     await page.locator('[data-testid="settings-approach-keto"]').click();
 
     // Submit settings to save profile to server with confirmed18Plus: true
@@ -132,6 +118,7 @@ test.describe('E0: Start Gate Screen and Consent Flow', () => {
       submitBtn.click(),
     ]);
     expect(userSaveRes.status()).toBe(200);
+    expect(userSaveRes.request().postDataJSON().profile.settings.approach).toBe('keto');
     expect(shopSaveRes.status()).toBe(200);
 
     await expect(page.locator('[data-testid="food-today"]')).toBeVisible();

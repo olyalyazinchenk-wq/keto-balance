@@ -262,7 +262,7 @@ export default function PilotApp() {
 
         // Initialize draft settings from current profile
         setDraftConfirmed18(Boolean(currentProfile.settings.confirmed18Plus));
-        setDraftApproach(currentProfile.settings.approach || 'keto');
+        setDraftApproach('keto');
         setDraftRestrictions(currentProfile.settings.restrictions || []);
         setDraftPrepTime(currentProfile.settings.prepTimeMax ?? 0);
         setDraftMealsPerDay((currentProfile.settings.mealsPerDay as any) || 3);
@@ -275,7 +275,7 @@ export default function PilotApp() {
 
         if (currentProfile.settings.approach === 'explore') {
           setPhase('needs_settings');
-          setErrorMessage('Режим «Знакомство» носит ознакомительный характер. Для расчёта персонального меню выберите «Кето» или «Карнивор».');
+          setErrorMessage('Режим «Знакомство» носит ознакомительный характер. Для расчёта персонального меню выберите «Кето».');
           return;
         }
 
@@ -294,6 +294,11 @@ export default function PilotApp() {
             catData.test_only
           );
           if (!isComp) {
+            if (currentProfile.settings.approach !== 'keto') {
+              setPhase('needs_settings');
+              setErrorMessage('Прежнее меню сохранено. Проверьте настройки для нового кето-рациона.');
+              return;
+            }
             const controller = createMenuController(catData.recipes, catData.released_ids, {
               isPreview: catData.test_only,
               catalogId: catData.catalog_id,
@@ -361,6 +366,10 @@ export default function PilotApp() {
           stateRef.current = currentState;
           setPhase('ready');
         } else {
+          if (currentProfile.settings.approach !== 'keto') {
+            setPhase('needs_settings');
+            return;
+          }
           // Generate initial menu if missing
           const generationProfile = catData.access === 'preview' ? {
             ...currentProfile, settings: { ...currentProfile.settings, planDays: 1 as const, mealsPerDay: 2 as const, month: undefined },
@@ -494,7 +503,7 @@ export default function PilotApp() {
       return;
     }
     if (draftApproach === 'explore') {
-      alert('Режим «Знакомство» носит ознакомительный характер. Для расчёта персонального меню выберите «Кето» или «Карнивор».');
+      alert('Режим «Знакомство» носит ознакомительный характер. Для расчёта персонального меню выберите «Кето».');
       return;
     }
     if (!catalog) return;
@@ -507,7 +516,7 @@ export default function PilotApp() {
 
     const newSettings: PilotPreferencesV1 = {
       confirmed18Plus: true,
-      approach: draftApproach,
+      approach: 'keto',
       restrictions: draftRestrictions,
       prepTimeMax: draftPrepTime,
       mealsPerDay: draftMealsPerDay,
@@ -588,7 +597,7 @@ export default function PilotApp() {
         month: draftPlanDays >= 28 ? draftMonth : undefined,
         meals: draftMealsPerDay,
         profile: canonProfile,
-        mode: approachToMode(draftApproach),
+        mode: 'keto',
         catalogId: activeCatalog.catalog_id,
       });
 
@@ -1003,6 +1012,12 @@ export default function PilotApp() {
   const handleRebuildMenu = useCallback(async () => {
     const currentState = stateRef.current;
     if (!profile?.settings || !catalog || !currentState) return;
+    if (profile.settings.approach !== 'keto') {
+      setDraftApproach('keto');
+      setErrorMessage('Прежнее меню сохранено. Для нового кето-рациона проверьте настройки и нажмите «Составить меню».');
+      setPhase('needs_settings');
+      return;
+    }
 
     try {
       const daysCount = (profile.settings.planDays && [1, 3, 7, 28, 29, 30, 31].includes(profile.settings.planDays as any))
@@ -1513,12 +1528,12 @@ export default function PilotApp() {
 
   const handleOpenSettings = useCallback((targetApproach?: 'keto' | 'carnivore') => {
     if (targetApproach) {
-      setDraftApproach(targetApproach);
+      setDraftApproach('keto');
     }
     if (profile?.settings) {
       setDraftConfirmed18(Boolean(profile.settings.confirmed18Plus));
       if (!targetApproach) {
-        setDraftApproach(profile.settings.approach || 'keto');
+        setDraftApproach('keto');
       }
       setDraftRestrictions(profile.settings.restrictions || []);
       setDraftPrepTime(profile.settings.prepTimeMax ?? 0);
@@ -1607,7 +1622,7 @@ export default function PilotApp() {
 
     if (!gatePassed) {
       const handleGateContinue = (selectedApproach: 'keto' | 'carnivore') => {
-        setDraftApproach(selectedApproach);
+        setDraftApproach('keto');
         setDraftConfirmed18(true);
         setGatePassed(true);
         setErrorMessage('');
@@ -1645,7 +1660,7 @@ export default function PilotApp() {
         const emptyProfile: PilotProfileV1 = {
           settings: {
             confirmed18Plus: false,
-            approach: draftApproach,
+            approach: 'keto',
             restrictions: draftRestrictions,
             prepTimeMax: draftPrepTime,
             mealsPerDay: draftMealsPerDay,
@@ -1671,7 +1686,7 @@ export default function PilotApp() {
             onReplaceRecipe={async () => {}}
             onRebuildMenu={async () => {}}
             onOpenSettings={(appr) => {
-              if (appr) setDraftApproach(appr);
+              setDraftApproach('keto');
               setViewHomeBeforeGate(false);
             }}
             subscription={subscription}
@@ -1685,8 +1700,8 @@ export default function PilotApp() {
 
       return (
         <StartGateScreen
-          approach={draftApproach === 'carnivore' ? 'carnivore' : 'keto'}
-          onSelectApproach={(a) => setDraftApproach(a)}
+          approach="keto"
+          onSelectApproach={() => setDraftApproach('keto')}
           onGateGranted={(payload) => handleGateContinue(payload.approach)}
           onContinue={handleGateContinue}
           onOpenSupport={() => setShowSupport(true)}
@@ -1776,12 +1791,11 @@ export default function PilotApp() {
             {/* Approach */}
             <div className="space-y-2">
               <label className="block text-xs font-bold uppercase tracking-wider text-[var(--kb-text-2)]">
-                Подход к питанию
+                Кето-рацион
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
                   { id: 'keto', title: 'Кето', desc: 'Низкоуглеводный' },
-                  { id: 'carnivore', title: 'Карнивор', desc: 'Мясной рацион' },
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -1978,12 +1992,11 @@ export default function PilotApp() {
               </div>
             </div>
 
-            {/* Carnivore conflict pre-submit check */}
+            {/* Recipe availability pre-submit check */}
             {(() => {
-              if (draftApproach !== 'carnivore') return null;
               const canon = preferencesToUserProfile({
                 confirmed18Plus: draftConfirmed18,
-                approach: 'carnivore',
+                approach: 'keto',
                 restrictions: draftRestrictions,
                 prepTimeMax: draftPrepTime,
                 mealsPerDay: draftMealsPerDay,
@@ -1993,20 +2006,20 @@ export default function PilotApp() {
               const pool = catalog.recipes.filter(
                 (r) =>
                   (catalog.released_ids.length > 0 ? catalog.released_ids.includes(r.id) : true) &&
-                  r.mode === 'carnivore' &&
+                  r.mode === 'keto' &&
                   isRecipeAllowed(r, canon)
               );
               if (pool.length < draftMealsPerDay) {
                 return (
-                  <div className="p-3 bg-[var(--kb-warn-bg)] border border-[var(--kb-warn-border)] rounded-xl text-xs text-[var(--kb-warn-ink)] space-y-1" data-testid="carnivore-conflict-warning">
-                    <p className="font-bold">⚠️ Недостаточно карнивор-блюд для выбранных ограничений</p>
+                  <div className="p-3 bg-[var(--kb-warn-bg)] border border-[var(--kb-warn-border)] rounded-xl text-xs text-[var(--kb-warn-ink)] space-y-1" data-testid="recipe-conflict-warning">
+                    <p className="font-bold">⚠️ Недостаточно кето-блюд для выбранных ограничений</p>
                     <p>
                       {pool.length === 0
-                        ? `Карнивор-рецепты для этой комбинации ограничений ещё готовятся. Доступно 0 блюд из ${draftMealsPerDay} требуемых на день.`
+                        ? `Для этой комбинации ограничений пока не хватает кето-рецептов. Доступно 0 блюд из ${draftMealsPerDay} требуемых на день.`
                         : `С выбранными ограничениями доступно только ${pool.length} блюд, а требуется минимум ${draftMealsPerDay} на день.`}
                     </p>
                     <p className="text-[11px] text-[var(--kb-warn-ink)]">
-                      Ваши настройки сохранятся. Для составления меню вы можете выбрать режим «Кето», уменьшить количество приёмов пищи на день или дождаться выхода новых карнивор-рецептов. Пожалуйста, не отменяйте медицинские исключения аллергенов.
+                      Ваши настройки сохранятся. Проверьте время готовки или уменьшите количество приёмов пищи на день. Пожалуйста, не отменяйте медицинские исключения аллергенов.
                     </p>
                   </div>
                 );

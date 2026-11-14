@@ -234,7 +234,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
               <div className="flex items-start gap-2.5">
                 <span className="text-[var(--kb-primary)] font-bold">✓</span>
                 <span>
-                  <strong>Персональные рационы</strong> на календарный месяц (кето или карнивор)
+                  <strong>Персональное кето-меню</strong> на календарный месяц
                 </span>
               </div>
               <div className="flex items-start gap-2.5">

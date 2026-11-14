@@ -69,8 +69,8 @@ export function StartGateScreen({
   onOpenSupport,
   onViewHome,
 }: StartGateScreenProps) {
-  const [localApproach, setLocalApproach] = useState<PilotApproach>(approach || 'keto');
-  const currentApproach = approach || localApproach;
+  const [localApproach, setLocalApproach] = useState<PilotApproach>('keto');
+  const currentApproach = localApproach;
 
   const [confirmed18Plus, setConfirmed18Plus] = useState(false);
   const [consentedToPd, setConsentedToPd] = useState(false);
@@ -140,7 +140,7 @@ export function StartGateScreen({
           {/* Title & Introduction */}
           <div className="space-y-3">
             <h1 className="font-sans text-[30px] font-black leading-[1.08] tracking-tight text-[#0F3526] sm:text-[42px]">
-              Знакомство с кето и карнивор
+              Знакомство с кето
             </h1>
             <p className="text-[15px] leading-relaxed text-[#4A5750] sm:text-[16px]">
               «Кето Баланс» — сервис для планирования домашнего меню и списка
@@ -158,7 +158,7 @@ export function StartGateScreen({
           </div>
 
           {/* Choice Cards */}
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:gap-5">
             {/* Keto Card */}
             <button
               type="button"
@@ -203,50 +203,6 @@ export function StartGateScreen({
               </span>
             </button>
 
-            {/* Carnivore Card */}
-            <button
-              type="button"
-              id="start-choose-carnivore"
-              data-testid="start-choose-carnivore"
-              aria-pressed={currentApproach === 'carnivore'}
-              onClick={() => handleSelect('carnivore')}
-              className={approachCardClass(currentApproach === 'carnivore')}
-            >
-              <img
-                src="/media/start/carnivore_steak_plate.png"
-                alt="Карнивор: сочный стейк из говядины с тимьяном"
-                className="aspect-[4/3] w-full object-cover"
-              />
-              <span className="block p-5 text-left sm:p-6">
-                <span className="flex items-start justify-between gap-2">
-                  <span className="font-sans text-[21px] font-black leading-tight text-[#0F3526] sm:text-[23px]">
-                    Карнивор{' '}
-                    <span className="text-[17px] font-semibold text-[#3A5245]">
-                      (Carnivore)
-                    </span>
-                  </span>
-                  <span className="shrink-0 rounded-full border border-[#EBD6B6] bg-[#F5E8D2] px-3 py-1 text-[11px] font-bold text-[#624016]">
-                    Строго животный
-                  </span>
-                </span>
-                <span className="my-3.5 block h-px bg-[#E0DBCF]" />
-                <span className="block text-[13.5px] leading-relaxed text-[#44524A] sm:text-[14px]">
-                  Рацион преимущественно или исключительно из продуктов
-                  животного происхождения. Из меню исключается растительная
-                  пища: овощи, зелень, крупы, фрукты, орехи и семена.
-                </span>
-                <span className="mt-2.5 block text-[12px] text-[#6E7B74]">
-                  Результаты и переносимость индивидуальны.
-                </span>
-                <span className="mt-4 flex justify-center">
-                  <img
-                    src="/media/start/carnivore_raw_meat.png"
-                    alt="Стейки из говядины с крупной морской солью"
-                    className="max-h-[135px] w-full object-contain"
-                  />
-                </span>
-              </span>
-            </button>
           </div>
 
           {/* Gate Conditions Section */}

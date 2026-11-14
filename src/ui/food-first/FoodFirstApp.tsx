@@ -242,7 +242,7 @@ export function FoodFirstApp({
     }
     return {
       created: state.menu.created || 1,
-      title: state.menu.mode === 'carnivore' ? 'Карнивор-рацион' : 'Кето-рацион',
+      title: state.menu.mode === 'carnivore' ? 'Сохранённый рацион' : 'Кето-рацион',
       days: state.menu.days.map((d, idx) => ({
         dayIndex: idx,
         date: d.date,
@@ -474,7 +474,7 @@ export function FoodFirstApp({
       {currentScreen === 'shopping' && (
         <ShoppingScreen
           items={shoppingItems}
-          menuTitle={state.menu ? (state.menu.mode === 'carnivore' ? 'Карнивор-меню' : 'Кето-рацион') : 'Список покупок'}
+          menuTitle={state.menu ? (state.menu.mode === 'carnivore' ? 'Сохранённое меню' : 'Кето-рацион') : 'Список покупок'}
           isStaleAfterMenuEdit={state.shopping_stale}
           onRefreshShoppingFromMenu={onRefreshShopping}
           portionsMultiplier={state.shopping_batches}

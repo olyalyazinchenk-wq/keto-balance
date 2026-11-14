@@ -104,7 +104,7 @@ CATEGORY_NAMES = {
     "soup": "🍲 Супы и бульоны",
     "salad": "🥗 Салаты",
     "snack": "🧀 Перекусы",
-    "carnivore": "🥩 Карнивор-рацион",
+    "carnivore": "Сохранённый рацион",
 }
 
 
@@ -151,7 +151,7 @@ def get_main_keyboard() -> InlineKeyboardMarkup:
 
 def format_recipe_card(r: Dict[str, Any]) -> str:
     """Форматирование полного рецепта для Telegram."""
-    mode_label = "🥑 Кето" if r.get("mode") == "keto" else "🥩 Карнивор"
+    mode_label = "🥑 Кето" if r.get("mode") == "keto" else "Сохранённый рацион"
     ing_list = "\n".join([f"• {name}: <b>{qty}</b>" for name, qty in r.get("ing", [])])
     steps_list = "\n".join([f"<b>{i+1}.</b> {step}" for i, step in enumerate(r.get("steps", []))])
     
@@ -180,7 +180,7 @@ def get_water_view(user_id: int) -> tuple[str, InlineKeyboardMarkup]:
         f"Выпито: <b>{current_ml} / {target_ml} мл</b> ({percent}%)\n"
         f"<code>[{bar}]</code>\n\n"
         f"💡 <b>Совет нутрициолога Ольги:</b>\n"
-        f"На кето и карниворе почки быстрее выводят воду и электролиты. "
+        f"На кето почки быстрее выводят воду и электролиты. "
         f"Пейте воду равномерно, добавляя в утренний стакан щепотку соли."
     )
     
@@ -332,7 +332,7 @@ async def idea_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def recipes_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await current_app_route(update, 'Актуальные допущенные блюда кето и карнивора — в каталоге приложения. Доступ зависит от выбранного подхода и ограничений.')
+    await current_app_route(update, 'Кето-рецепты — в каталоге приложения. Блюда подбираются с учётом ваших ограничений.')
 
 
 async def water_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -467,7 +467,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("🍳 Завтраки", callback_data="cat_breakfast"), InlineKeyboardButton("🥩 Обеды и ужины", callback_data="cat_lunch")],
             [InlineKeyboardButton("🍲 Супы", callback_data="cat_soup"), InlineKeyboardButton("🥗 Салаты", callback_data="cat_salad")],
-            [InlineKeyboardButton("🧀 Перекусы", callback_data="cat_snack"), InlineKeyboardButton("🥩 Карнивор", callback_data="cat_carnivore")],
+            [InlineKeyboardButton("🧀 Перекусы", callback_data="cat_snack")],
             [InlineKeyboardButton("🎲 Случайная идея", callback_data="idea")],
             [InlineKeyboardButton("« Назад", callback_data="to_main")],
         ])

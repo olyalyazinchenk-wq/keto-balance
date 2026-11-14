@@ -228,8 +228,8 @@ test('Challenger 2 — Empirical Carnivore Combinations, Catalog ID & Editorial 
     const pilotAppCode = fs.readFileSync(path.resolve('src/PilotApp.tsx'), 'utf8');
 
     assert.ok(
-      pilotAppCode.includes('data-testid="carnivore-conflict-warning"'),
-      'PilotApp must have testable carnivore-conflict-warning banner'
+      pilotAppCode.includes('data-testid="recipe-conflict-warning"'),
+      'PilotApp must have testable recipe-conflict-warning banner'
     );
     assert.ok(
       pilotAppCode.includes('Пожалуйста, не отменяйте медицинские исключения аллергенов.'),

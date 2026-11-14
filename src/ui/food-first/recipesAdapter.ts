@@ -79,7 +79,7 @@ export function toRecipeViewModel(recipe: Recipe): RecipeViewModel {
     recipe.cat === 'lunch' ? 'Обед' :
     recipe.cat === 'snack' ? 'Перекус' : 'Ужин';
 
-  const subtitle = recipe.mode === 'carnivore' ? 'Блюдо для карнивор-рациона' :
+  const subtitle = recipe.mode === 'carnivore' ? 'Блюдо из сохранённого меню' :
     recipe.cat === 'breakfast' ? 'Сытный и быстрый кето-завтрак' :
     recipe.cat === 'lunch' ? 'Питательный обед для кето-рациона' :
     'Сбалансированный кето-ужин';
