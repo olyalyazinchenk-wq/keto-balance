@@ -11,6 +11,7 @@ export interface PaywallModalProps {
   currentTier?: string | null;
   availableProducts?: SubscriptionProduct[];
   isDemoPreview?: boolean;
+  paymentsEnabled?: boolean;
 }
 
 interface TariffConfig {
@@ -51,6 +52,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
   currentTier,
   availableProducts,
   isDemoPreview,
+  paymentsEnabled,
 }) => {
   const [selectedTariffId, setSelectedTariffId] = useState<string>('sub_month');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -63,6 +65,9 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
       (window.location.search.includes('demo_user=') ||
         window.location.hostname === '127.0.0.1' ||
         window.location.hostname === 'localhost'));
+
+  // Server state governs payment availability
+  const isPayOpen = Boolean(paymentsEnabled);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -342,24 +347,45 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
 
         {/* Action Footer */}
         <div className="p-4 bg-[var(--kb-surface)] border-t border-[var(--kb-border)] space-y-2">
-          {/* Main Purchase CTA */}
-          <button
-            type="button"
-            data-testid="paywall-buy-btn"
-            disabled={isLoading}
-            onClick={handlePurchase}
-            className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm text-white shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer ${
-              isLoading
-                ? 'bg-stone-400 cursor-not-allowed'
-                : 'bg-[#255c48] hover:bg-[#1d4939]'
-            }`}
-          >
-            {isLoading ? (
-              <span>Обработка запроса...</span>
-            ) : (
-              <span>Оформить доступ · {selectedTariff.price.toLocaleString('ru-RU')} ₽</span>
-            )}
-          </button>
+          {/* Main Purchase CTA or Closed Access Notice */}
+          {isPayOpen ? (
+            <button
+              type="button"
+              data-testid="paywall-buy-btn"
+              disabled={isLoading}
+              onClick={handlePurchase}
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm text-white shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                isLoading
+                  ? 'bg-stone-400 cursor-not-allowed'
+                  : 'bg-[#255c48] hover:bg-[#1d4939]'
+              }`}
+            >
+              {isLoading ? (
+                <span>Обработка запроса...</span>
+              ) : (
+                <span>Оформить доступ · {selectedTariff.price.toLocaleString('ru-RU')} ₽</span>
+              )}
+            </button>
+          ) : (
+            <div className="p-3.5 bg-[var(--kb-surface-muted)] border border-[var(--kb-border)] rounded-xl space-y-2 text-center" data-testid="closed-access-notice">
+              <div className="text-xs font-bold text-[var(--kb-text-1)]">
+                🔒 Закрытый просмотр, оплата пока не открыта
+              </div>
+              <p className="text-[11px] text-[var(--kb-text-2)] leading-relaxed">
+                Сейчас КетоБаланс находится на этапе авторского тестирования. Приём оплат пока закрыт. Ознакомительный рацион на 1 день и 2 приёма доступен бесплатно.
+              </p>
+              <a
+                href="https://t.me/keto_balance_userbot?start=question"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="paywall-contact-olga-btn"
+                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-[#5F7161] text-white hover:bg-[#4E5E50] transition-all"
+                onClick={() => triggerHaptic('selection')}
+              >
+                <span>Написать Ольге в Telegram →</span>
+              </a>
+            </div>
+          )}
 
           {/* Demo activation button: strictly gated for local preview with explicit notice */}
           {isDemo && (

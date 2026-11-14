@@ -491,6 +491,9 @@ def create_app(
         user_id: Optional[int] = Query(None),
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+        from bot.payments import is_payments_enabled
+        payments_enabled = is_payments_enabled()
+
         if active_settings.is_owner_mode and active_settings.owner_allowlist is not None and target_uid in active_settings.owner_allowlist:
             return SubscriptionReadV1(
                 is_premium=True,
@@ -499,6 +502,7 @@ def create_app(
                 expires_at=None,
                 available_products=[],
                 user_id=target_uid,
+                payments_enabled=payments_enabled,
             )
         sub = get_user_subscription(active_db, target_uid)
         is_premium = False
@@ -554,6 +558,7 @@ def create_app(
             expires_at=expires_at,
             available_products=available_products,
             user_id=target_uid,
+            payments_enabled=payments_enabled,
         )
 
     @app.post("/api/subscription/purchase", response_model=PurchaseInitResponseV1)
@@ -571,6 +576,11 @@ def create_app(
         )
         if payload.product_id not in available_catalog:
             raise HTTPException(status_code=400, detail=f"Unknown product '{payload.product_id}'")
+
+        from bot.payments import is_payments_enabled
+        is_demo_req = (payload.provider == "demo" or not payload.provider) and not (active_settings.is_production or active_settings.app_stage in ("production", "staging"))
+        if not is_payments_enabled() and not is_demo_req:
+            raise HTTPException(status_code=503, detail="Payments are disabled")
 
         prod = available_catalog[payload.product_id]
         order_id = create_order(

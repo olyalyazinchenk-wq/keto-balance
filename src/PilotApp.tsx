@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { KetoClient, ApiError, ConflictError, UnauthorizedError } from './api/ketoClient';
 import { resolveTelegramLaunchAuth } from './tma/launchAuth';
-import { onLateTelegramSDK } from './tma/telegram';
+import { onLateTelegramSDK, triggerHaptic } from './tma/telegram';
 import type {
   PilotCatalogV1,
   PilotPreferencesV1,
@@ -553,7 +553,7 @@ export default function PilotApp() {
           }
         } catch (catErr: any) {
           setErrorMessage(
-            `Не удалось загрузить подборку на ${draftMonth}. Пожалуйста, повторите попытку или выберите другой месяц.`
+            `Не удалось загрузить подборку на ${draftMonth}. Предыдущий рацион сохранён без изменений. Пожалуйста, повторите попытку или выберите другой месяц.`
           );
           return;
         }
@@ -1931,6 +1931,59 @@ export default function PilotApp() {
                   </button>
                 ))}
                 {(() => {
+                  const catalogsList = Array.isArray(availableCatalogs) ? availableCatalogs : [];
+                  const monthlyCatalogs = catalogsList.filter((c) => Boolean(c.catalog_month));
+                  const isOwner = subscription?.tier === 'owner';
+
+                  if (monthlyCatalogs.length > 0) {
+                    return monthlyCatalogs.map((cat, idx) => {
+                      const mKey = cat.catalog_month!;
+                      const [yStr, mStr] = mKey.split('-');
+                      const y = parseInt(yStr, 10);
+                      const m = parseInt(mStr, 10);
+                      const dCount = new Date(y, m, 0).getDate();
+                      const dateObj = new Date(y, m - 1, 1);
+                      const rawName = dateObj.toLocaleString('ru-RU', { month: 'long' });
+                      const capitalized = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+                      const isSelected =
+                        draftPlanDays >= 28 &&
+                        draftPlanDays <= 31 &&
+                        (draftMonth === mKey || (!draftMonth && idx === 0));
+                      const isAccessible = cat.accessible;
+                      const testId = idx === 0 ? 'settings-days-month' : (idx === 1 ? 'settings-days-next-month' : `settings-days-month-${mKey}`);
+
+                      return (
+                        <button
+                          key={cat.catalog_id || mKey}
+                          type="button"
+                          data-testid={testId}
+                          disabled={!isAccessible && !isOwner}
+                          onClick={() => {
+                            if (!isAccessible && !isOwner) {
+                              setErrorMessage(
+                                `Подборка на ${capitalized} пока находится на утверждении у автора.`
+                              );
+                              return;
+                            }
+                            setDraftPlanDays(dCount as any);
+                            setDraftMonth(mKey);
+                          }}
+                          className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
+                            isSelected
+                              ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
+                              : isAccessible || isOwner
+                              ? 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
+                              : 'border-[var(--kb-border)] bg-stone-100 dark:bg-stone-800 text-stone-400 cursor-not-allowed'
+                          }`}
+                          title={!isAccessible && !isOwner ? 'На утверждении автора' : undefined}
+                        >
+                          {capitalized} ({dCount} дн.){!isAccessible && !isOwner ? ' 🔒' : ''}
+                        </button>
+                      );
+                    });
+                  }
+
                   const now = new Date();
                   const currYear = now.getFullYear();
                   const currMonthIdx = now.getMonth();
@@ -1956,36 +2009,6 @@ export default function PilotApp() {
                       }`}
                     >
                       {currLabel} ({currMonthDays} дн.)
-                    </button>
-                  );
-                })()}
-                {(() => {
-                  const now = new Date();
-                  const nextDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-                  const nextYear = nextDate.getFullYear();
-                  const nextMonthIdx = nextDate.getMonth();
-                  const nextMonthDays = new Date(nextYear, nextMonthIdx + 1, 0).getDate();
-                  const nextMonthKey = `${nextYear}-${String(nextMonthIdx + 1).padStart(2, '0')}`;
-                  const nextMonthName = nextDate.toLocaleString('ru-RU', { month: 'long' });
-                  const nextLabel = nextMonthName.charAt(0).toUpperCase() + nextMonthName.slice(1);
-
-                  const isNextSelected = (draftPlanDays >= 28 && draftPlanDays <= 31) && draftMonth === nextMonthKey;
-
-                  return (
-                    <button
-                      type="button"
-                      data-testid="settings-days-next-month"
-                      onClick={() => {
-                        setDraftPlanDays(nextMonthDays as any);
-                        setDraftMonth(nextMonthKey);
-                      }}
-                      className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
-                        isNextSelected
-                          ? 'border-[#5F7161] bg-[#EDF1E6] text-[#1B211B]'
-                          : 'border-[var(--kb-border)] bg-[var(--kb-bg)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
-                      }`}
-                    >
-                      {nextLabel} ({nextMonthDays} дн.)
                     </button>
                   );
                 })()}
@@ -2027,6 +2050,46 @@ export default function PilotApp() {
               return null;
             })()}
 
+            {/* Free preview boundary disclosure and Try 1 Day action */}
+            {catalog.access === 'preview' && (
+              <div
+                className={`p-3.5 rounded-xl border space-y-2 transition-all ${
+                  draftPlanDays === 1 && draftMealsPerDay === 2
+                    ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
+                    : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'
+                }`}
+                data-testid="free-tier-boundary-notice"
+              >
+                <div className="flex items-center gap-1.5 text-xs font-bold">
+                  <span>{draftPlanDays === 1 && draftMealsPerDay === 2 ? '🥑' : '💡'}</span>
+                  <span className={draftPlanDays === 1 && draftMealsPerDay === 2 ? 'text-emerald-900 dark:text-emerald-200' : 'text-amber-900 dark:text-amber-200'}>
+                    Ознакомительный доступ
+                  </span>
+                </div>
+                <p className={`text-xs leading-relaxed ${draftPlanDays === 1 && draftMealsPerDay === 2 ? 'text-emerald-800 dark:text-emerald-300' : 'text-amber-800 dark:text-amber-300'}`}>
+                  {draftPlanDays === 1 && draftMealsPerDay === 2
+                    ? 'Выбран ознакомительный режим: 1 день и 2 приёма пищи бесплатно.'
+                    : 'В ознакомительном доступе бесплатно доступны 1 день и 2 приёма пищи. Меню на месяц или 3 приёма пищи входят в закрытый режим.'}
+                </p>
+                {(draftPlanDays !== 1 || draftMealsPerDay !== 2) && (
+                  <button
+                    type="button"
+                    data-testid="try-one-day-btn"
+                    onClick={() => {
+                      triggerHaptic('selection');
+                      setDraftPlanDays(1);
+                      setDraftMealsPerDay(2);
+                      setDraftMonth('');
+                      setErrorMessage('');
+                    }}
+                    className="w-full py-2.5 px-3 text-xs font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    Попробовать 1 день (2 приёма)
+                  </button>
+                )}
+              </div>
+            )}
+
             <button
               type="submit"
               data-testid="submit-settings-btn"
@@ -2052,6 +2115,7 @@ export default function PilotApp() {
           sessionToken={sessionToken}
           currentTier={subscription?.tier}
           availableProducts={subscription?.available_products}
+          paymentsEnabled={subscription?.payments_enabled}
         />
       </div>
     );
@@ -2087,6 +2151,7 @@ export default function PilotApp() {
       onRetrySubscription={() => setSubscriptionRetry(value => value + 1)}
       onUpdateSubscription={setSubscription}
       sessionToken={sessionToken}
+      userId={userId}
     />
   );
 }

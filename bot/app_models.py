@@ -90,6 +90,7 @@ class SubscriptionReadV1(BaseModel):
     expires_at: Optional[str] = None
     available_products: List[Dict[str, Any]] = Field(default_factory=list)
     user_id: Optional[int] = None
+    payments_enabled: bool = False
 
 class PurchaseInitPayloadV1(BaseModel):
     product_id: str = Field(..., min_length=1, max_length=50)

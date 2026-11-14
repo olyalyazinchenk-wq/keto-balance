@@ -19,6 +19,7 @@ export interface SubscriptionState {
   expires_at: string | null;
   available_products: SubscriptionProduct[];
   user_id?: number | null;
+  payments_enabled?: boolean;
 }
 
 export interface PurchaseInitPayload {

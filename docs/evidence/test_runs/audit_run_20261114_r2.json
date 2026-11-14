@@ -1,0 +1,501 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Users\\HP\\.local\\bin\\node.exe",
+      "C:\\Users\\HP\\keto-owner-ready-20261113\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/live-browser-direct.spec.ts",
+      "tests/e2e/walkthrough-all-scenarios.spec.ts",
+      "tests/e2e/mobile-responsiveness-audit.spec.ts",
+      "--config=playwright.full.config.ts"
+    ],
+    "configFile": "C:\\Users\\HP\\keto-owner-ready-20261113\\playwright.full.config.ts",
+    "rootDir": "C:/Users/HP/keto-owner-ready-20261113/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/HP/keto-owner-ready-20261113/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/HP/keto-owner-ready-20261113/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\HP\\keto-owner-ready-20261113\\test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "C:\\Users\\HP\\keto-owner-ready-20261113\\tests\\e2e",
+        "snapshotDir": "C:\\Users\\HP\\keto-owner-ready-20261113\\tests\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:18080",
+          "trace": "off",
+          "video": "off",
+          "screenshot": "off",
+          "headless": true,
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json",
+        {
+          "outputFile": "test-results/e2e.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": {
+      "command": "node scripts/build-isolated.mjs --serve-test",
+      "url": "http://127.0.0.1:18080/api/health",
+      "reuseExistingServer": false,
+      "timeout": 60000
+    }
+  },
+  "suites": [
+    {
+      "title": "live-browser-direct.spec.ts",
+      "file": "live-browser-direct.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Direct Browser Live Check (without Telegram auth)",
+          "file": "live-browser-direct.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Direct visit to live https://84.54.56.73.nip.io/",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4028,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[LIVE_DIRECT] Navigating to https://84.54.56.73.nip.io/...\n"
+                        },
+                        {
+                          "text": "[LIVE_DIRECT] Assertion PASS: Unauthorized gate confirmed. Screenshot saved: 00_live_direct_browser_unauthorized.png\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T21:12:42.489Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8de659d4b7596bc50a2f-f6954368b3e8cbf930ac",
+              "file": "live-browser-direct.spec.ts",
+              "line": 11,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "mobile-responsiveness-audit.spec.ts",
+      "file": "mobile-responsiveness-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Mobile Responsiveness Audit (390px & 320px, Light & Dark)",
+          "file": "mobile-responsiveness-audit.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Audit 4 Core Screens on 390x844 [LIGHT]",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3609,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T21:12:46.691Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3ead656560ddb391de79-af3e102220a493307c48",
+              "file": "mobile-responsiveness-audit.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "Audit 4 Core Screens on 390x844 [DARK]",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3488,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T21:12:50.331Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3ead656560ddb391de79-c8cc0dbacc62db99fc47",
+              "file": "mobile-responsiveness-audit.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "Audit 4 Core Screens on 320x640 [LIGHT]",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3265,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T21:12:53.834Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3ead656560ddb391de79-2efd598d49a276d8fe59",
+              "file": "mobile-responsiveness-audit.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "Audit 4 Core Screens on 320x640 [DARK]",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3481,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T21:12:57.112Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3ead656560ddb391de79-bf368cd1b13d8cae74a0",
+              "file": "mobile-responsiveness-audit.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "Dynamic themeChanged Telegram event switches theme live",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1552,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T21:13:00.606Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3ead656560ddb391de79-1cfc3cc534ee52daa789",
+              "file": "mobile-responsiveness-audit.spec.ts",
+              "line": 123,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "walkthrough-all-scenarios.spec.ts",
+      "file": "walkthrough-all-scenarios.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Comprehensive 8-Scenario User Walkthrough (Strict Assertions)",
+          "file": "walkthrough-all-scenarios.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Walkthrough Part A: Free Tier Preview & Restrictions Boundary",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1736,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PART_A] Step 1: Start Gate for Free User...\n"
+                        },
+                        {
+                          "text": "[PART_A] Step 2: Settings Form & Free Boundary...\n"
+                        },
+                        {
+                          "text": "[PART_A] Observed Free Tier boundary message: ⚠️ Ознакомительный доступ: один день и два приёма пищи. Месячный план доступен в Premium.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T21:13:02.187Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b7dd748795bf85ac18f2-b4e7b78a524cc05b8399",
+              "file": "walkthrough-all-scenarios.spec.ts",
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "Walkthrough Part B: Full 8-Scenario Flow (Today, Menu, Recipe, Plate, Cooking, Shopping, Persistence, Education, Support)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 16797,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PART_B] Step 1-2: Start Gate & Settings submission for Full Plan...\n"
+                        },
+                        {
+                          "text": "[PART_B] Step 3: Today Screen...\n"
+                        },
+                        {
+                          "text": "[PART_B] Navigating to Menu...\n"
+                        },
+                        {
+                          "text": "[PART_B] Testing Dish Replacement in Menu...\n"
+                        },
+                        {
+                          "text": "[PART_B] Step 4: Recipe Details & Interactive Plate...\n"
+                        },
+                        {
+                          "text": "[PART_B] Testing portion scaling on recipe: \"Сливочная яичница с беконом и шпинатом\"\n"
+                        },
+                        {
+                          "text": "[PART_B] Step 6: Testing Kitchen Timer...\n"
+                        },
+                        {
+                          "text": "[PART_B] Step 5: Shopping List...\n"
+                        },
+                        {
+                          "text": "[PART_B] Step 7: Persistence check (reload)...\n"
+                        },
+                        {
+                          "text": "[PART_B] Step 8: Education Guides, Paywall & Support...\n"
+                        },
+                        {
+                          "text": "[PART_B] Complete walkthrough with strict assertions finished successfully!\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T21:13:03.951Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b7dd748795bf85ac18f2-d516cd4151ab18a0fe18",
+              "file": "walkthrough-all-scenarios.spec.ts",
+              "line": 94,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-14T21:12:25.447Z",
+    "duration": 55611.759999999995,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

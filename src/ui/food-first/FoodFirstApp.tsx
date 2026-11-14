@@ -10,6 +10,11 @@ import { FoodToday } from './Today';
 import { MenuScreen } from './Menu';
 import { RecipeScreen } from './Recipe';
 import { ShoppingScreen } from './Shopping';
+import { KitchenTimerWidget } from './KitchenTimerWidget';
+import type { ActiveKitchenTimer } from './kitchenTimerState';
+import { loadActiveTimer, saveActiveTimer, clearActiveTimer } from './kitchenTimerState';
+import { timerDeadline, remainingTimerSeconds } from './kitchenTimer';
+import { triggerHaptic } from '../../tma/telegram';
 import { toFoodCard, photoForRecipe } from './model';
 import { resolveDayMenuSlots } from './state';
 import { toRecipeViewModel } from './recipesAdapter';
@@ -43,6 +48,7 @@ export interface FoodFirstAppProps {
   onRetrySubscription?: () => void;
   onUpdateSubscription?: (sub: SubscriptionState) => void;
   sessionToken?: string;
+  userId?: number | null;
 }
 
 function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
@@ -91,10 +97,117 @@ export function FoodFirstApp({
   onRetrySubscription,
   onUpdateSubscription,
   sessionToken,
+  userId,
 }: FoodFirstAppProps) {
   const [initialRoute] = useState(() => getInitialRoute());
   const [navStack, setNavStack] = useState<ScreenId[]>([initialRoute.screen]);
   const currentScreen: ScreenId = navStack[navStack.length - 1] || 'today';
+
+  // Lifted Kitchen Timer State
+  const [activeTimer, setActiveTimer] = useState<ActiveKitchenTimer | null>(() => {
+    return loadActiveTimer(userId);
+  });
+
+  useEffect(() => {
+    setActiveTimer(loadActiveTimer(userId));
+  }, [userId]);
+
+  useEffect(() => {
+    if (!activeTimer || activeTimer.isPaused || activeTimer.isCompleted || activeTimer.deadline === null) {
+      return;
+    }
+
+    const refresh = () => {
+      if (!activeTimer || activeTimer.isPaused || activeTimer.deadline === null) return;
+      const remaining = remainingTimerSeconds(activeTimer.deadline);
+      if (remaining <= 0) {
+        const completed: ActiveKitchenTimer = {
+          ...activeTimer,
+          remainingSeconds: 0,
+          deadline: null,
+          isCompleted: true,
+        };
+        saveActiveTimer(completed);
+        setActiveTimer(completed);
+        triggerHaptic('notification_success');
+      } else if (remaining !== activeTimer.remainingSeconds) {
+        const updated: ActiveKitchenTimer = {
+          ...activeTimer,
+          remainingSeconds: remaining,
+        };
+        saveActiveTimer(updated);
+        setActiveTimer(updated);
+      }
+    };
+
+    const intervalId = window.setInterval(refresh, 1000);
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('pageshow', refresh);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('pageshow', refresh);
+    };
+  }, [activeTimer]);
+
+  const handleStartTimer = useCallback(
+    (recipeId: string, recipeTitle: string, minutes: number, stepIndex?: number) => {
+      triggerHaptic('selection');
+      const totalSec = minutes * 60;
+      const deadline = timerDeadline(totalSec);
+      const newTimer: ActiveKitchenTimer = {
+        userId: userId !== undefined && userId !== null ? String(userId) : 'anonymous',
+        recipeId,
+        recipeTitle,
+        stepIndex,
+        label: stepIndex !== undefined ? `Шаг ${stepIndex + 1} · ${minutes} мин` : `Таймер · ${minutes} мин`,
+        totalDurationSeconds: totalSec,
+        deadline,
+        remainingSeconds: totalSec,
+        isPaused: false,
+        isCompleted: false,
+        startedAt: Date.now(),
+      };
+      saveActiveTimer(newTimer);
+      setActiveTimer(newTimer);
+    },
+    [userId]
+  );
+
+  const handlePauseTimer = useCallback(() => {
+    if (!activeTimer || activeTimer.isPaused) return;
+    triggerHaptic('selection');
+    const remaining = activeTimer.deadline ? remainingTimerSeconds(activeTimer.deadline) : activeTimer.remainingSeconds;
+    const updated: ActiveKitchenTimer = {
+      ...activeTimer,
+      remainingSeconds: remaining,
+      deadline: null,
+      isPaused: true,
+      isCompleted: remaining <= 0,
+    };
+    saveActiveTimer(updated);
+    setActiveTimer(updated);
+  }, [activeTimer]);
+
+  const handleResumeTimer = useCallback(() => {
+    if (!activeTimer || !activeTimer.isPaused || activeTimer.remainingSeconds <= 0) return;
+    triggerHaptic('selection');
+    const deadline = timerDeadline(activeTimer.remainingSeconds);
+    const updated: ActiveKitchenTimer = {
+      ...activeTimer,
+      deadline,
+      isPaused: false,
+      isCompleted: false,
+    };
+    saveActiveTimer(updated);
+    setActiveTimer(updated);
+  }, [activeTimer]);
+
+  const handleStopTimer = useCallback(() => {
+    triggerHaptic('impact_light');
+    clearActiveTimer(userId);
+    setActiveTimer(null);
+  }, [userId]);
 
   // Subscription state and Paywall modal control
   const [localSubscription, setLocalSubscription] = useState<SubscriptionState | null>(
@@ -451,6 +564,11 @@ export function FoodFirstApp({
             checkedSteps={state.checked_steps}
             onToggleStep={onToggleStep}
             onGoBack={navigateBack}
+            activeTimer={activeTimer}
+            onStartTimer={handleStartTimer}
+            onPauseTimer={handlePauseTimer}
+            onResumeTimer={handleResumeTimer}
+            onStopTimer={handleStopTimer}
           />
         ) : (
           <div className="p-8 max-w-xl mx-auto text-center space-y-4" data-testid="recipe-unavailable-notice">
@@ -531,7 +649,18 @@ export function FoodFirstApp({
         sessionToken={sessionToken}
         currentTier={localSubscription?.tier}
         availableProducts={localSubscription?.available_products}
+        paymentsEnabled={localSubscription?.payments_enabled}
       />
+
+      {activeTimer && (currentScreen !== 'recipe' || activeRecipeId !== activeTimer.recipeId) && (
+        <KitchenTimerWidget
+          timer={activeTimer}
+          onOpenRecipe={handleOpenRecipe}
+          onPauseTimer={handlePauseTimer}
+          onResumeTimer={handleResumeTimer}
+          onStopTimer={handleStopTimer}
+        />
+      )}
     </AppShell>
   );
 }

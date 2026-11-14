@@ -1,0 +1,209 @@
+/* src/ui/food-first/kitchen-timer-widget.css */
+
+.kb-floating-timer {
+  position: fixed;
+  bottom: calc(68px + var(--kb-safe-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 24px), 540px);
+  z-index: 28;
+  background: var(--kb-surface, #ffffff);
+  border: 1px solid var(--kb-border, #dce4dd);
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+  padding: 10px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  font-family: inherit;
+  color: var(--kb-text-1, #1c2821);
+  box-sizing: border-box;
+  animation: kb-timer-slide-up 0.2s ease-out;
+}
+
+@keyframes kb-timer-slide-up {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.kb-floating-timer--completed {
+  border-color: #255c48;
+  background: #f4f8f5;
+}
+
+.kb-floating-timer--paused {
+  opacity: 0.92;
+}
+
+.kb-floating-timer__main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 200px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.kb-floating-timer__indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #edf1e6;
+  color: #255c48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.kb-floating-timer--completed .kb-floating-timer__indicator {
+  background: #255c48;
+  color: #ffffff;
+}
+
+.kb-floating-timer__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.kb-floating-timer__title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kb-floating-timer__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kb-text-1, #1c2821);
+}
+
+.kb-floating-timer__step {
+  color: var(--kb-text-3, #526159);
+  font-size: 11px;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.kb-floating-timer__status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.kb-floating-timer__countdown {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #255c48;
+  letter-spacing: -0.02em;
+}
+
+.kb-floating-timer--completed .kb-floating-timer__countdown {
+  color: #1e4e3b;
+}
+
+.kb-floating-timer__badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #e5e9e5;
+  color: var(--kb-text-2, #37473e);
+  text-transform: uppercase;
+}
+
+.kb-floating-timer__badge--done {
+  background: #d4ebd9;
+  color: #1b532f;
+}
+
+.kb-floating-timer__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.kb-floating-timer__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  min-width: 36px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--kb-border, #dce4dd);
+  background: var(--kb-surface, #ffffff);
+  color: var(--kb-text-1, #1c2821);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.kb-floating-timer__btn:hover {
+  background: var(--kb-surface-muted, #f5f7f3);
+}
+
+.kb-floating-timer__btn--goto {
+  background: #255c48;
+  color: #ffffff;
+  border-color: #255c48;
+}
+
+.kb-floating-timer__btn--goto:hover {
+  background: #1e4e3b;
+}
+
+.kb-floating-timer__btn--close {
+  color: var(--kb-text-3, #526159);
+  padding: 6px;
+}
+
+.kb-floating-timer__disclaimer {
+  width: 100%;
+  font-size: 10px;
+  color: var(--kb-text-3, #526159);
+  line-height: 1.3;
+  margin-top: 2px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--kb-border, #dce4dd);
+}
+
+@media (max-width: 360px) {
+  .kb-floating-timer {
+    padding: 8px 10px;
+  }
+  .kb-floating-timer__title {
+    max-width: 120px;
+  }
+  .kb-floating-timer__btn--goto {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-floating-timer {
+    animation: none !important;
+    transition: none !important;
+  }
+}

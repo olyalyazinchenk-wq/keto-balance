@@ -23,17 +23,47 @@ export function signTelegramInitData(
   return params.toString();
 }
 
-export function createTelegramMockScript(initData: string, user: { id: number; first_name: string }): string {
+export function createTelegramMockScript(
+  initData: string,
+  user: { id: number; first_name: string },
+  theme: 'light' | 'dark' = 'light'
+): string {
+  const themeParams =
+    theme === 'dark'
+      ? {
+          bg_color: '#0B1410',
+          text_color: '#E8F1EC',
+          hint_color: '#8A9E93',
+          link_color: '#529E7A',
+          button_color: '#255C48',
+          button_text_color: '#FFFFFF',
+          secondary_bg_color: '#12201A',
+        }
+      : {
+          bg_color: '#F4F8F5',
+          text_color: '#1C2821',
+          hint_color: '#526159',
+          link_color: '#255C48',
+          button_color: '#255C48',
+          button_text_color: '#FFFFFF',
+          secondary_bg_color: '#FFFFFF',
+        };
+
   return `
     (function() {
+      const listeners = {
+        themeChanged: [],
+        viewportChanged: [],
+      };
+
       const mockWebApp = {
         initData: ${JSON.stringify(initData)},
         initDataUnsafe: { user: ${JSON.stringify(user)} },
         ready: () => {},
         expand: () => {},
         close: () => {},
-        themeParams: {},
-        colorScheme: 'light',
+        themeParams: ${JSON.stringify(themeParams)},
+        colorScheme: ${JSON.stringify(theme)},
         isExpanded: true,
         viewportHeight: 640,
         viewportStableHeight: 640,
@@ -42,6 +72,42 @@ export function createTelegramMockScript(initData: string, user: { id: number; f
         BackButton: { isVisible: false, onClick: () => {}, offClick: () => {}, show: () => {}, hide: () => {} },
         MainButton: { isVisible: false, onClick: () => {}, offClick: () => {}, show: () => {}, hide: () => {}, setText: () => {} },
         HapticFeedback: { impactOccurred: () => {}, notificationOccurred: () => {}, selectionChanged: () => {} },
+        onEvent: (eventType, eventHandler) => {
+          if (listeners[eventType]) {
+            listeners[eventType].push(eventHandler);
+          }
+        },
+        offEvent: (eventType, eventHandler) => {
+          if (listeners[eventType]) {
+            listeners[eventType] = listeners[eventType].filter(h => h !== eventHandler);
+          }
+        },
+      };
+
+      window.__mockTgThemeChange = function(newTheme) {
+        mockWebApp.colorScheme = newTheme;
+        mockWebApp.themeParams = newTheme === 'dark'
+          ? {
+              bg_color: '#0B1410',
+              text_color: '#E8F1EC',
+              hint_color: '#8A9E93',
+              link_color: '#529E7A',
+              button_color: '#255C48',
+              button_text_color: '#FFFFFF',
+              secondary_bg_color: '#12201A',
+            }
+          : {
+              bg_color: '#F4F8F5',
+              text_color: '#1C2821',
+              hint_color: '#526159',
+              link_color: '#255C48',
+              button_color: '#255C48',
+              button_text_color: '#FFFFFF',
+              secondary_bg_color: '#FFFFFF',
+            };
+        listeners.themeChanged.forEach(fn => {
+          try { fn(); } catch(e) { console.error(e); }
+        });
       };
 
       const tgObj = {};
@@ -105,16 +171,22 @@ export async function activateSyntheticPremium(session: AuthenticatedUserSession
 }
 
 export const test = base.extend<{
-  createSession: (user?: { id: number; first_name: string; username?: string }) => Promise<AuthenticatedUserSession>;
+  createSession: (
+    user?: { id: number; first_name: string; username?: string },
+    options?: { theme?: 'light' | 'dark'; viewport?: { width: number; height: number } }
+  ) => Promise<AuthenticatedUserSession>;
 }>({
   createSession: async ({ browser }, use) => {
     const contextsToClose: BrowserContext[] = [];
 
-    await use(async (user = { id: 2001, first_name: 'SyntheticUserA' }) => {
-      const context = await browser.newContext();
+    await use(async (user = { id: 2001, first_name: 'SyntheticUserA' }, options) => {
+      const context = await browser.newContext({
+        viewport: options?.viewport,
+        colorScheme: options?.theme || 'light',
+      });
       contextsToClose.push(context);
       const initData = signTelegramInitData(user);
-      await context.addInitScript(createTelegramMockScript(initData, user));
+      await context.addInitScript(createTelegramMockScript(initData, user, options?.theme || 'light'));
       const page = await context.newPage();
       return { page, context, initData, user };
     });

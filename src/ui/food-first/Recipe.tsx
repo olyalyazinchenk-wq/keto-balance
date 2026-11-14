@@ -16,6 +16,8 @@ import { RecipePlate } from './RecipePlate';
 import { triggerHaptic } from '../../tma/telegram';
 import { timerDeadline, remainingTimerSeconds } from './kitchenTimer';
 
+import type { ActiveKitchenTimer } from './kitchenTimerState';
+
 export interface RecipeScreenProps {
   recipe: RecipeViewModel;
   checkedIngredients: Record<string, boolean>;
@@ -24,6 +26,11 @@ export interface RecipeScreenProps {
   onToggleStep: (key: string) => void;
   onLogCookedMealToDiary?: (recipeTitle: string) => void;
   onGoBack?: () => void;
+  activeTimer?: ActiveKitchenTimer | null;
+  onStartTimer?: (recipeId: string, recipeTitle: string, minutes: number, stepIndex?: number) => void;
+  onPauseTimer?: () => void;
+  onResumeTimer?: () => void;
+  onStopTimer?: () => void;
 }
 
 export function RecipeScreen({
@@ -34,35 +41,60 @@ export function RecipeScreen({
   onToggleStep,
   onLogCookedMealToDiary,
   onGoBack,
+  activeTimer,
+  onStartTimer,
+  onPauseTimer,
+  onResumeTimer,
+  onStopTimer,
 }: RecipeScreenProps) {
   const [portions, setPortions] = useState<1 | 2 | 4>(1);
   const variant = recipe.portionsVariants[portions] || recipe.portionsVariants[1];
 
-  // Встроенный кухонный таймер для шагов рецепта
-  const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
-  const [timerRunning, setTimerRunning] = useState<boolean>(false);
-  const [timerLabel, setTimerLabel] = useState<string>('Таймер у плиты');
-  const [timerCompleted, setTimerCompleted] = useState(false);
+  // Local fallback timer when no lifted timer is passed
+  const [localTimerSecondsLeft, setLocalTimerSecondsLeft] = useState<number>(0);
+  const [localTimerRunning, setLocalTimerRunning] = useState<boolean>(false);
+  const [localTimerLabel, setLocalTimerLabel] = useState<string>('Таймер у плиты');
+  const [localTimerCompleted, setLocalTimerCompleted] = useState(false);
   const deadlineRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    deadlineRef.current = null;
-    setTimerSecondsLeft(0);
-    setTimerRunning(false);
-    setTimerCompleted(false);
-    setTimerLabel('Таймер у плиты');
-  }, [recipe.id]);
+  const hasLiftedTimer = Boolean(onStartTimer);
+  const isCurrentTimer = Boolean(activeTimer && activeTimer.recipeId === recipe.id);
+
+  const timerLabel = hasLiftedTimer
+    ? (isCurrentTimer ? activeTimer!.label : 'Таймер у плиты')
+    : localTimerLabel;
+  const timerSecondsLeft = hasLiftedTimer
+    ? (isCurrentTimer ? activeTimer!.remainingSeconds : 0)
+    : localTimerSecondsLeft;
+  const timerRunning = hasLiftedTimer
+    ? (isCurrentTimer ? (!activeTimer!.isPaused && !activeTimer!.isCompleted && activeTimer!.remainingSeconds > 0) : false)
+    : localTimerRunning;
+  const timerCompleted = hasLiftedTimer
+    ? (isCurrentTimer ? Boolean(activeTimer!.isCompleted || activeTimer!.remainingSeconds <= 0) : false)
+    : localTimerCompleted;
+  const timerVisible = hasLiftedTimer
+    ? (isCurrentTimer && (activeTimer!.remainingSeconds > 0 || activeTimer!.isCompleted || activeTimer!.isPaused))
+    : (localTimerRunning || localTimerSecondsLeft > 0 || localTimerCompleted);
 
   useEffect(() => {
-    if (!timerRunning) return;
+    if (hasLiftedTimer) return;
+    deadlineRef.current = null;
+    setLocalTimerSecondsLeft(0);
+    setLocalTimerRunning(false);
+    setLocalTimerCompleted(false);
+    setLocalTimerLabel('Таймер у плиты');
+  }, [recipe.id, hasLiftedTimer]);
+
+  useEffect(() => {
+    if (hasLiftedTimer || !localTimerRunning) return;
     const refresh = () => {
       if (deadlineRef.current === null) return;
       const remaining = remainingTimerSeconds(deadlineRef.current);
-      setTimerSecondsLeft(remaining);
+      setLocalTimerSecondsLeft(remaining);
       if (remaining <= 0) {
         deadlineRef.current = null;
-        setTimerRunning(false);
-        setTimerCompleted(true);
+        setLocalTimerRunning(false);
+        setLocalTimerCompleted(true);
         triggerHaptic('notification_success');
       }
     };
@@ -75,33 +107,57 @@ export function RecipeScreen({
       document.removeEventListener('visibilitychange', refresh);
       window.removeEventListener('pageshow', refresh);
     };
-  }, [timerRunning]);
+  }, [localTimerRunning, hasLiftedTimer]);
 
   const startStepTimer = (minutes: number, stepIndex?: number) => {
+    if (hasLiftedTimer && onStartTimer) {
+      onStartTimer(recipe.id, recipe.title, minutes, stepIndex);
+      return;
+    }
     triggerHaptic('selection');
-    setTimerSecondsLeft(minutes * 60);
+    setLocalTimerSecondsLeft(minutes * 60);
     deadlineRef.current = timerDeadline(minutes * 60);
-    setTimerCompleted(false);
-    setTimerLabel(
+    setLocalTimerCompleted(false);
+    setLocalTimerLabel(
       stepIndex !== undefined
         ? `Шаг ${stepIndex + 1} · ${minutes} мин`
         : `Таймер · ${minutes} мин`
     );
-    setTimerRunning(true);
+    setLocalTimerRunning(true);
   };
 
   const toggleTimer = () => {
+    if (hasLiftedTimer) {
+      if (timerRunning) {
+        onPauseTimer?.();
+      } else {
+        onResumeTimer?.();
+      }
+      return;
+    }
     triggerHaptic('selection');
-    if (timerRunning) {
+    if (localTimerRunning) {
       const remaining = remainingTimerSeconds(deadlineRef.current);
       deadlineRef.current = null;
-      setTimerSecondsLeft(remaining);
-      setTimerRunning(false);
-      if (remaining === 0) setTimerCompleted(true);
-    } else if (timerSecondsLeft > 0) {
-      deadlineRef.current = timerDeadline(timerSecondsLeft);
-      setTimerRunning(true);
+      setLocalTimerSecondsLeft(remaining);
+      setLocalTimerRunning(false);
+      if (remaining === 0) setLocalTimerCompleted(true);
+    } else if (localTimerSecondsLeft > 0) {
+      deadlineRef.current = timerDeadline(localTimerSecondsLeft);
+      setLocalTimerRunning(true);
     }
+  };
+
+  const handleResetTimer = () => {
+    if (hasLiftedTimer) {
+      onStopTimer?.();
+      return;
+    }
+    triggerHaptic('impact_light');
+    setLocalTimerRunning(false);
+    deadlineRef.current = null;
+    setLocalTimerCompleted(false);
+    setLocalTimerSecondsLeft(0);
   };
 
   const formatTimerMMSS = (totalSec: number) => {
@@ -296,7 +352,7 @@ export function RecipeScreen({
           </div>
 
           {/* Плашка таймера, если он запущен */}
-          {(timerRunning || timerSecondsLeft > 0 || timerCompleted) && (
+          {timerVisible && (
             <div
               className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between gap-3"
               role="timer"
@@ -313,7 +369,7 @@ export function RecipeScreen({
                     {formatTimerMMSS(timerSecondsLeft)}
                   </span>
                   {timerCompleted && <span role="status" className="block text-sm font-semibold">Время вышло — проверьте блюдо</span>}
-                  <p className="text-xs mt-1">При возврате на этот экран время уточняется. Сигнал в фоне не гарантируется; при выходе из рецепта таймер сбрасывается.</p>
+                  <p className="text-xs mt-1">Таймер сохраняется при переходе на другие экраны. Фоновый звук может зависеть от устройства: держите экран открытым во время готовки.</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -327,13 +383,7 @@ export function RecipeScreen({
                 <button
                   type="button"
                   className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
-                  onClick={() => {
-                    triggerHaptic('impact_light');
-                    setTimerRunning(false);
-                    deadlineRef.current = null;
-                    setTimerCompleted(false);
-                    setTimerSecondsLeft(0);
-                  }}
+                  onClick={handleResetTimer}
                 >
                   Сброс
                 </button>
