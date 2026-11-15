@@ -17,12 +17,15 @@ export interface EducationGuide {
 }
 
 interface EducationGuidesProps {
+  kind?: 'education' | 'guides';
+  active?: boolean;
+  onDetailChange?: (back: (() => void) | null) => void;
   sessionToken?: string;
   onOpenSettings?: () => void;
   onNavigate?: (screen: 'menu' | 'shopping' | 'support') => void;
 }
 
-export function EducationGuides({ sessionToken, onOpenSettings, onNavigate }: EducationGuidesProps = {}) {
+export function EducationGuides({ kind, active = true, onDetailChange, sessionToken, onOpenSettings, onNavigate }: EducationGuidesProps = {}) {
   const [guides, setGuides] = useState<EducationGuide[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +33,16 @@ export function EducationGuides({ sessionToken, onOpenSettings, onNavigate }: Ed
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const requestGeneration = useRef(0);
+  const listScroll = useRef(0);
+  const closeGuide = useCallback(() => {
+    setExpandedId(null);
+    requestAnimationFrame(() => window.scrollTo({ top: listScroll.current, behavior: 'instant' as ScrollBehavior }));
+  }, []);
+  useEffect(() => {
+    if (!active || !onDetailChange) return;
+    onDetailChange(expandedId ? closeGuide : null);
+    return () => onDetailChange(null);
+  }, [expandedId, active, onDetailChange, closeGuide]);
 
   const loadGuides = useCallback(() => {
     const generation = ++requestGeneration.current;
@@ -49,7 +62,8 @@ export function EducationGuides({ sessionToken, onOpenSettings, onNavigate }: Ed
       })
       .then((data) => {
         if (generation !== requestGeneration.current) return;
-        setGuides(data.guides || []);
+        const lessons = ['intro_approaches', 'reading_labels', 'allergens_limits'];
+        setGuides((data.guides || []).filter((guide: EducationGuide) => !kind || (kind === 'education' ? lessons.includes(guide.id) : !lessons.includes(guide.id))));
         setLoading(false);
       })
       .catch((err) => {
@@ -63,7 +77,7 @@ export function EducationGuides({ sessionToken, onOpenSettings, onNavigate }: Ed
         setLoading(false);
       });
     return controller;
-  }, [sessionToken]);
+  }, [sessionToken, kind]);
 
   useEffect(() => {
     const controller = loadGuides();
@@ -91,7 +105,9 @@ export function EducationGuides({ sessionToken, onOpenSettings, onNavigate }: Ed
   }, [guides, selectedCategory, searchQuery]);
 
   const toggleExpand = (id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id));
+    if (expandedId === id) { closeGuide(); return; }
+    listScroll.current = window.scrollY;
+    setExpandedId(id);
   };
 
   if (loading) {
@@ -130,7 +146,7 @@ export function EducationGuides({ sessionToken, onOpenSettings, onNavigate }: Ed
             Материалы о питании
           </span>
           <h3 className="text-base font-bold text-[var(--kb-text-1)] mt-0.5">
-            Обучение и микро-гайды
+            {kind === 'education' ? 'Основы кето шаг за шагом' : kind === 'guides' ? 'Практические микрогайды' : 'Обучение и микрогайды'}
           </h3>
         </div>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[var(--kb-surface-muted)] text-[var(--kb-primary)] border border-emerald-200">
@@ -237,6 +253,7 @@ export function EducationGuides({ sessionToken, onOpenSettings, onNavigate }: Ed
 
               {isExpanded && (
                 <div className="px-3.5 pb-4 pt-2 border-t border-[var(--kb-border)] bg-[var(--kb-surface)] space-y-3 text-xs text-[var(--kb-text-2)] leading-relaxed">
+                  <button type="button" className="ff-proof__help-btn" onClick={closeGuide}>← Назад к списку</button>
                   <div className="whitespace-pre-line text-[var(--kb-text-1)]">
                     {guide.content}
                   </div>

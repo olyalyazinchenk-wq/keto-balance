@@ -24,6 +24,7 @@ import { createMenuController } from './adapters/menuController';
 import { loadMonthlyCatalog } from './adapters/monthlyCatalog';
 import { resolveSelectedDate } from './domain/menu';
 import { isRecipeAllowed } from './domain/eligibility';
+import type { NavigationEntry } from './ui/food-first/navigation';
 import { FoodFirstApp } from './ui/food-first/FoodFirstApp';
 import { rebuildShoppingFromMenu } from './ui/food-first/shoppingFromMenu';
 import { toRecipeViewModel } from './ui/food-first/recipesAdapter';
@@ -56,6 +57,7 @@ const RESTRICTIONS_LIST: { token: PilotRestrictionToken; label: string }[] = [
 ];
 
 export default function PilotApp() {
+  const navigationMemory = useRef<NavigationEntry[] | null>(null);
   const [phase, setPhase] = useState<PilotPhase>('init');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [monthlyCatalogError, setMonthlyCatalogError] = useState('');
@@ -63,6 +65,7 @@ export default function PilotApp() {
   const [gatePassed, setGatePassed] = useState<boolean>(false);
 
   const [userId, setUserId] = useState<number | null>(null);
+  useEffect(() => { navigationMemory.current = null; }, [userId]);
   const [userRevision, setUserRevision] = useState<number>(0);
   const [shoppingRevision, setShoppingRevision] = useState<number>(0);
 
@@ -1705,10 +1708,10 @@ export default function PilotApp() {
                 <button
                   type="button"
                   data-testid="settings-back-to-home"
-                  onClick={() => setViewHomeBeforeGate(true)}
+                  onClick={() => { if (profile && state?.menu) setPhase('ready'); else setViewHomeBeforeGate(true); }}
                   className="text-xs text-[#5F7161] hover:underline font-semibold"
                 >
-                  ← На главную
+                  ← Назад
                 </button>
               </div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#5F7161]">
@@ -2149,6 +2152,7 @@ export default function PilotApp() {
       </div>
     )}
     <FoodFirstApp
+      navigationMemory={navigationMemory}
       catalog={catalog}
       profile={profile}
       state={state}
