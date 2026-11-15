@@ -1,0 +1,20 @@
+.ff-client-info {
+  margin-block: 18px;
+  padding: 18px;
+  border: 1px solid var(--kb-border);
+  border-radius: 18px;
+  background: var(--kb-surface);
+  color: var(--kb-text-1);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.ff-client-info summary { cursor: pointer; min-height: 44px; font-weight: 700; font-size: 20px; }
+.ff-client-info summary:focus-visible { outline: 2px solid var(--kb-primary); outline-offset: 4px; }
+.ff-client-info__hint { display: block; font-size: 13px; font-weight: 400; color: var(--kb-text-2); }
+.ff-client-info__body { padding-top: 12px; }
+.ff-client-info h3 { margin: 18px 0 6px; font-size: 16px; line-height: 1.4; }
+.ff-client-info p { margin: 8px 0; color: var(--kb-text-2); }
+.ff-client-info .ff-client-info__body section { margin-bottom: 16px; }
+.ff-client-info__sources { font-size: 12px; }
+.ff-client-info a { color: var(--kb-primary); text-decoration: underline; }

@@ -241,7 +241,7 @@ export function RecipeScreen({
               <span className="text-[var(--kb-border)]" aria-hidden="true">|</span>
               <span
                 className="text-[var(--kb-text-3)]"
-                title={variant.nutrition?.status === 'reviewed' ? 'Расчёт по подтверждённому составу' : `Статус расчёта нутриентов: ${variant.nutritionStatus}`}
+                title={variant.nutrition?.status === 'reviewed' ? 'Расчёт по подтверждённому составу' : 'Пищевая ценность пока не подтверждена'}
               >
                 {variant.nutrition?.status === 'reviewed' ? 'КБЖУ по подтверждённому составу' : 'КБЖУ уточняется автором'}
               </span>

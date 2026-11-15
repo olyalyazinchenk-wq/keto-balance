@@ -23,6 +23,7 @@ import { isRecipeAllowed } from '../../domain/eligibility';
 import { PREVIEW_RECIPE_IDS } from '../../data/releasedRecipeIds';
 import PrivateSupportPage from '../../pages/PrivateSupportPage';
 import { EducationGuides } from './EducationGuides';
+import { KetoRules, PrivacyInfo } from './ClientInfo';
 
 export interface FoodFirstAppProps {
   catalog: PilotCatalogV1;
@@ -99,6 +100,7 @@ export function FoodFirstApp({
   sessionToken,
   userId,
 }: FoodFirstAppProps) {
+  const isLegacyPlan = Boolean(state.menu && (state.menu.mode !== 'keto' || profile.settings?.approach !== 'keto'));
   const [initialRoute] = useState(() => getInitialRoute());
   const [navStack, setNavStack] = useState<ScreenId[]>([initialRoute.screen]);
   const currentScreen: ScreenId = navStack[navStack.length - 1] || 'today';
@@ -311,13 +313,14 @@ export function FoodFirstApp({
   const handleReplaceSlot = useCallback(
     (dayIndex: number, slotKey: string, nextRecipeId: string) => {
       if (!state.menu) return;
+      if (isLegacyPlan) { onOpenSettings?.('keto'); return; }
       if (!isPremium) { handleOpenPaywall(); return; }
       const targetDay = state.menu.days[dayIndex];
       if (targetDay) {
         onReplaceRecipe(targetDay.date, slotKey, nextRecipeId);
       }
     },
-    [state.menu, onReplaceRecipe, isPremium, handleOpenPaywall]
+    [state.menu, onReplaceRecipe, isPremium, handleOpenPaywall, isLegacyPlan, onOpenSettings]
   );
 
   // Hash synchronization
@@ -355,7 +358,7 @@ export function FoodFirstApp({
     }
     return {
       created: state.menu.created || 1,
-      title: state.menu.mode === 'carnivore' ? 'Сохранённый рацион' : 'Кето-рацион',
+      title: isLegacyPlan ? 'Сохранённый рацион' : 'Кето-рацион',
       days: state.menu.days.map((d, idx) => ({
         dayIndex: idx,
         date: d.date,
@@ -363,7 +366,7 @@ export function FoodFirstApp({
         slots: d.slots,
       })),
     };
-  }, [state.menu]);
+  }, [state.menu, isLegacyPlan]);
 
   const resolvedSlots = useMemo(() => {
     if (!viewDayMenu) return [];
@@ -424,22 +427,19 @@ export function FoodFirstApp({
   // Notice text for AppShell
   const noticeText = useMemo(() => {
     if (syncStatus === 'conflict') {
-      return 'Конфликт версий. Обновите страницу';
+      return 'Данные изменились на другом устройстве. Откройте приложение заново.';
     }
     if (syncStatus === 'error') {
-      return 'Ошибка синхронизации с сервером';
+      return 'Не удалось сохранить изменения. Проверьте соединение и повторите действие.';
     }
     if (syncStatus === 'saving') {
-      return 'Сохранение изменений на сервере...';
+      return 'Сохраняем изменения…';
     }
     if (state.shopping_stale) {
-      return 'Список покупок не согласован с меню · требуется обновление';
-    }
-    if (catalog.test_only) {
-      return 'Тестовый каталог · синтетические данные';
+      return 'Меню изменилось. Обновите список покупок.';
     }
     return '';
-  }, [catalog.test_only, syncStatus, state.shopping_stale]);
+  }, [syncStatus, state.shopping_stale]);
 
   // View settings draft for MenuScreen
   const settingsDraft: UserSettingsDraft = useMemo(() => {
@@ -499,6 +499,11 @@ export function FoodFirstApp({
         <button type="button" className="ff-proof__help-btn" onClick={onRetrySubscription}>Проверить доступ ещё раз</button>
       </aside>}
       {/* Notice header */}
+      {isLegacyPlan && <aside className="ff-proof__notice" role="note" data-testid="legacy-plan-notice">
+        <p>Ваш прежний рацион сохранён. В этой версии доступно только кето. Чтобы перейти на него, составьте новое меню. Индивидуальные исключения сохранятся.</p>
+        {onOpenSettings && <button type="button" className="ff-proof__help-btn" data-testid="legacy-plan-create-keto"
+          onClick={() => onOpenSettings('keto')}>Составить кето-меню</button>}
+      </aside>}
       {noticeText && <aside className="ff-proof__notice" data-testid="pilot-sync-banner" role="status" aria-live="polite">
         {noticeText}
       </aside>}
@@ -548,13 +553,14 @@ export function FoodFirstApp({
           recipesById={recipesById}
           settings={settingsDraft}
           onReplaceRecipe={handleReplaceSlot}
+          allowRecipeChanges={!isLegacyPlan}
           onOpenRecipe={handleOpenRecipe}
           onChooseMenuAndGoToShopping={() => {
             onRefreshShopping();
             navigateTo('shopping');
           }}
           onEditSettings={onOpenSettings ? () => onOpenSettings() : undefined}
-          onRebuildMenu={async () => { if (!isPremium) { handleOpenPaywall(); return; } await onRebuildMenu(); }}
+          onRebuildMenu={isLegacyPlan ? undefined : async () => { if (!isPremium) { handleOpenPaywall(); return; } await onRebuildMenu(); }}
           catalogRecipes={catalog.recipes}
           admittedRecipeIds={effectiveCatalogIds}
         />
@@ -580,8 +586,8 @@ export function FoodFirstApp({
             <h2 className="text-xl font-bold">Блюдо недоступно</h2>
             <p className="text-sm text-stone-600">
               {!activeRecipe
-                ? `Рецепт (ID: ${activeRecipeId}) не найден в допущенном каталоге.`
-                : 'Выбранное блюдо не подходит под ограничения вашего профиля питания или режим диеты.'}
+                ? 'Рецепт сейчас недоступен. Вернитесь к меню и выберите другое блюдо.'
+                : 'Выбранное блюдо не подходит под ваши настройки питания.'}
             </p>
             <button
               type="button"
@@ -597,7 +603,7 @@ export function FoodFirstApp({
       {currentScreen === 'shopping' && (
         <ShoppingScreen
           items={shoppingItems}
-          menuTitle={state.menu ? (state.menu.mode === 'carnivore' ? 'Сохранённое меню' : 'Кето-рацион') : 'Список покупок'}
+          menuTitle={state.menu ? (isLegacyPlan ? 'Сохранённое меню' : 'Кето-рацион') : 'Список покупок'}
           isStaleAfterMenuEdit={state.shopping_stale}
           onRefreshShoppingFromMenu={onRefreshShopping}
           portionsMultiplier={state.shopping_batches}
@@ -632,7 +638,7 @@ export function FoodFirstApp({
           <h1>{currentScreen === 'diary' ? 'Дневник' : 'Ещё'}</h1>
           <section aria-label="Настройки и помощь">
             <h2>Твоё питание</h2>
-            {onOpenSettings && <button type="button" className="ff-more-link" onClick={() => onOpenSettings()}>Настройки питания и ограничения<span aria-hidden="true">→</span></button>}
+            {onOpenSettings && <button type="button" className="ff-more-link" data-testid="more-open-settings-btn" onClick={() => onOpenSettings()}>Настройки питания<span aria-hidden="true">→</span></button>}
             <DailyTip showButton={true} />
             <button type="button" className="ff-more-link" onClick={() => navigateTo('support')}>Помощь и личный вопрос Ольге<span aria-hidden="true">→</span></button>
           </section>
@@ -643,6 +649,8 @@ export function FoodFirstApp({
             <button type="button" className="ff-action" data-testid="more-open-paywall-btn" onClick={handleOpenPaywall}>Условия доступа и подписка</button>
           </section>
           <section><h2>Дневник появится позже</h2><p>Личные записи пока недоступны. Сейчас здесь можно найти материалы о питании.</p></section>
+          <KetoRules />
+          <PrivacyInfo />
           <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />
         </div>
       )}

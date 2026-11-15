@@ -38,6 +38,7 @@ export interface MenuScreenProps {
   onChooseMenuAndGoToShopping: () => void;
   onEditSettings?: () => void;
   onRebuildMenu?: () => void;
+  allowRecipeChanges?: boolean;
   catalogRecipes?: any[];
   admittedRecipeIds: readonly string[];
 }
@@ -60,6 +61,7 @@ export function MenuScreen({
   onChooseMenuAndGoToShopping,
   onEditSettings,
   onRebuildMenu,
+  allowRecipeChanges = true,
   catalogRecipes,
   admittedRecipeIds,
 }: MenuScreenProps) {
@@ -86,12 +88,12 @@ export function MenuScreen({
     return cleanup;
   }, [replacingSlot]);
 
-  const matchingRecipes = filterRecipesBySettings(
+  const matchingRecipes = allowRecipeChanges ? filterRecipesBySettings(
     recipes,
     settings,
     catalogRecipes,
     admittedRecipeIds
-  );
+  ) : recipes;
   const currentDay =
     menu.days.find((day) => day.dayIndex === selectedDayIndex) || menu.days[0];
   const resolvedSlots = currentDay
@@ -126,7 +128,7 @@ export function MenuScreen({
                 onEditSettings();
               }}
             >
-              <SlidersHorizontal aria-hidden="true" /> Параметры
+              <SlidersHorizontal aria-hidden="true" /> Настройки питания
             </button>
           )}
           {onRebuildMenu && (
@@ -292,7 +294,7 @@ export function MenuScreen({
                         </p>
                       )}
                       <div className="fm-card__actions">
-                        <button
+                        {allowRecipeChanges && <button
                           type="button"
                           className="fm-secondary"
                           data-testid={`replace-slot-btn-${slotKey}`}
@@ -306,7 +308,7 @@ export function MenuScreen({
                           }}
                         >
                           <RefreshCw aria-hidden="true" /> Заменить
-                        </button>
+                        </button>}
                         <button
                           type="button"
                           className="fm-primary"
@@ -344,7 +346,7 @@ export function MenuScreen({
         </section>
       )}
 
-      {replacingSlot && (
+      {allowRecipeChanges && replacingSlot && (
         <div
           className="fm-overlay"
           ref={dialogRef}

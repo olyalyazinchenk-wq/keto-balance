@@ -109,7 +109,7 @@ export function RecipePlate({ recipe, variant, checkedIngredients, onToggleIngre
         </section>
       ) : <details className="recipe-plate__nutrition">
         <summary>А где калории и БЖУ?</summary>
-        <p>КБЖУ: [УТОЧНИТЬ]. Данные этого рецепта ещё не подтверждены. Здесь показан состав и количество продуктов, а не доли белков, жиров и углеводов.</p>
+        <p>Пищевая ценность пока не подтверждена. Здесь показан состав и количество продуктов, а не доли белков, жиров и углеводов.</p>
       </details>}
     </section>
   );

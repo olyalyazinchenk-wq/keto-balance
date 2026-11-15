@@ -98,6 +98,7 @@ from bot.app_models import (
     UserConsentsPayload,
 )
 from bot.pilot_models import (
+    PilotProfileV1,
     PilotUserReadV1,
     PilotUserWriteV1,
     PilotShoppingReadV1,
@@ -779,11 +780,14 @@ def create_app(
     ):
         target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
         if payload.state and payload.state.menu:
-            existing_state = get_pilot_user(target_uid, db_path=active_db).get('state') or {}
+            existing_user = get_pilot_user(target_uid, db_path=active_db)
+            existing_state = existing_user.get('state') or {}
             old_menu = existing_state.get('menu') or {}
             new_menu = payload.state.menu.model_dump()
             menu_keys = ('mode', 'numDays', 'meals', 'portion', 'days', 'catalog_id', 'month')
             changed = any(new_menu.get(key) != old_menu.get(key) for key in menu_keys)
+            if changed and new_menu.get('mode') != 'keto':
+                raise HTTPException(status_code=400, detail='В текущей версии можно составлять и менять только кето-меню. Прежний рацион сохранён; откройте настройки питания для нового меню.')
             if changed and not paid_access(target_uid):
                 public_cat = catalog_service.get_catalog_data(is_owner=False)
                 preview_ids = {r['id'] for r in public_cat.get('recipes', [])[:5]}
@@ -799,14 +803,28 @@ def create_app(
 
             is_owner = bool(active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist)
             # 2. Check menu compatibility with profile restrictions and admitted catalog
-            compatible, reason = is_menu_compatible_with_profile(
-                payload.state.menu,
-                effective_profile,
-                catalog_service,
-                is_owner=is_owner
+            old_profile = existing_user.get('profile') or {}
+            legacy_plan = bool(old_menu) and (
+                old_menu.get('mode') != 'keto' or
+                (old_profile.get('settings') or {}).get('approach') != 'keto'
             )
-            if not compatible:
-                raise HTTPException(status_code=400, detail=reason)
+            stored_profile = PilotProfileV1.model_validate(old_profile).model_dump()
+            incoming_profile = payload.profile.model_dump() if payload.profile is not None else None
+            stored_profile['contraindications'] = stored_profile.get('contraindications') or []
+            if incoming_profile is not None:
+                incoming_profile['contraindications'] = incoming_profile.get('contraindications') or []
+            same_profile = incoming_profile == stored_profile
+            # Read/checkmark updates of a historical plan do not constitute new admission.
+            # A changed menu or profile still undergoes every restriction/catalog check.
+            if not (legacy_plan and not changed and same_profile):
+                compatible, reason = is_menu_compatible_with_profile(
+                    payload.state.menu,
+                    effective_profile,
+                    catalog_service,
+                    is_owner=is_owner
+                )
+                if not compatible:
+                    raise HTTPException(status_code=400, detail=reason)
 
             shopping_data = get_pilot_shopping(target_uid, db_path=active_db)
             has_shopping_record = bool(shopping_data.get("revision", 0) > 0)

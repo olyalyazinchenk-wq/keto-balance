@@ -1,5 +1,9 @@
 # Журнал передачи работы
 
+## 15.11.2026 — клиентская очистка и только keto
+
+Baseline f7e2802. Codex владеет UI copy/ClientInfo/Paywall/StartGate/server/tests; отдельный исполнитель — PilotApp/FoodFirstApp/Menu/legacy tests. Изменения объединены, 14 новых frontend checks/2mobileE2E/12ownerAPI PASS. Независимый review выявил реальный legacy mismatched profile400; исправлено с real positive test и защитой от обхода новых ограничений. Два backend monthly-теста зависели от старого ignored dist; их окружение перенесено на копии неизменённых исторических JSON в temp, assertions сохранены. Полные проверки/build/deploy далее, исходный бот/proxy и DBschema не менять.
+
 ## 15.11.2026,03:26МСК — Codex: monthly guard проверен и установлен
 
 Source8fc755d,live670592e480a02afe.356unit/30E2E/TS/buildPASS; независимый review без существенных замечаний. Только app обновлён; backend/catalog/bot/proxy прежние. Ноль потерь в проверенных таблицах меню/покупок/профиля,схема/integrity/FKPASS; прежний app сохранён,платежиoff. Полный JSON monthly_guard_20261115.json и отчёт MONTHLY_GUARD_DEPLOY_20261115.md сохранены. Следующий результат — реальный вход и личная приёмка Ольгой; допуск содержания и24ч остаются открыты. Публичный запуск/расходы/Stars не выполнялись.

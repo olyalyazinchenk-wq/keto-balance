@@ -1,6 +1,7 @@
 import unittest
 import json
 import tempfile
+import shutil
 from pathlib import Path
 from fastapi.testclient import TestClient
 
@@ -15,8 +16,14 @@ NORMAL_USER_ID = 555666777
 class TestMonthlyReleasesImmutability(unittest.TestCase):
     def setUp(self):
         self.root = Path(__file__).resolve().parent.parent.parent
-        self.dist_dir = self.root / "dist"
         self.temp_dir = tempfile.TemporaryDirectory()
+        # Historical catalog tests must not depend on an ignored local build/junction.
+        self.dist_dir = Path(self.temp_dir.name) / "dist"
+        self.dist_dir.mkdir()
+        for source in (self.root / 'catalogs' / 'archive').glob('*.json'):
+            shutil.copy2(source, self.dist_dir / source.name)
+        shutil.copy2(self.dist_dir / 'released-catalog-202611-v1.json', self.dist_dir / 'released-catalog.json')
+        (self.dist_dir / 'index.html').write_text('<html></html>', encoding='utf-8')
         self.db_path = Path(self.temp_dir.name) / "test_monthly.db"
         init_db(self.db_path)
 

@@ -5,6 +5,7 @@ import json
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from fastapi.testclient import TestClient
 
@@ -282,6 +283,86 @@ class TestOwnerAccessMode(unittest.TestCase):
         # 4. Recipe lookup with catalog_id="admin-catalog-v2" returns exact 350g
         k1_snap2 = self.catalog_service.get_recipe_by_id("k1", catalog_id=cat_id_v2)
         self.assertEqual(k1_snap2["ing"], [["Шпинат", "350 г"], ["Яйца", "4 шт."]])
+
+    def _legacy_release_payload(self):
+        return {
+            'schema_version': 1, 'expected_revision': 0,
+            'profile': {'settings': {
+                'confirmed18Plus': True, 'approach': 'carnivore', 'restrictions': ['exclude_fish'],
+                'prepTimeMax': 35, 'mealsPerDay': 2, 'planDays': 1, 'preferenceNote': '',
+            }},
+            'state': {'schema_version': 1, 'menu': {
+                'mode': 'carnivore', 'numDays': 1, 'meals': 2, 'portion': 1,
+                'saved': True, 'created': 1794000000, 'catalog_id': 'released-catalog-v1',
+                'days': [{'date': '2026-11-15', 'slots': {'breakfast': 'k1', 'dinner': 'k2'}}],
+            }, 'selected_date': '2026-11-15', 'checked_ingredients': {}, 'checked_steps': {},
+                'shopping_batches': 1, 'shopping_stale': False},
+        }
+
+    def test_new_non_keto_menu_is_rejected_even_for_owner(self):
+        payload = self._legacy_release_payload()
+        # Isolate the release policy from recipe admission, tested separately.
+        with patch('bot.server.is_menu_compatible_with_profile', return_value=(True, '')):
+            response = self.client.put('/api/user', json=payload,
+                headers={'Authorization': f'Bearer {self.owner_token}'})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('кето', response.json()['detail'])
+        self.assertEqual(get_pilot_user(OWNER_ID, db_path=self.db_path)['revision'], 0)
+
+    def test_legacy_non_keto_recipe_change_is_rejected_without_saving(self):
+        payload = self._legacy_release_payload()
+        saved = save_pilot_user(OWNER_ID, payload, db_path=self.db_path)
+        before = get_pilot_user(OWNER_ID, db_path=self.db_path)
+        payload['expected_revision'] = saved['revision']
+        payload['state']['menu']['days'][0]['slots']['breakfast'] = 'k3'
+        with patch('bot.server.is_menu_compatible_with_profile', return_value=(True, '')):
+            response = self.client.put('/api/user', json=payload,
+                headers={'Authorization': f'Bearer {self.owner_token}'})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(get_pilot_user(OWNER_ID, db_path=self.db_path), before)
+
+    def test_unchanged_legacy_menu_can_save_checkmarks_and_restrictions(self):
+        payload = self._legacy_release_payload()
+        saved = save_pilot_user(OWNER_ID, payload, db_path=self.db_path)
+        before_menu = get_pilot_user(OWNER_ID, db_path=self.db_path)['state']['menu']
+        payload['expected_revision'] = saved['revision']
+        payload['state']['checked_steps'] = {'k1:0': True}
+        response = self.client.put('/api/user', json=payload,
+            headers={'Authorization': f'Bearer {self.owner_token}'})
+        self.assertEqual(response.status_code, 200)
+        stored = get_pilot_user(OWNER_ID, db_path=self.db_path)
+        self.assertEqual(stored['state']['menu']['days'], before_menu['days'])
+        self.assertEqual(stored['state']['menu']['mode'], 'carnivore')
+        self.assertEqual(stored['state']['checked_steps'], {'k1:0': True})
+        self.assertEqual(stored['profile']['settings']['restrictions'], ['exclude_fish'])
+
+    def test_unchanged_mismatched_legacy_profile_can_select_day_without_rewriting_menu(self):
+        payload = self._legacy_release_payload()
+        payload['state']['menu']['mode'] = 'keto'
+        saved = save_pilot_user(OWNER_ID, payload, db_path=self.db_path)
+        before = get_pilot_user(OWNER_ID, db_path=self.db_path)
+        payload['expected_revision'] = saved['revision']
+        payload['state']['checked_steps'] = {'k1:0': True}
+        response = self.client.put('/api/user', json=payload,
+            headers={'Authorization': f'Bearer {self.owner_token}'})
+        self.assertEqual(response.status_code, 200)
+        after = get_pilot_user(OWNER_ID, db_path=self.db_path)
+        self.assertEqual(after['state']['menu']['days'], before['state']['menu']['days'])
+        self.assertEqual(after['state']['menu']['mode'], 'keto')
+        self.assertEqual(after['profile']['settings']['approach'], 'carnivore')
+        self.assertEqual(after['state']['checked_steps'], {'k1:0': True})
+
+    def test_legacy_state_exception_cannot_bypass_new_profile_restrictions(self):
+        payload = self._legacy_release_payload()
+        payload['state']['menu']['mode'] = 'keto'
+        saved = save_pilot_user(OWNER_ID, payload, db_path=self.db_path)
+        before = get_pilot_user(OWNER_ID, db_path=self.db_path)
+        payload['expected_revision'] = saved['revision']
+        payload['profile']['settings']['restrictions'] = ['exclude_eggs']
+        response = self.client.put('/api/user', json=payload,
+            headers={'Authorization': f'Bearer {self.owner_token}'})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(get_pilot_user(OWNER_ID, db_path=self.db_path), before)
 
     def test_legacy_menu_without_catalog_id_preserved_without_silent_mutation(self):
         """Legacy menus with catalog_id=None must remain intact without silent rewriting."""

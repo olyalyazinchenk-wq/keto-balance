@@ -3,6 +3,7 @@ import type { FoodCard } from './model';
 import { ArrowRight, Clock, Check } from './Icons';
 import { triggerHaptic } from '../../tma/telegram';
 import { EducationGuides } from './EducationGuides';
+import { KetoRules } from './ClientInfo';
 import './today.css';
 
 export interface FoodTodayProps {
@@ -135,7 +136,7 @@ export function FoodToday({
                   data-testid="food-today-open-settings"
                   onClick={onOpenSettings}
                 >
-                  Изменить параметры
+                  Настройки питания
                 </button>
               )}
               <button
@@ -270,6 +271,7 @@ export function FoodToday({
       </section>
 
       {/* 5. Обучение и гайды */}
+      <KetoRules />
       <section className="ff-home-guides" aria-label="Обучение и гайды">
         <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={onNavigate} />
       </section>
@@ -315,7 +317,7 @@ export function FoodToday({
                 onOpenSettings();
               }}
             >
-              <span>Настройки питания и аллергены</span>
+              <span>Настройки питания</span>
               <span aria-hidden="true">→</span>
             </button>
           )}

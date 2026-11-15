@@ -35,7 +35,7 @@ const DEFAULT_TARIFFS: TariffConfig[] = [
     description: 'Месячный рацион, рецепты, покупки и обучение на 30 дней. Без автоматического продления.',
     isPopular: true,
     highlights: [
-      'Каталог допущенных рецептов выбранного подхода',
+      'Каталог кето-рецептов',
       'Персональный рацион на календарный месяц',
       'Умный автосписок покупок с расчётом на порции',
       'Конструктор замен блюд из каталога',
@@ -58,13 +58,10 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // In local preview (URL param demo_user or explicit prop), demo activation is permitted
-  const isDemo =
-    isDemoPreview ??
-    (typeof window !== 'undefined' &&
-      (window.location.search.includes('demo_user=') ||
-        window.location.hostname === '127.0.0.1' ||
-        window.location.hostname === 'localhost'));
+  // Demonstration controls are limited to the isolated local preview.
+  const isLocalPreview = typeof window !== 'undefined' &&
+    ['127.0.0.1', 'localhost', '[::1]'].includes(window.location.hostname);
+  const isDemo = isLocalPreview && isDemoPreview !== false;
 
   // Server state governs payment availability, with demo preview permitted on loopback/test
   const isPayOpen = Boolean(paymentsEnabled || isDemo);
@@ -372,7 +369,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
                 🔒 Закрытый просмотр, оплата пока не открыта
               </div>
               <p className="text-[11px] text-[var(--kb-text-2)] leading-relaxed">
-                Сейчас КетоБаланс находится на этапе авторского тестирования. Приём оплат пока закрыт. Ознакомительный рацион на 1 день и 2 приёма доступен бесплатно.
+                Приём оплат пока закрыт. Если у вас есть вопрос о доступе, напишите Ольге.
               </p>
               <a
                 href="https://t.me/keto_balance_userbot?start=question"

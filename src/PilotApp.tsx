@@ -194,7 +194,7 @@ export default function PilotApp() {
   useEffect(() => {
     client.onUnauthorized = () => {
       setPhase('unauthorized');
-      setErrorMessage('Сессия завершена или недействительна. Пожалуйста, откройте бот заново.');
+      setErrorMessage('Не удалось подтвердить вход. Пожалуйста, откройте приложение из бота заново.');
     };
 
     let isMounted = true;
@@ -233,7 +233,7 @@ export default function PilotApp() {
         } catch (catErr: any) {
           if (savedCatalogId) {
             setPhase('error');
-            setErrorMessage(`Сохранённая версия каталога меню (${savedCatalogId}) недоступна на сервере. Пожалуйста, обратитесь в службу поддержки.`);
+            setErrorMessage('Не удалось открыть сохранённое меню. Повторите вход или обратитесь в помощь.');
             return;
           }
           throw catErr;
@@ -285,6 +285,14 @@ export default function PilotApp() {
         profileRef.current = currentProfile;
         setShoppingItems(shopData.items || []);
         shoppingItemsRef.current = shopData.items || [];
+
+        // Historical plans stay readable; changing approach always requires an explicit new keto plan.
+        if (currentState?.menu && (currentProfile.settings.approach !== 'keto' || currentState.menu.mode !== 'keto')) {
+          setState(currentState);
+          stateRef.current = currentState;
+          setPhase('ready');
+          return;
+        }
 
         if (currentState?.menu) {
           const canonProfile = preferencesToUserProfile(currentProfile.settings);
@@ -369,6 +377,7 @@ export default function PilotApp() {
           setPhase('ready');
         } else {
           if (currentProfile.settings.approach !== 'keto') {
+            setErrorMessage('Прежние настройки сохранены. В этой версии доступно только кето. Проверьте настройки и составьте новое меню; ваши исключения сохранены.');
             setPhase('needs_settings');
             return;
           }
@@ -582,7 +591,7 @@ export default function PilotApp() {
         catalogId: activeCatalog.catalog_id,
       });
 
-      initialShopping = rebuildShoppingFromMenu(genMenu, activeRecipesMap, [], 1);
+      initialShopping = rebuildShoppingFromMenu(genMenu, activeRecipesMap, shoppingItemsRef.current, 1);
     } catch (genErr: any) {
       setErrorMessage(
         genErr.message ||
@@ -775,6 +784,13 @@ export default function PilotApp() {
     async (date: string, slotKey: string, nextRecipeId: string) => {
       const currentState = stateRef.current;
       if (!currentState || !currentState.menu || !catalog || !profile?.settings) return;
+      if (profile.settings.approach !== 'keto' || currentState.menu.mode !== 'keto') {
+        setDraftApproach('keto');
+        setDraftRestrictions([...(profile.settings.restrictions || [])]);
+        setErrorMessage('Прежний рацион сохранён. В этой версии доступно только кето. Проверьте настройки и составьте новое меню; ваши исключения сохранены.');
+        setPhase('needs_settings');
+        return;
+      }
 
       const currentDay = currentState.menu.days.find((d) => d.date === date);
       if (!currentDay) return;
@@ -994,9 +1010,10 @@ export default function PilotApp() {
     const currentState = stateRef.current;
     if (!profile?.settings || !catalog || !currentState) return;
     setMonthlyCatalogError('');
-    if (profile.settings.approach !== 'keto') {
+    if (profile.settings.approach !== 'keto' || (currentState.menu && currentState.menu.mode !== 'keto')) {
       setDraftApproach('keto');
-      setErrorMessage('Прежнее меню сохранено. Для нового кето-рациона проверьте настройки и нажмите «Составить меню».');
+      setDraftRestrictions([...(profile.settings.restrictions || [])]);
+      setErrorMessage('Прежний рацион сохранён. В этой версии доступно только кето. Проверьте настройки и составьте новое меню; ваши исключения сохранены.');
       setPhase('needs_settings');
       return;
     }
@@ -1501,7 +1518,7 @@ export default function PilotApp() {
       if (!targetApproach) {
         setDraftApproach('keto');
       }
-      setDraftRestrictions(profile.settings.restrictions || []);
+      setDraftRestrictions([...(profile.settings.restrictions || [])]);
       setDraftPrepTime(profile.settings.prepTimeMax ?? 0);
       setDraftMealsPerDay((profile.settings.mealsPerDay as any) || 3);
       setDraftPlanDays((profile.settings.planDays as any) || (state?.menu?.days?.length as any) || 30);
@@ -1515,6 +1532,9 @@ export default function PilotApp() {
       }
     }
     setViewHomeBeforeGate(false);
+    if (profile?.settings && (profile.settings.approach !== 'keto' || (state?.menu && state.menu.mode !== 'keto'))) {
+      setErrorMessage('Прежний рацион сохранён. В этой версии доступно только кето. Проверьте настройки и составьте новое меню; ваши исключения сохранены.');
+    }
     setPhase('needs_settings');
   }, [profile, state]);
 
@@ -1528,7 +1548,7 @@ export default function PilotApp() {
             {phase === 'authenticating' ? 'Авторизация в Telegram...' : 'Загрузка меню и рациона...'}
           </h2>
           <p className="text-xs text-[var(--kb-text-3)]">
-            Подключение к защищённому персональному профилю «Кето Баланс».
+            Открываем ваше меню и настройки питания.
           </p>
         </div>
       </div>
