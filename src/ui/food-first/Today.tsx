@@ -2,11 +2,11 @@ import { useState } from 'react';
 import type { FoodCard } from './model';
 import { ArrowRight, Clock, Check } from './Icons';
 import { triggerHaptic } from '../../tma/telegram';
-import { EducationGuides } from './EducationGuides';
-import { KetoRules } from './ClientInfo';
 import './today.css';
+import './learning-navigation.css';
 
 export interface FoodTodayProps {
+  onOpenLearning?: (screen: 'rules' | 'education' | 'guides') => void;
   dateLabel: string;
   primary: FoodCard | null;
   others: FoodCard[];
@@ -43,6 +43,7 @@ function FoodPhoto({ card }: { card: FoodCard }) {
 
 export function FoodToday({
   dateLabel,
+  onOpenLearning,
   primary,
   others,
   rhythm = [],
@@ -65,6 +66,17 @@ export function FoodToday({
 
   return (
     <section className="ff-today" data-testid="food-today" data-ui-revision="appetizing-month-03">
+      <nav className="ff-learning-links" aria-label="Основы кето и обучение" data-testid="home-learning-links">
+        {([
+          ['rules', 'Правила кето', 'Что можно, что ограничивать и что исключать'],
+          ['education', 'Обучение', 'Основы кето шаг за шагом'],
+          ['guides', 'Микрогайды', 'Короткие практические инструкции'],
+        ] as const).map(([screen, title, description]) => (
+          <button key={screen} type="button" className="ff-learning-card" data-testid={`home-open-${screen}`} onClick={() => onOpenLearning?.(screen)}>
+            <strong>{title}</strong><span>{description}</span>
+          </button>
+        ))}
+      </nav>
       {/* 1. Вводный блок ценности на месяц */}
       <header className="ff-today__heading">
         <div className="ff-hero" data-testid="home-hero-banner">
@@ -271,10 +283,6 @@ export function FoodToday({
       </section>
 
       {/* 5. Обучение и гайды */}
-      <KetoRules />
-      <section className="ff-home-guides" aria-label="Обучение и гайды">
-        <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={onNavigate} />
-      </section>
 
       {/* 6. Условия доступа и подписка */}
       <section className="ff-access" aria-label="Аккаунт и доступ" data-testid="home-access-section">

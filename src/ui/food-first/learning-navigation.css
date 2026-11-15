@@ -1,0 +1,10 @@
+.ff-learning-links { display: grid; gap: 8px; margin-bottom: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ff-learning-card { min-width: 0; min-height: 84px; padding: 12px; text-align: left; border: 1px solid var(--ff-line); border-radius: 14px; background: var(--ff-surface); color: var(--ff-ink); }
+.ff-learning-card strong { display: block; font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
+.ff-learning-card span { display: block; margin-top: 6px; font-size: 12px; line-height: 1.35; color: var(--ff-muted); }
+@media (max-width: 420px) {
+  .ff-learning-links { grid-template-columns: 1fr; gap: 6px; }
+  .ff-learning-card { min-height: 44px; padding: 8px 12px; }
+  .ff-learning-card span { margin-top: 2px; }
+}
+.ff-proof [hidden] { display: none !important; }
