@@ -1,5 +1,9 @@
 # Журнал передачи работы
 
+## 15.11.2026,13:22МСК — Codex: замечания по клиентскому интерфейсу исправлены и установлены
+
+Sourcee4033c5/live1516abfee37f9455/backend23a8181cc307be96/catalog666c79712f63128f.370unit/403backend/32E2E/TS/cleanbuildPASS. Независимыйreview нашёл и подтвердил исправление mismatchlegacy400 иcatalogIDвUI. Старые планы/исключения/customproducts сохранены; новые действия толькоketo. Settings/rules разделены, тестовыеUIпанели недоступны, privacy иclosedpayment корректны. Толькоapp dist/server.py обновлены,bot/proxy не менялись; данные/schemaintegrityPASS,oldappдляrollbackсохранён. CLIENT_CLEANUP_20261115.md содержит10мобильныхPNG,JSON иоткат. Далее — личныйвход/приёмка Ольгой и содержание; публичныеплатежиoff.
+
 ## 15.11.2026 — клиентская очистка и только keto
 
 Baseline f7e2802. Codex владеет UI copy/ClientInfo/Paywall/StartGate/server/tests; отдельный исполнитель — PilotApp/FoodFirstApp/Menu/legacy tests. Изменения объединены, 14 новых frontend checks/2mobileE2E/12ownerAPI PASS. Независимый review выявил реальный legacy mismatched profile400; исправлено с real positive test и защитой от обхода новых ограничений. Два backend monthly-теста зависели от старого ignored dist; их окружение перенесено на копии неизменённых исторических JSON в temp, assertions сохранены. Полные проверки/build/deploy далее, исходный бот/proxy и DBschema не менять.

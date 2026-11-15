@@ -10,7 +10,7 @@
 
 | Задача | Автор | Статус | Условие закрытия |
 |---|---|---|---|
-| Клиентские названия/чистый More/только keto/legacy сохранность | Codex | локально проверено | Отдельные settings/rules, no devpanels; старый план без подмены, только keto для новых действий; реальный backendlegacyguard; mobile screenshots; финальная регрессия/установка выполняются |
+| Клиентские названия/чистый More/только keto/legacy сохранность | Codex | развёрнуто, технически проверено | sourcee4033c5/live1516abfee37f9455;370unit/403backend/32E2E/TS/buildPASS, independentreviewPASS;10mobilePNG;данныесохранены,ownerphone отдельно |
 | Точный месяц без November/December fallback | Codex | развёрнуто, технически проверено | source8fc755d/live670592e480a02afe;356unit/30E2E/TS/buildPASS, independent review без блокеров; оба действия сохраняют прежнее меню/покупки при отказе и работают после retry. Телефонная приёмка отдельно |
 | Сохранить четыре состояния | Координатор | локально проверено | Защищённые patches/index+hashes784файлов; cloud version прочитан |
 | Тарелка/990/точный legacy archive | Координатор | локально проверено | c47c38b; первая build d42d5f75a539d524;18целевыхтестовPASS |
