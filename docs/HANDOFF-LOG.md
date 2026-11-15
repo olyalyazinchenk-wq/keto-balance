@@ -1,5 +1,9 @@
 # Журнал передачи работы
 
+## 15.11.2026,03:26МСК — Codex: monthly guard проверен и установлен
+
+Source8fc755d,live670592e480a02afe.356unit/30E2E/TS/buildPASS; независимый review без существенных замечаний. Только app обновлён; backend/catalog/bot/proxy прежние. Ноль потерь в проверенных таблицах меню/покупок/профиля,схема/integrity/FKPASS; прежний app сохранён,платежиoff. Полный JSON monthly_guard_20261115.json и отчёт MONTHLY_GUARD_DEPLOY_20261115.md сохранены. Следующий результат — реальный вход и личная приёмка Ольгой; допуск содержания и24ч остаются открыты. Публичный запуск/расходы/Stars не выполнялись.
+
 ## 15.11.2026 — Codex: убрать подмену неизвестного месяца
 
 Задача в той же ветке, baseline c279db8. Владелец файлов Codex: PilotApp.tsx, adapters/monthlyCatalog.ts, monthly-catalog-selection и monthly-catalog-guard tests; shopping harness только для реальных новых зависимостей. Общий guard в submit/rebuild, ошибки без изменения user/shopping, retry. 3 E2E PASS, 16 целевых unit PASS и независимая проверка настоящих обработчиков PASS. Полный unit и окончательная сборка перед установкой; исходный bot/backend/proxy не меняются. Предусмотрена frontend-only установка в уже разрешённый закрытый контур после всех проверок; публичный запуск/платежи запрещены.

@@ -1,5 +1,11 @@
 # LIVE STATUS — Кето Баланс
 
+## Текущий статус:15.11.2026,03:26МСК
+
+Единый актуальный контекст — [CURRENT-STATE](CURRENT-STATE.md), задачи — [release-plan](release/release-plan.md). Live670592e480a02afe/source8fc755d, закрытый доступ,оплатыoff. Защита неизвестного месячного каталога установлена,356unit/30E2E/TypeScript/buildPASS. App/bothealthy; бот/backend/catalog/proxy не менялись; проверенные меню/покупки/профиль сохранены. [Свидетельства и откат](evidence/reports/MONTHLY_GUARD_DEPLOY_20261115.md). Телефонная и редакторская приёмка,24часа пока открыты.
+
+**Ниже сохранена история прежних версий; она не описывает действующую сборку.**
+
 Актуальная сводка 14.11.2026, 03:10 МСК: [CURRENT-STATE.md](CURRENT-STATE.md). Единый реестр: [release-plan.md](release/release-plan.md).
 
 Закрытая build a388e5fdaf930256 (образ ketobalance-owner-private:authfix-a388e5fdaf930256) развёрнута на Cloud.ru:

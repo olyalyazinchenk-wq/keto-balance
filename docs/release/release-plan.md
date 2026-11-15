@@ -10,7 +10,7 @@
 
 | Задача | Автор | Статус | Условие закрытия |
 |---|---|---|---|
-| Точный месяц без November/December fallback | Codex | локально проверено | 3 новых E2E: оба действия без PUT при empty/unrelated/inaccessible; retry восстанавливает подбор. TypeScript/16 целевых unit/independent review PASS; финальный прогон и frontend-only установка далее |
+| Точный месяц без November/December fallback | Codex | развёрнуто, технически проверено | source8fc755d/live670592e480a02afe;356unit/30E2E/TS/buildPASS, independent review без блокеров; оба действия сохраняют прежнее меню/покупки при отказе и работают после retry. Телефонная приёмка отдельно |
 | Сохранить четыре состояния | Координатор | локально проверено | Защищённые patches/index+hashes784файлов; cloud version прочитан |
 | Тарелка/990/точный legacy archive | Координатор | локально проверено | c47c38b; первая build d42d5f75a539d524;18целевыхтестовPASS |
 | Воспроизводимость/изоляция build/test | Координатор | проверено | Чистая build8be43f00ba6d26b3 из source3568cc7; manifest и изоляция проверены |
