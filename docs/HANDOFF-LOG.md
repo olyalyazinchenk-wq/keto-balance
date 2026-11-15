@@ -1,6 +1,14 @@
 # Журнал передачи работы
 Новые записи добавлять в начало после заголовка. Это история; актуальный статус хранится только в CURRENT-STATE.md.
 
+## 2026-11-15, вечер — клиентский интерфейс и legacy guards
+- GPT/Codex, ChatGPT Work; baseline master 036c70c4a161558d8350f327919f18a0dcfb893c; docs/context-sync-20261115-evening.
+- PR #27 draft/open, docs HEAD 48d096ad8d50e440f60579f1b9f9e229f022256d; source e4033c5d4ef348a46357d5af0a650df9ff42e334. Опубликованы настройки/правила кето, удаление технических панелей и серверные legacy guards.
+- CI HEAD 43704058610 failure (frontend/backend), Compose success. Локальные 370unit/403backend/32E2E PASS — отчёт исполнителя.
+- PR и сводка ветки согласованы: reported installed build 1516abfee37f9455/source e4033c5; последний серверный отчёт 15.11 13:22 МСК. Verified deployed SHA/биллинг UNKNOWN без прямого доступа.
+- Issues без изменений. Телефонная/редакторская/юридическая приёмка и 24 часа новой версии открыты. Только docs; Notion после интеграции.
+- Следующий шаг: устранить CI точного кандидата, подтвердить фактический сервер и телефонный сценарий.
+
 ## 2026-11-15, утро — месячный каталог и согласованные отчёты
 - GPT/Codex, ChatGPT Work; baseline master 912cd724cabdf28a9f66f5fe54c3821b7a337083; docs/context-sync-20261115.
 - PR #27 draft/open, docs HEAD f7e28029f478cea066d714c2372d9ea75fb94648; source 8fc755d26639553338e078ad61e84a9ddfdc4700. Опубликованы таймер/тема/месячный guard и тесты.
