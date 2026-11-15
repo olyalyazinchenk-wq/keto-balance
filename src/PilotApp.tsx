@@ -21,6 +21,7 @@ import {
   RESTRICTION_MAP,
 } from './adapters/pilotState';
 import { createMenuController } from './adapters/menuController';
+import { loadMonthlyCatalog } from './adapters/monthlyCatalog';
 import { resolveSelectedDate } from './domain/menu';
 import { isRecipeAllowed } from './domain/eligibility';
 import { FoodFirstApp } from './ui/food-first/FoodFirstApp';
@@ -57,6 +58,7 @@ const RESTRICTIONS_LIST: { token: PilotRestrictionToken; label: string }[] = [
 export default function PilotApp() {
   const [phase, setPhase] = useState<PilotPhase>('init');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [monthlyCatalogError, setMonthlyCatalogError] = useState('');
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [gatePassed, setGatePassed] = useState<boolean>(false);
 
@@ -498,6 +500,7 @@ export default function PilotApp() {
   const handleSubmitSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setMonthlyCatalogError('');
     if (!draftConfirmed18) {
       alert('Для использования рациона необходимо подтвердить возраст 18+.');
       return;
@@ -529,34 +532,12 @@ export default function PilotApp() {
     const canonProfile = preferencesToUserProfile(newSettings);
 
     let activeCatalog = catalog;
-    if (draftPlanDays >= 28 && draftMonth) {
-      const catalogsList = typeof availableCatalogs !== 'undefined' && Array.isArray(availableCatalogs) ? availableCatalogs : [];
-      const matchedMeta = catalogsList.find((c) => c.catalog_month === draftMonth);
-      if (matchedMeta && matchedMeta.accessible === false) {
-        setErrorMessage(
-          `Подборка на ${draftMonth} пока находится на утверждении у автора и доступна только владельцу. Выберите утверждённый месяц или повторите попытку позже.`
-        );
+    if (draftPlanDays >= 28) {
+      try {
+        activeCatalog = await loadMonthlyCatalog(draftMonth, availableCatalogs, catalog, id => client.getCatalog(id));
+      } catch {
+        setMonthlyCatalogError('Не удалось подтвердить подборку выбранного месяца. Прежний рацион и покупки сохранены. Повторите загрузку подборок или выберите доступный месяц.');
         return;
-      }
-
-      const targetCatalogId =
-        matchedMeta?.catalog_id ||
-        (draftMonth === '2026-12' ? 'released-catalog-202612-v1' : 'released-catalog-202611-v1');
-
-      if (catalog.catalog_id !== targetCatalogId) {
-        try {
-          const fetchedCatalog = await client.getCatalog(targetCatalogId);
-          if (fetchedCatalog && fetchedCatalog.recipes && fetchedCatalog.recipes.length > 0) {
-            activeCatalog = fetchedCatalog;
-          } else {
-            throw new Error(`Подборка ${targetCatalogId} не содержит рецептов`);
-          }
-        } catch (catErr: any) {
-          setErrorMessage(
-            `Не удалось загрузить подборку на ${draftMonth}. Предыдущий рацион сохранён без изменений. Пожалуйста, повторите попытку или выберите другой месяц.`
-          );
-          return;
-        }
       }
     }
 
@@ -1012,6 +993,7 @@ export default function PilotApp() {
   const handleRebuildMenu = useCallback(async () => {
     const currentState = stateRef.current;
     if (!profile?.settings || !catalog || !currentState) return;
+    setMonthlyCatalogError('');
     if (profile.settings.approach !== 'keto') {
       setDraftApproach('keto');
       setErrorMessage('Прежнее меню сохранено. Для нового кето-рациона проверьте настройки и нажмите «Составить меню».');
@@ -1029,30 +1011,12 @@ export default function PilotApp() {
       const isCalendarMonth = daysCount >= 28 || Boolean(targetMonth && (profile.settings.planDays ?? 0) >= 28);
 
       let activeCatalog = catalog;
-      if (isCalendarMonth && targetMonth) {
-        const catalogsList = typeof availableCatalogs !== 'undefined' && Array.isArray(availableCatalogs) ? availableCatalogs : [];
-        const matchedMeta = catalogsList.find((c) => c.catalog_month === targetMonth);
-        if (matchedMeta && matchedMeta.accessible === false) {
-          setSyncStatus('error');
+      if (isCalendarMonth) {
+        try {
+          activeCatalog = await loadMonthlyCatalog(targetMonth, availableCatalogs, catalog, id => client.getCatalog(id));
+        } catch {
+          setMonthlyCatalogError('Не удалось подтвердить подборку выбранного месяца. Прежний рацион и покупки сохранены. Повторите загрузку подборок или выберите доступный месяц.');
           return;
-        }
-        const targetCatalogId =
-          matchedMeta?.catalog_id ||
-          (targetMonth === '2026-12' ? 'released-catalog-202612-v1' : 'released-catalog-202611-v1');
-        if (catalog.catalog_id !== targetCatalogId) {
-          try {
-            const fetchedCatalog = await client.getCatalog(targetCatalogId);
-            if (fetchedCatalog && fetchedCatalog.recipes && fetchedCatalog.recipes.length > 0) {
-              activeCatalog = fetchedCatalog;
-              setCatalog(fetchedCatalog);
-            } else {
-              setSyncStatus('error');
-              return;
-            }
-          } catch {
-            setSyncStatus('error');
-            return;
-          }
         }
       }
 
@@ -1071,6 +1035,8 @@ export default function PilotApp() {
         mode,
         catalogId: activeCatalog.catalog_id,
       });
+
+      setCatalog(activeCatalog);
 
       const nextSelectedDate = resolveSelectedDate(newMenu, currentState.selected_date);
 
@@ -1762,13 +1728,18 @@ export default function PilotApp() {
           </div>
 
           <form onSubmit={handleSubmitSettings} className="space-y-6" data-testid="pilot-settings-form">
-            {errorMessage && (
+            {(errorMessage || monthlyCatalogError) && (
               <div
                 className="p-3 bg-[var(--kb-danger-bg)] border border-[var(--kb-danger-border)] text-[var(--kb-danger-ink)] rounded-xl text-xs sm:text-sm font-medium"
                 data-testid="settings-form-error"
                 role="alert"
               >
-                ⚠️ {errorMessage}
+                ⚠️ {errorMessage || monthlyCatalogError}
+                {monthlyCatalogError && (
+                  <button type="button" data-testid="retry-monthly-selection-btn"
+                    className="block mt-2 font-semibold underline"
+                    onClick={() => void refreshCatalogRegistry()}>Повторить загрузку подборок</button>
+                )}
               </div>
             )}
             {/* 18+ confirmation */}
@@ -2147,6 +2118,16 @@ export default function PilotApp() {
   }
 
   return (
+    <>
+    {monthlyCatalogError && (
+      <div role="alert" data-testid="monthly-catalog-error"
+        className="p-4 text-sm bg-[var(--kb-surface-muted)] text-[var(--kb-text-1)] border-b border-[var(--kb-border)]">
+        {monthlyCatalogError}
+        <button type="button" data-testid="retry-monthly-selection-btn"
+          className="block mt-2 font-semibold underline"
+          onClick={() => void refreshCatalogRegistry()}>Повторить загрузку подборок</button>
+      </div>
+    )}
     <FoodFirstApp
       catalog={catalog}
       profile={profile}
@@ -2173,5 +2154,6 @@ export default function PilotApp() {
       sessionToken={sessionToken}
       userId={userId}
     />
+    </>
   );
 }

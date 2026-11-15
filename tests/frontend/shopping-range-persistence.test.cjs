@@ -251,7 +251,12 @@ describe('Shopping Range Persistence & Checkmarks Isolation (Codex Proof)', () =
       compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS },
     }).outputText;
     const mod = { exports: {} };
-    vm.runInNewContext(js, { ...context, module: mod });
+    vm.runInNewContext(js, {
+      loadMonthlyCatalog: loadTs(path.join(ROOT, 'src/adapters/monthlyCatalog.ts')).loadMonthlyCatalog,
+      setMonthlyCatalogError: message => assert.equal(message, '', 'valid monthly fixture must not be rejected'),
+      setCatalog: () => {},
+      ...context, module: mod,
+    });
     return mod.exports;
   }
 
