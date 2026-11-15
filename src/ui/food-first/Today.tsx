@@ -1,3 +1,4 @@
+import { NutrientNavigator } from './NutrientNavigator';
 import { useState } from 'react';
 import type { FoodCard } from './model';
 import { ArrowRight, Clock, Check } from './Icons';
@@ -272,6 +273,7 @@ export function FoodToday({
 
       {/* 5. Обучение и гайды */}
       <KetoRules />
+      <NutrientNavigator />
       <section className="ff-home-guides" aria-label="Обучение и гайды">
         <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={onNavigate} />
       </section>

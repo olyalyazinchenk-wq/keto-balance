@@ -1,0 +1,29 @@
+.ff-nutrients__back {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--kb-border);
+  border-radius: 12px;
+  background: var(--kb-surface);
+  color: var(--kb-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ff-nutrients__field { display: block; margin: 16px 0; font-weight: 700; color: var(--kb-text-1); }
+.ff-nutrients__field input, .ff-nutrients__field select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--kb-border);
+  border-radius: 12px;
+  background: var(--kb-surface);
+  color: var(--kb-text-1);
+  font: inherit;
+  font-size: 16px;
+}
+.ff-nutrients__card { margin-top: 10px; padding: 12px; border: 1px solid var(--kb-border); border-radius: 14px; }
+.ff-nutrients .ff-nutrients__card summary { min-height: 44px; font-size: 16px; }
+.ff-nutrients__back:focus-visible, .ff-nutrients__field input:focus-visible, .ff-nutrients__field select:focus-visible { outline: 2px solid var(--kb-primary); outline-offset: 2px; }
