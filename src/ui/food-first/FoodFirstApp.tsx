@@ -1,3 +1,4 @@
+import { useAppNavigation, type NavigationMemory } from './navigation';
 import { DailyTip } from './DailyTip';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ScreenId, UserSettingsDraft, RecipeViewModel } from './contract';
@@ -26,6 +27,7 @@ import { EducationGuides } from './EducationGuides';
 import { KetoRules, PrivacyInfo } from './ClientInfo';
 
 export interface FoodFirstAppProps {
+  navigationMemory?: NavigationMemory;
   catalog: PilotCatalogV1;
   profile: PilotProfileV1;
   state: PilotStateV1;
@@ -58,7 +60,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
       const params = new URLSearchParams(window.location.search);
       const qScreen = params.get('screen')?.toLowerCase();
       const qRecipe = params.get('recipe');
-      if (qScreen && ['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more'].includes(qScreen)) {
+      if (qScreen && ['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(qScreen)) {
         return { screen: qScreen as ScreenId, recipeId: qRecipe || undefined };
       }
       const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
@@ -66,7 +68,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
         const parts = hash.split('/');
         return { screen: 'recipe', recipeId: parts[1] || undefined };
       }
-      if (['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more'].includes(hash)) {
+      if (['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(hash)) {
         return { screen: hash as ScreenId };
       }
     }
@@ -92,7 +94,8 @@ export function FoodFirstApp({
   onAddCustomItem,
   onSelectShoppingRange,
   onToggleRangeChecked,
-  onOpenSettings,
+  onOpenSettings: openSettings,
+  navigationMemory,
   subscription,
   subscriptionError,
   onRetrySubscription,
@@ -102,8 +105,13 @@ export function FoodFirstApp({
 }: FoodFirstAppProps) {
   const isLegacyPlan = Boolean(state.menu && (state.menu.mode !== 'keto' || profile.settings?.approach !== 'keto'));
   const [initialRoute] = useState(() => getInitialRoute());
-  const [navStack, setNavStack] = useState<ScreenId[]>([initialRoute.screen]);
-  const currentScreen: ScreenId = navStack[navStack.length - 1] || 'today';
+  const { entries: navEntries, current: currentRoute, navigateTo, navigateBack, saveScroll } = useAppNavigation(initialRoute, navigationMemory);
+  const currentScreen = currentRoute.screen;
+  const [learningBack, setLearningBack] = useState<(() => void) | null>(null);
+  const registerLearningBack = useCallback((back: (() => void) | null) => setLearningBack(() => back), []);
+  const [visited, setVisited] = useState<Set<ScreenId>>(() => new Set([currentScreen]));
+  useEffect(() => { setVisited(prev => prev.has(currentScreen) ? prev : new Set([...prev, currentScreen])); }, [currentScreen]);
+  const onOpenSettings = openSettings ? (approach?: 'keto' | 'carnivore') => { saveScroll(); openSettings(approach); } : undefined;
 
   // Lifted Kitchen Timer State
   const [activeTimer, setActiveTimer] = useState<ActiveKitchenTimer | null>(() => {
@@ -280,24 +288,10 @@ export function FoodFirstApp({
     return `День ${selectedDayIndex + 1}`;
   }, [selectedDayIndex]);
 
-  // Navigation handlers
-  const navigateTo = useCallback((screen: ScreenId) => {
-    setNavStack((prev) => (prev[prev.length - 1] === screen ? prev : [...prev, screen]));
-    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-  }, []);
-
-  const navigateBack = useCallback(() => {
-    setNavStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
-    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-  }, []);
-
-  const handleOpenRecipe = useCallback(
-    (recipeId: string) => {
-      setActiveRecipeId(recipeId);
-      navigateTo('recipe');
-    },
-    [navigateTo]
-  );
+  const handleOpenRecipe = useCallback((recipeId: string) => {
+    setActiveRecipeId(recipeId);
+    navigateTo('recipe', recipeId);
+  }, [navigateTo]);
 
   const handleSelectDay = useCallback(
     (dayIdx: number) => {
@@ -331,15 +325,15 @@ export function FoodFirstApp({
       if (raw.startsWith('recipe')) {
         const parts = raw.split('/');
         if (parts[1]) setActiveRecipeId(parts[1]);
-        setNavStack((prev) => (prev[prev.length - 1] === 'recipe' ? prev : [...prev, 'recipe']));
-      } else if (['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more'].includes(raw)) {
+        navigateTo('recipe', parts[1]);
+      } else if (['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(raw)) {
         const scr = raw as ScreenId;
-        setNavStack((prev) => (prev[prev.length - 1] === scr ? prev : [...prev, scr]));
+        navigateTo(scr);
       }
     };
     window.addEventListener('hashchange', syncHash);
     return () => window.removeEventListener('hashchange', syncHash);
-  }, []);
+  }, [navigateTo]);
 
   // Prepare Day Menu presentation
   const viewDayMenu = useMemo(() => {
@@ -457,7 +451,8 @@ export function FoodFirstApp({
   }, [profile.settings]);
 
   // Active recipe for RecipeScreen and eligibility check
-  const activeRecipe = recipesById[activeRecipeId];
+  const displayedRecipeId = currentRoute.recipeId || activeRecipeId;
+  const activeRecipe = recipesById[displayedRecipeId];
   const isRecipeEligible = useMemo(() => {
     if (!activeRecipe) return false;
     const catRecipe = catalog.recipes.find((r) => r.id === activeRecipe.id);
@@ -479,14 +474,14 @@ export function FoodFirstApp({
   }, [activeRecipe, catalog.recipes, catalog.released_ids, catalog.test_only, profile.settings]);
 
   const isRenderingRecipeScreenForTimer = currentScreen === 'recipe' &&
-    Boolean(activeRecipe && isRecipeEligible && activeRecipeId === activeTimer?.recipeId);
+    Boolean(activeRecipe && isRecipeEligible && displayedRecipeId === activeTimer?.recipeId);
   const showFloatingTimer = Boolean(activeTimer && !isRenderingRecipeScreenForTimer);
 
   return (
     <AppShell
       activeScreen={currentScreen}
-      canGoBack={navStack.length > 1}
-      onGoBack={navigateBack}
+      canGoBack={navEntries.length > 1 || currentScreen !== 'today'}
+      onGoBack={learningBack && ['education', 'guides'].includes(currentScreen) ? learningBack : navigateBack}
       onNavigate={navigateTo}
       onOpenSupport={() => navigateTo('support')}
       shoppingNeedsRefresh={state.shopping_stale}
@@ -508,9 +503,11 @@ export function FoodFirstApp({
         {noticeText}
       </aside>}
 
-      {currentScreen === 'today' && (
+      {(currentScreen === 'today' || visited.has('today')) && (
+        <div hidden={currentScreen !== 'today'}>
         <FoodToday
           sessionToken={sessionToken}
+          onOpenLearning={(screen) => navigateTo(screen)}
           onNavigate={navigateTo}
           dateLabel={selectedDayLabel}
           primary={primaryCard}
@@ -542,9 +539,11 @@ export function FoodFirstApp({
             if (onOpenSettings) onOpenSettings(approach);
           }}
         />
+        </div>
       )}
 
-      {currentScreen === 'menu' && (
+      {(currentScreen === 'menu' || visited.has('menu')) && (
+        <div hidden={currentScreen !== 'menu'}>
         <MenuScreen
           menu={viewGeneratedMenu}
           selectedDayIndex={selectedDayIndex}
@@ -564,6 +563,7 @@ export function FoodFirstApp({
           catalogRecipes={catalog.recipes}
           admittedRecipeIds={effectiveCatalogIds}
         />
+        </div>
       )}
 
       {currentScreen === 'recipe' && (
@@ -600,7 +600,8 @@ export function FoodFirstApp({
         )
       )}
 
-      {currentScreen === 'shopping' && (
+      {(currentScreen === 'shopping' || visited.has('shopping')) && (
+        <div hidden={currentScreen !== 'shopping'}>
         <ShoppingScreen
           items={shoppingItems}
           menuTitle={state.menu ? (isLegacyPlan ? 'Сохранённое меню' : 'Кето-рацион') : 'Список покупок'}
@@ -618,6 +619,7 @@ export function FoodFirstApp({
           rangeCheckmarks={state.shopping_range_checked}
           onToggleRangeChecked={onToggleRangeChecked}
         />
+        </div>
       )}
 
       {currentScreen === 'support' && (
@@ -653,6 +655,16 @@ export function FoodFirstApp({
           <PrivacyInfo />
           <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />
         </div>
+      )}
+
+
+      {(['rules', 'education', 'guides'] as const).map(screen =>
+        (currentScreen === screen || visited.has(screen)) && (
+          <div key={screen} hidden={currentScreen !== screen} className="ff-more" data-testid={`${screen}-screen`}>
+            <h1>{screen === 'rules' ? 'Правила кето' : screen === 'education' ? 'Обучение' : 'Микрогайды'}</h1>
+            {screen === 'rules' ? <KetoRules initiallyOpen /> : <EducationGuides kind={screen} active={currentScreen === screen} onDetailChange={registerLearningBack} sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />}
+          </div>
+        )
       )}
 
       <PaywallModal

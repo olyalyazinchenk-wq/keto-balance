@@ -3,6 +3,9 @@
  */
 
 export type ScreenId =
+  | 'rules'
+  | 'education'
+  | 'guides'
   | 'today'
   | 'menu'
   | 'recipe'

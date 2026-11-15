@@ -1,8 +1,8 @@
 import './client-info.css';
 
-export function KetoRules() {
+export function KetoRules({ initiallyOpen = false }: { initiallyOpen?: boolean } = {}) {
   return (
-    <details className="ff-client-info" data-testid="keto-rules">
+    <details open={initiallyOpen || undefined} className="ff-client-info" data-testid="keto-rules">
       <summary><span>Правила кето</span><span className="ff-client-info__hint">Продукты и порции</span></summary>
       <div className="ff-client-info__body">
         <p>Общие ориентиры для выбора продуктов. Это не медицинские запреты: учитывайте свои аллергии, переносимость и рекомендации специалиста.</p>

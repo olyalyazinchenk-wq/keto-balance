@@ -25,12 +25,12 @@ export function AppShell({ activeScreen, canGoBack, onGoBack, onNavigate, onOpen
   }, [canGoBack, onGoBack]);
   const isNavHighlighted = (id: ScreenId) => activeScreen === id ||
     (id === 'menu' && activeScreen === 'recipe') ||
-    (id === 'more' && ['settings', 'start', 'access', 'support', 'diary'].includes(activeScreen));
+    (id === 'more' && ['settings', 'start', 'access', 'support', 'diary', 'rules', 'education', 'guides'].includes(activeScreen));
   return <div className={`ff-proof${hasFloatingTimer ? ' ff-proof--with-timer' : ''}`} data-testid="food-app-shell">
     <header className="ff-proof__header">
       <span className="ff-proof__brand">Кето Баланс</span>
       <div className="ff-header-actions">
-        {canGoBack && <button type="button" className="ff-proof__help-btn" onClick={onGoBack} aria-label="Вернуться на предыдущий экран"><ArrowLeft aria-hidden="true" /> Назад</button>}
+        {canGoBack && <button type="button" className="ff-proof__help-btn" data-testid="app-back-button" onClick={onGoBack} aria-label="Вернуться на предыдущий экран"><ArrowLeft aria-hidden="true" /> Назад</button>}
         {onOpenSupport && <button type="button" className="ff-proof__help-btn" onClick={onOpenSupport}>Помощь</button>}
       </div>
     </header>
