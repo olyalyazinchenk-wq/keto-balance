@@ -16,7 +16,7 @@ export function NutrientNavigator({ onOpenRelated }: { onOpenRelated?: (target: 
       <p>Разнообразие продуктов важно и при кето. Добавки подходят не всем; этот справочник не ставит диагноз и не назначает лечение.</p>
       {onOpenRelated && <nav aria-label="Связанные материалы" className="ff-nutrients__related"><button type="button" onClick={() => onOpenRelated('rules')}>Правила кето</button><button type="button" onClick={() => onOpenRelated('guides')}>Обучение и микрогайды</button></nav>}
       <label className="ff-nutrients__field">Поиск нутриента <input type="search" value={query} onChange={e => setQuery(e.target.value)} /></label>
-      <label className="ff-nutrients__field">Категория <select value={category} onChange={e => setCategory(e.target.value)}><option>Все</option><option>Витамины</option><option>Минералы</option></select></label>
+      <label className="ff-nutrients__field">Категория <select value={category} onChange={e => setCategory(e.target.value)}><option>Все</option><option>Витамины</option><option>Минералы</option><option>Жирные кислоты</option></select></label>
       <p role="status" aria-live="polite">{matches.length === 0 ? 'Ничего не найдено. Попробуйте другое название.' : `Найдено: ${matches.length}`}</p>
       {matches.map(item => <details className="ff-nutrients__card" key={item.name}><summary>{item.name}</summary><div>
         <p><strong>Зачем нужен:</strong> {item.role}</p><p><strong>Источники в пище:</strong> {item.food}</p>
