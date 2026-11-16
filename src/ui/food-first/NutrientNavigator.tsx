@@ -4,7 +4,7 @@ import './client-info.css';
 import { filterNutrients } from './nutrients';
 import './nutrient-navigator.css';
 
-export function NutrientNavigator() {
+export function NutrientNavigator({ onOpenRelated }: { onOpenRelated?: (target: 'rules' | 'guides') => void }) {
   const containerRef = useRef<HTMLDetailsElement>(null);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('Все');
@@ -14,6 +14,7 @@ export function NutrientNavigator() {
     <div className="ff-client-info__body">
       <button className="ff-nutrients__back" type="button" onClick={() => { if (containerRef.current) { containerRef.current.open = false; containerRef.current.querySelector('summary')?.focus(); } }}>← Назад</button>
       <p>Разнообразие продуктов важно и при кето. Добавки подходят не всем; этот справочник не ставит диагноз и не назначает лечение.</p>
+      {onOpenRelated && <nav aria-label="Связанные материалы" className="ff-nutrients__related"><button type="button" onClick={() => onOpenRelated('rules')}>Правила кето</button><button type="button" onClick={() => onOpenRelated('guides')}>Обучение и микрогайды</button></nav>}
       <label className="ff-nutrients__field">Поиск нутриента <input type="search" value={query} onChange={e => setQuery(e.target.value)} /></label>
       <label className="ff-nutrients__field">Категория <select value={category} onChange={e => setCategory(e.target.value)}><option>Все</option><option>Витамины</option><option>Минералы</option></select></label>
       <p role="status" aria-live="polite">{matches.length === 0 ? 'Ничего не найдено. Попробуйте другое название.' : `Найдено: ${matches.length}`}</p>

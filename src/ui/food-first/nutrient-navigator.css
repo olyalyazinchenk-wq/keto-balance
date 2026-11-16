@@ -27,3 +27,7 @@
 .ff-nutrients__card { margin-top: 10px; padding: 12px; border: 1px solid var(--kb-border); border-radius: 14px; }
 .ff-nutrients .ff-nutrients__card summary { min-height: 44px; font-size: 16px; }
 .ff-nutrients__back:focus-visible, .ff-nutrients__field input:focus-visible, .ff-nutrients__field select:focus-visible { outline: 2px solid var(--kb-primary); outline-offset: 2px; }
+
+.ff-nutrients__related { display: flex; flex-wrap: wrap; gap: 8px; }
+.ff-nutrients__related button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--kb-border); border-radius: 12px; background: var(--kb-surface); color: var(--kb-primary); font: inherit; cursor: pointer; }
+.ff-nutrients__related button:focus-visible { outline: 2px solid var(--kb-primary); outline-offset: 2px; }
