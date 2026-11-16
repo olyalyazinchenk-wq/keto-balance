@@ -16,11 +16,11 @@ export function NutrientNavigator() {
       <p>Разнообразие продуктов важно и при кето. Добавки подходят не всем; этот справочник не ставит диагноз и не назначает лечение.</p>
       <label className="ff-nutrients__field">Поиск нутриента <input type="search" value={query} onChange={e => setQuery(e.target.value)} /></label>
       <label className="ff-nutrients__field">Категория <select value={category} onChange={e => setCategory(e.target.value)}><option>Все</option><option>Витамины</option><option>Минералы</option></select></label>
-      {matches.length === 0 && <p>Ничего не найдено. Попробуйте другое название.</p>}
+      <p role="status" aria-live="polite">{matches.length === 0 ? 'Ничего не найдено. Попробуйте другое название.' : `Найдено: ${matches.length}`}</p>
       {matches.map(item => <details className="ff-nutrients__card" key={item.name}><summary>{item.name}</summary><div>
         <p><strong>Зачем нужен:</strong> {item.role}</p><p><strong>Источники в пище:</strong> {item.food}</p>
         <p><strong>Что учитывать:</strong> {item.safety}</p><p>Признаки недостатка неспецифичны. Если вас беспокоит самочувствие или рацион ограничен, обсудите с врачом необходимость обследования.</p>
-        <p><a href={item.url} target="_blank" rel="noreferrer">Источник: NIH Office of Dietary Supplements</a>. Проверено 16.11.2026.</p>
+        <p><a href={item.url} target="_blank" rel="noreferrer">Источник: NIH Office of Dietary Supplements</a>. Проверено {item.verifiedDate}.</p>
       </div></details>)}
     </div>
   </details>;
