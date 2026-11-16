@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { NutrientNavigator } from './NutrientNavigator';
+import { useRef, useState } from 'react';
 import type { FoodCard } from './model';
 import { ArrowRight, Clock, Check } from './Icons';
 import { triggerHaptic } from '../../tma/telegram';
@@ -58,6 +59,16 @@ export function FoodToday({
   sessionToken,
   onNavigate,
 }: FoodTodayProps) {
+  const rulesRef = useRef<HTMLDivElement>(null);
+  const guidesRef = useRef<HTMLElement>(null);
+  const openRelated = (target: 'rules' | 'guides') => {
+    const element = target === 'rules' ? rulesRef.current : guidesRef.current;
+    if (!element) return;
+    const details = target === 'rules' ? element.querySelector('details') : null;
+    if (details) details.open = true;
+    element.scrollIntoView({ block: 'start' });
+    (details?.querySelector('summary') ?? element).focus({ preventScroll: true });
+  };
   const open = (id: string) => {
     triggerHaptic('impact_light');
     onOpenRecipe(id);
@@ -271,8 +282,9 @@ export function FoodToday({
       </section>
 
       {/* 5. Обучение и гайды */}
-      <KetoRules />
-      <section className="ff-home-guides" aria-label="Обучение и гайды">
+      <div ref={rulesRef}><KetoRules /></div>
+      <NutrientNavigator onOpenRelated={openRelated} />
+      <section ref={guidesRef} tabIndex={-1} className="ff-home-guides" aria-label="Обучение и гайды">
         <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={onNavigate} />
       </section>
 
