@@ -297,7 +297,7 @@ export function FoodToday({
           <button
             type="button"
             className="ff-action"
-            data-testid="more-open-paywall-btn"
+            data-testid="home-open-paywall-btn"
             onClick={() => {
               triggerHaptic('selection');
               onOpenPaywall();

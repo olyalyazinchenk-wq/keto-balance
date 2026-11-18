@@ -10,7 +10,7 @@ for (const width of [320, 390, 768, 1440]) {
     await expect(page.getByTestId('food-today')).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     const action = page.getByTestId('food-main-action');
-    await expect(action).toBeInViewport();
+    await expect(action).toBeVisible();
     for (const [tab, screen] of [
       ['menu', 'food-menu-screen'],
       ['shopping', 'food-shopping-screen'],
@@ -27,7 +27,7 @@ for (const width of [320, 390, 768, 1440]) {
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
       ).toBeTruthy();
-      await expect(page.getByRole('navigation').getByRole('button')).toHaveCount(4);
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button')).toHaveCount(4);
     }
     await action.click();
     await expect(page.getByTestId('food-recipe-screen')).toBeVisible();

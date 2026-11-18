@@ -6,6 +6,15 @@ for (const width of [320, 390]) {
     const session = await createSession({ id: 9800 + width, first_name: 'Navigation' }, { viewport: { width, height: 844 } });
     const { page } = session;
     await activateSyntheticPremium(session);
+    // The public API currently withholds drafts. Exercise detail navigation with synthetic guides.
+    await page.route('**/api/education/guides', route => route.fulfill({
+      json: {
+        guides: [
+          { id: 'reading_labels', title: 'Упаковка', category: 'Тест', summary: 'Тест урока', content: 'Пример урока', sources: [] },
+          { id: 'portion_control', title: 'Одна, две', category: 'Тест', summary: 'Тест гайда', content: 'Пример гайда', sources: [] },
+        ],
+      },
+    }));
     await page.goto('/');
     await passNewUserStartGate(page);
     await page.getByTestId('settings-days-7').click();

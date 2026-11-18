@@ -456,33 +456,20 @@ test.describe('Comprehensive 8-Scenario User Walkthrough (Strict Assertions)', (
     await page.locator('[data-testid="bottom-nav-today"]').click();
     await page.waitForTimeout(500);
 
-    // Scroll down to Guides
-    const guidesSection = page.locator('.ff-home-guides');
-    await expect(guidesSection, 'Guides section container must be present on Today screen').toBeVisible();
-    await guidesSection.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
-
-    // Check guides state: if cards exist, expand first card; if in draft placeholder, record that
-    const guideCards = page.locator('[data-testid^="guide-card-"]');
-    if ((await guideCards.count()) > 0) {
-      const firstCard = guideCards.first();
-      const expandBtn = firstCard.locator('button[aria-expanded]');
-      await expandBtn.click();
-      await page.waitForTimeout(300);
-      await page.screenshot({ path: path.join(SCREENSHOT_DIR, '08a_guide_expanded.png') });
-    } else {
-      // In current release, educational guides are in draft_for_owner_review so placeholder is rendered
-      const placeholder = guidesSection.locator('text=Материалы готовятся к публикации');
-      await expect(placeholder, 'When guides are not yet approved, honest placeholder must be visible').toBeVisible();
-      await page.screenshot({ path: path.join(SCREENSHOT_DIR, '08a_guide_expanded.png') });
-    }
+    await page.getByTestId('home-open-guides').click();
+    const guides = page.getByTestId('guides-screen');
+    await expect(guides.getByTestId('education-guides-container')).toBeVisible();
+    await expect(guides.getByText(/Материалы готовятся к публикации/)).toBeVisible();
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '08a_guide_expanded.png') });
+    await page.getByTestId('app-back-button').click();
+    await expect(page.getByTestId('food-today')).toBeVisible();
 
     // Scroll to Access & Paywall
     const accessSection = page.locator('[data-testid="home-access-section"]');
     await accessSection.scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
 
-    const openPaywallBtn = page.locator('[data-testid="more-open-paywall-btn"]');
+    const openPaywallBtn = accessSection.getByTestId('home-open-paywall-btn');
     await expect(openPaywallBtn).toBeVisible();
     await openPaywallBtn.click();
     await page.waitForTimeout(500);
