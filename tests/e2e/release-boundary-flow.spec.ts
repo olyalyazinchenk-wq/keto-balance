@@ -34,6 +34,7 @@ test('Kitchen timer pause and deadline catch up on foreground return (clock jump
   await page.getByTestId('submit-settings-btn').click();
   await expect(page.getByTestId('food-today')).toBeVisible();
   await page.goto('/?screen=recipe&recipe=k1');
+  await page.getByRole('button', { name: 'Приготовление', exact: true }).click();
   await page.getByTestId('start-step-timer-btn-0').click();
   const timer = page.getByTestId('kitchen-timer-display');
   await expect(timer).toBeVisible();

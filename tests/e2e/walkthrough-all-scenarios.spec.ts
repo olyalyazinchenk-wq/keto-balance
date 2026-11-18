@@ -300,6 +300,7 @@ test.describe('Comprehensive 8-Scenario User Walkthrough (Strict Assertions)', (
 
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '04c_plate_ingredient_prepared.png') });
 
+    await recipeScreen.getByRole('button', { name: 'Приготовление', exact: true }).click();
     // Scroll down to steps and timer
     await page.evaluate(() => window.scrollBy(0, 500));
     await page.waitForTimeout(300);

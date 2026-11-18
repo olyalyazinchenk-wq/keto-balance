@@ -8,6 +8,7 @@ import { AppShell } from './AppShell';
 
 import { PaywallModal } from './PaywallModal';
 import { FoodToday } from './Today';
+import { EditorialCatalog, EditorialCompass } from './EditorialCatalog';
 import { MenuScreen } from './Menu';
 import { RecipeScreen } from './Recipe';
 import { ShoppingScreen } from './Shopping';
@@ -60,7 +61,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
       const params = new URLSearchParams(window.location.search);
       const qScreen = params.get('screen')?.toLowerCase();
       const qRecipe = params.get('recipe');
-      if (qScreen && ['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(qScreen)) {
+      if (qScreen && ['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(qScreen)) {
         return { screen: qScreen as ScreenId, recipeId: qRecipe || undefined };
       }
       const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
@@ -68,7 +69,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
         const parts = hash.split('/');
         return { screen: 'recipe', recipeId: parts[1] || undefined };
       }
-      if (['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(hash)) {
+      if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(hash)) {
         return { screen: hash as ScreenId };
       }
     }
@@ -326,7 +327,7 @@ export function FoodFirstApp({
         const parts = raw.split('/');
         if (parts[1]) setActiveRecipeId(parts[1]);
         navigateTo('recipe', parts[1]);
-      } else if (['today', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(raw)) {
+      } else if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(raw)) {
         const scr = raw as ScreenId;
         navigateTo(scr);
       }
@@ -451,6 +452,7 @@ export function FoodFirstApp({
   }, [profile.settings]);
 
   // Active recipe for RecipeScreen and eligibility check
+  const [recipePortions, setRecipePortions] = useState<Record<string, 1 | 2 | 4>>({});
   const displayedRecipeId = currentRoute.recipeId || activeRecipeId;
   const activeRecipe = recipesById[displayedRecipeId];
   const isRecipeEligible = useMemo(() => {
@@ -472,6 +474,14 @@ export function FoodFirstApp({
     }
     return true;
   }, [activeRecipe, catalog.recipes, catalog.released_ids, catalog.test_only, profile.settings]);
+
+  const editorialRecipes = useMemo(() => {
+    if (profile.settings && canonProfile.mode !== 'keto') return [];
+    const admittedIds = new Set(effectiveCatalogIds);
+    return catalog.recipes
+      .filter(recipe => recipe.mode === 'keto' && admittedIds.has(recipe.id) && isRecipeAllowed(recipe, canonProfile))
+      .map(recipe => recipesById[recipe.id]);
+  }, [catalog.recipes, effectiveCatalogIds, canonProfile, profile.settings, recipesById]);
 
   const isRenderingRecipeScreenForTimer = currentScreen === 'recipe' &&
     Boolean(activeRecipe && isRecipeEligible && displayedRecipeId === activeTimer?.recipeId);
@@ -508,6 +518,12 @@ export function FoodFirstApp({
         <FoodToday
           sessionToken={sessionToken}
           onOpenLearning={(screen) => navigateTo(screen)}
+          onOpenCompass={() => navigateTo('compass')}
+          onOpenCatalog={() => navigateTo('catalog')}
+          catalogHighlights={editorialRecipes.flatMap(recipe => {
+            const photo = photoForRecipe(recipe.id);
+            return photo ? [toFoodCard({ id: recipe.id, title: recipe.title, minutes: recipe.prepMinutes }, photo)] : [];
+          }).slice(0, 5)}
           onNavigate={navigateTo}
           dateLabel={selectedDayLabel}
           primary={primaryCard}
@@ -542,6 +558,17 @@ export function FoodFirstApp({
         </div>
       )}
 
+      {(currentScreen === 'catalog' || visited.has('catalog')) && (
+        <div hidden={currentScreen !== 'catalog'}>
+          <EditorialCatalog recipes={editorialRecipes} onOpenRecipe={handleOpenRecipe} />
+        </div>
+      )}
+      {(currentScreen === 'compass' || visited.has('compass')) && (
+        <div hidden={currentScreen !== 'compass'}>
+          <EditorialCompass recipes={editorialRecipes} onOpenRecipe={handleOpenRecipe} />
+        </div>
+      )}
+
       {(currentScreen === 'menu' || visited.has('menu')) && (
         <div hidden={currentScreen !== 'menu'}>
         <MenuScreen
@@ -569,7 +596,10 @@ export function FoodFirstApp({
       {currentScreen === 'recipe' && (
         activeRecipe && isRecipeEligible ? (
           <RecipeScreen
+            key={activeRecipe.id}
             recipe={activeRecipe}
+            selectedPortions={recipePortions[activeRecipe.id] ?? 1}
+            onSelectPortions={portions => setRecipePortions(prev => ({ ...prev, [activeRecipe.id]: portions }))}
             checkedIngredients={state.checked_ingredients}
             onToggleIngredient={onToggleIngredient}
             checkedSteps={state.checked_steps}
