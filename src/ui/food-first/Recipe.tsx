@@ -13,6 +13,7 @@ import {
   extractStepTimerMinutes,
 } from './state';
 import { RecipePlate } from './RecipePlate';
+import { photoForRecipe } from './model';
 import { triggerHaptic } from '../../tma/telegram';
 import { timerDeadline, remainingTimerSeconds } from './kitchenTimer';
 
@@ -20,6 +21,8 @@ import type { ActiveKitchenTimer } from './kitchenTimerState';
 
 export interface RecipeScreenProps {
   recipe: RecipeViewModel;
+  selectedPortions?: 1 | 2 | 4;
+  onSelectPortions?: (value: 1 | 2 | 4) => void;
   checkedIngredients: Record<string, boolean>;
   onToggleIngredient: (key: string) => void;
   checkedSteps: Record<string, boolean>;
@@ -35,6 +38,8 @@ export interface RecipeScreenProps {
 
 export function RecipeScreen({
   recipe,
+  selectedPortions,
+  onSelectPortions,
   checkedIngredients,
   onToggleIngredient,
   checkedSteps,
@@ -47,7 +52,11 @@ export function RecipeScreen({
   onResumeTimer,
   onStopTimer,
 }: RecipeScreenProps) {
-  const [portions, setPortions] = useState<1 | 2 | 4>(1);
+  const [localPortions, setLocalPortions] = useState<1 | 2 | 4>(1);
+  const portions = selectedPortions ?? localPortions;
+  const [section, setSection] = useState<'ingredients' | 'steps'>(() =>
+    activeTimer?.recipeId === recipe.id ? 'steps' : 'ingredients'
+  );
   const variant = recipe.portionsVariants[portions] || recipe.portionsVariants[1];
 
   // Local fallback timer when no lifted timer is passed
@@ -175,6 +184,7 @@ export function RecipeScreen({
   ).length;
 
   const handleStartOrAdvanceStep = () => {
+    setSection('steps');
     triggerHaptic(
       completedStepsCount + 1 >= recipe.steps.length
         ? 'notification_success'
@@ -187,8 +197,9 @@ export function RecipeScreen({
     onToggleStep(`${recipe.id}:step:${targetIdx}`);
   };
 
+  const editorialPhoto = photoForRecipe(recipe.id);
   return (
-    <article className="food-recipe" data-testid="food-recipe-screen">
+    <article className="food-recipe editorial-detail" data-testid="food-recipe-screen">
       {/* Секция 01: Обложечная шапка рецепта */}
       <header className="border-b border-[var(--kb-border)] pb-6 sm:pb-10 space-y-4 sm:space-y-6">
         {onGoBack && (
@@ -204,6 +215,7 @@ export function RecipeScreen({
             ← Назад к меню
           </button>
         )}
+        {editorialPhoto && <img className="editorial-detail-photo" src={editorialPhoto} alt={recipe.title} width="640" height="440" />}
         <div className="food-grid items-start">
           <div className="col-span-3 md:col-span-5 space-y-3 sm:space-y-4 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -276,15 +288,24 @@ export function RecipeScreen({
               checkedIngredients={checkedIngredients}
               onToggleIngredient={onToggleIngredient}
               selectedPortions={portions}
-              onSelectPortions={(p) => { triggerHaptic('selection'); setPortions(p); }}
+              onSelectPortions={(p) => { triggerHaptic('selection'); (onSelectPortions ?? setLocalPortions)(p); }}
             />
           </div>
         </div>
       </header>
 
-      {/* Основной разворот: Ингредиенты + Шаги с таймером */}
-      <div className="food-grid items-start pt-6">
+      <div className="editorial-recipe-sections" role="group" aria-label="Разделы рецепта">
+        <button type="button" aria-pressed={section === 'ingredients'} aria-controls="editorial-ingredients" onClick={() => setSection('ingredients')}>
+          Ингредиенты
+        </button>
+        <button type="button" aria-pressed={section === 'steps'} aria-controls="editorial-steps" onClick={() => setSection('steps')}>
+          Приготовление
+        </button>
+      </div>
+      <div className="editorial-recipe-body">
         <section
+          id="editorial-ingredients"
+          hidden={section !== 'ingredients'}
           aria-labelledby="recipe-ingredients-heading"
           className="col-span-4 md:col-span-5 bg-[var(--kb-surface)] border border-[var(--kb-border)] p-4 sm:p-6 space-y-4"
         >
@@ -339,6 +360,8 @@ export function RecipeScreen({
 
         {/* Секция шагов приготовления */}
         <section
+          id="editorial-steps"
+          hidden={section !== 'steps'}
           aria-labelledby="recipe-steps-heading"
           className="col-span-5 md:col-span-7 bg-[var(--kb-surface)] border border-[var(--kb-border)] p-4 sm:p-6 space-y-6"
         >

@@ -211,3 +211,7 @@ Source256d682 доступен в GitHub, PR27 draft. Полная сервер�
 R3наВМподтверждёнпрямымreadonlySSH:build8be43f00ba6d26b3,imagebefee83ccb642d22289373cd8abfc9f20839ae1a96d5eea6d0390dd901935775. ScriptSHA9d4d2107a4939813ae8f2452e728cc9527b3e7ea17ea23dc23dbea148b6b1510local/remote/preflightсовпали. Копиидвухсуществующихбаздлятрёхролей;12старыхтаблицнеизменны,integrityok/FK0/idempotentPASS,10APIchecksPASS,canonicalWALhotbackup+writerkillrecoveryPASS. TrialnetworknoneбезTelegramcallsостановлен. Liveapp/botнеизменны. Runbook:release/owner-rollout-20261113.md.
 
 Кандидаты36новыхрецептур/49USDArecords/108расчётовзафиксированы7c48399,ownerApproved=false,cookingVerified=false,publicationAllowed=false. Видеоинструкциявработе. Рабочаямиграция/переключение/реальныеответыневыполнялись:ожидаетсяотдельноеразрешениеОльги.
+
+## 18.11.2026 — кандидат Editorial
+
+База — b570b49 из PR №27. Все три проверки GitHub на базе прошли. Основные изменения кандидата — утверждённая композиция главной, каталог с поиском, карточка рецепта и КетоКомпас на существующем каталоге. КетоКомпас учитывает настройки и не меняет сохранённый рацион. Работающий бот обслуживает закрытую сборку 1516abfee37f9455. Облачная установка, приёмка в Telegram, допуск новых рецептур и пилот остаются открытыми.

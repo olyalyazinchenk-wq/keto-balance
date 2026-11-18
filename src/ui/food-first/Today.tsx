@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import type { FoodCard } from './model';
-import { ArrowRight, Clock, Check } from './Icons';
+import { ArrowRight, Clock, Check, BookOpen, Settings, Sparkles, Calendar, ShoppingBag } from './Icons';
 import { triggerHaptic } from '../../tma/telegram';
 import './today.css';
 import './learning-navigation.css';
 
 export interface FoodTodayProps {
   onOpenLearning?: (screen: 'rules' | 'education' | 'guides') => void;
+  onOpenCompass?: () => void;
+  onOpenCatalog?: () => void;
+  catalogHighlights?: FoodCard[];
   dateLabel: string;
   primary: FoodCard | null;
   others: FoodCard[];
@@ -44,6 +47,9 @@ function FoodPhoto({ card }: { card: FoodCard }) {
 export function FoodToday({
   dateLabel,
   onOpenLearning,
+  onOpenCompass,
+  onOpenCatalog,
+  catalogHighlights = [],
   primary,
   others,
   rhythm = [],
@@ -66,40 +72,54 @@ export function FoodToday({
 
   return (
     <section className="ff-today" data-testid="food-today" data-ui-revision="appetizing-month-03">
-      <nav className="ff-learning-links" aria-label="Основы кето и обучение" data-testid="home-learning-links">
-        {([
-          ['rules', 'Правила кето', 'Что можно, что ограничивать и что исключать'],
-          ['education', 'Обучение', 'Основы кето шаг за шагом'],
-          ['guides', 'Микрогайды', 'Короткие практические инструкции'],
-        ] as const).map(([screen, title, description]) => (
-          <button key={screen} type="button" className="ff-learning-card" data-testid={`home-open-${screen}`} onClick={() => onOpenLearning?.(screen)}>
-            <strong>{title}</strong><span>{description}</span>
-          </button>
-        ))}
-      </nav>
       {/* 1. Вводный блок ценности на месяц */}
       <header className="ff-today__heading">
+        <p className="editorial-opening">Место для вкусного кето</p>
         <div className="ff-hero" data-testid="home-hero-banner">
-          <span className="ff-hero__tag">Кето-меню на месяц</span>
-          <h1>Кето-питание без ежедневного поиска рецептов</h1>
-          <p className="ff-hero__desc">
-            Укажите предпочтения, получите кето-блюда по дням, меняйте их под себя и собирайте покупки на удобный период.
-          </p>
-          <button
-            type="button"
-            className="ff-action ff-hero__cta"
-            data-testid="home-hero-cta"
-            onClick={() => {
-              triggerHaptic('impact_medium');
-              onChooseMenu();
-            }}
-          >
-            {hasMenu ? 'Продолжить мой план' : 'Составить меню на месяц'}
-            <ArrowRight aria-hidden="true" />
-          </button>
+          <div className="editorial-hero-copy">
+            <span>Вкусно, когда по-домашнему</span>
+            <h1>Готовить.<br /><em>Наслаждаться.</em><br />Жить.</h1>
+            <p className="ff-hero__desc">Простые блюда, любимые продукты и забота о себе каждый день.</p>
+          </div>
         </div>
       </header>
 
+      <section className="editorial-compass-card" aria-labelledby="editorial-compass-title">
+        <div>
+          <span><Sparkles aria-hidden="true" /> КетоКомпас</span>
+          <h2 id="editorial-compass-title">Что мне съесть сегодня?</h2>
+          <button type="button" onClick={onOpenCompass}>Подобрать блюдо <ArrowRight aria-hidden="true" /></button>
+        </div>
+      </section>
+
+      <h2 className="editorial-section-title">Всё, что <em>нужно</em></h2>
+      <nav className="ff-learning-links editorial-shortcuts" aria-label="Основы кето и обучение" data-testid="home-learning-links">
+        {([
+          ['rules', 'Правила кето', Settings],
+          ['education', 'Обучение', BookOpen],
+          ['guides', 'Микрогайды', Sparkles],
+        ] as const).map(([screen, title, Icon]) => (
+          <button key={screen} type="button" className="ff-learning-card" data-testid={`home-open-${screen}`} onClick={() => onOpenLearning?.(screen)}>
+            <span><Icon aria-hidden="true" /></span><strong>{title}</strong>
+          </button>
+        ))}
+      </nav>
+      <section aria-labelledby="editorial-home-recipes">
+        <div className="editorial-home-recipes-heading">
+          <h2 className="editorial-section-title" id="editorial-home-recipes">Домашнее <em>меню</em></h2>
+          <button type="button" className="editorial-catalog-link" onClick={onOpenCatalog}>Все рецепты <ArrowRight aria-hidden="true" /></button>
+        </div>
+        {catalogHighlights.length > 0 && <div className="editorial-highlights">
+          {catalogHighlights.map(card => <button key={card.id} type="button" onClick={() => open(card.id)}>
+            <FoodPhoto card={card} /><strong>{card.title}</strong>
+            {card.minutes && <small>{card.minutes} мин</small>}
+          </button>)}
+        </div>}
+      </section>
+      <div className="editorial-tools">
+        <button type="button" data-testid="home-hero-cta" onClick={onChooseMenu}><Calendar aria-hidden="true" /> {hasMenu ? 'Продолжить мой план' : 'Составить меню на месяц'}</button>
+        <button type="button" onClick={() => onNavigate?.('shopping')}><ShoppingBag aria-hidden="true" /> Список покупок</button>
+      </div>
       {/* 2. Блюда на сегодня (Блюдо дня, ещё на сегодня, ритм дня) */}
       <div className="ff-today-section" data-testid="home-today-dishes">
         <div className="ff-today-section__header">

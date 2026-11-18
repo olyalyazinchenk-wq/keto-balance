@@ -1,0 +1,115 @@
+.editorial-shopping { position: relative; min-width: 44px; }
+
+.ff-proof .editorial-hero-copy {
+  position: absolute;
+  inset: auto 22px 23px;
+  color: #fffaf0;
+}
+
+.ff-proof .ff-hero {
+  position: relative;
+  min-height: 316px;
+  border: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, transparent 22%, #15251c26 46%, #101e17ef 100%),
+    #4b4538 url('/media/food-first/hero.webp') 57% center / cover no-repeat;
+}
+
+.ff-proof .editorial-hero-copy h1,
+.ff-proof .editorial-compass-card h2,
+.ff-proof .editorial-section-title,
+.editorial-detail .food-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+}
+
+.ff-proof .editorial-hero-copy h1 {
+  max-width: 15ch;
+  margin: 0 0 9px;
+  color: inherit;
+  font-size: clamp(31px, 9.5vw, 46px);
+  line-height: 1.03;
+}
+
+.editorial-hero-copy em { color: #f4ddad; }
+.ff-proof .editorial-hero-copy p { margin: 0; max-width: 32ch; color: #fffaf0; font-size: 13px; }
+
+.editorial-compass-card {
+  position: relative;
+  min-width: 0;
+  margin-top: 16px;
+  padding: 18px 16px 18px 20px;
+  border-radius: 24px;
+  background: #193d31;
+  color: #fffaf0;
+  overflow: hidden;
+}
+
+.editorial-compass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 49%;
+  background: linear-gradient(90deg, #193d31, #193d3126 58%), url('/media/food-first/omelet-cheese-herbs.webp') center / cover;
+}
+
+.editorial-compass-card > div { position: relative; }
+.editorial-compass-card span { display: flex; align-items: center; gap: 8px; color: #f4ddad; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.editorial-compass-card h2 { margin: 7px 0 12px; max-width: 15ch; font-size: 27px; line-height: 1.05; text-shadow: 0 1px 4px #193d31; }
+.editorial-compass-card button { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 8px 14px; border: 0; border-radius: 24px; background: #f4ebdd; color: #214333; font-size: 13px; font-weight: 700; }
+.editorial-compass-card svg, .editorial-tools svg, .editorial-catalog-link svg, .editorial-picker svg { width: 19px; height: 19px; flex: none; }
+.editorial-compass-card button:focus-visible { outline-color: #f4ddad; }
+
+.ff-proof .editorial-section-title { margin: 24px 0 12px; font-size: clamp(25px, 7vw, 34px); line-height: 1.08; }
+.ff-proof .editorial-shortcuts { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 14px; gap: 4px; }
+.ff-proof .editorial-shortcuts button { display: flex; flex-direction: column; align-items: center; border: 0; padding: 6px 2px; gap: 8px; background: transparent; text-align: center; }
+.ff-proof .editorial-shortcuts button span { display: grid; place-items: center; width: 52px; height: 52px; margin: 0; border: 1px solid var(--ff-line); border-radius: 50%; background: var(--ff-surface); color: var(--ff-green); }
+.ff-proof .editorial-shortcuts button + button { border-left: 1px solid var(--ff-line); border-radius: 0; }
+.ff-proof .editorial-shortcuts strong { font-size: 13px; }
+.editorial-shortcuts svg { width: 23px; height: 23px; }
+
+.editorial-tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.editorial-tools button { display: flex; align-items: start; flex-direction: column; gap: 8px; min-height: 74px; padding: 12px; border: 1px solid var(--ff-line); border-radius: 16px; background: var(--ff-surface); color: var(--ff-ink); font-size: 13px; font-weight: 650; text-align: left; }
+.editorial-tools svg { color: var(--ff-green); }
+.editorial-catalog-link { display: flex; align-items: center; gap: 9px; min-height: 44px; margin: 10px 0 0 auto; border: 0; background: transparent; color: var(--ff-green); font-weight: 650; }
+
+.editorial-picker { max-width: 680px; margin: 0 auto; padding: 16px 22px; }
+.editorial-picker h1 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 26px; font-weight: 700; }
+.editorial-picker h2 { margin: 18px 0 8px; font-size: 20px; font-weight: 650; }
+.editorial-search { display: grid; gap: 4px; margin: 20px 0 10px; font-size: 13px; color: var(--ff-muted); }
+.editorial-search input { min-width: 0; min-height: 46px; padding: 10px 13px; border: 1px solid var(--ff-line); border-radius: 14px; color: var(--ff-ink); background: var(--ff-surface); }
+.editorial-recipe-list { list-style: none; margin: 0; padding: 0; }
+.editorial-recipe-row { display: flex; align-items: center; gap: 12px; min-height: 64px; width: 100%; padding: 12px 0; border: 0; border-bottom: 1px solid var(--ff-line); background: transparent; color: var(--ff-ink); text-align: left; }
+.editorial-recipe-row img { flex: 0 0 auto; width: 86px; height: 78px; object-fit: cover; border-radius: 14px; }
+.editorial-recipe-row span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.editorial-recipe-row small { display: block; color: var(--ff-muted); font-size: 11px; }
+.editorial-recipe-row strong { display: block; margin-top: 3px; font-size: 15px; }
+.editorial-occasions { display: grid; gap: 8px; }
+.editorial-occasions button { display: flex; align-items: center; justify-content: space-between; gap: 7px; min-height: 48px; padding: 9px 13px; border: 1px solid var(--ff-line); border-radius: 14px; background: var(--ff-surface); color: var(--ff-ink); text-align: left; font-size: 14px; }
+.editorial-occasions [aria-pressed='true'] { border-color: var(--ff-green); font-weight: 700; }
+
+.editorial-detail-photo { width: 100%; height: clamp(218px, 75vw, 360px); object-fit: cover; border-radius: 22px; }
+
+@media (min-width: 768px) {
+  .ff-proof .ff-hero { min-height: 410px; }
+  .editorial-compass-card { min-height: 170px; }
+  .editorial-detail-photo { max-width: 680px; margin-inline: auto; }
+}
+
+.editorial-opening { margin: 0 0 13px 6px; color: var(--ff-muted); font-size: 10px; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
+.editorial-hero-copy > span { display: block; margin-bottom: 8px; font-size: 10px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+.editorial-home-recipes-heading { display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap; gap: 0 9px; margin-bottom: 9px; }
+.editorial-home-recipes-heading .editorial-section-title { margin-bottom: 0; }
+.editorial-highlights { display: flex; gap: 13px; overflow-x: auto; padding: 4px 3px 12px; }
+.editorial-highlights button { flex: 0 0 min(213px, 69%); min-height: 44px; border: 0; background: transparent; color: var(--ff-ink); text-align: left; padding: 0; }
+.editorial-highlights img { height: 177px; width: 100%; object-fit: cover; border-radius: 16px; }
+.editorial-highlights strong { display: block; margin-top: 6px; font-size: 15px; }
+.editorial-highlights small { color: var(--ff-muted); }
+
+.editorial-recipe-sections { display: flex; flex-wrap: wrap; gap: 7px; padding-block: 16px 12px; }
+.editorial-recipe-sections button { min-height: 44px; padding: 7px 14px; border: 1px solid var(--ff-line); border-radius: 24px; background: var(--ff-surface); color: var(--ff-ink); font-size: 13px; }
+.editorial-recipe-sections button[aria-pressed="true"] { background: var(--ff-green); color: var(--kb-on-primary, #fff); border-color: var(--ff-green); }
+.editorial-recipe-body > section { border-radius: 18px; }
+.editorial-recipe-body > section[hidden] { display: none; }
