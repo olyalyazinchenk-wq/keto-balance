@@ -8,9 +8,13 @@ for (const ext of ['.ts','.tsx']) require.extensions[ext]=(module,file)=>module.
 require.extensions['.css']=()=>{};
 const {AppShell}=require('../../src/ui/food-first/AppShell.tsx');
 test('all destinations preserve four reachable tabs and the active destination',()=>{
- for(const screen of ['today','menu','shopping','more','diary','support','recipe']){
+ for(const screen of ['today','catalog','compass','menu','shopping','more','diary','support','recipe']){
   const html=renderToStaticMarkup(React.createElement(AppShell,{activeScreen:screen,canGoBack:true,onGoBack(){},onNavigate(){},shoppingNeedsRefresh:true},'content'));
-  assert.equal((html.match(/data-testid="bottom-nav-/g)||[]).length,4);
+  const navigation = html.match(/<nav[^>]*aria-label="Основная навигация"[^>]*>(.*?)<\/nav>/);
+  assert.ok(navigation, 'The main navigation must be present');
+  const destinations = Array.from(navigation[1].matchAll(/data-testid="bottom-nav-([^"]+)"/g), match => match[1]);
+  assert.deepEqual(destinations, ['today', 'catalog', 'menu', 'more']);
+  assert.match(html, /aria-label="Список покупок" data-testid="bottom-nav-shopping"/);
   assert.ok(!html.includes('bottom-nav-diary'));
   assert.equal((html.match(/aria-current="page"/g)||[]).length,1);
   assert.match(html,/Список нужно обновить/);
