@@ -23,9 +23,9 @@ test('synthetic payment updates access and persists after reload',async({createS
  ]);
  expect(purchase.status()).toBe(200);expect(confirm.status()).toBe(200);
  await expect(page.getByTestId('paywall-modal')).toBeHidden();
- await expect(page.getByText('Подписка активна',{exact:true})).toBeVisible();
+ await expect(page.getByTestId('more-screen').getByText('Подписка активна',{exact:true})).toBeVisible();
  await page.reload();await page.getByTestId('bottom-nav-more').click();
- await expect(page.getByText('Подписка активна',{exact:true})).toBeVisible();
+ await expect(page.getByTestId('more-screen').getByText('Подписка активна',{exact:true})).toBeVisible();
 });
 test('subscription dialog closes by button, Escape and backdrop',async({createSession})=>{
  const page=await ready(createSession,8103);

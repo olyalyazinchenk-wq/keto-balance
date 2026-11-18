@@ -38,6 +38,6 @@ for (const width of [320, 390, 768, 1440]) {
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
     ).toBeTruthy();
     await page.getByTestId('bottom-nav-more').click();
-    await expect(page.getByText('Дневник появится позже')).toBeVisible();
+    await expect(page.getByTestId('more-screen').getByText('Дневник появится позже')).toBeVisible();
   });
 }
