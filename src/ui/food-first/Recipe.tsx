@@ -212,7 +212,7 @@ export function RecipeScreen({
             data-testid="recipe-back-btn"
             className="mb-2 text-sm text-[var(--kb-text-2)] hover:text-[var(--kb-text-1)] flex items-center gap-1"
           >
-            ← Назад к меню
+            ← Назад
           </button>
         )}
         {editorialPhoto && <img className="editorial-detail-photo" src={editorialPhoto} alt={recipe.title} width="640" height="440" />}
@@ -280,17 +280,6 @@ export function RecipeScreen({
             </div>
           </div>
 
-          <div className="col-span-4 md:col-span-5">
-            <RecipePlate
-              key={recipe.id}
-              recipe={recipe}
-              variant={variant}
-              checkedIngredients={checkedIngredients}
-              onToggleIngredient={onToggleIngredient}
-              selectedPortions={portions}
-              onSelectPortions={(p) => { triggerHaptic('selection'); (onSelectPortions ?? setLocalPortions)(p); }}
-            />
-          </div>
         </div>
       </header>
 
@@ -309,6 +298,15 @@ export function RecipeScreen({
           aria-labelledby="recipe-ingredients-heading"
           className="col-span-4 md:col-span-5 bg-[var(--kb-surface)] border border-[var(--kb-border)] p-4 sm:p-6 space-y-4"
         >
+            <RecipePlate
+              key={recipe.id}
+              recipe={recipe}
+              variant={variant}
+              checkedIngredients={checkedIngredients}
+              onToggleIngredient={onToggleIngredient}
+              selectedPortions={portions}
+              onSelectPortions={(p) => { triggerHaptic('selection'); (onSelectPortions ?? setLocalPortions)(p); }}
+            />
           <div className="food-section-heading flex items-baseline justify-between gap-2 border-b border-[var(--kb-border)] pb-2.5">
             <h2
               id="recipe-ingredients-heading"
