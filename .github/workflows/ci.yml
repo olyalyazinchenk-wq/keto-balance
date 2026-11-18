@@ -37,6 +37,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Build bundle for leakage checks
+        run: |
+          npm ci
+          npm run build
+
       - name: Run Backend Test Suite (227 tests)
         run: |
           python scripts/run_backend_tests.py
@@ -82,13 +93,13 @@ jobs:
         run: |
           npm run typecheck
 
-      - name: Run Frontend Unit Tests (195 tests)
-        run: |
-          npm run test:unit
-
       - name: Production Build (Vite, Rollup & Release Stamp)
         run: |
           npm run build
+
+      - name: Run Frontend Unit Tests (195 tests)
+        run: |
+          npm run test:unit
 
   deploy-spec-checks:
     name: Docker Compose Production Deployment Specs

@@ -308,7 +308,7 @@ class TestMilestone1ChallengerProbes(unittest.TestCase):
     # PROBE 6: Production bundle zero-leakage check on real build artifacts
     def test_probe_6_real_dist_bundle_zero_leakage(self):
         """Verify that actual dist/assets/*.js in Keto-balance has 0 candidate recipe titles or IDs."""
-        real_dist_assets = Path("C:/Users/HP/Keto-balance/dist/assets")
+        real_dist_assets = Path(__file__).resolve().parents[2] / "dist" / "assets"
         self.assertTrue(real_dist_assets.is_dir(), f"Dist assets dir not found at {real_dist_assets}")
 
         js_files = list(real_dist_assets.glob("*.js"))
