@@ -1,6 +1,13 @@
 # Журнал передачи работы
 Новые записи добавлять в начало после заголовка. Это история; актуальный статус хранится только в CURRENT-STATE.md.
 
+## 2026-11-19, вечер — отчёт установки №41 и тайм-аут Telegram
+- GPT/Codex, ChatGPT Work; baseline master d358d6a2bdd59d4be3dd8a0e521ec8e0774b3d1d; docs/context-sync-20261119-evening.
+- #41 docs HEAD e9d01d40480f3567e00f1178ef4a4ca730a27fc6, product source 76f28071c1d1f9ba3fa619895dd9f27a342df285; diff после утра только документационный. CI44565904556/44565885427 success.
+- Отчёт OWNER_JOURNEY_20261119.md сообщает установку 19.11 19:22 МСК, build08addd83f9b8fda6/backend25f44154b698dcaa/catalog666c79712f63128f, restore/репетицию отката/сохранность. Прямой HTTPS успешен по отчёту, Telegram Web timeout; телефон/сутки открыты.
+- Описания #41/#39/#27 отстают от отчёта. Verified deployed SHA/прямая дата проверки/биллинг UNKNOWN; собственного доступа к ПК/серверу нет. Issues без изменений.
+- Только CURRENT-STATE/HANDOFF-LOG; Notion после интеграции. Следующий шаг: фактическая версия и диагностика Telegram read-only, затем телефонная приёмка. Продуктовые PR не объединялись.
+
 ## 2026-11-19, утро — PR #41 и сообщённые тайм-ауты
 - GPT/Codex, ChatGPT Work; baseline master dcc5086f2717ed24b78bf59bcae42e652e0b1c5a; docs/context-sync-20261119.
 - Новый Draft #41 поверх #39, HEAD76f28071c1d1f9ba3fa619895dd9f27a342df285; CI44447793948/44447787662 success. Правила/меню/обучение/покупки опубликованы; deployment и ручной допуск не выполнены.
