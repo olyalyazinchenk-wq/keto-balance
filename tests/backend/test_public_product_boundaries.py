@@ -91,7 +91,7 @@ class TestPublicProductBoundaries(unittest.TestCase):
         with patch('builtins.open',mock_open(read_data=json.dumps(approved))):
             self.assertEqual(self.client.get('/api/education/guides').json()['count'],2)
             save_user_subscription(self.db,42,'premium','active',(datetime.now(timezone.utc)+timedelta(days=1)).isoformat())
-            self.assertEqual(self.client.get('/api/education/guides',headers=self.headers).json()['count'],8)
+            self.assertEqual(self.client.get('/api/education/guides',headers=self.headers).json()['count'],len(guides))
         owner_settings = AppSettings(app_stage='staging',access_mode='owner',owner_allowlist=frozenset({42}),db_path=self.db,dist_dir=self.dist)
         owner_client = TestClient(create_app(settings=owner_settings,db_path=self.db,dist_dir=self.dist))
-        self.assertEqual(owner_client.get('/api/education/guides',headers=self.headers).json()['count'],8)
+        self.assertEqual(owner_client.get('/api/education/guides',headers=self.headers).json()['count'],len(guides))

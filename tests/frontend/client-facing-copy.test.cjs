@@ -9,7 +9,7 @@ const { PaywallModal } = loadTs(path.resolve(__dirname, '../../src/ui/food-first
 
 test('keto rules explain food groups and portions independently from settings', () => {
   const html = renderToStaticMarkup(React.createElement(KetoRules));
-  for (const text of ['Правила кето', 'основы рациона', 'ограничивать', 'обычно заменяют', 'углеводы и порцию', 'не медицинские запреты']) assert.ok(html.includes(text), text);
+  for (const text of ['Правила кето', 'Что можно есть', 'Что мы ограничиваем в кето-меню', 'Что исключаем из стандартного меню приложения', 'углеводы и порцию', '50 г', 'Чем заменить привычные продукты']) assert.ok(html.includes(text), text);
   assert.ok(!html.includes('onOpenSettings'));
   assert.ok(!html.includes('карнивор'));
 });

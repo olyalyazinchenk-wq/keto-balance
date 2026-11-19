@@ -18,6 +18,7 @@ import { loadActiveTimer, saveActiveTimer, clearActiveTimer } from './kitchenTim
 import { timerDeadline, remainingTimerSeconds } from './kitchenTimer';
 import { triggerHaptic } from '../../tma/telegram';
 import { toFoodCard, photoForRecipe } from './model';
+import { meetsStandardKetoIngredients } from '../../domain/ketoMenuPolicy';
 import { resolveDayMenuSlots } from './state';
 import { toRecipeViewModel } from './recipesAdapter';
 import { preferencesToUserProfile } from '../../adapters/pilotState';
@@ -479,7 +480,8 @@ export function FoodFirstApp({
     if (profile.settings && canonProfile.mode !== 'keto') return [];
     const admittedIds = new Set(effectiveCatalogIds);
     return catalog.recipes
-      .filter(recipe => recipe.mode === 'keto' && admittedIds.has(recipe.id) && isRecipeAllowed(recipe, canonProfile))
+      .filter(recipe => recipe.mode === 'keto' && admittedIds.has(recipe.id) &&
+        isRecipeAllowed(recipe, canonProfile) && meetsStandardKetoIngredients(recipe))
       .map(recipe => recipesById[recipe.id]);
   }, [catalog.recipes, effectiveCatalogIds, canonProfile, profile.settings, recipesById]);
 
@@ -692,6 +694,17 @@ export function FoodFirstApp({
         (currentScreen === screen || visited.has(screen)) && (
           <div key={screen} hidden={currentScreen !== screen} className="ff-more" data-testid={`${screen}-screen`}>
             <h1>{screen === 'rules' ? 'Правила кето' : screen === 'education' ? 'Обучение' : 'Микрогайды'}</h1>
+            {screen === 'education' && (
+              <section className="ff-client-info" aria-label="Как пользоваться КетоБалансом">
+                <h2>Как пользоваться КетоБалансом</h2>
+                <ol>
+                  <li>Отметьте продукты, которые нужно исключить, в настройках питания.</li>
+                  <li>Откройте КетоКомпас или каталог и выберите рецепт.</li>
+                  <li>Укажите количество порций, затем откройте покупки через меню.</li>
+                </ol>
+                <button type="button" className="ff-proof__help-btn" onClick={() => navigateTo('rules')}>Посмотреть правила кето</button>
+              </section>
+            )}
             {screen === 'rules' ? <KetoRules initiallyOpen /> : <EducationGuides kind={screen} active={currentScreen === screen} onDetailChange={registerLearningBack} sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />}
           </div>
         )

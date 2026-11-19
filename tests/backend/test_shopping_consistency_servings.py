@@ -40,6 +40,7 @@ class TestShoppingConsistencyServings(unittest.TestCase):
                 "cat": "breakfast",
                 "serv": 2,
                 "time": 12,
+                "nc": 4,
                 "ing": [["Бекон", "80 г"], ["Яйца", "4 шт"]],
             },
             {
@@ -49,6 +50,7 @@ class TestShoppingConsistencyServings(unittest.TestCase):
                 "cat": "dinner",
                 "serv": 4,
                 "time": 60,
+                "nc": 4,
                 "ing": [["Говядина", "600 г"], ["Капуста", "600 г"]],
             },
         ]

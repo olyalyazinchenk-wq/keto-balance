@@ -13,6 +13,7 @@ export interface EducationGuide {
   editorial_review: string;
   disclaimer: string;
   editorial_status?: string;
+  kind?: 'education' | 'guides';
   actions?: { label: string; screen: 'settings' | 'menu' | 'shopping' | 'support' }[];
 }
 
@@ -33,6 +34,7 @@ export function EducationGuides({ kind, active = true, onDetailChange, sessionTo
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const requestGeneration = useRef(0);
+  const activeRequest = useRef<AbortController | null>(null);
   const listScroll = useRef(0);
   const closeGuide = useCallback(() => {
     setExpandedId(null);
@@ -45,44 +47,45 @@ export function EducationGuides({ kind, active = true, onDetailChange, sessionTo
   }, [expandedId, active, onDetailChange, closeGuide]);
 
   const loadGuides = useCallback(() => {
+    activeRequest.current?.abort();
     const generation = ++requestGeneration.current;
     setLoading(true);
     setError(null);
 
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => {
-      controller.abort();
-    }, 5000);
+    activeRequest.current = controller;
 
     fetchWithTimeout('/api/education/guides', { signal: controller.signal, headers: sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {} }, 5000)
       .then((res) => {
-        window.clearTimeout(timeoutId);
+        if (res.status === 401) throw new Error('Сеанс закончился. Откройте КетоБаланс заново через бота.');
+        if (res.status === 403) throw new Error('Материалы недоступны для текущего аккаунта.');
         if (!res.ok) throw new Error('Не удалось загрузить руководства');
         return res.json();
       })
       .then((data) => {
         if (generation !== requestGeneration.current) return;
         const lessons = ['intro_approaches', 'reading_labels', 'allergens_limits'];
-        setGuides((data.guides || []).filter((guide: EducationGuide) => !kind || (kind === 'education' ? lessons.includes(guide.id) : !lessons.includes(guide.id))));
+        if (!Array.isArray(data.guides)) throw new Error('Сервер вернул неверный список материалов.');
+        setGuides(data.guides.filter((guide: EducationGuide) =>
+          !kind || kind === (guide.kind ?? (lessons.includes(guide.id) ? 'education' : 'guides'))
+        ));
         setLoading(false);
       })
       .catch((err) => {
-        if (generation !== requestGeneration.current) return;
-        window.clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
-          setError('Превышено время ожидания ответа (5 сек). Проверьте интернет-соединение.');
-        } else {
-          setError(err.message || 'Ошибка загрузки материалов');
-        }
+        if (generation !== requestGeneration.current || controller.signal.aborted) return;
+        setError(err.message || 'Ошибка загрузки материалов');
         setLoading(false);
+      })
+      .finally(() => {
+        if (activeRequest.current === controller) activeRequest.current = null;
       });
-    return controller;
   }, [sessionToken, kind]);
 
   useEffect(() => {
-    const controller = loadGuides();
-    return () => { requestGeneration.current++; controller.abort(); };
-  }, [loadGuides]);
+    setGuides([]);
+    if (active) loadGuides();
+    return () => { requestGeneration.current++; activeRequest.current?.abort(); };
+  }, [sessionToken, kind, loadGuides, active]);
 
   const categories = useMemo(() => {
     const set = new Set<string>();

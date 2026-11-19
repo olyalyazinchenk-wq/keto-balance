@@ -2,6 +2,47 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadTs } = require('../helpers/load-ts.cjs');
 
+test('standard keto menu reserves carbs for later slots and filters replacements', () => {
+  const { generateMenu, replacementCandidates } = loadTs('src/domain/menu.ts');
+  const { RECIPES } = loadTs('src/data/recipes.ts');
+  const base = RECIPES.find(recipe => recipe.mode === 'keto');
+  const recipe = (id, cat, nc, ingredient = 'Сливки 33%') => ({
+    ...base, id, cat, nc, ing: [[ingredient, '100 г']],
+  });
+  const recipes = [
+    recipe('high', 'breakfast', 40), recipe('low', 'breakfast', 10),
+    recipe('lunch', 'lunch', 20), recipe('dinner', 'dinner', 20),
+    recipe('milk', 'breakfast', 1, 'Молоко коровье'), recipe('syrup', 'dinner', 1, 'Сироп с E965'),
+  ];
+  const menu = generateMenu(recipes, { mode: 'keto', numDays: 1, meals: 3, random: () => 0 });
+  assert.deepEqual({ ...menu.days[0].slots }, { breakfast: 'low', lunch: 'lunch', dinner: 'dinner' });
+  assert.deepEqual([...replacementCandidates('low', ['lunch', 'dinner'], recipes, null, 'breakfast', 'keto')], []);
+  assert.throws(() => generateMenu(recipes.filter(r => r.id !== 'low'), { mode: 'keto', numDays: 1, meals: 3 }), /лимита углеводов/);
+});
+
+test('calendar menus cover 28–31 days and prefer unused recipes from the previous menu', () => {
+  const { generateMenu } = loadTs('src/domain/menu.ts');
+  const { RECIPES } = loadTs('src/data/recipes.ts');
+  const base = RECIPES.find(recipe => recipe.mode === 'keto');
+  const categories = ['breakfast', 'lunch', 'dinner'];
+  const recipes = categories.flatMap(cat => ['old1', 'old2', 'new'].map(suffix => ({
+    ...base, cat, id: `${cat}-${suffix}`, nc: 5,
+  })));
+  for (const [month, days] of [['2026-02', 28], ['2028-02', 29], ['2026-11', 30], ['2026-12', 31], ['2027-01', 31]]) {
+    const menu = generateMenu(recipes, {
+      mode: 'keto', month, numDays: 31, meals: 3, random: () => 0,
+      previousMonthRecipeIds: recipes.filter(recipe => !recipe.id.endsWith('-new')).map(recipe => recipe.id),
+    });
+    assert.equal(menu.days.length, days);
+    assert.equal(menu.days[0].date, `${month}-01`);
+    assert.equal(menu.days.at(-1).date, `${month}-${days}`);
+    assert.deepEqual(Object.values(menu.days[0].slots), categories.map(cat => `${cat}-new`));
+    const used = new Set(menu.days.flatMap(day => Object.values(day.slots)));
+    assert.equal(used.size, recipes.length);
+    assert.ok([...used].filter(id => id.endsWith('-new')).length / used.size >= 0.3);
+  }
+});
+
 test('Menu generation with stable slots (P06)', async (t) => {
   const { generateMenu, getSlotKeys, replacementCandidates } = loadTs('src/domain/menu.ts');
   const { RECIPES } = loadTs('src/data/recipes.ts');

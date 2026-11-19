@@ -585,9 +585,13 @@ export default function PilotApp() {
     let genMenu;
     let initialShopping;
     try {
+      const previousMenu = stateRef.current?.menu;
       genMenu = controller.createUserMenu({
         numDays: draftPlanDays,
         month: draftPlanDays >= 28 ? draftMonth : undefined,
+        previousMonthRecipeIds: draftPlanDays >= 28 && previousMenu?.month && previousMenu.month < draftMonth
+          ? previousMenu.days.flatMap(day => Object.values(day.slots))
+          : undefined,
         meals: draftMealsPerDay,
         profile: canonProfile,
         mode: 'keto',

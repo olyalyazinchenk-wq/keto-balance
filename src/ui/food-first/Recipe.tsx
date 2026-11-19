@@ -215,7 +215,12 @@ export function RecipeScreen({
             ← Назад
           </button>
         )}
-        {editorialPhoto && <img className="editorial-detail-photo" src={editorialPhoto} alt={recipe.title} width="640" height="440" />}
+        {editorialPhoto
+          ? <figure>
+              <img className="editorial-detail-photo" src={editorialPhoto} alt={`Фотоиллюстрация блюда «${recipe.title}»`} width="640" height="440" decoding="async" />
+              {recipe.id === 'k28' && <figcaption className="text-xs text-[var(--kb-text-3)] mt-1">Иллюстрация создана по рецепту</figcaption>}
+            </figure>
+          : <p className="editorial-detail-no-photo">Фото блюда готовится</p>}
         <div className="food-grid items-start">
           <div className="col-span-3 md:col-span-5 space-y-3 sm:space-y-4 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">

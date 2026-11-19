@@ -1,5 +1,7 @@
 import type { Recipe, UserProfile } from "./types";
 import { isRecipeAllowed } from "./eligibility";
+import { dailyMenuCarbs, KETO_DAILY_CARB_LIMIT } from "../core/keto-engine/menuCarbs";
+import { meetsStandardKetoIngredients } from "./ketoMenuPolicy";
 
 export interface GenerateMenuOptions {
   mode: "keto" | "carnivore" | string;
@@ -10,6 +12,7 @@ export interface GenerateMenuOptions {
   today?: Date;
   startDate?: Date;
   month?: string;
+  previousMonthRecipeIds?: readonly string[];
   random?: () => number;
 }
 
@@ -88,7 +91,8 @@ export function generateMenu(
   const slotKeys = getSlotKeys(meals);
 
   // 1. Отбираем рецепты нужного режима, удовлетворяющие всем ограничениям профиля
-  const eligible = recipes.filter(r => r.mode === mode && isRecipeAllowed(r, profile));
+  const eligible = recipes.filter(r => r.mode === mode && isRecipeAllowed(r, profile) &&
+    (mode !== "keto" || (meetsStandardKetoIngredients(r) && dailyMenuCarbs([r]) <= KETO_DAILY_CARB_LIMIT)));
 
   if (eligible.length < slotKeys.length) {
     throw new Error(
@@ -129,18 +133,30 @@ export function generateMenu(
 
   const days: DayMenu[] = [];
   const recentDaysHistory: string[] = [];
+  const previousMonth = new Set(opts.previousMonthRecipeIds);
+  const usedThisMonth = new Set<string>();
 
   for (let dayIdx = 0; dayIdx < targetDays; dayIdx++) {
     const dayDate = new Date(startYear, startMonthIdx, startDayNum + dayIdx);
     const dateStr = formatLocalDateISO(dayDate);
     const usedTodayIds = new Set<string>();
+    const selectedRecipes: Recipe[] = [];
     const slots: Record<string, string> = {};
 
-    for (const slotKey of slotKeys) {
+    for (const [slotIndex, slotKey] of slotKeys.entries()) {
       // Доступные рецепты на сегодня (не повторять внутри одного дня)
-      const available = eligible.filter(r => !usedTodayIds.has(r.id));
+      const remaining = eligible.filter(r => !usedTodayIds.has(r.id));
+      const slotsAfter = slotKeys.length - slotIndex - 1;
+      const cheapest = mode === "keto"
+        ? [...remaining].sort((a, b) => a.nc - b.nc).slice(0, slotsAfter + 1)
+        : [];
+      const available = mode === "keto" ? remaining.filter(candidate => {
+        const reserve = cheapest.filter(r => r.id !== candidate.id).slice(0, slotsAfter);
+        return reserve.length === slotsAfter &&
+          dailyMenuCarbs([...selectedRecipes, candidate, ...reserve]) <= KETO_DAILY_CARB_LIMIT;
+      }) : remaining;
       if (available.length === 0) {
-        throw new Error(`Не удалось подобрать уникальные блюда на день ${dateStr}.`);
+        throw new Error(`Не удалось подобрать разные блюда на ${dateStr} с учётом исключений и лимита углеводов.`);
       }
 
       // Ищем предпочтительную категорию
@@ -157,13 +173,21 @@ export function generateMenu(
       // Приоритет блюдам, которые не использовались в последние 1-2 дня
       const recentSet = new Set(recentDaysHistory.slice(-Math.min(recentDaysHistory.length, meals * 2)));
       const freshCandidates = candidates.filter(r => !recentSet.has(r.id));
-      const finalCandidates = freshCandidates.length > 0 ? freshCandidates : candidates;
+      let finalCandidates = freshCandidates.length > 0 ? freshCandidates : candidates;
+      if (targetDays >= 28 && previousMonth.size > 0) {
+        const unused = finalCandidates.filter(r => !usedThisMonth.has(r.id));
+        const newToUser = unused.filter(r => !previousMonth.has(r.id));
+        if (newToUser.length > 0) finalCandidates = newToUser;
+        else if (unused.length > 0) finalCandidates = unused;
+      }
 
       // Детерминированный выбор по переданному random
       const idx = Math.floor(rand() * finalCandidates.length);
       const chosen = finalCandidates[Math.min(idx, finalCandidates.length - 1)];
       
       slots[slotKey] = chosen.id;
+      selectedRecipes.push(chosen);
+      usedThisMonth.add(chosen.id);
       usedTodayIds.add(chosen.id);
       recentDaysHistory.push(chosen.id);
     }
@@ -195,11 +219,18 @@ export function replacementCandidates(
 ): Recipe[] {
   const currentRecipe = recipes.find(r => r.id === currentRecipeId);
   const mode = targetMode || currentRecipe?.mode;
+  const otherRecipes = [...new Set(currentDayRecipeIds)].filter(id => id !== currentRecipeId)
+    .map(id => recipes.find(recipe => recipe.id === id));
   return recipes.filter(r => {
     if (mode && r.mode !== mode) return false;
     if (r.id === currentRecipeId) return false;
     if (currentDayRecipeIds.includes(r.id)) return false;
     if (!isRecipeAllowed(r, profile)) return false;
+    if (mode === "keto") {
+      if (!meetsStandardKetoIngredients(r)) return false;
+      if (otherRecipes.some(recipe => !recipe || !meetsStandardKetoIngredients(recipe))) return false;
+      if (dailyMenuCarbs([r, ...otherRecipes.filter((recipe): recipe is Recipe => Boolean(recipe))]) > KETO_DAILY_CARB_LIMIT) return false;
+    }
     return true;
   }).sort((a, b) => {
     if (preferredCat) {

@@ -91,6 +91,13 @@
 .editorial-occasions [aria-pressed='true'] { border-color: var(--ff-green); font-weight: 700; }
 
 .editorial-detail-photo { width: 100%; height: clamp(218px, 75vw, 360px); object-fit: cover; border-radius: 22px; }
+.editorial-detail-no-photo {
+  padding: 24px 16px;
+  border-radius: 18px;
+  background: var(--kb-surface-muted);
+  color: var(--kb-text-3);
+  text-align: center;
+}
 
 @media (min-width: 768px) {
   .ff-proof .ff-hero { min-height: 410px; }

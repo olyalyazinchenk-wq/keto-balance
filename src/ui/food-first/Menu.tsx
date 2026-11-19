@@ -20,7 +20,18 @@ import {
 } from './state';
 import './menu-food.css';
 import { photoForRecipe } from './model';
+import { dailyMenuCarbs, KETO_DAILY_CARB_LIMIT } from '../../core/keto-engine/menuCarbs';
+import { replacementCandidates } from '../../domain/menu';
+import type { Recipe } from '../../domain/types';
 import { triggerHaptic, bindBackButton } from '../../tma/telegram';
+
+function DailyCarbohydrateTotal({ recipes }: { recipes: ReadonlyArray<RecipeViewModel | null | undefined> }) {
+  const values = recipes.map(recipe => recipe?.portionsVariants[1]?.nutrition);
+  const reviewed = values.flatMap(value => value?.status === 'reviewed' ? [{ nc: value.profile.netCarbs }] : []);
+  return reviewed.length > 0 && reviewed.length === values.length
+    ? <p data-testid="daily-net-carbs">{dailyMenuCarbs(reviewed).toLocaleString('ru-RU', { maximumFractionDigits: 1 })} г чистых углеводов за день на человека</p>
+    : <p data-testid="daily-net-carbs">Дневной итог появится после проверки состава всех блюд. Целевой предел — {KETO_DAILY_CARB_LIMIT} г на человека.</p>;
+}
 
 export interface MenuScreenProps {
   menu: GeneratedMenu;
@@ -39,7 +50,7 @@ export interface MenuScreenProps {
   onEditSettings?: () => void;
   onRebuildMenu?: () => void;
   allowRecipeChanges?: boolean;
-  catalogRecipes?: any[];
+  catalogRecipes?: Recipe[];
   admittedRecipeIds: readonly string[];
 }
 
@@ -99,6 +110,14 @@ export function MenuScreen({
   const resolvedSlots = currentDay
     ? resolveDayMenuSlots(currentDay, recipesById, settings.mealsPerDay)
     : [];
+  const allowedReplacements = replacingSlot && catalogRecipes
+    ? new Set(replacementCandidates(
+      replacingSlot.currentRecipeId,
+      Object.entries(currentDay?.slots ?? {}).filter(([slot]) => slot !== replacingSlot.slotKey).map(([, id]) => id),
+      catalogRecipes,
+      null, undefined, 'keto',
+    ).map(recipe => recipe.id))
+    : null;
   const appliedConditionsText = formatAppliedConditionsSummary(settings);
   const diversity = evaluateSevenDayDiversity(matchingRecipes, menu.days.length);
 
@@ -252,6 +271,7 @@ export function MenuScreen({
       ) : (
         <section aria-label={`Меню: ${currentDay.label}`} className="fm-meals">
           <h2>{currentDay.label}</h2>
+          <DailyCarbohydrateTotal recipes={resolvedSlots.map(slot => slot.recipe)} />
           {resolvedSlots.map(({ slotKey, slotLabel, recipe }, idx) => {
             const ingredients = recipe?.portionsVariants[1]?.ingredients ?? [];
             const photo = recipe ? photoForRecipe(recipe.id) : null;
@@ -281,6 +301,9 @@ export function MenuScreen({
                           </span>
                         )}
                       </div>
+                      {recipe.portionsVariants[1]?.nutrition?.status === 'reviewed' && (
+                        <p>{recipe.portionsVariants[1].nutrition.profile.netCarbs} г чистых углеводов на порцию</p>
+                      )}
                       <p className="fm-card__subtitle">{recipe.subtitle}</p>
                       <p className="fm-card__meta">
                         {recipe.prepMinutes} мин · {recipe.portionsVariants[1]?.nutrition?.status === 'reviewed' ? 'КБЖУ по подтверждённому составу' : 'КБЖУ уточняется автором'}
@@ -424,6 +447,7 @@ export function MenuScreen({
                   const isAlreadyUsedToday = resolvedSlots.some(
                     (s) => s.slotKey !== replacingSlot.slotKey && s.recipe?.id === candidate.id
                   );
+                  const outsideCarbPolicy = Boolean(allowedReplacements && !allowedReplacements.has(candidate.id) && !isCurrent && !isAlreadyUsedToday);
                   return (
                     <div className="fm-candidate" key={candidate.id}>
                       <div>
@@ -431,12 +455,12 @@ export function MenuScreen({
                         <p>
                           {candidate.slotLabel} · {candidate.prepMinutes} мин
                         </p>
-                        <p>{candidate.subtitle}</p>
+                        <p>{outsideCarbPolicy ? 'Не подходит по составу или дневному лимиту углеводов.' : candidate.subtitle}</p>
                       </div>
                       <button
                         type="button"
                         className="fm-secondary"
-                        disabled={isCurrent || isAlreadyUsedToday}
+                        disabled={isCurrent || isAlreadyUsedToday || outsideCarbPolicy}
                         onClick={() => {
                           triggerHaptic('notification_success');
                           onReplaceRecipe(

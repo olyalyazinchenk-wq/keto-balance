@@ -821,7 +821,8 @@ def create_app(
                     payload.state.menu,
                     effective_profile,
                     catalog_service,
-                    is_owner=is_owner
+                    is_owner=is_owner,
+                    enforce_standard_keto=changed,
                 )
                 if not compatible:
                     raise HTTPException(status_code=400, detail=reason)
