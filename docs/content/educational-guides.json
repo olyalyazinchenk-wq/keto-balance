@@ -181,6 +181,7 @@
   },
   {
     "id": "keto_daily_limit",
+    "actions": [{"label": "Открыть меню", "screen": "menu"}],
     "title": "Как читать дневной предел углеводов",
     "category": "Углеводы",
     "read_time_minutes": 2,
@@ -198,6 +199,7 @@
   },
   {
     "id": "keto_plate_examples",
+    "actions": [{"label": "Открыть меню", "screen": "menu"}],
     "title": "Как собрать кето-тарелку",
     "category": "Основы",
     "read_time_minutes": 2,
@@ -215,6 +217,7 @@
   },
   {
     "id": "keto_swap_sides",
+    "actions": [{"label": "Открыть список покупок", "screen": "shopping"}],
     "title": "Чем заменить привычные гарниры",
     "category": "Готовка",
     "read_time_minutes": 2,
@@ -232,6 +235,7 @@
   },
   {
     "id": "keto_cafe_questions",
+    "actions": [{"label": "Открыть настройки питания", "screen": "settings"}],
     "title": "Как выбрать блюдо в кафе",
     "category": "Вне дома",
     "read_time_minutes": 2,
