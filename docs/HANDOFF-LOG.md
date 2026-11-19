@@ -1,6 +1,13 @@
 # Журнал передачи работы
 Новые записи добавлять в начало после заголовка. Это история; актуальный статус хранится только в CURRENT-STATE.md.
 
+## 2026-11-19, утро — PR #41 и сообщённые тайм-ауты
+- GPT/Codex, ChatGPT Work; baseline master dcc5086f2717ed24b78bf59bcae42e652e0b1c5a; docs/context-sync-20261119.
+- Новый Draft #41 поверх #39, HEAD76f28071c1d1f9ba3fa619895dd9f27a342df285; CI44447793948/44447787662 success. Правила/меню/обучение/покупки опубликованы; deployment и ручной допуск не выполнены.
+- Сводка #41 от19.11 сообщает HTTPS/повторныйSSH timeout при ранее виденных running app/bot. Причина/точное время не установлены; прямой live-проверки этой сверкой нет.
+- Verified deployed SHA/биллинг UNKNOWN. Последняя установка по отчёту18.11 18:00МСК/sourcee544171/build10ab0bbd43a6f78e. #27/#39 CI success прежние, Issues без изменений.
+- Только CURRENT-STATE/HANDOFF-LOG, Notion после интеграции. Следующий шаг: read-only диагностика доступности и версии до телефонной приёмки/пилота.
+
 ## 2026-11-18, вечер — CI зелёный и опубликован Editorial #39
 - GPT/Codex, ChatGPT Work; baseline master4cd7b7b4f23909cf00a617b0ecaa85306f834860; docs/context-sync-20261118-evening.
 - #27 HEADb570b49/CI44297347410 success; новый Draft #39 docs HEAD9a40c44/sourcee544171, CI44331364237/44331348823 success. Продуктовые PR не объединялись.
