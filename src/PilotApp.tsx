@@ -26,7 +26,7 @@ import { resolveSelectedDate } from './domain/menu';
 import { isRecipeAllowed } from './domain/eligibility';
 import type { NavigationEntry } from './ui/food-first/navigation';
 import { FoodFirstApp } from './ui/food-first/FoodFirstApp';
-import { rebuildShoppingFromMenu } from './ui/food-first/shoppingFromMenu';
+import { rebuildShoppingFromMenu, recipeShoppingPrefix, RECIPE_SHOPPING_PREFIX } from './ui/food-first/shoppingFromMenu';
 import { toRecipeViewModel } from './ui/food-first/recipesAdapter';
 import type { RecipeViewModel } from './ui/food-first/contract';
 import PrivateSupportPage from './pages/PrivateSupportPage';
@@ -749,7 +749,7 @@ export default function PilotApp() {
             // active has the most recent user intent and interactions (checkmarks, custom items, etc.)
             const merged = [...active];
             for (const item of nextItems) {
-              if (!activeIds.has(item.id)) {
+              if (!activeIds.has(item.id) && !item.id.startsWith(RECIPE_SHOPPING_PREFIX)) {
                 merged.push(item);
               }
             }
@@ -1476,6 +1476,30 @@ export default function PilotApp() {
     [enqueueShoppingStateSave]
   );
 
+  const handleAddRecipeToShopping = useCallback((recipe: RecipeViewModel, portions: 1 | 2 | 4) => {
+    const ingredients = recipe.portionsVariants[portions]?.ingredients;
+    if (!ingredients?.length) return;
+    const prefix = recipeShoppingPrefix(recipe.id);
+    const currentItems = shoppingItemsRef.current;
+    const previous = new Map(currentItems.map(item => [item.id, item]));
+    const recipeItems = ingredients.map((ingredient, index) => {
+      const id = `${prefix}${index}`;
+      const existing = previous.get(id);
+      const sameIngredient = existing?.name === ingredient.name;
+      return {
+        ...ingredient,
+        id,
+        linkedRecipeTitles: [recipe.title],
+        alreadyHave: sameIngredient && existing.alreadyHave,
+        checkedInStore: sameIngredient && existing.amountLabel === ingredient.amountLabel && existing.checkedInStore,
+      };
+    });
+    enqueueShoppingStateSave([
+      ...currentItems.filter(item => !item.id.startsWith(prefix)),
+      ...recipeItems,
+    ]);
+  }, [enqueueShoppingStateSave]);
+
   const handleSelectShoppingRange = useCallback(
     (range: ShoppingRange) => {
       const currentState = stateRef.current;
@@ -2172,6 +2196,7 @@ export default function PilotApp() {
       onToggleCheckedInStore={handleToggleCheckedInStore}
       onToggleAlreadyHave={handleToggleAlreadyHave}
       onAddCustomItem={handleAddCustomItem}
+      onAddRecipeToShopping={handleAddRecipeToShopping}
       onSelectShoppingRange={handleSelectShoppingRange}
       onToggleRangeChecked={handleToggleRangeChecked}
       onOpenSettings={handleOpenSettings}

@@ -318,7 +318,7 @@ test.describe('Comprehensive 8-Scenario User Walkthrough (Strict Assertions)', (
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '06a_timer_running.png') });
 
     // Navigate to Menu: Floating widget must appear above bottom nav
-    const backBtn = recipeScreen.locator('[data-testid="recipe-back-btn"]');
+    const backBtn = page.getByTestId('app-back-button');
     await expect(backBtn).toBeVisible();
     await backBtn.click();
     await expect(page.locator('[data-testid="food-menu-screen"]')).toBeVisible({ timeout: 5000 });

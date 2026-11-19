@@ -34,7 +34,7 @@ export function useAppNavigation(initial: { screen: ScreenId; recipeId?: string 
   const navigateTo = useCallback((screen: ScreenId, recipeId?: string) => {
     const prev = saveScroll();
     const last = prev[prev.length - 1];
-    if (last.screen === screen && (!recipeId || last.recipeId === recipeId)) return;
+    if (last.screen === screen && last.recipeId === recipeId) return;
     change([...prev, { screen, recipeId, scrollY: 0 }]);
   }, [saveScroll, change]);
   const navigateBack = useCallback(() => change(backEntries(saveScroll())), [saveScroll, change]);

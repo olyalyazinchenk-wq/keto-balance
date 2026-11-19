@@ -21,6 +21,7 @@ import { toFoodCard, photoForRecipe } from './model';
 import { meetsStandardKetoIngredients } from '../../domain/ketoMenuPolicy';
 import { resolveDayMenuSlots } from './state';
 import { toRecipeViewModel } from './recipesAdapter';
+import { recipeShoppingPrefix } from './shoppingFromMenu';
 import { preferencesToUserProfile } from '../../adapters/pilotState';
 import { isRecipeAllowed } from '../../domain/eligibility';
 import { PREVIEW_RECIPE_IDS } from '../../data/releasedRecipeIds';
@@ -45,6 +46,7 @@ export interface FoodFirstAppProps {
   onToggleCheckedInStore: (id: string) => void;
   onToggleAlreadyHave: (id: string) => void;
   onAddCustomItem: (item: PilotShoppingItemV1) => void;
+  onAddRecipeToShopping?: (recipe: RecipeViewModel, portions: 1 | 2 | 4) => void;
   onSelectShoppingRange?: (range: ShoppingRange) => void;
   onToggleRangeChecked?: (rangeKey: string, itemId: string) => void;
   onOpenSettings?: (targetApproach?: 'keto' | 'carnivore') => void;
@@ -94,6 +96,7 @@ export function FoodFirstApp({
   onToggleCheckedInStore,
   onToggleAlreadyHave,
   onAddCustomItem,
+  onAddRecipeToShopping,
   onSelectShoppingRange,
   onToggleRangeChecked,
   onOpenSettings: openSettings,
@@ -606,7 +609,10 @@ export function FoodFirstApp({
             onToggleIngredient={onToggleIngredient}
             checkedSteps={state.checked_steps}
             onToggleStep={onToggleStep}
-            onGoBack={navigateBack}
+            onOpenShopping={onAddRecipeToShopping && (portions => {
+              onAddRecipeToShopping(activeRecipe, portions);
+              navigateTo('shopping', activeRecipe.id);
+            })}
             activeTimer={activeTimer}
             onStartTimer={handleStartTimer}
             onPauseTimer={handlePauseTimer}
@@ -632,8 +638,20 @@ export function FoodFirstApp({
         )
       )}
 
+      {currentScreen === 'shopping' && currentRoute.recipeId && (
+        <ShoppingScreen
+          key={currentRoute.recipeId}
+          items={shoppingItems.filter(item => item.id.startsWith(recipeShoppingPrefix(currentRoute.recipeId ?? '')))}
+          menuTitle={activeRecipe?.title ?? 'Покупки для блюда'}
+          isStaleAfterMenuEdit={false}
+          onRefreshShoppingFromMenu={onRefreshShopping}
+          onToggleCheckedInStore={onToggleCheckedInStore}
+          onToggleAlreadyHave={onToggleAlreadyHave}
+        />
+      )}
+
       {(currentScreen === 'shopping' || visited.has('shopping')) && (
-        <div hidden={currentScreen !== 'shopping'}>
+        <div hidden={currentScreen !== 'shopping' || Boolean(currentRoute.recipeId)}>
         <ShoppingScreen
           items={shoppingItems}
           menuTitle={state.menu ? (isLegacyPlan ? 'Сохранённое меню' : 'Кето-рацион') : 'Список покупок'}

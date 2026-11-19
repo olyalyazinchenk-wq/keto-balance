@@ -10,7 +10,7 @@ import type {
   ShoppingFixtureItem,
   RecipeViewModel,
 } from './contract';
-import { rebuildShoppingFromMenu } from './shoppingFromMenu';
+import { rebuildShoppingFromMenu, RECIPE_SHOPPING_PREFIX } from './shoppingFromMenu';
 import { toRecipeViewModel } from './recipesAdapter';
 import type { PilotShoppingItemV1 } from '../../api/pilotTypes';
 import {
@@ -180,10 +180,11 @@ export function ShoppingScreen({
 
     // Overlay range-isolated checkmarks and preserve alreadyHave across range filtering
     return calculatedList.map((it) => {
-      const isChecked = rangeCheckmarks
+      const isChecked = rangeCheckmarks && !it.id.startsWith(RECIPE_SHOPPING_PREFIX)
         ? Boolean(rangeCheckmarks[`${rangeKey}:${it.id}`])
         : it.checkedInStore;
-      const prevHomeItem = items.find((prev) => prev.id === it.id || prev.name.toLowerCase().trim() === it.name.toLowerCase().trim());
+      const prevHomeItem = items.find(prev => prev.id === it.id)
+        ?? items.find(prev => !prev.id.startsWith(RECIPE_SHOPPING_PREFIX) && prev.name.toLowerCase().trim() === it.name.toLowerCase().trim());
       const isHome = prevHomeItem ? Boolean(prevHomeItem.alreadyHave) : it.alreadyHave;
       return {
         ...it,
@@ -598,13 +599,14 @@ export function ShoppingScreen({
                           type="button"
                           onClick={() => {
                             triggerHaptic('impact_light');
-                            if (onToggleRangeChecked) {
+                            if (onToggleRangeChecked && !item.id.startsWith(RECIPE_SHOPPING_PREFIX)) {
                               onToggleRangeChecked(rangeKey, item.id);
                             } else {
                               onToggleCheckedInStore(item.id);
                             }
                           }}
                           aria-pressed={isDone}
+                          aria-label={`Куплено: ${item.name}`}
                           data-testid={`toggle-in-store-${item.id}`}
                           className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
                             isDone
