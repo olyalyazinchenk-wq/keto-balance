@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const path = require('node:path');
 const ts = require('typescript');
 const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
@@ -23,8 +24,14 @@ test('recipe uses the same reviewed photo as the menu; unknown photos retain fal
     onToggleIngredient: noop, onToggleStep: noop,
   }));
   assert.ok(render('k1').includes(`src="${photoForRecipe('k1')}"`));
-  assert.ok(!render('k1').includes('Фото блюда пока не подключено'));
-  assert.ok(!render('k7').includes('<img'));
+  assert.ok(!render('k1').includes('Фото блюда готовится'));
+  const missing = render('k7');
+  assert.ok(!missing.includes('<img'));
+  assert.match(missing, /Фото блюда готовится/);
+  const image = photoForRecipe('k28');
+  assert.ok(render('k28').includes(`src="${image}"`));
+  assert.match(render('k28'), /Иллюстрация создана по рецепту/);
+  assert.ok(fs.statSync(path.join(__dirname, '../../public', image)).size < 150_000);
 });
 
 const { FoodToday } = require('../../src/ui/food-first/Today.tsx');
