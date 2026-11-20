@@ -137,6 +137,8 @@ test('Short dinner journey keeps focus, ingredient checks and recipe shopping in
   expect(save.status()).toBe(200);
   const shopping = page.getByTestId('food-shopping-screen').filter({ visible: true });
   await expect(shopping.getByRole('status').filter({ hasText: 'Добавлено в покупки' })).toContainText('2 порции');
+  await expect(shopping.getByTestId('shopping-add-custom-toggle-btn')).toHaveCount(0);
+  await expect(shopping.getByText('Тунец консервированный', { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('04-shopping.png') });
 
   await page.getByTestId('app-back-button').click();
@@ -150,6 +152,20 @@ test('Short dinner journey keeps focus, ingredient checks and recipe shopping in
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByTestId('food-app-shell').evaluate(shell => { shell.style.zoom = ''; });
 
+  await page.getByTestId('bottom-nav-shopping').click();
+  await shopping.getByTestId('shopping-add-custom-toggle-btn').click();
+  const customForm = shopping.getByTestId('shopping-custom-item-form');
+  await customForm.getByPlaceholder(/Название/).fill('Лимон для покупок');
+  const [customSave] = await Promise.all([
+    page.waitForResponse(response => response.url().endsWith('/api/shopping') && response.request().method() === 'PUT'),
+    customForm.getByTestId('shopping-custom-submit-btn').click(),
+  ]);
+  expect(customSave.status()).toBe(200);
+  await expect(shopping.getByText('Лимон для покупок', { exact: true })).toBeVisible();
+  await page.getByTestId('bottom-nav-today').click();
+  await page.getByRole('button', { name: 'Подобрать блюдо' }).click();
+  await expect(compass.getByText('Красивый ужин', { exact: true })).toBeVisible();
+
   await page.route('**/api/shopping', route => route.request().method() === 'PUT' ? route.abort() : route.continue());
   await salad.click();
   await shoppingButton.click();
@@ -160,6 +176,9 @@ test('Short dinner journey keeps focus, ingredient checks and recipe shopping in
   const { page: reopened } = await createSession({ id: 970840, first_name: 'Editorial' });
   await reopened.route('**/tuna-egg-cucumber-salad.webp', route => route.fulfill({ status: 404 }));
   await reopened.goto('/');
+  await reopened.getByTestId('bottom-nav-shopping').click();
+  await expect(reopened.getByTestId('food-shopping-screen').getByText('Лимон для покупок', { exact: true })).toBeVisible();
+  await reopened.getByTestId('bottom-nav-today').click();
   await reopened.getByRole('button', { name: 'Подобрать блюдо' }).click();
   await reopened.getByRole('button', { name: 'Хочу красивый ужин' }).click();
   await reopened.getByRole('button', { name: /Салат с тунцом, яйцом и огурцом/ }).click();

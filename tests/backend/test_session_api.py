@@ -208,6 +208,68 @@ class TestSessionApi(unittest.TestCase):
         resp_owner = staging_client.post("/api/session", json={"init_data": owner_init})
         self.assertEqual(resp_owner.status_code, 200)
 
+    def test_closed_pilot_separates_invitation_from_owner_privileges(self):
+        owner, first, second, outsider = 555444333, 555444334, 555444335, 555444336
+        settings = AppSettings(
+            app_stage="staging",
+            telegram_bot_token=TEST_TOKEN,
+            db_path=self.db_path,
+            dist_dir=Path(self.tmp_dir.name),
+            owner_allowlist=frozenset({owner}),
+            pilot_invitee_ids=frozenset({first, second}),
+        )
+        catalog = {**self.fixture, "test_only": False}
+        client = TestClient(create_app(settings=settings, db_path=self.db_path, catalog_provider=lambda: catalog))
+
+        def login(user_id):
+            init_data = generate_telegram_init_data({"id": user_id}, TEST_TOKEN)
+            return client.post("/api/session", json={"init_data": init_data})
+
+        def bearer(user_id):
+            response = login(user_id)
+            self.assertEqual(response.status_code, 200)
+            return {"Authorization": "Bearer " + response.json()["session_token"]}
+
+        self.assertEqual(login(outsider).status_code, 403)
+        owner_headers, first_headers, second_headers = map(bearer, (owner, first, second))
+        self.assertEqual(client.get("/api/admin/recipes", headers=owner_headers).status_code, 200)
+        self.assertEqual(client.get("/api/admin/recipes", headers=first_headers).status_code, 403)
+        self.assertEqual(client.get("/api/catalog?catalog_id=admin-catalog-v1", headers=first_headers).status_code, 403)
+        self.assertEqual(client.get("/api/catalog", headers=first_headers).json()["access"], "full")
+        self.assertEqual(client.get("/api/subscription", headers=first_headers).json()["tier"], "pilot")
+        for index, headers in enumerate((first_headers, second_headers), start=1):
+            date = f"2026-11-0{index}"
+            profile = {"settings": {"confirmed18Plus": True, "approach": "keto", "prepTimeMax": 35, "mealsPerDay": 3, "planDays": 7}}
+            day_slots = {"breakfast": "s1", "lunch": "s2", "dinner": "s3"}
+            menu = {"mode": "keto", "numDays": 7, "meals": 3, "portion": 1, "saved": True, "created": 1730764800,
+                    "catalog_id": catalog["catalog_id"],
+                    "days": [{"date": f"2026-11-0{day}", "slots": day_slots} for day in range(index, index + 7)]}
+            user_payload = {"schema_version": 1, "expected_revision": 0, "profile": profile,
+                            "state": {"schema_version": 1, "menu": menu, "selected_date": date}}
+            saved_user = client.put("/api/user", headers=headers, json=user_payload)
+            self.assertEqual(saved_user.status_code, 200, saved_user.text)
+            item = {"id": "custom-" + str(index), "name": "Pilot item " + str(index), "amountLabel": "1",
+                    "department": "Овощи и зелень", "linkedRecipeTitles": [], "alreadyHave": False, "checkedInStore": False}
+            saved_shopping = client.put("/api/shopping", headers=headers,
+                                        json={"schema_version": 1, "expected_revision": 0, "items": [item]})
+            self.assertEqual(saved_shopping.status_code, 200, saved_shopping.text)
+
+        for index, headers in enumerate((bearer(first), bearer(second)), start=1):
+            user = client.get("/api/user", headers=headers).json()
+            self.assertEqual(user["state"]["menu"]["days"][0]["date"], f"2026-11-0{index}")
+            shopping = client.get("/api/shopping", headers=headers).json()
+            self.assertEqual([item["id"] for item in shopping["items"]], ["custom-" + str(index)])
+
+        for endpoint in ("/api/user", "/api/shopping"):
+            self.assertEqual(client.get(endpoint, headers=first_headers).status_code, 200)
+            self.assertEqual(client.get(endpoint, headers=second_headers).status_code, 200)
+            self.assertEqual(client.get(endpoint, headers=second_headers, params={"user_id": first}).status_code, 403)
+            self.assertEqual(client.get(endpoint, headers={**first_headers, "X-User-Id": str(second)}).status_code, 403)
+
+        settings.pilot_invitee_ids = frozenset({second})
+        for endpoint in ("/api/session", "/api/catalog", "/api/user", "/api/shopping"):
+            self.assertEqual(client.get(endpoint, headers=first_headers).status_code, 403)
+
     def test_save_incompatible_menu_rejected_without_partial_write(self):
         """
         Негативный тест: профиль исключает яйца и молочные продукты,

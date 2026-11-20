@@ -424,18 +424,20 @@ export function ShoppingScreen({
               <Copy className="w-4 h-4" aria-hidden="true" />
               <span>{copiedNotice ? 'Скопировано ✓' : copyError ? 'Ошибка копирования' : 'Скопировать список'}</span>
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                triggerHaptic('selection');
-                setShowAddForm((p) => !p);
-              }}
-              data-testid="shopping-add-custom-toggle-btn"
-              className="px-3 py-2 text-xs font-semibold rounded-xl border border-[var(--kb-border)] inline-flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" aria-hidden="true" />
-              <span>Добавить свой продукт</span>
-            </button>
+            {onAddCustomItem && (
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('selection');
+                  setShowAddForm((p) => !p);
+                }}
+                data-testid="shopping-add-custom-toggle-btn"
+                className="px-3 py-2 text-xs font-semibold rounded-xl border border-[var(--kb-border)] inline-flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" aria-hidden="true" />
+                <span>Добавить свой продукт</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -474,7 +476,7 @@ export function ShoppingScreen({
         )}
 
         {/* Форма добавления кастомного продукта */}
-        {showAddForm && (
+        {onAddCustomItem && showAddForm && (
           <form
             onSubmit={handleAddCustomSubmit}
             className="p-4 bg-[var(--kb-surface-muted)] border border-[var(--kb-border)] rounded-xl space-y-3"
