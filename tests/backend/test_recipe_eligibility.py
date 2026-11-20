@@ -328,6 +328,20 @@ class TestRecipeEligibility(unittest.TestCase):
         self.assertFalse(allowed)
         self.assertIn("превышает лимит", reason)
 
+    def test_new_keto_menu_rejects_excess_and_excluded_ingredients(self):
+        breakfast = {"id": "b", "title": "Завтрак", "mode": "keto", "time": 10, "ing": [["Сливки", "100 г"]], "nc": 20}
+        dinner = {"id": "d", "title": "Ужин", "mode": "keto", "time": 10, "ing": [["Говядина", "100 г"]], "nc": 30}
+        menu = {"days": [{"slots": {"breakfast": "b", "dinner": "d"}}]}
+        def check(first, second, enforce=True):
+            return is_menu_compatible_with_profile(menu, None, DummyCatalog([first, second]), enforce_standard_keto=enforce)
+        self.assertTrue(check(breakfast, dinner)[0])
+        self.assertFalse(check(breakfast, {**dinner, "nc": 31})[0])
+        self.assertFalse(check(breakfast, {**dinner, "nc": None})[0])
+        for ingredient in ("Сухое молоко", "Мальтитный сироп", "Подсластитель E965"):
+            historical = {**breakfast, "ing": [[ingredient, "100 г"]]}
+            self.assertFalse(check(historical, dinner)[0])
+            self.assertTrue(check(historical, dinner, enforce=False)[0])
+
     def test_menu_duplicate_slots_forbidden(self):
         r1 = {"id": "r1", "title": "Блюдо 1", "mode": "keto", "time": 10, "ing": [["Говядина", "100 г"]]}
         catalog = DummyCatalog([r1])

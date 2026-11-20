@@ -18,8 +18,10 @@ import { loadActiveTimer, saveActiveTimer, clearActiveTimer } from './kitchenTim
 import { timerDeadline, remainingTimerSeconds } from './kitchenTimer';
 import { triggerHaptic } from '../../tma/telegram';
 import { toFoodCard, photoForRecipe } from './model';
+import { meetsStandardKetoIngredients } from '../../domain/ketoMenuPolicy';
 import { resolveDayMenuSlots } from './state';
 import { toRecipeViewModel } from './recipesAdapter';
+import { recipeShoppingPrefix } from './shoppingFromMenu';
 import { preferencesToUserProfile } from '../../adapters/pilotState';
 import { isRecipeAllowed } from '../../domain/eligibility';
 import { PREVIEW_RECIPE_IDS } from '../../data/releasedRecipeIds';
@@ -44,6 +46,7 @@ export interface FoodFirstAppProps {
   onToggleCheckedInStore: (id: string) => void;
   onToggleAlreadyHave: (id: string) => void;
   onAddCustomItem: (item: PilotShoppingItemV1) => void;
+  onAddRecipeToShopping?: (recipe: RecipeViewModel, portions: 1 | 2 | 4) => void;
   onSelectShoppingRange?: (range: ShoppingRange) => void;
   onToggleRangeChecked?: (rangeKey: string, itemId: string) => void;
   onOpenSettings?: (targetApproach?: 'keto' | 'carnivore') => void;
@@ -93,6 +96,7 @@ export function FoodFirstApp({
   onToggleCheckedInStore,
   onToggleAlreadyHave,
   onAddCustomItem,
+  onAddRecipeToShopping,
   onSelectShoppingRange,
   onToggleRangeChecked,
   onOpenSettings: openSettings,
@@ -479,7 +483,8 @@ export function FoodFirstApp({
     if (profile.settings && canonProfile.mode !== 'keto') return [];
     const admittedIds = new Set(effectiveCatalogIds);
     return catalog.recipes
-      .filter(recipe => recipe.mode === 'keto' && admittedIds.has(recipe.id) && isRecipeAllowed(recipe, canonProfile))
+      .filter(recipe => recipe.mode === 'keto' && admittedIds.has(recipe.id) &&
+        isRecipeAllowed(recipe, canonProfile) && meetsStandardKetoIngredients(recipe))
       .map(recipe => recipesById[recipe.id]);
   }, [catalog.recipes, effectiveCatalogIds, canonProfile, profile.settings, recipesById]);
 
@@ -604,7 +609,10 @@ export function FoodFirstApp({
             onToggleIngredient={onToggleIngredient}
             checkedSteps={state.checked_steps}
             onToggleStep={onToggleStep}
-            onGoBack={navigateBack}
+            onOpenShopping={onAddRecipeToShopping && (portions => {
+              onAddRecipeToShopping(activeRecipe, portions);
+              navigateTo('shopping', activeRecipe.id);
+            })}
             activeTimer={activeTimer}
             onStartTimer={handleStartTimer}
             onPauseTimer={handlePauseTimer}
@@ -630,8 +638,20 @@ export function FoodFirstApp({
         )
       )}
 
+      {currentScreen === 'shopping' && currentRoute.recipeId && (
+        <ShoppingScreen
+          key={currentRoute.recipeId}
+          items={shoppingItems.filter(item => item.id.startsWith(recipeShoppingPrefix(currentRoute.recipeId ?? '')))}
+          menuTitle={activeRecipe?.title ?? 'Покупки для блюда'}
+          isStaleAfterMenuEdit={false}
+          onRefreshShoppingFromMenu={onRefreshShopping}
+          onToggleCheckedInStore={onToggleCheckedInStore}
+          onToggleAlreadyHave={onToggleAlreadyHave}
+        />
+      )}
+
       {(currentScreen === 'shopping' || visited.has('shopping')) && (
-        <div hidden={currentScreen !== 'shopping'}>
+        <div hidden={currentScreen !== 'shopping' || Boolean(currentRoute.recipeId)}>
         <ShoppingScreen
           items={shoppingItems}
           menuTitle={state.menu ? (isLegacyPlan ? 'Сохранённое меню' : 'Кето-рацион') : 'Список покупок'}
@@ -692,6 +712,17 @@ export function FoodFirstApp({
         (currentScreen === screen || visited.has(screen)) && (
           <div key={screen} hidden={currentScreen !== screen} className="ff-more" data-testid={`${screen}-screen`}>
             <h1>{screen === 'rules' ? 'Правила кето' : screen === 'education' ? 'Обучение' : 'Микрогайды'}</h1>
+            {screen === 'education' && (
+              <section className="ff-client-info" aria-label="Как пользоваться КетоБалансом">
+                <h2>Как пользоваться КетоБалансом</h2>
+                <ol>
+                  <li>Отметьте продукты, которые нужно исключить, в настройках питания.</li>
+                  <li>Откройте КетоКомпас или каталог и выберите рецепт.</li>
+                  <li>Укажите количество порций, затем откройте покупки через меню.</li>
+                </ol>
+                <button type="button" className="ff-proof__help-btn" onClick={() => navigateTo('rules')}>Посмотреть правила кето</button>
+              </section>
+            )}
             {screen === 'rules' ? <KetoRules initiallyOpen /> : <EducationGuides kind={screen} active={currentScreen === screen} onDetailChange={registerLearningBack} sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />}
           </div>
         )

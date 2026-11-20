@@ -28,7 +28,7 @@ export interface RecipeScreenProps {
   checkedSteps: Record<string, boolean>;
   onToggleStep: (key: string) => void;
   onLogCookedMealToDiary?: (recipeTitle: string) => void;
-  onGoBack?: () => void;
+  onOpenShopping?: (portions: 1 | 2 | 4) => void;
   activeTimer?: ActiveKitchenTimer | null;
   onStartTimer?: (recipeId: string, recipeTitle: string, minutes: number, stepIndex?: number) => void;
   onPauseTimer?: () => void;
@@ -45,7 +45,7 @@ export function RecipeScreen({
   checkedSteps,
   onToggleStep,
   onLogCookedMealToDiary,
-  onGoBack,
+  onOpenShopping,
   activeTimer,
   onStartTimer,
   onPauseTimer,
@@ -183,39 +183,17 @@ export function RecipeScreen({
     Boolean(checkedIngredients[`${recipe.id}:ing:${idx}`])
   ).length;
 
-  const handleStartOrAdvanceStep = () => {
-    setSection('steps');
-    triggerHaptic(
-      completedStepsCount + 1 >= recipe.steps.length
-        ? 'notification_success'
-        : 'impact_medium'
-    );
-    const firstUncheckedIdx = recipe.steps.findIndex(
-      (_, idx) => !checkedSteps[`${recipe.id}:step:${idx}`]
-    );
-    const targetIdx = firstUncheckedIdx === -1 ? 0 : firstUncheckedIdx;
-    onToggleStep(`${recipe.id}:step:${targetIdx}`);
-  };
-
   const editorialPhoto = photoForRecipe(recipe.id);
   return (
     <article className="food-recipe editorial-detail" data-testid="food-recipe-screen">
       {/* Секция 01: Обложечная шапка рецепта */}
       <header className="border-b border-[var(--kb-border)] pb-6 sm:pb-10 space-y-4 sm:space-y-6">
-        {onGoBack && (
-          <button
-            type="button"
-            onClick={() => {
-              triggerHaptic('impact_light');
-              onGoBack();
-            }}
-            data-testid="recipe-back-btn"
-            className="mb-2 text-sm text-[var(--kb-text-2)] hover:text-[var(--kb-text-1)] flex items-center gap-1"
-          >
-            ← Назад
-          </button>
-        )}
-        {editorialPhoto && <img className="editorial-detail-photo" src={editorialPhoto} alt={recipe.title} width="640" height="440" />}
+        {editorialPhoto
+          ? <figure>
+              <img className="editorial-detail-photo" src={editorialPhoto} alt={`Фотоиллюстрация блюда «${recipe.title}»`} width="640" height="440" decoding="async" />
+              {recipe.id === 'k28' && <figcaption className="text-xs text-[var(--kb-text-3)] mt-1">Иллюстрация создана по рецепту</figcaption>}
+            </figure>
+          : <p className="editorial-detail-no-photo">Фото блюда готовится</p>}
         <div className="food-grid items-start">
           <div className="col-span-3 md:col-span-5 space-y-3 sm:space-y-4 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -263,7 +241,11 @@ export function RecipeScreen({
             <div className="pt-0.5 flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={handleStartOrAdvanceStep}
+                onClick={() => {
+                  triggerHaptic('impact_light');
+                  setSection('steps');
+                  requestAnimationFrame(() => document.getElementById('editorial-steps')?.scrollIntoView({ block: 'start' }));
+                }}
                 data-testid="recipe-start-step-btn"
                 className="min-h-[44px] px-4 sm:px-6 py-2.5 bg-[var(--kb-primary)] hover:bg-[var(--kb-primary-hover)] text-[var(--kb-on-primary)] text-[12px] font-semibold uppercase tracking-[0.12em] inline-flex items-center gap-2 tabular-nums kb-focus-ring kb-transition-card"
               >
@@ -272,8 +254,8 @@ export function RecipeScreen({
                   {completedStepsCount === 0
                     ? 'Начать'
                     : completedStepsCount === recipe.steps.length
-                    ? 'Готово ✓'
-                    : `Шаг ${completedStepsCount + 1}/${recipe.steps.length}`}
+                    ? 'Посмотреть шаги'
+                    : 'Продолжить готовку'}
                 </span>
               </button>
 
@@ -307,6 +289,19 @@ export function RecipeScreen({
               selectedPortions={portions}
               onSelectPortions={(p) => { triggerHaptic('selection'); (onSelectPortions ?? setLocalPortions)(p); }}
             />
+          {onOpenShopping && variant.ingredients.length > 0 && (
+            <button
+              type="button"
+              data-testid="recipe-to-shopping"
+              className="min-h-[44px] rounded-lg border border-[var(--kb-border)] px-4 text-sm font-semibold kb-focus-ring"
+              onClick={() => {
+                triggerHaptic('selection');
+                onOpenShopping(portions);
+              }}
+            >
+              В покупки · {variant.yieldNote}
+            </button>
+          )}
           <div className="food-section-heading flex items-baseline justify-between gap-2 border-b border-[var(--kb-border)] pb-2.5">
             <h2
               id="recipe-ingredients-heading"

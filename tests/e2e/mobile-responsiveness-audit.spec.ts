@@ -104,7 +104,7 @@ test.describe('Mobile Responsiveness Audit (390px & 320px, Light & Dark)', () =>
         await page.screenshot({ path: path.join(MOBILE_DIR, `03_recipe_${vp.width}_${theme}.png`) });
 
         // Screen 4: Shopping List
-        await page.locator('[data-testid="recipe-back-btn"]').click();
+        await page.getByTestId('app-back-button').click();
         await page.locator('[data-testid="bottom-nav-shopping"]').click();
         const shoppingScreen = page.locator('[data-testid="food-shopping-screen"]');
         await expect(shoppingScreen).toBeVisible({ timeout: 10000 });

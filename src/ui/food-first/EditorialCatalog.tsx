@@ -44,7 +44,7 @@ export function EditorialCatalog({ recipes, onOpenRecipe }: RecipePickerProps) {
 
 const occasions = [
   { id: 'breakfast', label: 'Хочется уютного завтрака', matches: (r: RecipeViewModel) => r.slotType === 'breakfast' },
-  { id: 'family', label: 'Нужно приготовить для семьи', matches: (r: RecipeViewModel) => (r.basePortions ?? 0) >= 4 },
+  { id: 'family', label: 'Нужно приготовить для семьи', matches: (r: RecipeViewModel) => Boolean(r.portionsVariants[4]?.ingredients.length) },
   { id: 'dinner', label: 'Хочу красивый ужин', matches: (r: RecipeViewModel) => r.slotType === 'dinner' },
 ] as const;
 

@@ -1,14 +1,10 @@
 import { test, expect, passNewUserStartGate, activateSyntheticPremium } from './pilot.fixture';
-import fs from 'node:fs';
-import path from 'node:path';
-
-const output = path.resolve('docs/evidence/screenshots/client-cleanup-20261115');
 
 for (const [index, options] of [
   { width: 390, theme: 'light' as const },
   { width: 320, theme: 'dark' as const },
 ].entries()) {
-  test(`Client screens match their purpose at ${options.width}px ${options.theme}`, async ({ createSession }) => {
+  test(`Client screens match their purpose at ${options.width}px ${options.theme}`, async ({ createSession }, testInfo) => {
     const session = await createSession({ id: 9700 + index, first_name: 'ClientCopy' }, {
       theme: options.theme, viewport: { width: options.width, height: 844 },
     });
@@ -25,15 +21,14 @@ for (const [index, options] of [
     await expect(page.getByTestId('food-today')).toBeVisible();
 
     const suffix = `${options.width}-${options.theme}`;
-    fs.mkdirSync(output, { recursive: true });
     const settingsLink = page.getByTestId('home-open-settings-btn');
     await expect(settingsLink).toHaveText('Настройки питания→');
     await settingsLink.scrollIntoViewIfNeeded();
-    await page.screenshot({ path: path.join(output, `today-${suffix}.png`) });
+    await page.screenshot({ path: testInfo.outputPath(`today-${suffix}.png`) });
     await settingsLink.click();
     await expect(page.getByRole('heading', { name: 'Настройки питания', exact: true })).toBeVisible();
     await expect(page.getByTestId('settings-restriction-exclude_fish')).toBeChecked();
-    await page.screenshot({ path: path.join(output, `settings-${suffix}.png`), fullPage: true });
+    await page.screenshot({ path: testInfo.outputPath(`settings-${suffix}.png`), fullPage: true });
     await page.getByTestId('submit-settings-btn').click();
     await expect(page.getByTestId('food-today')).toBeVisible();
 
@@ -44,17 +39,19 @@ for (const [index, options] of [
     await expect(more).not.toContainText(/first_entry|shopping_stale|unverified_nutrition|save_conflict|localStorage|серверн.+сесси|прототип|12 русских|карнивор|синхронизац/i);
     await expect(page.getByRole('button', { name: /Очистить локальные|Проверить все 12/ })).toHaveCount(0);
     await expect(page.getByTestId('privacy-info')).toContainText('сохраняются на сервере');
-    await page.screenshot({ path: path.join(output, `more-${suffix}.png`) });
+    await page.screenshot({ path: testInfo.outputPath(`more-${suffix}.png`) });
 
     const rules = page.getByTestId('keto-rules');
     await rules.locator('summary').click();
-    await expect(rules.locator('h3')).toHaveCount(4);
-    await expect(rules).toContainText('Это не медицинские запреты');
+    await expect(rules.getByRole('heading', { name: 'Что можно есть' })).toBeVisible();
+    await expect(rules.getByRole('heading', { name: 'Что мы ограничиваем в кето-меню' })).toBeVisible();
+    await expect(rules.getByRole('heading', { name: 'Что исключаем из стандартного меню приложения' })).toBeVisible();
+    await expect(rules).toContainText('50 г чистых углеводов');
     await expect(page.getByTestId('pilot-settings-form')).toHaveCount(0);
     await rules.locator('summary').evaluate(el => el.scrollIntoView({ block: 'start' }));
-    await page.screenshot({ path: path.join(output, `rules-${suffix}.png`) });
-    await rules.locator('h3').last().evaluate(el => el.scrollIntoView({ block: 'start' }));
-    await page.screenshot({ path: path.join(output, `portions-${suffix}.png`) });
+    await page.screenshot({ path: testInfo.outputPath(`rules-${suffix}.png`) });
+    await rules.getByRole('heading', { name: 'Как учитывать углеводы и порцию' }).evaluate(el => el.scrollIntoView({ block: 'start' }));
+    await page.screenshot({ path: testInfo.outputPath(`portions-${suffix}.png`) });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     // The same real form opens from More; source settings and exclusions are preserved.
     await page.getByTestId('more-open-settings-btn').click();

@@ -210,3 +210,9 @@ export function rebuildShoppingFromMenu(
     }));
   return [...result, ...customItems];
 }
+
+export const RECIPE_SHOPPING_PREFIX = 'shop-custom-recipe-';
+
+export function recipeShoppingPrefix(recipeId: string): string {
+  return `${RECIPE_SHOPPING_PREFIX}${encodeURIComponent(recipeId)}:`;
+}

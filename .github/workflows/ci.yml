@@ -101,6 +101,18 @@ jobs:
         run: |
           npm run test:unit
 
+      - name: Set up Python for the browser test server
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Verify the main browser journeys
+        run: |
+          pip install -r requirements.txt
+          npx playwright install --with-deps chromium
+          npx playwright test --config=playwright.full.config.ts --reporter=line tests/e2e/editorial.spec.ts tests/e2e/persistence.spec.ts
+
   deploy-spec-checks:
     name: Docker Compose Production Deployment Specs
     runs-on: ubuntu-latest

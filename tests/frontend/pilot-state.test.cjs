@@ -292,9 +292,9 @@ test('PilotState and SerializedSaveQueue Unit Tests', async (t) => {
   await t.test('createMenuController replacement candidates strictly filters by mode and day duplicates', () => {
     const { createMenuController } = loadTs(path.join(ROOT, 'src/adapters/menuController.ts'));
     const testCatalog = [
-      { id: 'k1', title: 'Кето 1', mode: 'keto', cat: 'breakfast', time: 10, ing: [['Яйцо', '2 шт.']], steps: [] },
-      { id: 'k2', title: 'Кето 2', mode: 'keto', cat: 'breakfast', time: 15, ing: [['Творог', '100 г']], steps: [] },
-      { id: 'k3', title: 'Кето 3', mode: 'keto', cat: 'lunch', time: 20, ing: [['Курица', '200 г']], steps: [] },
+      { id: 'k1', title: 'Кето 1', mode: 'keto', cat: 'breakfast', time: 10, nc: 2, ing: [['Яйцо', '2 шт.']], steps: [] },
+      { id: 'k2', title: 'Кето 2', mode: 'keto', cat: 'breakfast', time: 15, nc: 3, ing: [['Творог', '100 г']], steps: [] },
+      { id: 'k3', title: 'Кето 3', mode: 'keto', cat: 'lunch', time: 20, nc: 1, ing: [['Курица', '200 г']], steps: [] },
       { id: 'c1', title: 'Карнивор 1', mode: 'carnivore', cat: 'breakfast', time: 10, ing: [['Бекон', '150 г']], steps: [] },
     ];
 

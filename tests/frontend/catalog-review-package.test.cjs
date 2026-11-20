@@ -34,7 +34,10 @@ test('December candidates have unique identities; saved archive remains distinct
 
 test('all educational guides have explicit pending editorial status and no invented author approval', () => {
   const guides = JSON.parse(fs.readFileSync(path.join(root, 'docs/content/educational-guides.json')));
-  assert.equal(guides.length, 8);
+  assert.equal(new Set(guides.map(g => g.id)).size, guides.length);
+  assert.deepEqual(guides.filter(g => g.kind === 'education').map(g => g.id), [
+    'keto_daily_limit', 'keto_plate_examples', 'keto_swap_sides', 'keto_cafe_questions',
+  ]);
   assert.deepEqual(guides.slice(0, 2).map(g => g.id), ['intro_approaches', 'reading_labels']);
   for (const g of guides) {
     assert.equal(g.editorial_status, 'draft_for_owner_review');

@@ -148,7 +148,7 @@ class TestStagingAndDemo(unittest.TestCase):
     def test_get_user_marks_shopping_stale_when_menu_contains_revoked_recipe(self):
         mock_catalog = {
             "recipes": [
-                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "ing": [["Яйцо", "1 шт."]], "steps": ["1"]}
+                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "nc": 4, "ing": [["Яйцо", "1 шт."]], "steps": ["1"]}
             ],
             "released_ids": ["k1"],
             "test_only": True,
@@ -261,8 +261,8 @@ class TestStagingAndDemo(unittest.TestCase):
         from bot.app_db import save_pilot_user
         mock_catalog = {
             "recipes": [
-                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "ing": [["Яйцо", "1 шт."]], "steps": ["1"]},
-                {"id": "k2", "title": "R2", "cat": "lunch", "time": 15, "serv": 1, "mode": "keto", "ing": [["Мясо", "100 г"]], "steps": ["1"]},
+                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "nc": 4, "ing": [["Яйцо", "1 шт."]], "steps": ["1"]},
+                {"id": "k2", "title": "R2", "cat": "lunch", "time": 15, "serv": 1, "mode": "keto", "nc": 4, "ing": [["Мясо", "100 г"]], "steps": ["1"]},
             ],
             "released_ids": ["k1", "k2"],
             "test_only": True,
@@ -403,7 +403,7 @@ class TestStagingAndDemo(unittest.TestCase):
     def test_partial_save_marks_shopping_stale_when_items_empty(self):
         mock_catalog = {
             "recipes": [
-                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "ing": [["Яйцо", "1 шт."]], "steps": ["1"]},
+                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "nc": 4, "ing": [["Яйцо", "1 шт."]], "steps": ["1"]},
             ],
             "released_ids": ["k1"],
             "test_only": True,
@@ -470,8 +470,8 @@ class TestStagingAndDemo(unittest.TestCase):
         """Reviewer R1 / F2 regression: durable stale cannot be erased by an unrelated cached snapshot."""
         mock_catalog = {
             "recipes": [
-                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "ing": [["Яйцо", "1 шт."]], "steps": ["1"]},
-                {"id": "k2", "title": "R2", "cat": "lunch", "time": 15, "serv": 1, "mode": "keto", "ing": [["Сыр", "50 г"]], "steps": ["2"]},
+                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "nc": 4, "ing": [["Яйцо", "1 шт."]], "steps": ["1"]},
+                {"id": "k2", "title": "R2", "cat": "lunch", "time": 15, "serv": 1, "mode": "keto", "nc": 4, "ing": [["Сыр", "50 г"]], "steps": ["2"]},
             ],
             "released_ids": ["k1", "k2"],
             "test_only": True,
@@ -596,7 +596,7 @@ class TestStagingAndDemo(unittest.TestCase):
         """Reviewer F2 regression: toggling checkmarks in store must NOT mark shopping stale."""
         mock_catalog = {
             "recipes": [
-                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "ing": [["Яйцо", "1 шт."]], "steps": ["1"]},
+                {"id": "k1", "title": "R1", "cat": "breakfast", "time": 10, "serv": 1, "mode": "keto", "nc": 4, "ing": [["Яйцо", "1 шт."]], "steps": ["1"]},
             ],
             "released_ids": ["k1"],
             "test_only": True,

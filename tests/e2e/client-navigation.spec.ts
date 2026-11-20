@@ -25,7 +25,7 @@ for (const width of [320, 390]) {
       await link.click();
       const screen = page.getByTestId(`${name}-screen`);
       await expect(screen).toBeVisible();
-      if (name === 'rules') await expect(screen.getByRole('heading', { name: 'Что подходит для основы рациона' })).toBeVisible();
+      if (name === 'rules') await expect(screen.getByRole('heading', { name: 'Что можно есть' })).toBeVisible();
       else {
         await expect(screen.getByTestId('education-guides-container')).toBeVisible();
         const search = screen.getByTestId('guides-search-input');

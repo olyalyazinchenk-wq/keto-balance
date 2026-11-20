@@ -40,9 +40,11 @@ test.describe('E2: Server-Side State Persistence Across Contexts', () => {
     await page1.locator('[data-testid="open-recipe-btn-breakfast"]').click();
     await expect(page1.locator('[data-testid="food-recipe-screen"]')).toBeVisible();
 
+    await page1.getByTestId('recipe-start-step-btn').click();
+    await expect(page1.getByTestId('recipe-step-toggle-0')).toHaveAttribute('aria-pressed', 'false');
     const [stepCheckRes] = await Promise.all([
       page1.waitForResponse((res) => res.url().includes('/api/user') && res.request().method() === 'PUT'),
-      page1.locator('[data-testid="recipe-start-step-btn"]').click(),
+      page1.getByTestId('recipe-step-toggle-0').click(),
     ]);
     expect(stepCheckRes.status()).toBe(200);
 
@@ -62,6 +64,35 @@ test.describe('E2: Server-Side State Persistence Across Contexts', () => {
 
     // Verify item is visible
     await expect(page1.locator('[data-testid="food-shopping-screen"]')).toContainText('Оливковое масло Extra Virgin');
+
+    await page1.getByTestId('bottom-nav-today').click();
+    await page1.getByRole('button', { name: 'Подобрать блюдо' }).click();
+    const compass = page1.getByTestId('editorial-compass');
+    await compass.getByRole('button', { name: 'Хочется уютного завтрака' }).click();
+    await compass.locator('.editorial-recipe-row').first().click();
+    await page1.getByTestId('recipe-portions-4x').click();
+    const saveShopping = () => page1.waitForResponse(response =>
+      response.url().includes('/api/shopping') && response.request().method() === 'PUT');
+    const firstSave = saveShopping();
+    await page1.getByTestId('recipe-to-shopping').click();
+    const firstResponse = await firstSave;
+    expect(firstResponse.status()).toBe(200);
+    const recipeItems = firstResponse.request().postDataJSON().items.filter(
+      (item: { id: string }) => item.id.startsWith('shop-custom-recipe-'));
+    expect(recipeItems.length).toBeGreaterThan(0);
+    const recipeRow = page1.getByTestId(`shopping-item-row-${recipeItems[0].id}`).filter({ visible: true });
+    await expect(recipeRow).toContainText(recipeItems[0].amountLabel);
+    const markedSave = saveShopping();
+    await recipeRow.getByRole('button', { name: /Куплено:/ }).click();
+    expect((await markedSave).status()).toBe(200);
+    await page1.getByTestId('app-back-button').click();
+    const repeatedSave = saveShopping();
+    await page1.getByTestId('recipe-to-shopping').click();
+    const repeatedResponse = await repeatedSave;
+    expect(repeatedResponse.status()).toBe(200);
+    const repeatedItems = repeatedResponse.request().postDataJSON().items;
+    expect(repeatedItems.filter((item: { id: string }) => item.id === recipeItems[0].id)).toHaveLength(1);
+    await expect(recipeRow.getByRole('button', { name: /Куплено:/ })).toHaveAttribute('aria-pressed', 'true');
 
     // Close session 1 context completely
     await session1.context.close();
@@ -86,6 +117,8 @@ test.describe('E2: Server-Side State Persistence Across Contexts', () => {
     await page2.locator('[data-testid="bottom-nav-shopping"]').click();
     await expect(page2.locator('[data-testid="food-shopping-screen"]')).toContainText('Оливковое масло Extra Virgin');
 
+    await expect(page2.getByTestId(`toggle-in-store-${recipeItems[0].id}`)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page2.getByTestId(`shopping-item-row-${recipeItems[0].id}`)).toContainText(recipeItems[0].amountLabel);
     await session2.context.close();
 
     // === PHASE 3: User B Isolation ===

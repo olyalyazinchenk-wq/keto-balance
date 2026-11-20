@@ -3,7 +3,14 @@ bot/recipe_eligibility.py — Серверная проверка совмест
 Строго синхронизировано с src/domain/eligibility.ts и src/adapters/pilotState.ts.
 """
 import re
+from math import isfinite
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+KETO_DAILY_CARB_LIMIT = 50
+STANDARD_KETO_EXCLUDED_INGREDIENT = re.compile(
+    r"(?<![^\W_])(?:молок(?:о|а|е|ом|у)|milk|мальтит[а-яё]*|maltitol|[eе][ -]?965)(?![^\W_])",
+    re.IGNORECASE,
+)
 
 # Маппинг токенов ограничений в канонические поля и значения
 RESTRICTION_MAP: Dict[str, Tuple[str, str]] = {
@@ -315,7 +322,8 @@ def is_menu_compatible_with_profile(
     menu: Any,
     profile: Any,
     catalog_service: Any,
-    is_owner: bool = False
+    is_owner: bool = False,
+    enforce_standard_keto: bool = False,
 ) -> Tuple[bool, str]:
     """
     Проверяет совместимость меню с каталогом и ограничениями пользователя.
@@ -342,6 +350,7 @@ def is_menu_compatible_with_profile(
     admitted_ids = {r.get("id") for r in admitted_recipes if r.get("id")}
 
     for day in days:
+        daily_carbs = 0.0
         if hasattr(day, "slots"):
             slots = day.slots
         elif isinstance(day, dict):
@@ -370,5 +379,15 @@ def is_menu_compatible_with_profile(
             allowed, reason = is_recipe_allowed(recipe, profile)
             if not allowed:
                 return False, f"Menu contains recipe '{r_id}' incompatible with user restrictions: {reason}"
+
+            if enforce_standard_keto:
+                if any(STANDARD_KETO_EXCLUDED_INGREDIENT.search(name) for name, _ in recipe["ing"]):
+                    return False, "В новое кето-меню нельзя включать блюда с молоком или мальтитом."
+                carbs = recipe.get("nc")
+                if isinstance(carbs, bool) or not isinstance(carbs, (int, float)) or not isfinite(carbs) or carbs < 0:
+                    return False, "Для блюда нет данных об углеводах на порцию."
+                daily_carbs += carbs
+        if enforce_standard_keto and daily_carbs > KETO_DAILY_CARB_LIMIT:
+            return False, "В меню превышен дневной предел углеводов на одного человека (50 г)."
 
     return True, ""
