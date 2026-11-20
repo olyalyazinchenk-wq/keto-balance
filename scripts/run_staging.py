@@ -3,6 +3,7 @@
 
 Features:
 - Enforces owner allowlist (ID 1084557944) after HMAC validation before any user creation.
+- Optionally admits KETO_PILOT_INVITEE_IDS with standard participant privileges.
 - Disables payments (PAYMENTS_ENABLED=0).
 - Disables demo auth and anonymous bypass.
 - Strictly bounds execution time (default: 1 hour / 3600 seconds auto-shutdown).
@@ -43,6 +44,16 @@ def get_scratch_dir() -> Path:
         scratch = Path(tempfile.gettempdir()) / "hermes" / "cache" / "scratch"
     scratch.mkdir(parents=True, exist_ok=True)
     return scratch
+
+
+def pilot_invitees_from_env() -> frozenset[int]:
+    raw = os.getenv("KETO_PILOT_INVITEE_IDS", "").strip()
+    if not raw:
+        return frozenset()
+    values = [value.strip() for value in raw.split(",")]
+    if any(not value.isascii() or not value.isdecimal() or int(value) <= 0 for value in values):
+        raise ValueError("KETO_PILOT_INVITEE_IDS must contain positive Telegram IDs separated by commas")
+    return frozenset(map(int, values))
 
 
 def main():
@@ -192,6 +203,7 @@ def main():
         app_stage="staging",
         telegram_bot_token=bot_token,
         owner_allowlist=owner_allowlist,
+        pilot_invitee_ids=pilot_invitees_from_env(),
         allow_demo_auth=False,
         allow_anonymous_preview=False,
         session_max_lifetime_seconds=session_lifetime,
@@ -218,10 +230,10 @@ def main():
         if path in ("/api/catalog", "/released-catalog.json") or path.startswith("/api/catalog/"):
             authorization = request.headers.get("authorization", "")
             if not authorization.startswith("Bearer "):
-                return JSONResponse({"detail": "Owner session required"}, status_code=401)
+                return JSONResponse({"detail": "Private session required"}, status_code=401)
             session = get_session_user(authorization[7:].strip(), db_path=db_path)
-            if not session or session.get("user_id") != args.owner_id:
-                return JSONResponse({"detail": "Owner session required"}, status_code=401)
+            if not session or not settings.can_open_session(session["user_id"]):
+                return JSONResponse({"detail": "Private session required"}, status_code=401)
         return await call_next(request)
 
     config = uvicorn.Config(

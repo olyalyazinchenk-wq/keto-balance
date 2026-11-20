@@ -33,6 +33,22 @@ class AppSettings:
     session_max_lifetime_seconds: Optional[int] = None
     telegram_webhook_secret_token: Optional[str] = field(default_factory=lambda: os.getenv("TELEGRAM_WEBHOOK_SECRET_TOKEN"))
 
+    pilot_invitee_ids: FrozenSet[int] = frozenset()
+
+    def __post_init__(self) -> None:
+        if self.pilot_invitee_ids and (not self.is_staging or not self.owner_allowlist):
+            raise ValueError("Pilot invitations require staging with a configured owner allowlist")
+
+    def is_pilot_invitee(self, user_id: Optional[int]) -> bool:
+        return self.is_staging and user_id in self.pilot_invitee_ids
+
+    def can_open_session(self, user_id: int) -> bool:
+        return (
+            self.owner_allowlist is None
+            or user_id in self.owner_allowlist
+            or self.is_pilot_invitee(user_id)
+        )
+
     @property
     def is_owner_mode(self) -> bool:
         return self.access_mode == "owner" or self.app_stage in {"staging", "home-pilot"}

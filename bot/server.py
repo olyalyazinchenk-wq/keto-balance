@@ -223,7 +223,7 @@ def create_app(
             raise HTTPException(status_code=401, detail="Invalid or expired session token")
 
         session_user_id = session_info["user_id"]
-        if active_settings.owner_allowlist is not None and session_user_id not in active_settings.owner_allowlist:
+        if not active_settings.can_open_session(session_user_id):
             raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
 
         # Если заданы query_user_id или x_user_id, каждый из них обязан совпадать с session_user_id
@@ -381,7 +381,7 @@ def create_app(
             if not user_obj or not isinstance(user_obj, dict) or not user_obj.get("id"):
                 raise HTTPException(status_code=401, detail="User payload missing or invalid")
             user_id = user_obj.get("id")
-            if active_settings.owner_allowlist is not None and user_id not in active_settings.owner_allowlist:
+            if not active_settings.can_open_session(user_id):
                 raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
             return {"valid": True, "auth_date": res.get("auth_date"), "user_data": user_obj}
         except TokenExpiredError:
@@ -421,7 +421,7 @@ def create_app(
         except AuthError:
             raise HTTPException(status_code=401, detail="Session creation failed: authentication error")
 
-        if active_settings.owner_allowlist is not None and user_id not in active_settings.owner_allowlist:
+        if not active_settings.can_open_session(user_id):
             raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
 
         create_or_get_user(user_id, username=username, first_name=first_name, db_path=active_db)
@@ -440,7 +440,7 @@ def create_app(
             demo_user: int = Query(1084557944),
             premium: Optional[int] = Query(None),
         ):
-            if active_settings.owner_allowlist is not None and demo_user not in active_settings.owner_allowlist:
+            if not active_settings.can_open_session(demo_user):
                 raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
             username = "demo_owner"
             first_name = "Ольга"
@@ -479,7 +479,7 @@ def create_app(
         user = get_session_user(token, db_path=active_db)
         if not user:
             raise HTTPException(status_code=401, detail="Session expired or invalid")
-        if active_settings.owner_allowlist is not None and user["user_id"] not in active_settings.owner_allowlist:
+        if not active_settings.can_open_session(user["user_id"]):
             raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
         return user
 
@@ -495,10 +495,11 @@ def create_app(
         from bot.payments import is_payments_enabled
         payments_enabled = is_payments_enabled()
 
-        if active_settings.is_owner_mode and active_settings.owner_allowlist is not None and target_uid in active_settings.owner_allowlist:
+        is_owner = active_settings.is_owner_mode and target_uid in (active_settings.owner_allowlist or ())
+        if is_owner or active_settings.is_pilot_invitee(target_uid):
             return SubscriptionReadV1(
                 is_premium=True,
-                tier="owner",
+                tier="owner" if is_owner else "pilot",
                 status="active",
                 expires_at=None,
                 available_products=[],
@@ -702,6 +703,8 @@ def create_app(
             return False
         if active_settings.is_owner_mode and active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist:
             return True
+        if active_settings.is_pilot_invitee(target_uid):
+            return True
         sub = get_user_subscription(active_db, target_uid)
         if not sub or sub.get('status') != 'active' or sub.get('tier') in (None, 'free'):
             return False
@@ -870,6 +873,17 @@ def create_app(
 
     # --- K2 CATALOG & RELEASE BOUNDARIES ---
 
+    def catalog_user(authorization, x_user_id, user_id):
+        try:
+            target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
+        except HTTPException:
+            if active_settings.is_owner_mode:
+                raise
+            return None
+        if active_settings.is_owner_mode and not active_settings.owner_allowlist:
+            raise HTTPException(status_code=403, detail="Owner allowlist is not configured")
+        return target_uid
+
     @app.get("/api/catalogs")
     def get_catalogs(
         response: Response,
@@ -879,18 +893,8 @@ def create_app(
     ):
         response.headers["Cache-Control"] = "private, no-cache"
         response.headers["Vary"] = "Authorization, Cookie, X-User-Id"
-        is_owner = False
-        try:
-            target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-            if active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist:
-                is_owner = True
-        except Exception:
-            pass
-        if active_settings.is_owner_mode:
-            target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-            if not active_settings.owner_allowlist or target_uid not in active_settings.owner_allowlist:
-                raise HTTPException(status_code=403, detail="Owner allowlist is not configured")
-            is_owner = True
+        target_uid = catalog_user(authorization, x_user_id, user_id)
+        is_owner = target_uid in (active_settings.owner_allowlist or ())
         return {"catalogs": catalog_service.list_catalogs(is_owner=is_owner)}
 
     @app.get("/api/catalog")
@@ -903,23 +907,8 @@ def create_app(
     ):
         response.headers["Cache-Control"] = "private, no-cache"
         response.headers["Vary"] = "Authorization, Cookie, X-User-Id"
-        is_owner = False
-        target_uid = None
-        try:
-            target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-            if active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist:
-                is_owner = True
-        except Exception:
-            pass
-
-        if active_settings.is_owner_mode:
-            if not target_uid:
-                target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-            if active_settings.owner_allowlist is None or len(active_settings.owner_allowlist) == 0:
-                raise HTTPException(status_code=403, detail="Owner allowlist is not configured")
-            if target_uid not in active_settings.owner_allowlist:
-                raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
-            is_owner = True
+        target_uid = catalog_user(authorization, x_user_id, user_id)
+        is_owner = target_uid in (active_settings.owner_allowlist or ())
 
         if catalog_id:
             if catalog_id.startswith("admin-catalog-v") and not is_owner:
@@ -947,23 +936,8 @@ def create_app(
     ):
         response.headers["Cache-Control"] = "private, no-cache"
         response.headers["Vary"] = "Authorization, Cookie, X-User-Id"
-        is_owner = False
-        target_uid = None
-        try:
-            target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-            if active_settings.owner_allowlist and target_uid in active_settings.owner_allowlist:
-                is_owner = True
-        except Exception:
-            pass
-
-        if active_settings.is_owner_mode:
-            if not target_uid:
-                target_uid = extract_authenticated_user_id(authorization, x_user_id, user_id)
-            if active_settings.owner_allowlist is None or len(active_settings.owner_allowlist) == 0:
-                raise HTTPException(status_code=403, detail="Owner allowlist is not configured")
-            if target_uid not in active_settings.owner_allowlist:
-                raise HTTPException(status_code=403, detail="Access denied: user is not in owner allowlist")
-            is_owner = True
+        target_uid = catalog_user(authorization, x_user_id, user_id)
+        is_owner = target_uid in (active_settings.owner_allowlist or ())
 
         if catalog_id and catalog_id.startswith("admin-catalog-v") and not is_owner:
             raise HTTPException(status_code=403, detail="Access denied: admin snapshot requires owner permissions")
@@ -1164,6 +1138,8 @@ def create_app(
         if active_settings.owner_allowlist is not None:
             allowed_admin_ids.update(active_settings.owner_allowlist)
 
+        if active_settings.is_pilot_invitee(session_user_id) and session_user_id not in (active_settings.owner_allowlist or ()):
+            raise HTTPException(status_code=403, detail="Forbidden: admin access required")
         if session_user_id not in allowed_admin_ids:
             raise HTTPException(status_code=403, detail="Forbidden: admin access required")
 
