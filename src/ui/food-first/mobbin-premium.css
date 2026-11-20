@@ -1,0 +1,250 @@
+/*
+ * KetoBalance — Mobbin Editorial / Home Cooking visual refinement
+ * DESIGN ONLY. No API, auth, business logic or original brand asset changes.
+ * Source: owner-approved Mobbin/editorial visuals, Nov 2026.
+ * Layered AFTER editorial.css; all selectors are scoped to the existing FoodFirstApp.
+ */
+
+/* Palette is warmer than the clinical-green MVP, while remaining readable. */
+.ff-proof {
+  --ff-bg: #f9f6ef;
+  --ff-surface: #fffdf8;
+  --ff-ink: #1b2c22;
+  --ff-muted: #56675a;
+  --ff-green: #1b4935;
+  --ff-line: #e7e5db;
+  background: var(--ff-bg);
+}
+
+/* The original brand name/mark is not restyled or replaced. */
+.ff-proof__header {
+  position: relative;
+  background: var(--ff-bg);
+  border-bottom-color: var(--ff-line);
+  padding-inline: max(20px, var(--kb-safe-left, 0px));
+}
+.ff-proof__header .ff-header-actions { gap: 3px; }
+.ff-proof__header .ff-proof__help-btn {
+  border-radius: 999px;
+  transition: background-color .18s ease, color .18s ease;
+}
+.ff-proof__header .ff-proof__help-btn:hover {
+  background: color-mix(in srgb, var(--ff-green) 8%, var(--ff-bg));
+}
+
+.ff-proof .editorial-opening {
+  margin: 2px 0 14px 2px;
+  color: #777362;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .18em;
+}
+.ff-proof .ff-today { max-width: 810px; margin-inline: auto; padding-inline: 18px; }
+
+/* Editorial cover: culinary photography remains the protagonist. */
+.ff-proof .ff-hero {
+  min-height: clamp(286px, 73vw, 390px);
+  border-radius: 26px;
+  box-shadow: 0 11px 26px rgba(33, 42, 30, .12);
+  background-image:
+    linear-gradient(180deg, rgba(16, 29, 21, .02) 12%, rgba(13, 24, 18, .32) 49%, rgba(10, 23, 15, .91) 100%),
+    url('/media/food-first/hero.webp');
+  background-position: 55% center;
+}
+.ff-proof .editorial-hero-copy { inset: auto 21px 23px; }
+.ff-proof .editorial-hero-copy > span {
+  color: #f7e7c4;
+  font-size: 10px;
+  letter-spacing: .16em;
+}
+.ff-proof .editorial-hero-copy h1 {
+  margin-bottom: 12px;
+  max-width: 14ch;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(34px, 8.9vw, 48px);
+  line-height: 1.01;
+  font-weight: 400;
+  letter-spacing: -.045em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .3);
+}
+.ff-proof .editorial-hero-copy em { color: #f3d8a8; font-style: italic; }
+.ff-proof .editorial-hero-copy p { max-width: 33ch; line-height: 1.5; color: #fff8e9; }
+
+/* Brand-owned KetoCompass: readable, emotional, unmistakably interactive. */
+.ff-proof .editorial-compass-card {
+  margin-top: 17px;
+  min-height: 168px;
+  padding: 20px 18px 20px 21px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #123724, #20523a 90%);
+  box-shadow: 0 9px 24px rgba(20, 61, 39, .17);
+}
+.ff-proof .editorial-compass-card::before {
+  width: 53%;
+  background:
+    linear-gradient(90deg, #163b29 0%, rgba(22, 59, 41, .77) 27%, rgba(22, 59, 41, 0) 100%),
+    url('/media/food-first/omelet-cheese-herbs.webp') 63% center / cover;
+  opacity: .89;
+}
+.ff-proof .editorial-compass-card > div { max-width: 79%; }
+.ff-proof .editorial-compass-card span { color: #f5dfaf; letter-spacing: .14em; }
+.ff-proof .editorial-compass-card h2 {
+  max-width: 15ch;
+  margin: 8px 0 14px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(24px, 7vw, 31px);
+  line-height: 1.05;
+  font-weight: 400;
+}
+.ff-proof .editorial-compass-card button {
+  min-height: 46px;
+  padding-inline: 18px;
+  border-radius: 999px;
+  background: #f5eee1;
+  color: #173b29;
+  box-shadow: 0 3px 11px rgba(8, 25, 15, .13);
+}
+.ff-proof .editorial-compass-card button:hover { background: #fff7e8; }
+
+/* Compact, distinct educational access; no generic grid of cards. */
+.ff-proof .editorial-section-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(28px, 7.2vw, 38px);
+  font-weight: 400;
+  letter-spacing: -.04em;
+  line-height: 1.09;
+}
+.ff-proof .editorial-section-title em { color: var(--ff-green); }
+.ff-proof .editorial-shortcuts {
+  margin: 0 0 19px;
+  gap: 0;
+  padding: 5px 0;
+}
+.ff-proof .editorial-shortcuts button {
+  padding: 7px 3px 8px;
+  min-height: 102px;
+  border-radius: 0;
+  gap: 9px;
+  transition: background-color .2s ease;
+}
+.ff-proof .editorial-shortcuts button:hover { background: rgba(39, 82, 55, .055); }
+.ff-proof .editorial-shortcuts button span {
+  width: 55px;
+  height: 55px;
+  border: 1px solid #d8dfce;
+  background: #f2f2e7;
+  color: #244832;
+}
+.ff-proof .editorial-shortcuts strong {
+  color: var(--ff-ink);
+  line-height: 1.25;
+  font-size: 12.5px;
+}
+
+/* Attractive recipe previews with real per-recipe imagery where available. */
+.ff-proof .editorial-home-recipes-heading { align-items: baseline; margin-bottom: 14px; }
+.ff-proof .editorial-highlights {
+  gap: 12px;
+  padding: 0 2px 14px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: #bdc9b8 transparent;
+}
+.ff-proof .editorial-highlights button {
+  scroll-snap-align: start;
+  flex-basis: min(196px, 66vw);
+}
+.ff-proof .editorial-highlights img {
+  height: 158px;
+  border-radius: 18px;
+  background: #e6e0d4;
+}
+.ff-proof .editorial-highlights strong { margin-top: 9px; line-height: 1.29; font-size: 15px; }
+.ff-proof .editorial-highlights small { display: block; margin-top: 3px; }
+.ff-proof .editorial-tools { gap: 10px; margin-top: 2px; }
+.ff-proof .editorial-tools button {
+  min-height: 92px;
+  border-radius: 20px;
+  padding: 15px;
+  background: var(--ff-surface);
+  border-color: var(--ff-line);
+  box-shadow: 0 2px 8px rgba(34, 53, 33, .045);
+}
+
+/* Catalog and recipe are the same editorial visual family. */
+.ff-proof .editorial-picker { padding-inline: 20px; }
+.ff-proof .editorial-picker h1 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; font-size: 35px; }
+.ff-proof .editorial-search input { border-radius: 16px; background: var(--ff-surface); }
+.ff-proof .editorial-recipe-row { gap: 14px; padding-block: 13px; }
+.ff-proof .editorial-recipe-row img { width: 92px; height: 86px; border-radius: 16px; }
+.ff-proof .editorial-recipe-row strong { font-size: 16px; line-height: 1.28; }
+.ff-proof .editorial-detail-photo { border-radius: 22px; }
+.ff-proof .editorial-recipe-sections button { border-radius: 999px; }
+
+/* Navigation: floating pill for phones; original navigation structure stays intact. */
+.ff-proof .ff-proof__nav {
+  left: max(10px, var(--kb-safe-left, 0px));
+  right: max(10px, var(--kb-safe-right, 0px));
+  bottom: calc(8px + var(--kb-safe-bottom, 0px));
+  padding: 7px 5px;
+  border: 1px solid #e6e6dc;
+  border-radius: 24px;
+  background: rgba(255, 253, 248, .98);
+  box-shadow: 0 8px 32px rgba(18, 39, 26, .16);
+}
+.ff-proof .ff-proof__nav-btn {
+  min-height: 51px;
+  border-radius: 18px;
+  font-size: 12px;
+}
+.ff-proof .ff-proof__nav-btn[aria-current='page'] {
+  background: #eaf0de;
+  color: #1b4935;
+}
+
+/* High contrast dark theme, without forcing light backgrounds. */
+html.dark .ff-proof,
+:root.dark .ff-proof,
+[data-kb-theme='dark'] .ff-proof {
+  --ff-bg: #101b15;
+  --ff-surface: #1a2b20;
+  --ff-ink: #f1eee5;
+  --ff-muted: #b7c3b2;
+  --ff-green: #b2d3ad;
+  --ff-line: #355141;
+}
+html.dark .ff-proof .editorial-opening,
+:root.dark .ff-proof .editorial-opening,
+[data-kb-theme='dark'] .ff-proof .editorial-opening { color: #bed2b8; }
+html.dark .ff-proof .editorial-shortcuts button span,
+:root.dark .ff-proof .editorial-shortcuts button span,
+[data-kb-theme='dark'] .ff-proof .editorial-shortcuts button span { background: #243e2d; border-color: #47634b; color: #d1e7c9; }
+html.dark .ff-proof .ff-proof__nav,
+:root.dark .ff-proof .ff-proof__nav,
+[data-kb-theme='dark'] .ff-proof .ff-proof__nav { background: #1a2b20; border-color: #355141; }
+html.dark .ff-proof .ff-proof__nav-btn[aria-current='page'],
+:root.dark .ff-proof .ff-proof__nav-btn[aria-current='page'],
+[data-kb-theme='dark'] .ff-proof .ff-proof__nav-btn[aria-current='page'] { background: #355642; color: #eff9e9; }
+
+/* Short screens keep the critical KetoCompass above fold. */
+@media (max-height: 600px) {
+  .ff-proof .ff-hero { min-height: 145px; }
+  .ff-proof .editorial-hero-copy { inset: auto; padding: 12px 15px; }
+  .ff-proof .editorial-hero-copy h1 { font-size: clamp(26px, 6.5vw, 33px); margin-bottom: 0; }
+  .ff-proof .editorial-compass-card { min-height: 0; padding: 12px 14px; margin-top: 8px; }
+  .ff-proof .editorial-compass-card h2 { font-size: 22px; margin: 3px 0 5px; }
+  .ff-proof .editorial-compass-card button { min-height: 44px; }
+}
+@media (max-width: 360px) {
+  .ff-proof .ff-today { padding-inline: 14px; }
+  .ff-proof .editorial-hero-copy { inset-inline: 17px; }
+  .ff-proof .editorial-compass-card > div { max-width: 85%; }
+  .ff-proof .editorial-shortcuts strong { font-size: 11.5px; }
+}
+@media (min-width: 768px) {
+  .ff-proof .ff-proof__nav { width: min(680px, calc(100% - 28px)); margin-inline: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ff-proof .editorial-shortcuts button,
+  .ff-proof__header .ff-proof__help-btn { transition: none; }
+}
