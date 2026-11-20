@@ -32,6 +32,10 @@ test('recipe uses the same reviewed photo as the menu; unknown photos retain fal
   assert.ok(render('k28').includes(`src="${image}"`));
   assert.match(render('k28'), /Иллюстрация создана по рецепту/);
   assert.ok(fs.statSync(path.join(__dirname, '../../public', image)).size < 150_000);
+  const turkeyImage = photoForRecipe('k9');
+  assert.ok(render('k9').includes(`src="${turkeyImage}"`));
+  assert.match(render('k9'), /Иллюстрация создана по рецепту/);
+  assert.ok(fs.statSync(path.join(__dirname, '../../public', turkeyImage)).size < 150_000);
 });
 
 const { FoodToday } = require('../../src/ui/food-first/Today.tsx');

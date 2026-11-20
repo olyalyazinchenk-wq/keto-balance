@@ -26,6 +26,7 @@ export function photoForRecipe(recipeId: string): string | null {
     k4: '/media/food-first/avocado-flatbread.webp',
     k5: '/media/food-first/egg-muffins.webp',
     k8: '/media/food-first/tuna-egg-cucumber-salad.webp',
+    k9: '/media/food-first/turkey-zucchini-patties.webp',
     k28: '/media/food-first/chicken-zucchini-herbs.webp',
   };
   if (images[recipeId]) return images[recipeId];

@@ -36,7 +36,7 @@ test('all educational guides have explicit pending editorial status and no inven
   const guides = JSON.parse(fs.readFileSync(path.join(root, 'docs/content/educational-guides.json')));
   assert.equal(new Set(guides.map(g => g.id)).size, guides.length);
   assert.deepEqual(guides.filter(g => g.kind === 'education').map(g => g.id), [
-    'keto_daily_limit', 'keto_plate_examples', 'keto_swap_sides', 'keto_cafe_questions',
+    'weeks_1_2_hydration', 'weeks_3_4_electrolytes', 'weeks_5_6_micronutrients', 'weeks_7_8_supplement_review',
   ]);
   assert.deepEqual(guides.slice(0, 2).map(g => g.id), ['intro_approaches', 'reading_labels']);
   for (const g of guides) {
