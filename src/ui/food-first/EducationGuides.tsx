@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { fetchWithTimeout } from '../../api/fetchWithTimeout';
+import { loadEducationGuides } from '../../api/loadEducationGuides';
 
 export interface EducationGuide {
   id: string;
@@ -55,18 +55,11 @@ export function EducationGuides({ kind, active = true, onDetailChange, sessionTo
     const controller = new AbortController();
     activeRequest.current = controller;
 
-    fetchWithTimeout('/api/education/guides', { signal: controller.signal, headers: sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {} }, 5000)
-      .then((res) => {
-        if (res.status === 401) throw new Error('Сеанс закончился. Откройте КетоБаланс заново через бота.');
-        if (res.status === 403) throw new Error('Материалы недоступны для текущего аккаунта.');
-        if (!res.ok) throw new Error('Не удалось загрузить руководства');
-        return res.json();
-      })
-      .then((data) => {
+    loadEducationGuides(controller.signal, sessionToken)
+      .then((guides: EducationGuide[]) => {
         if (generation !== requestGeneration.current) return;
         const lessons = ['intro_approaches', 'reading_labels', 'allergens_limits'];
-        if (!Array.isArray(data.guides)) throw new Error('Сервер вернул неверный список материалов.');
-        setGuides(data.guides.filter((guide: EducationGuide) =>
+        setGuides(guides.filter((guide: EducationGuide) =>
           !kind || kind === (guide.kind ?? (lessons.includes(guide.id) ? 'education' : 'guides'))
         ));
         setLoading(false);
