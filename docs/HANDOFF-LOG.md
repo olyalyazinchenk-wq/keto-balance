@@ -1,6 +1,13 @@
 # Журнал передачи работы
 Новые записи добавлять в начало после заголовка. Это история; актуальный статус хранится только в CURRENT-STATE.md.
 
+## 2026-11-20, вечер — Telegram Web по отчёту и цепочка #44/#45
+- GPT/Codex, ChatGPT Work; baseline master b7265d2413c0de21bf8e02ae92d3093d6cf7f62e; docs/context-sync-20261120-evening.
+- #41 docs HEAD3c9b164, source76f2807; отчёт20.11 18:15 сообщает два запуска Telegram Web, не телефон. Новый Draft #44 HEAD1f754184/source106bde89 и open #45 HEADe0d93d22/sourceab443b7f; CI точных HEAD и source success.
+- Последний отчёт #45:20.11 19:39МСК/builda8d449bc33583b1d/backend a13778555f3b3375/catalog666c79712f63128f; установка/restore/сохранность/HTTPS по отчёту, приглашённых нет, оплатыoff. Telegram Web #44 относится к предыдущей сборке.
+- Verified deployed SHA/дата собственной прямой проверки/биллинг UNKNOWN. Телефон/допуск/суточный результат открыты; полный интервал не ранее21.11 19:39:02МСК при неизменной сборке. Описания #41/#39/#27 устарели, Issues прежние.
+- Только CURRENT-STATE/HANDOFF-LOG; Notion после интеграции. Продуктовые PR не объединялись. Далее: фактическая версия, телефон последней сборки и приёмка до приглашений.
+
 ## 2026-11-19, вечер — отчёт установки №41 и тайм-аут Telegram
 - GPT/Codex, ChatGPT Work; baseline master d358d6a2bdd59d4be3dd8a0e521ec8e0774b3d1d; docs/context-sync-20261119-evening.
 - #41 docs HEAD e9d01d40480f3567e00f1178ef4a4ca730a27fc6, product source 76f28071c1d1f9ba3fa619895dd9f27a342df285; diff после утра только документационный. CI44565904556/44565885427 success.
