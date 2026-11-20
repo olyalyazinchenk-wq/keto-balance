@@ -4,6 +4,7 @@ import type { ScreenId, VisualDirection } from './contract';
 import { setupTelegramApp, bindBackButton, hideBackButton, triggerHaptic } from '../../tma/telegram';
 import './today.css';
 import './editorial.css';
+import './mobbin-premium.css';
 export interface AppShellProps {
   activeScreen: ScreenId; canGoBack: boolean; onGoBack: () => void;
   onNavigate: (screen: ScreenId) => void; onOpenSupport?: () => void;

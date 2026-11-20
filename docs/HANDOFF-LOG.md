@@ -170,3 +170,9 @@ ZIP восстановлен из исходного чата «Chat веб-ди
 ## 20.11.2026 — доступ для закрытого пилота
 
 Codex Sol, Windows и существующая ВМ Cloud.ru. Ветка `fix/closed-pilot-access-20261120`, база `1f75418`, продуктовый коммит `ab443b7`. Локально прошли 374 клиентских, 42 серверных целевых и 8 браузерных сценариев. GitHub подтвердил три проверки. В закрытом контуре работает `a8d449bc33583b1d` с каталогом `666c79712f63128f`. [PR №45](https://github.com/olyalyazinchenk-wq/keto-balance/pull/45) · [Отчёт и приёмка](evidence/reports/CLOSED_PILOT_ACCESS_20261120.md).
+
+### 2026-11-21 — ChatGPT Chat / Mobbin Premium visual layer (НЕ релиз)
+- Baseline: `81432d54ed6688403de7436ce81e6a0f4c707d59` (PR #47); ветка: `design/mobbin-premium-integration-20261121`.
+- Изменения: `src/ui/food-first/mobbin-premium.css`, импорт в `AppShell.tsx`; только оформление, логотип неизменён; Figma frame `3:17` в `WZYDUnp6sYKsMHGShfBglO`.
+- Проверено: GitHub readback / CSS структурно; отдельный исторический HTML-прототип в Playwright на 320 и 390 px. Не проверено: сборка и браузерный E2E нового React кода, Telegram телефон, фото в Figma, production; deployed SHA UNKNOWN.
+- См. `docs/evidence/reports/MOBBIN_PREMIUM_20261121.md`. Следующий: проверить Draft PR в CI, получить скриншоты реального приложения и владельческую приёмку; **не merge/deploy**.
