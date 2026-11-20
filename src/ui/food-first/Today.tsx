@@ -78,7 +78,7 @@ export function FoodToday({
         <div className="ff-hero" data-testid="home-hero-banner">
           <div className="editorial-hero-copy">
             <span>Вкусно, когда по-домашнему</span>
-            <h1>Готовить.<br /><em>Наслаждаться.</em><br />Жить.</h1>
+            <h1>Готовить.<br /> <em>Наслаждаться.</em><br /> Жить.</h1>
             <p className="ff-hero__desc">Простые блюда, любимые продукты и забота о себе каждый день.</p>
           </div>
         </div>

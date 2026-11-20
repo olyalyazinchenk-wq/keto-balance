@@ -61,3 +61,27 @@
  .food-recipe header .food-grid,.food-recipe > .food-grid {grid-template-columns:minmax(0,1fr)}
  .food-recipe header .food-grid > :last-child {order:-1}
 }
+
+.shopping-period-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 12px;
+  padding: 4px 10px 4px 12px;
+  border: 1px solid var(--kb-border);
+  border-radius: 12px;
+  background: var(--kb-surface);
+  color: var(--kb-text-1);
+  font-size: .875rem;
+}
+.shopping-period-summary button { min-height: 44px; padding-inline: 4px; color: var(--kb-primary); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.shopping-period-options, .shopping-period-dates > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.shopping-period-options button { min-height: 44px; padding: 6px 10px; border: 1px solid var(--kb-border); border-radius: 10px; background: var(--kb-surface); color: var(--kb-text-1); font-size: .875rem; }
+.shopping-period-options button[aria-pressed="true"], .shopping-period-options button[aria-expanded="true"] { border-color: var(--kb-primary); background: var(--kb-surface-muted); font-weight: 700; }
+.shopping-period-dates { margin-block-start: 8px; padding: 10px; border: 1px solid var(--kb-border); border-radius: 12px; background: var(--kb-surface-muted); }
+.shopping-period-dates label { display: grid; gap: 3px; flex: 1; }
+.shopping-period-dates input { min-width: 0; min-height: 44px; padding: 4px 6px; border: 1px solid var(--kb-border); border-radius: 8px; color: var(--kb-text-1); background: var(--kb-surface); }
+.shopping-period-dates button { margin-block-start: 8px; }
+.shopping-recipe-confirmation { display: flex; align-items: center; gap: 8px; margin-block-start: 8px; padding: 8px 10px; border: 1px solid var(--kb-border); border-radius: 10px; background: var(--kb-surface-muted); color: var(--kb-text-1); font-size: .875rem; font-weight: 600; }
+.shopping-recipe-confirmation svg { width: 18px; height: 18px; flex: none; color: var(--kb-primary); }

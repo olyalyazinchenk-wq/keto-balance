@@ -727,7 +727,7 @@ export default function PilotApp() {
       setShoppingItems(nextItems);
       shoppingItemsRef.current = nextItems;
 
-      saveQueue.enqueue(async () => {
+      return saveQueue.enqueue(async () => {
         if (stickyErrorRef.current === 'conflict') {
           throw new ConflictError('Предыдущее сохранение завершилось конфликтом версий.');
         }
@@ -771,7 +771,7 @@ export default function PilotApp() {
           }
           throw err;
         }
-      }).catch(() => {});
+      }).then(() => true, () => false);
     },
     [client, saveQueue]
   );
@@ -1478,7 +1478,7 @@ export default function PilotApp() {
 
   const handleAddRecipeToShopping = useCallback((recipe: RecipeViewModel, portions: 1 | 2 | 4) => {
     const ingredients = recipe.portionsVariants[portions]?.ingredients;
-    if (!ingredients?.length) return;
+    if (!ingredients?.length) return Promise.resolve(false);
     const prefix = recipeShoppingPrefix(recipe.id);
     const currentItems = shoppingItemsRef.current;
     const previous = new Map(currentItems.map(item => [item.id, item]));
@@ -1494,7 +1494,7 @@ export default function PilotApp() {
         checkedInStore: sameIngredient && existing.amountLabel === ingredient.amountLabel && existing.checkedInStore,
       };
     });
-    enqueueShoppingStateSave([
+    return enqueueShoppingStateSave([
       ...currentItems.filter(item => !item.id.startsWith(prefix)),
       ...recipeItems,
     ]);

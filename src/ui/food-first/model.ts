@@ -25,7 +25,8 @@ export function photoForRecipe(recipeId: string): string | null {
     k3: '/media/food-first/baked-cottage-cheese.webp',
     k4: '/media/food-first/avocado-flatbread.webp',
     k5: '/media/food-first/egg-muffins.webp',
-      k28: '/media/food-first/chicken-zucchini-herbs.webp',
+    k8: '/media/food-first/tuna-egg-cucumber-salad.webp',
+    k28: '/media/food-first/chicken-zucchini-herbs.webp',
   };
   if (images[recipeId]) return images[recipeId];
   return null;

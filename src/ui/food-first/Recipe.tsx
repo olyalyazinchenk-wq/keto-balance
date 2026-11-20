@@ -183,14 +183,15 @@ export function RecipeScreen({
     Boolean(checkedIngredients[`${recipe.id}:ing:${idx}`])
   ).length;
 
+  const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
   const editorialPhoto = photoForRecipe(recipe.id);
   return (
     <article className="food-recipe editorial-detail" data-testid="food-recipe-screen">
       {/* Секция 01: Обложечная шапка рецепта */}
       <header className="border-b border-[var(--kb-border)] pb-6 sm:pb-10 space-y-4 sm:space-y-6">
-        {editorialPhoto
+        {editorialPhoto && failedPhoto !== editorialPhoto
           ? <figure>
-              <img className="editorial-detail-photo" src={editorialPhoto} alt={`Фотоиллюстрация блюда «${recipe.title}»`} width="640" height="440" decoding="async" />
+              <img className="editorial-detail-photo" src={editorialPhoto} alt={`Фотоиллюстрация блюда «${recipe.title}»`} width="640" height="440" decoding="async" onError={() => setFailedPhoto(editorialPhoto)} />
               {recipe.id === 'k28' && <figcaption className="text-xs text-[var(--kb-text-3)] mt-1">Иллюстрация создана по рецепту</figcaption>}
             </figure>
           : <p className="editorial-detail-no-photo">Фото блюда готовится</p>}
@@ -280,20 +281,19 @@ export function RecipeScreen({
           aria-labelledby="recipe-ingredients-heading"
           className="col-span-4 md:col-span-5 bg-[var(--kb-surface)] border border-[var(--kb-border)] p-4 sm:p-6 space-y-4"
         >
-            <RecipePlate
-              key={recipe.id}
-              recipe={recipe}
-              variant={variant}
-              checkedIngredients={checkedIngredients}
-              onToggleIngredient={onToggleIngredient}
-              selectedPortions={portions}
-              onSelectPortions={(p) => { triggerHaptic('selection'); (onSelectPortions ?? setLocalPortions)(p); }}
-            />
+          <div className="recipe-portions" role="group" aria-label="Выбор числа порций">
+            {([1, 2, 4] as const).map(p => (
+              <button type="button" key={p} aria-pressed={portions === p} data-testid={`recipe-portions-${p}x`}
+                onClick={() => { triggerHaptic('selection'); (onSelectPortions ?? setLocalPortions)(p); }}>
+                {recipe.portionsVariants[p]?.yieldNote || `${p}×`}
+              </button>
+            ))}
+          </div>
           {onOpenShopping && variant.ingredients.length > 0 && (
             <button
               type="button"
               data-testid="recipe-to-shopping"
-              className="min-h-[44px] rounded-lg border border-[var(--kb-border)] px-4 text-sm font-semibold kb-focus-ring"
+              className="recipe-shopping-action kb-focus-ring"
               onClick={() => {
                 triggerHaptic('selection');
                 onOpenShopping(portions);
@@ -349,6 +349,13 @@ export function RecipeScreen({
               );
             })}
           </div>
+          <RecipePlate
+            key={recipe.id}
+            recipe={recipe}
+            variant={variant}
+            checkedIngredients={checkedIngredients}
+            onToggleIngredient={onToggleIngredient}
+          />
         </section>
 
         {/* Секция шагов приготовления */}

@@ -9,12 +9,10 @@ interface RecipePlateProps {
   variant: PortionVariantFixture;
   checkedIngredients: Record<string, boolean>;
   onToggleIngredient: (key: string) => void;
-  selectedPortions: 1 | 2 | 4;
-  onSelectPortions: (portions: 1 | 2 | 4) => void;
 }
 
 /** Presents existing quantities. No nutritional estimation or new storage. */
-export function RecipePlate({ recipe, variant, checkedIngredients, onToggleIngredient, selectedPortions, onSelectPortions }: RecipePlateProps) {
+export function RecipePlate({ recipe, variant, checkedIngredients, onToggleIngredient }: RecipePlateProps) {
   const titleId = useId();
   const detailId = useId();
   const [selection, setSelection] = useState({ recipeId: recipe.id, index: 0 });
@@ -37,12 +35,6 @@ export function RecipePlate({ recipe, variant, checkedIngredients, onToggleIngre
       </div>
       <h2 id={titleId}>Тарелка в деталях</h2>
       <p className="recipe-plate__intro">Коснись продукта — узнай количество и отметь, что уже подготовлено.</p>
-      <div className="recipe-plate__portions" role="group" aria-label="Выбор числа порций">
-        {([1, 2, 4] as const).map(p => <button type="button" key={p}
-          aria-pressed={selectedPortions === p} data-testid={`recipe-portions-${p}x`}
-          onClick={() => onSelectPortions(p)}>{recipe.portionsVariants[p]?.yieldNote || `${p}×`}</button>)}
-      </div>
-
       {hasPhoto && imageUrl && (
         <div className="recipe-plate__photo-wrap">
           <img className="recipe-plate__photo" src={imageUrl}

@@ -3,7 +3,7 @@ import { test, expect, passNewUserStartGate, activateSyntheticPremium } from './
 test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', () => {
   test('selects week 1, checks item, switches to week 2, tests custom range, restores in fresh context', async ({
     createSession,
-  }) => {
+  }, testInfo) => {
     // === PHASE 1: Session 1 for User 5001 ===
     const session1 = await createSession({ id: 5001, first_name: 'RangeUser' });
     await activateSyntheticPremium(session1);
@@ -29,6 +29,10 @@ test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', 
     const rangeSelector = page1.locator('[data-testid="shopping-range-selector"]');
     await expect(rangeSelector).toBeVisible();
 
+    const change1 = page1.getByRole('button', { name: 'Сменить период' });
+    await expect(page1.getByTestId('shopping-range-week-0')).toBeHidden();
+    await change1.click();
+
     // Select Week 1
     const week0Btn = page1.locator('[data-testid="shopping-range-week-0"]');
     await expect(week0Btn).toBeVisible();
@@ -47,6 +51,9 @@ test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', 
     expect(checkSaveRes.status()).toBe(200);
     await expect(firstCheckBtn).toHaveAttribute('aria-pressed', 'true');
 
+    await expect(change1).toHaveAttribute('aria-expanded', 'false');
+    await change1.click();
+
     // Switch to Week 2
     const week1Btn = page1.locator('[data-testid="shopping-range-week-1"]');
     await Promise.all([
@@ -58,6 +65,8 @@ test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', 
     const week2FirstCheckBtn = page1.locator('[data-testid^="toggle-in-store-"]').first();
     await expect(week2FirstCheckBtn).toBeVisible();
     await expect(week2FirstCheckBtn).toHaveAttribute('aria-pressed', 'false');
+
+    await change1.click();
 
     // Switch to Custom Range
     const customBtn = page1.locator('[data-testid="shopping-range-custom"]');
@@ -76,6 +85,16 @@ test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', 
     ]);
     expect(customRangeSaveRes.status()).toBe(200);
 
+    const period = page1.getByTestId('shopping-period-label');
+    await expect(period).toHaveText('01.11.2026 – 03.11.2026');
+    await expect(change1).toHaveAttribute('aria-expanded', 'false');
+    await change1.click();
+    await customBtn.click();
+    await startInput.fill('2026-11-02');
+    await expect(period).toHaveText('01.11.2026 – 03.11.2026');
+    await page1.getByRole('button', { name: 'Отмена', exact: true }).click();
+    await expect(period).toHaveText('01.11.2026 – 03.11.2026');
+
     // Close session 1 context completely
     await session1.context.close();
 
@@ -91,7 +110,9 @@ test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', 
     await expect(page2.locator('[data-testid="food-shopping-screen"]')).toBeVisible();
 
     // Custom range should be restored
-    await expect(page2.locator('[data-testid="shopping-range-custom"]')).toBeVisible();
+    await expect(page2.getByTestId('shopping-period-label')).toHaveText('01.11.2026 – 03.11.2026');
+    await page2.getByRole('button', { name: 'Сменить период' }).click();
+    await page2.getByTestId('shopping-range-custom').click();
     await expect(page2.locator('[data-testid="custom-range-start"]')).toHaveValue('2026-11-01');
     await expect(page2.locator('[data-testid="custom-range-end"]')).toHaveValue('2026-11-03');
 
@@ -104,6 +125,15 @@ test.describe('E4: Shopping Range Selection & Isolated Checkmarks Persistence', 
 
     const restoredCheckBtn = page2.locator('[data-testid^="toggle-in-store-"]').first();
     await expect(restoredCheckBtn).toHaveAttribute('aria-pressed', 'true');
+    await page2.screenshot({ path: testInfo.outputPath('shopping-month-collapsed.png') });
+
+    await page2.getByRole('button', { name: 'Сменить период' }).click();
+    await Promise.all([
+      page2.waitForResponse(res => res.url().includes('/api/user') && res.request().method() === 'PUT'),
+      page2.getByTestId('shopping-range-all').click(),
+    ]);
+    await expect(page2.getByTestId('shopping-period-label')).toContainText('Весь месяц');
+    await expect(page2.getByTestId('shopping-range-all')).toBeHidden();
 
     // Test 409 conflict handling directly via API on this authenticated user
     const sessionRes = await page2.request.post('http://127.0.0.1:18080/api/session', {

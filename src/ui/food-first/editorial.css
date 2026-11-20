@@ -120,3 +120,50 @@
 .editorial-recipe-sections button[aria-pressed="true"] { background: var(--ff-green); color: var(--kb-on-primary, #fff); border-color: var(--ff-green); }
 .editorial-recipe-body > section { border-radius: 18px; }
 .editorial-recipe-body > section[hidden] { display: none; }
+
+.editorial-occasions[hidden] { display: none; }
+.editorial-occasion-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  padding: 2px 10px 2px 14px;
+  margin-block: 12px 8px;
+  border: 1px solid var(--ff-line);
+  border-radius: 14px;
+  background: var(--ff-surface);
+  color: var(--ff-ink);
+}
+.editorial-occasion-summary button { min-height: 44px; padding: 4px 6px; color: var(--ff-green); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.recipe-shopping-action {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--kb-primary);
+  color: var(--kb-on-primary);
+  font-size: .875rem;
+  font-weight: 700;
+}
+
+@media (max-height: 600px) {
+  .ff-proof .ff-today { padding-block-start: 8px; }
+  .ff-proof .ff-today__heading { margin-bottom: 8px; }
+  .ff-proof .ff-hero {
+    min-height: 148px;
+    background-image: linear-gradient(90deg, #101e17dd 0%, #101e1780 48%, #101e170d 100%), url('/media/food-first/hero.webp');
+  }
+  .ff-proof .editorial-hero-copy { position: relative; inset: auto; padding: 14px 16px; }
+  .ff-proof .editorial-hero-copy h1 { font-size: clamp(1.65rem, 6.7vw, 2.2rem); margin: 0; }
+  .ff-proof .editorial-opening,
+  .ff-proof .editorial-hero-copy > span,
+  .ff-proof .editorial-hero-copy p { display: none; }
+  .editorial-compass-card { margin-top: 8px; padding: 10px 14px; min-height: 0; }
+  .editorial-compass-card h2 { margin: 4px 0 6px; max-width: 23ch; font-size: 1.25rem; }
+  .editorial-hero-copy br { display: none; }
+  .editorial-detail-photo { height: clamp(104px, 30dvh, 170px); }
+  .editorial-detail-no-photo { padding: 10px 12px; margin-block: 0; font-size: .875rem; }
+  .editorial-compass { padding-block-start: 8px; }
+  .editorial-compass .editorial-recipe-row { padding-block: 8px; }
+}
