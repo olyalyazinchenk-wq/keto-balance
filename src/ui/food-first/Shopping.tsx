@@ -1,5 +1,5 @@
 import './recipe-shopping-food.css';
-import { useState, useEffect } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import {
   Check,
   Copy,
@@ -26,6 +26,7 @@ import { formatLocalDateISO } from '../../domain/menu';
 export interface ShoppingScreenProps {
   items: (ShoppingFixtureItem | PilotShoppingItemV1)[];
   menuTitle: string;
+  addedRecipeYield?: string;
   isStaleAfterMenuEdit: boolean;
   onRefreshShoppingFromMenu: () => void;
   onToggleCheckedInStore: (id: string) => void;
@@ -51,6 +52,7 @@ const DEPARTMENTS: ShoppingFixtureItem['department'][] = [
 export function ShoppingScreen({
   items,
   menuTitle,
+  addedRecipeYield,
   isStaleAfterMenuEdit,
   onRefreshShoppingFromMenu,
   onToggleCheckedInStore,
@@ -78,25 +80,34 @@ export function ShoppingScreen({
     return 'week-0';
   }
 
-  const [selectedRange, setSelectedRange] = useState<string>(() => {
-    if (savedRange?.range_id) return savedRange.range_id;
-    return getDefaultWeekRange();
-  });
-  const [customStartDate, setCustomStartDate] = useState<string>(() => savedRange?.start_date || '');
-  const [customEndDate, setCustomEndDate] = useState<string>(() => savedRange?.end_date || '');
-  const [showCustomPicker, setShowCustomPicker] = useState<boolean>(Boolean(savedRange?.type === 'custom'));
-  const [customRangeError, setCustomRangeError] = useState<string>('');
+  const [appliedRange, setAppliedRange] = useState(savedRange);
+  const selectedRange = appliedRange?.range_id || getDefaultWeekRange();
+  const customStartDate = appliedRange?.start_date || '';
+  const customEndDate = appliedRange?.end_date || '';
+  const [draftStartDate, setDraftStartDate] = useState('');
+  const [draftEndDate, setDraftEndDate] = useState('');
+  const [rangeOptionsOpen, setRangeOptionsOpen] = useState(false);
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const [customRangeError, setCustomRangeError] = useState('');
+  const rangeOptionsId = useId();
+  const customPickerId = useId();
+  const rangeToggle = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (savedRange?.range_id && savedRange.range_id !== selectedRange) {
-      setSelectedRange(savedRange.range_id);
-      if (savedRange.type === 'custom') {
-        setShowCustomPicker(true);
-        if (savedRange.start_date) setCustomStartDate(savedRange.start_date);
-        if (savedRange.end_date) setCustomEndDate(savedRange.end_date);
-      }
-    }
+    setAppliedRange(savedRange);
   }, [savedRange]);
+
+  function closeRangeOptions() {
+    setRangeOptionsOpen(false);
+    rangeToggle.current?.focus();
+  }
+
+  function applyRange(range: ShoppingRange) {
+    triggerHaptic('selection');
+    setAppliedRange(range);
+    onSelectRange?.(range);
+    closeRangeOptions();
+  }
 
   const weeksList = (function() {
     if (!menuDays || menuDays.length <= 7) return [];
@@ -117,6 +128,12 @@ export function ShoppingScreen({
       };
     });
   })();
+
+  const wholeMonthLabel = `Весь месяц (${menuDays?.length ?? 0} дн.)`;
+  const customRangeSelected = selectedRange.startsWith('custom');
+  const currentPeriodLabel = customRangeSelected && customStartDate && customEndDate
+    ? `${new Date(customStartDate + 'T00:00:00').toLocaleDateString('ru-RU')} – ${new Date(customEndDate + 'T00:00:00').toLocaleDateString('ru-RU')}`
+    : weeksList.find(week => week.id === selectedRange)?.label ?? wholeMonthLabel;
 
   const rangeKey = (selectedRange === 'custom' || selectedRange.startsWith('custom'))
     ? (customStartDate && customEndDate ? `custom:${customStartDate}_${customEndDate}` : 'custom')
@@ -278,127 +295,91 @@ export function ShoppingScreen({
               Список покупок
             </h1>
             <p className="text-sm text-[var(--kb-text-2)]">{menuTitle}</p>
+            {addedRecipeYield && items.length > 0 && (
+              <p className="shopping-recipe-confirmation" role="status">
+                <Check aria-hidden="true" /> Добавлено в покупки · {addedRecipeYield}
+              </p>
+            )}
             {isMonthPlan && (
               <div className="mt-3 space-y-1.5" data-testid="shopping-range-selector">
-                <label className="text-xs font-semibold text-[var(--kb-text-3)] block">
-                  Период покупок:
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {weeksList.map((w, idx) => (
-                    <button
-                      key={w.id}
-                      type="button"
-                      data-testid={`shopping-range-${w.id}`}
-                      onClick={() => {
-                        triggerHaptic('selection');
-                        setSelectedRange(w.id);
-                        onSelectRange?.({
-                          range_id: w.id,
-                          type: 'week',
-                          week_index: idx,
-                        });
-                      }}
-                      className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
-                        selectedRange === w.id
-                          ? 'border-[var(--kb-primary)] bg-[var(--kb-surface-muted)] text-[var(--kb-text-1)] font-bold'
-                          : 'border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
-                      }`}
-                    >
-                      {w.label}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    data-testid="shopping-range-all"
+                <div className="shopping-period-summary">
+                  <p data-testid="shopping-period-label">{currentPeriodLabel}</p>
+                  <button type="button" ref={rangeToggle} className="kb-focus-ring"
+                    aria-expanded={rangeOptionsOpen} aria-controls={rangeOptionsId}
                     onClick={() => {
-                      triggerHaptic('selection');
-                      setSelectedRange('all');
-                      onSelectRange?.({ range_id: 'all', type: 'all' });
-                    }}
-                    className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
-                      selectedRange === 'all'
-                        ? 'border-[var(--kb-primary)] bg-[var(--kb-surface-muted)] text-[var(--kb-text-1)] font-bold'
-                        : 'border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
-                    }`}
-                  >
-                    Весь месяц ({menuDays ? menuDays.length : 0} дн.)
-                  </button>
-                  <button
-                    type="button"
-                    data-testid="shopping-range-custom"
-                    onClick={() => {
-                      triggerHaptic('selection');
-                      setShowCustomPicker((prev) => !prev);
-                    }}
-                    className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
-                      selectedRange === 'custom' || selectedRange.startsWith('custom')
-                        ? 'border-[var(--kb-primary)] bg-[var(--kb-surface-muted)] text-[var(--kb-text-1)] font-bold'
-                        : 'border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-2)] hover:bg-[var(--kb-surface-muted)]'
-                    }`}
-                  >
-                    Свой диапазон
+                      if (rangeOptionsOpen) {
+                        closeRangeOptions();
+                        return;
+                      }
+                      setRangeOptionsOpen(true);
+                      setShowCustomPicker(false);
+                      setCustomRangeError('');
+                    }}>
+                    {rangeOptionsOpen ? 'Отмена' : 'Сменить период'}
                   </button>
                 </div>
-                {showCustomPicker && (
-                  <div
-                    className="mt-2 p-2.5 rounded-lg border border-[var(--kb-border)] bg-[var(--kb-surface-muted)] text-xs space-y-2"
-                    data-testid="custom-range-picker"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <label className="flex items-center gap-1">
-                        <span className="text-[var(--kb-text-3)]">С:</span>
-                        <input
-                          type="date"
-                          data-testid="custom-range-start"
-                          value={customStartDate}
-                          onChange={(e) => setCustomStartDate(e.target.value)}
-                          className="px-2 py-1 rounded border border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-1)] text-xs"
-                        />
-                      </label>
-                      <label className="flex items-center gap-1">
-                        <span className="text-[var(--kb-text-3)]">По:</span>
-                        <input
-                          type="date"
-                          data-testid="custom-range-end"
-                          value={customEndDate}
-                          onChange={(e) => setCustomEndDate(e.target.value)}
-                          className="px-2 py-1 rounded border border-[var(--kb-border)] bg-[var(--kb-surface)] text-[var(--kb-text-1)] text-xs"
-                        />
-                      </label>
-                      <button
-                        type="button"
-                        data-testid="custom-range-apply"
-                        onClick={() => {
-                          if (!customStartDate || !customEndDate) {
-                            setCustomRangeError('Укажите обе даты');
-                            return;
-                          }
-                          if (customStartDate > customEndDate) {
-                            setCustomRangeError('Дата начала не может быть позже окончания');
-                            return;
-                          }
-                          setCustomRangeError('');
-                          const customRangeId = `custom:${customStartDate}_${customEndDate}`;
-                          setSelectedRange(customRangeId);
-                          onSelectRange?.({
-                            range_id: customRangeId,
-                            type: 'custom',
-                            start_date: customStartDate,
-                            end_date: customEndDate,
-                          });
-                        }}
-                        className="px-3 py-1 bg-[var(--kb-primary)] text-white rounded font-medium hover:opacity-90 transition-opacity"
-                      >
-                        Применить
+                <div id={rangeOptionsId} hidden={!rangeOptionsOpen}>
+                  <div className="shopping-period-options" role="group" aria-label="Период покупок">
+                    {weeksList.map((week, index) => (
+                      <button key={week.id} type="button" aria-pressed={selectedRange === week.id}
+                        data-testid={`shopping-range-${week.id}`}
+                        onClick={() => applyRange({ range_id: week.id, type: 'week', week_index: index })}>
+                        {week.label}
                       </button>
+                    ))}
+                    <button type="button" aria-pressed={selectedRange === 'all'} data-testid="shopping-range-all"
+                      onClick={() => applyRange({ range_id: 'all', type: 'all' })}>
+                      {wholeMonthLabel}
+                    </button>
+                    <button type="button" aria-expanded={showCustomPicker} aria-controls={customPickerId}
+                      data-testid="shopping-range-custom"
+                      onClick={() => {
+                        setDraftStartDate(customStartDate);
+                        setDraftEndDate(customEndDate);
+                        setCustomRangeError('');
+                        setShowCustomPicker(!showCustomPicker);
+                      }}>
+                      Свой диапазон
+                    </button>
+                  </div>
+                  <div id={customPickerId} hidden={!showCustomPicker}
+                    className="shopping-period-dates" data-testid="custom-range-picker">
+                    <div>
+                      <label>
+                        <span>С</span>
+                        <input type="date" data-testid="custom-range-start" value={draftStartDate}
+                          onChange={event => setDraftStartDate(event.target.value)} />
+                      </label>
+                      <label>
+                        <span>По</span>
+                        <input type="date" data-testid="custom-range-end" value={draftEndDate}
+                          onChange={event => setDraftEndDate(event.target.value)} />
+                      </label>
                     </div>
+                    <button type="button" data-testid="custom-range-apply" className="recipe-shopping-action kb-focus-ring"
+                      onClick={() => {
+                        if (!draftStartDate || !draftEndDate) {
+                          setCustomRangeError('Укажите обе даты');
+                          return;
+                        }
+                        if (draftStartDate > draftEndDate) {
+                          setCustomRangeError('Дата начала не может быть позже окончания');
+                          return;
+                        }
+                        applyRange({
+                          range_id: `custom:${draftStartDate}_${draftEndDate}`,
+                          type: 'custom',
+                          start_date: draftStartDate,
+                          end_date: draftEndDate,
+                        });
+                      }}>
+                      Применить
+                    </button>
                     {customRangeError && (
-                      <p className="text-red-600 text-xs" data-testid="custom-range-error">
-                        {customRangeError}
-                      </p>
+                      <p role="alert" className="text-[var(--kb-text-1)]" data-testid="custom-range-error">{customRangeError}</p>
                     )}
                   </div>
-                )}
+                </div>
               </div>
             )}
 

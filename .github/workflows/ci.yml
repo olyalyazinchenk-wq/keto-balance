@@ -111,7 +111,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           npx playwright install --with-deps chromium
-          npx playwright test --config=playwright.full.config.ts --reporter=line tests/e2e/editorial.spec.ts tests/e2e/persistence.spec.ts
+          npx playwright test --config=playwright.full.config.ts --reporter=line tests/e2e/editorial.spec.ts tests/e2e/persistence.spec.ts tests/e2e/shopping-range-e2e.spec.ts
 
   deploy-spec-checks:
     name: Docker Compose Production Deployment Specs

@@ -46,7 +46,7 @@ export interface FoodFirstAppProps {
   onToggleCheckedInStore: (id: string) => void;
   onToggleAlreadyHave: (id: string) => void;
   onAddCustomItem: (item: PilotShoppingItemV1) => void;
-  onAddRecipeToShopping?: (recipe: RecipeViewModel, portions: 1 | 2 | 4) => void;
+  onAddRecipeToShopping?: (recipe: RecipeViewModel, portions: 1 | 2 | 4) => Promise<boolean>;
   onSelectShoppingRange?: (range: ShoppingRange) => void;
   onToggleRangeChecked?: (rangeKey: string, itemId: string) => void;
   onOpenSettings?: (targetApproach?: 'keto' | 'carnivore') => void;
@@ -457,6 +457,11 @@ export function FoodFirstApp({
 
   // Active recipe for RecipeScreen and eligibility check
   const [recipePortions, setRecipePortions] = useState<Record<string, 1 | 2 | 4>>({});
+  const [recipeShoppingConfirmation, setRecipeShoppingConfirmation] = useState<{
+    recipeId: string;
+    yieldNote: string;
+    saved: boolean;
+  } | null>(null);
   const displayedRecipeId = currentRoute.recipeId || activeRecipeId;
   const activeRecipe = recipesById[displayedRecipeId];
   const isRecipeEligible = useMemo(() => {
@@ -610,7 +615,15 @@ export function FoodFirstApp({
             checkedSteps={state.checked_steps}
             onToggleStep={onToggleStep}
             onOpenShopping={onAddRecipeToShopping && (portions => {
-              onAddRecipeToShopping(activeRecipe, portions);
+              const confirmation = {
+                recipeId: activeRecipe.id,
+                yieldNote: activeRecipe.portionsVariants[portions]?.yieldNote ?? '',
+                saved: false,
+              };
+              setRecipeShoppingConfirmation(confirmation);
+              void onAddRecipeToShopping(activeRecipe, portions).then(saved => {
+                setRecipeShoppingConfirmation(current => current === confirmation ? { ...confirmation, saved } : current);
+              });
               navigateTo('shopping', activeRecipe.id);
             })}
             activeTimer={activeTimer}
@@ -643,6 +656,8 @@ export function FoodFirstApp({
           key={currentRoute.recipeId}
           items={shoppingItems.filter(item => item.id.startsWith(recipeShoppingPrefix(currentRoute.recipeId ?? '')))}
           menuTitle={activeRecipe?.title ?? 'Покупки для блюда'}
+          addedRecipeYield={recipeShoppingConfirmation?.recipeId === currentRoute.recipeId && recipeShoppingConfirmation.saved
+            ? recipeShoppingConfirmation.yieldNote : undefined}
           isStaleAfterMenuEdit={false}
           onRefreshShoppingFromMenu={onRefreshShopping}
           onToggleCheckedInStore={onToggleCheckedInStore}
