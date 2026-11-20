@@ -139,9 +139,7 @@ test('Short dinner journey keeps focus, ingredient checks and recipe shopping in
   await expect(shopping.getByRole('status').filter({ hasText: 'Добавлено в покупки' })).toContainText('2 порции');
   await page.screenshot({ path: testInfo.outputPath('04-shopping.png') });
 
-  await page.route('**/tuna-egg-cucumber-salad.webp', route => route.abort());
   await page.getByTestId('app-back-button').click();
-  await expect(recipe.getByText('Фото блюда готовится')).toBeVisible();
   await expect(recipe.getByTestId('recipe-portions-2x')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('app-back-button').click();
   await expect(compass.getByText('Красивый ужин', { exact: true })).toBeVisible();
@@ -157,4 +155,13 @@ test('Short dinner journey keeps focus, ingredient checks and recipe shopping in
   await shoppingButton.click();
   await expect(page.getByTestId('pilot-sync-banner')).toContainText('Не удалось сохранить');
   await expect(shopping.getByText(/Добавлено в покупки/)).toHaveCount(0);
+
+  // In a fresh context the browser cannot display the previously decoded image.
+  const { page: reopened } = await createSession({ id: 970840, first_name: 'Editorial' });
+  await reopened.route('**/tuna-egg-cucumber-salad.webp', route => route.fulfill({ status: 404 }));
+  await reopened.goto('/');
+  await reopened.getByRole('button', { name: 'Подобрать блюдо' }).click();
+  await reopened.getByRole('button', { name: 'Хочу красивый ужин' }).click();
+  await reopened.getByRole('button', { name: /Салат с тунцом, яйцом и огурцом/ }).click();
+  await expect(reopened.getByTestId('food-recipe-screen').getByText('Фото блюда готовится')).toBeVisible();
 });
