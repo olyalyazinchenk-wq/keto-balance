@@ -1,0 +1,520 @@
+[
+  {
+    "file": "avocado-flatbread.jpg",
+    "status": 200,
+    "bytes": 100576,
+    "content_type": "image/jpeg",
+    "sha256": "1ca24ca212ec14cc7403f55f97396098872f522d969ac80a962743832f79faca"
+  },
+  {
+    "file": "avocado-flatbread.webp",
+    "status": 200,
+    "bytes": 87286,
+    "content_type": "image/webp",
+    "sha256": "a321656c7292e8ebbee362836b6c2eed69dd7231c6cb75bef6f61823648332e4"
+  },
+  {
+    "file": "baked-cottage-cheese.jpg",
+    "status": 200,
+    "bytes": 86153,
+    "content_type": "image/jpeg",
+    "sha256": "d5f865abea523ba12a8b1f11f1b5950309467da1ab2eee2eacce709214609fd4"
+  },
+  {
+    "file": "baked-cottage-cheese.webp",
+    "status": 200,
+    "bytes": 89428,
+    "content_type": "image/webp",
+    "sha256": "65b091e53c756086fea2eb6bf70841487479ab8738791563c162b04d18a24dc6"
+  },
+  {
+    "file": "chicken-zucchini-herbs.jpg",
+    "status": 200,
+    "bytes": 145645,
+    "content_type": "image/jpeg",
+    "sha256": "abbc260374e0ef5da6b6b2fd4794d112b05d5a7f59f6e0cdce9eae0604bbacc1"
+  },
+  {
+    "file": "chicken-zucchini-herbs.webp",
+    "status": 200,
+    "bytes": 112026,
+    "content_type": "image/webp",
+    "sha256": "472c4d194988c3a962720e9d49aa6f1d728a09ce4976dbdcedbc8c8544d2db46"
+  },
+  {
+    "file": "egg-muffins.jpg",
+    "status": 200,
+    "bytes": 128118,
+    "content_type": "image/jpeg",
+    "sha256": "77bd6761fff3bc6d7ddf978be077a4575b3ee5773711d8a8df5e4eafe9f05d32"
+  },
+  {
+    "file": "egg-muffins.webp",
+    "status": 200,
+    "bytes": 161222,
+    "content_type": "image/webp",
+    "sha256": "7e4cbef369ca764af4c45bb4e6b1cf1691d1d308f7362c7532ce65fea85e8f07"
+  },
+  {
+    "file": "eggs-bacon-spinach.jpg",
+    "status": 200,
+    "bytes": 134127,
+    "content_type": "image/jpeg",
+    "sha256": "04e6cc1e5c4c344fb8017bc7a5837d80bb0fdabb1ed982bfb361ccf291ddd535"
+  },
+  {
+    "file": "eggs-bacon-spinach.webp",
+    "status": 200,
+    "bytes": 162674,
+    "content_type": "image/webp",
+    "sha256": "cec4a515b2cca4be7774059ad7bf85e934dfe0a7e7372d852e80b2ba2d738a9c"
+  },
+  {
+    "file": "hero.jpg",
+    "status": 200,
+    "bytes": 94643,
+    "content_type": "image/jpeg",
+    "sha256": "29087c6d3dbf7c12d03d7e34d44bb3e15a944543e81a8e47dafc90e22c998ae9"
+  },
+  {
+    "file": "hero.webp",
+    "status": 200,
+    "bytes": 147034,
+    "content_type": "image/webp",
+    "sha256": "dce6267f00013f661dc4bd8444862d69729cdd242a7d7600595333335da943d3"
+  },
+  {
+    "file": "k10.jpg",
+    "status": 200,
+    "bytes": 118768,
+    "content_type": "image/jpeg",
+    "sha256": "3b464938b58ea9dbf2e5352f81849b05b0650b817aa148e6b3527d207def1446"
+  },
+  {
+    "file": "k10.webp",
+    "status": 200,
+    "bytes": 164274,
+    "content_type": "image/webp",
+    "sha256": "cf9f6846c16d1d9e16f06a897d32b92c5e9bb38004b32c68682cfe118c955f2c"
+  },
+  {
+    "file": "k11.jpg",
+    "status": 200,
+    "bytes": 103614,
+    "content_type": "image/jpeg",
+    "sha256": "dc633521f5a565502057ed22835ee977b1b763f515d54a5ee13c3957e9bb730c"
+  },
+  {
+    "file": "k11.webp",
+    "status": 200,
+    "bytes": 132472,
+    "content_type": "image/webp",
+    "sha256": "b507f1ad787e8ed9ea9209b2e4e03c50e04414e2f72dd6a2a0c3e45d5b864fec"
+  },
+  {
+    "file": "k12.jpg",
+    "status": 200,
+    "bytes": 107924,
+    "content_type": "image/jpeg",
+    "sha256": "f7f3774eecf36c236eff6996a6d22597876d80ada2ff34a20d5c603460ed641a"
+  },
+  {
+    "file": "k12.webp",
+    "status": 200,
+    "bytes": 142506,
+    "content_type": "image/webp",
+    "sha256": "3a0cdc94a1eee7577413924841387148af483248c84eec78626d114ab7ce5314"
+  },
+  {
+    "file": "k13.jpg",
+    "status": 200,
+    "bytes": 111935,
+    "content_type": "image/jpeg",
+    "sha256": "0aa21b75cd96e6b632b429ead11c6af9de160e67ed78f0f32c30e4f7386dc658"
+  },
+  {
+    "file": "k13.webp",
+    "status": 200,
+    "bytes": 151390,
+    "content_type": "image/webp",
+    "sha256": "a93820af0836a4d9203c0a9a998ffdf4db4422dca68a93747ee4c56921ede588"
+  },
+  {
+    "file": "k14.jpg",
+    "status": 200,
+    "bytes": 124164,
+    "content_type": "image/jpeg",
+    "sha256": "639d1c27166d0d279d11ca8c691d41d13ba1f64167987e0eda3f65dd6481d159"
+  },
+  {
+    "file": "k14.webp",
+    "status": 200,
+    "bytes": 171816,
+    "content_type": "image/webp",
+    "sha256": "15ff3cc20fc3b52e15f0593c79707b2fae90f191ff6e548c44d71c70a46aaee3"
+  },
+  {
+    "file": "k15.jpg",
+    "status": 200,
+    "bytes": 121371,
+    "content_type": "image/jpeg",
+    "sha256": "08fe81dbaaa47c6c65f26fb712ae95c7ade57229bcd211b7f3014db31195edf8"
+  },
+  {
+    "file": "k15.webp",
+    "status": 200,
+    "bytes": 168134,
+    "content_type": "image/webp",
+    "sha256": "9a4dc17539d38e3f6d22b8c5c8cf307a717a66200fa94a8f4d63edb5f6be2d95"
+  },
+  {
+    "file": "k16.jpg",
+    "status": 200,
+    "bytes": 129876,
+    "content_type": "image/jpeg",
+    "sha256": "7ad7e30b9b763cbcd4b63f8ff14938911061ad0cddc53994854fcbd0d99b0219"
+  },
+  {
+    "file": "k16.webp",
+    "status": 200,
+    "bytes": 188210,
+    "content_type": "image/webp",
+    "sha256": "6249df19f3fa44830b0f91a9534f6bcac9aed987f30b8ea5941f7a82f066f0b0"
+  },
+  {
+    "file": "k17.jpg",
+    "status": 200,
+    "bytes": 120509,
+    "content_type": "image/jpeg",
+    "sha256": "5d1ade84ee6afa59f72dac53b28db13f03f783ea3b1f89db60ee450d42f3924a"
+  },
+  {
+    "file": "k17.webp",
+    "status": 200,
+    "bytes": 178416,
+    "content_type": "image/webp",
+    "sha256": "517825e5c1334969e662ea81a536cd92839f596c67cfd7c83c575b0011ee3b63"
+  },
+  {
+    "file": "k18.jpg",
+    "status": 200,
+    "bytes": 127782,
+    "content_type": "image/jpeg",
+    "sha256": "8fc374ee1afa3f73dac3528c0300db659e9a414deff417dcbaaadd531ca67cbc"
+  },
+  {
+    "file": "k18.webp",
+    "status": 200,
+    "bytes": 193652,
+    "content_type": "image/webp",
+    "sha256": "8729fe77cf31fea028a23512eecc6f49795c59b6945652d00c10a53d2f12b8df"
+  },
+  {
+    "file": "k19.jpg",
+    "status": 200,
+    "bytes": 117683,
+    "content_type": "image/jpeg",
+    "sha256": "3b2791877b512560f0782d039faa3625de4fdfd8953992bd10e2ef12bccc2b19"
+  },
+  {
+    "file": "k19.webp",
+    "status": 200,
+    "bytes": 145574,
+    "content_type": "image/webp",
+    "sha256": "77717fb12c92e54791b020927a56cff7ad07e4382ebe01a7e71ed967176dfbf7"
+  },
+  {
+    "file": "k20.jpg",
+    "status": 200,
+    "bytes": 118981,
+    "content_type": "image/jpeg",
+    "sha256": "c5c0af5ada5c7619f42dcecd57af96c40e00356d4507e4883716ff664b22e386"
+  },
+  {
+    "file": "k20.webp",
+    "status": 200,
+    "bytes": 164228,
+    "content_type": "image/webp",
+    "sha256": "b8e4f521449310d55248ca9e1513cef1fc2de33def57a317ada04077115a1bc8"
+  },
+  {
+    "file": "k21.jpg",
+    "status": 200,
+    "bytes": 134847,
+    "content_type": "image/jpeg",
+    "sha256": "100ae27c0a2204295762cd259ca82dc63e3bdad9638bdaab597f55d593f76aac"
+  },
+  {
+    "file": "k21.webp",
+    "status": 200,
+    "bytes": 204582,
+    "content_type": "image/webp",
+    "sha256": "0c6b8b9ca94c5fe358e30f48bc55d0f7d8abfbe1153773e3c02120bcf5edbe2e"
+  },
+  {
+    "file": "k22.jpg",
+    "status": 200,
+    "bytes": 133736,
+    "content_type": "image/jpeg",
+    "sha256": "15f0944f3c66dd98c68ecb30d355bab45cc01bdb0720813c85f02d754f42a017"
+  },
+  {
+    "file": "k22.webp",
+    "status": 200,
+    "bytes": 193302,
+    "content_type": "image/webp",
+    "sha256": "895ad01009b03298d1f5cb935232ef611b343c0e0b9c376520a005f97d23de78"
+  },
+  {
+    "file": "k23.jpg",
+    "status": 200,
+    "bytes": 150761,
+    "content_type": "image/jpeg",
+    "sha256": "7156978b4dc0f97749ab231d769b4f7fada114ca9bbd1bbc9d93f380873f6897"
+  },
+  {
+    "file": "k23.webp",
+    "status": 200,
+    "bytes": 230930,
+    "content_type": "image/webp",
+    "sha256": "8e5f4d10875babaa3978e857efe0393347f4d2f6c56915593ac24c927032362d"
+  },
+  {
+    "file": "k24.jpg",
+    "status": 200,
+    "bytes": 119558,
+    "content_type": "image/jpeg",
+    "sha256": "183d078ab7b000762691020175cb532fc0f08fa191d4759aa92241a366f40b40"
+  },
+  {
+    "file": "k24.webp",
+    "status": 200,
+    "bytes": 163816,
+    "content_type": "image/webp",
+    "sha256": "e5bbe27c49d8602494a731853c923537aef9599c5346356d3be879912940fc60"
+  },
+  {
+    "file": "k25.jpg",
+    "status": 200,
+    "bytes": 136385,
+    "content_type": "image/jpeg",
+    "sha256": "69ee997814d6eaf0b0c97e6ffec9a55229fc4308ac94de8e6dfe650a9c59e8a1"
+  },
+  {
+    "file": "k25.webp",
+    "status": 200,
+    "bytes": 193614,
+    "content_type": "image/webp",
+    "sha256": "34d08d32564ed8b098aa9711a629cca877cf4df137e18e1e1bc06c84c22655b3"
+  },
+  {
+    "file": "k26.jpg",
+    "status": 200,
+    "bytes": 140079,
+    "content_type": "image/jpeg",
+    "sha256": "642f7aab9ec9fdfb090463177c20fe4111238a1779a2465e4837a20718e1105b"
+  },
+  {
+    "file": "k26.webp",
+    "status": 200,
+    "bytes": 201836,
+    "content_type": "image/webp",
+    "sha256": "7f5f80dd9d67aa8ce6b17394643064aa22a2db5d372af7fa3bad14621d44e12b"
+  },
+  {
+    "file": "k27.jpg",
+    "status": 200,
+    "bytes": 123911,
+    "content_type": "image/jpeg",
+    "sha256": "3adc8fd6345eeea8dc58bf05616255dfeea1dc4629a87fe6a3aaa32bec6d128d"
+  },
+  {
+    "file": "k27.webp",
+    "status": 200,
+    "bytes": 166164,
+    "content_type": "image/webp",
+    "sha256": "f6f38ea2c07e7c58dd1766803ab25e58cb412b7d18d50a60568e115bf829c8a3"
+  },
+  {
+    "file": "k29.jpg",
+    "status": 200,
+    "bytes": 145800,
+    "content_type": "image/jpeg",
+    "sha256": "0fc4b6d44ab6839ee1bd09807fa5aa8ae5c0819de9edd5e36b5dc1da00da661d"
+  },
+  {
+    "file": "k29.webp",
+    "status": 200,
+    "bytes": 225392,
+    "content_type": "image/webp",
+    "sha256": "ada7126171f6da0a631c2064719359626d9a6f4b70a3e40e1c4f52d2623b4dca"
+  },
+  {
+    "file": "k30.jpg",
+    "status": 200,
+    "bytes": 123355,
+    "content_type": "image/jpeg",
+    "sha256": "33b9587b91eba010cd8a2f35757ec877440465531e5cee8a4f6d4bd4febcd67d"
+  },
+  {
+    "file": "k30.webp",
+    "status": 200,
+    "bytes": 167406,
+    "content_type": "image/webp",
+    "sha256": "d4aa8d8b97f3e7b13ffe2e1c67efffbeb0f522f36b4bea4345f673ea62b83323"
+  },
+  {
+    "file": "k31.jpg",
+    "status": 200,
+    "bytes": 137995,
+    "content_type": "image/jpeg",
+    "sha256": "771c5f0d54955b45a54faf2fa55a8865d125fd8657d0421b53a608f78c5559b5"
+  },
+  {
+    "file": "k31.webp",
+    "status": 200,
+    "bytes": 185588,
+    "content_type": "image/webp",
+    "sha256": "8d73b48ee405781b3a4022b960af81406e5c243877da951f88f26fc857a495b0"
+  },
+  {
+    "file": "k32.jpg",
+    "status": 200,
+    "bytes": 150718,
+    "content_type": "image/jpeg",
+    "sha256": "351ff4632bb60f52ee9d7c41b3f07e7a8094b9b62203f89773e7f21071a1ec3f"
+  },
+  {
+    "file": "k32.webp",
+    "status": 200,
+    "bytes": 223348,
+    "content_type": "image/webp",
+    "sha256": "1cc0ea53b048693266f536358e6d0c3c012841298baa7fda0750960db4e1a3cc"
+  },
+  {
+    "file": "k33.jpg",
+    "status": 200,
+    "bytes": 137275,
+    "content_type": "image/jpeg",
+    "sha256": "dd5b13f5a8a1c3f1d1289c18afa0a81de04a5010e64a2c18001099ec1d7873f4"
+  },
+  {
+    "file": "k33.webp",
+    "status": 200,
+    "bytes": 186424,
+    "content_type": "image/webp",
+    "sha256": "24fb2a4470c7473e3b650b1fd4e925cb818853b64ac965653a3a28e5e6158690"
+  },
+  {
+    "file": "k34.jpg",
+    "status": 200,
+    "bytes": 108298,
+    "content_type": "image/jpeg",
+    "sha256": "bb1c785e878a7e4906546cfc8226f5231ff72b64bd5d35d1949b781133fa4003"
+  },
+  {
+    "file": "k34.webp",
+    "status": 200,
+    "bytes": 131760,
+    "content_type": "image/webp",
+    "sha256": "347744f0bb1f64e5d848d3b5cf17912a1a56cc940b8dc3a11963a2e5667442d3"
+  },
+  {
+    "file": "k35.jpg",
+    "status": 200,
+    "bytes": 144036,
+    "content_type": "image/jpeg",
+    "sha256": "0ff3645ff329a85dc0b580ffab45834ce41c6958c16d46f76687f712f9543580"
+  },
+  {
+    "file": "k35.webp",
+    "status": 200,
+    "bytes": 213640,
+    "content_type": "image/webp",
+    "sha256": "e01d636a087a1e37417c7fd6f3644c617dd21464a13e4de781c046a42298d3ee"
+  },
+  {
+    "file": "k36.jpg",
+    "status": 200,
+    "bytes": 106797,
+    "content_type": "image/jpeg",
+    "sha256": "428fb66089c76dea5cb3c9dcc7d788fc2cf48d74a7c5d9049193c64706c93755"
+  },
+  {
+    "file": "k36.webp",
+    "status": 200,
+    "bytes": 144988,
+    "content_type": "image/webp",
+    "sha256": "64498a550a056876dfc2be98f6b53a42952701526dadc56db44e4b46c773f9c8"
+  },
+  {
+    "file": "k6.jpg",
+    "status": 200,
+    "bytes": 114806,
+    "content_type": "image/jpeg",
+    "sha256": "5faed1e4e284442650f99ee326ce5c324056db2976216d2f0c64d3be24f70523"
+  },
+  {
+    "file": "k6.webp",
+    "status": 200,
+    "bytes": 150144,
+    "content_type": "image/webp",
+    "sha256": "be42064bdb6d61ee87fa09e47bec55991fb08b7c416296fdaf7dc63e0f607c2a"
+  },
+  {
+    "file": "k7.jpg",
+    "status": 200,
+    "bytes": 134854,
+    "content_type": "image/jpeg",
+    "sha256": "9884a972c43b7bf0717f3861975c49814d66a96adb55da3375981ef64c794bb0"
+  },
+  {
+    "file": "k7.webp",
+    "status": 200,
+    "bytes": 203144,
+    "content_type": "image/webp",
+    "sha256": "c8f549455ab1778b9a952785f48bfad98188c9e5b0d1c6373ff9db27d8f68fc6"
+  },
+  {
+    "file": "omelet-cheese-herbs.jpg",
+    "status": 200,
+    "bytes": 118214,
+    "content_type": "image/jpeg",
+    "sha256": "fec430cc5b59e11d41719b70453975bb28be6debf087ce3c4144f9022714bf9c"
+  },
+  {
+    "file": "omelet-cheese-herbs.webp",
+    "status": 200,
+    "bytes": 114620,
+    "content_type": "image/webp",
+    "sha256": "d28005a8900b10e7cb3316038dc0ed98650de67da5f6f23cade55a2eaf2898d0"
+  },
+  {
+    "file": "tuna-egg-cucumber-salad.jpg",
+    "status": 200,
+    "bytes": 128774,
+    "content_type": "image/jpeg",
+    "sha256": "8e9ea0224d278e1ae49a8dcfedf6cd02d96897d2f385bc0e2c848d37318a1869"
+  },
+  {
+    "file": "tuna-egg-cucumber-salad.webp",
+    "status": 200,
+    "bytes": 109234,
+    "content_type": "image/webp",
+    "sha256": "d2240dd85f48a697280e56301ac59760bc0d8465468ec3f7e50134bc6ddb7ed7"
+  },
+  {
+    "file": "turkey-zucchini-patties.jpg",
+    "status": 200,
+    "bytes": 145003,
+    "content_type": "image/jpeg",
+    "sha256": "05ac1ede79297ab981bd5c1339c6d036071837b13b85b68eae1b0f883565d8a1"
+  },
+  {
+    "file": "turkey-zucchini-patties.webp",
+    "status": 200,
+    "bytes": 128614,
+    "content_type": "image/webp",
+    "sha256": "d1a6a621c665406e5f4d89de1e27baca780a233fc33a4a263ee7528be124132a"
+  }
+]

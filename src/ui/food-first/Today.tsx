@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { FoodImage } from './FoodImage';
 import type { FoodCard } from './model';
 import { ArrowRight, Clock, Check, BookOpen, Settings, Sparkles, Calendar, ShoppingBag } from './Icons';
 import { triggerHaptic } from '../../tma/telegram';
 import './today.css';
+import './food-image.css';
 import './learning-navigation.css';
 
 export interface FoodTodayProps {
@@ -28,20 +29,9 @@ export interface FoodTodayProps {
 }
 
 function FoodPhoto({ card }: { card: FoodCard }) {
-  const [failed, setFailed] = useState(false);
-  if (!card.photo || failed) return null;
-  return (
-    <img
-      className="ff-photo"
-      data-testid="food-photo"
-      src={card.photo}
-      alt={`Фотоиллюстрация: ${card.title}`}
-      width="640"
-      height="440"
-      decoding="async"
-      onError={() => setFailed(true)}
-    />
-  );
+  if (!card.photo) return null;
+  return <FoodImage className="ff-photo" data-testid="food-photo" src={card.photo}
+    alt={`Фотоиллюстрация: ${card.title}`} width="640" height="440" loading="lazy" />;
 }
 
 export function FoodToday({

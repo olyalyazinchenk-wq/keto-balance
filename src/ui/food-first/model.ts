@@ -1,3 +1,4 @@
+import { RECIPE_IMAGES } from '../../data/recipeImages';
 import type { Recipe } from '../../domain/types';
 
 export interface FoodCard {
@@ -18,19 +19,8 @@ type Source = {
 };
 
 export function photoForRecipe(recipeId: string): string | null {
-  const images: Record<string, string> = {
-    'kb-rec-eggs-avocado': '/media/food-first/hero.webp',
-    k1: '/media/food-first/eggs-bacon-spinach.webp',
-    k2: '/media/food-first/omelet-cheese-herbs.webp',
-    k3: '/media/food-first/baked-cottage-cheese.webp',
-    k4: '/media/food-first/avocado-flatbread.webp',
-    k5: '/media/food-first/egg-muffins.webp',
-    k8: '/media/food-first/tuna-egg-cucumber-salad.webp',
-    k9: '/media/food-first/turkey-zucchini-patties.webp',
-    k28: '/media/food-first/chicken-zucchini-herbs.webp',
-  };
-  if (images[recipeId]) return images[recipeId];
-  return null;
+  if (recipeId === 'kb-rec-eggs-avocado') return '/media/food-first/hero.webp';
+  return RECIPE_IMAGES[recipeId] || null;
 }
 
 export function toFoodCard(source: Source, photo: string | null = null): FoodCard {

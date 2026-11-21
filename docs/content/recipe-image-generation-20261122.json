@@ -1,0 +1,282 @@
+[
+  {
+    "id": "k6",
+    "prompt": "Creamy chicken and broccoli soup: only chicken breast, broccoli, onion, heavy cream, salt and pepper. Warm home food editorial photograph, ivory bowl on beige linen. No other ingredients.",
+    "provider": "image_gen",
+    "recipe_title": "Куриный суп с брокколи и сливками",
+    "sha256": "be42064bdb6d61ee87fa09e47bec55991fb08b7c416296fdaf7dc63e0f607c2a",
+    "source_filename": "exec-64791d99-71ff-49b4-a4aa-472001ea9c63.png",
+    "asset": "public/media/food-first/k6.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k7",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k7. Subject: Запечённая скумбрия с травами: whole baked mackerel with browned silvery skin, dill and parsley, olive oil. No side dishes. Style: warm home-food editorial photography, realistic appetizing cooked texture, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate/bowl fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no extra garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Запечённая скумбрия с лимоном и травами",
+    "sha256": "c8f549455ab1778b9a952785f48bfad98188c9e5b0d1c6373ff9db27d8f68fc6",
+    "source_filename": "exec-1c40c820-bbe7-48f4-b5dc-164e7ef05c31.png",
+    "asset": "public/media/food-first/k7.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k10",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k10. Subject: Лодочки из кабачка с фаршем и сыром: zucchini halves baked and filled with browned ground beef and onion under a golden melted hard-cheese crust. No rice, no tomato. Style: warm home-food editorial photography, realistic appetizing cooked texture, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate/bowl fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no extra garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Лодочки из кабачка с фаршем и сыром",
+    "sha256": "cf9f6846c16d1d9e16f06a897d32b92c5e9bb38004b32c68682cfe118c955f2c",
+    "source_filename": "exec-43d64c4f-9742-4363-aa69-1e9a9155903c.png",
+    "asset": "public/media/food-first/k10.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k11",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k11. Subject: Грибной крем-суп со сливками: silky beige cream of mushroom soup made of champignon mushrooms, onion, heavy cream and butter, a few cooked mushroom slices visible. No croutons, no greens. Style: warm home-food editorial photography, realistic appetizing cooked texture, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate/bowl fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no extra garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Грибной крем-суп со сливками",
+    "sha256": "b507f1ad787e8ed9ea9209b2e4e03c50e04414e2f72dd6a2a0c3e45d5b864fec",
+    "source_filename": "exec-63cc6fcb-c582-4efd-b249-98efc9ef1108.png",
+    "asset": "public/media/food-first/k11.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k12",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k12. Subject: Курица в сливочно-чесночном соусе: tender cooked chicken thigh pieces in creamy garlic sauce with hard cheese, dill and parsley. No pasta, no rice. Style: warm home-food editorial photography, realistic appetizing cooked texture, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate/bowl fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no extra garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Курица в сливочно-чесночном соусе",
+    "sha256": "3a0cdc94a1eee7577413924841387148af483248c84eec78626d114ab7ce5314",
+    "source_filename": "exec-b0b59412-2dbf-47a3-ab75-8da2cdabd665.png",
+    "asset": "public/media/food-first/k12.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k13",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k13. Subject: Запечённая горбуша под сыром: baked pink salmon fillet with a golden melted hard-cheese and sour-cream crust, visible pink flaky cut edge. No vegetables or side dishes. Style: warm home-food editorial photography, realistic appetizing cooked texture, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate/bowl fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no extra garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Запечённая горбуша под сыром",
+    "sha256": "a93820af0836a4d9203c0a9a998ffdf4db4422dca68a93747ee4c56921ede588",
+    "source_filename": "exec-5472b98d-382b-44e5-9225-18f8957a7dc2.png",
+    "asset": "public/media/food-first/k13.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k14",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k14. Subject: Говядина, тушённая с капустой: juicy browned beef chunks slow braised with finely shredded pale green cabbage and onions in ghee. No carrots, no potatoes, no tomatoes. Style: warm home-food editorial photography, realistic appetizing cooked texture, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate/bowl fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no extra garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Говядина, тушённая с капустой",
+    "sha256": "15ff3cc20fc3b52e15f0593c79707b2fae90f191ff6e548c44d71c70a46aaee3",
+    "source_filename": "exec-de611167-f444-4987-a78b-9e60b8d7bdbe.png",
+    "asset": "public/media/food-first/k14.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k15",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k15. Subject: Свинина с квашеной капустой: oven-baked juicy browned pork chunks with sauerkraut and onion, ghee. Served in a shallow ivory baking dish. No potatoes, no carrots. Style: warm home-food editorial photography, realistic cooked textures, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no additional garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Свинина с квашеной капустой (один противень)",
+    "sha256": "9a4dc17539d38e3f6d22b8c5c8cf307a717a66200fa94a8f4d63edb5f6be2d95",
+    "source_filename": "exec-21dd7f3a-b83c-4f89-9a91-b86b67aead52.png",
+    "asset": "public/media/food-first/k15.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k16",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k16. Subject: Фаршированные перцы по-кето: oven-baked sweet bell pepper halves filled with ground beef and onion, melted hard cheese on top. NO rice, no tomato sauce. Style: warm home-food editorial photography, realistic cooked textures, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no additional garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Фаршированные перцы «по-кето»",
+    "sha256": "6249df19f3fa44830b0f91a9534f6bcac9aed987f30b8ea5941f7a82f066f0b0",
+    "source_filename": "exec-10460a1a-d150-4638-a912-5f0351340749.png",
+    "asset": "public/media/food-first/k16.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k17",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k17. Subject: Запеканка как лазанья с кабачком: a rectangular serving of baked zucchini lasagna, visibly layered thin zucchini ribbons, browned ground beef, sour cream and golden hard cheese. Absolutely NO pasta, no tomatoes. Style: warm home-food editorial photography, realistic cooked textures, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no additional garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Запеканка «как лазанья» с кабачком",
+    "sha256": "517825e5c1334969e662ea81a536cd92839f596c67cfd7c83c575b0011ee3b63",
+    "source_filename": "exec-8ff88b54-c6c3-4adf-a6f7-016448a9de1d.png",
+    "asset": "public/media/food-first/k17.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k18",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photograph for a keto recipe app, k18. Subject: Сырные кето-крекеры: small thin golden-brown crispy cheese crackers baked from hard cheese, egg and coconut flour, irregular square shapes. No wheat, seeds or garnish. Style: warm home-food editorial photography, natural side window light, matte ivory ceramic plate on light stone with beige linen. Camera 45 degrees, whole plate within frame, centered with margins, landscape 3:2, realistic homemade food. Show only listed ingredients. No text, logos, watermark, hands, packaging or collages.",
+    "provider": "image_gen",
+    "recipe_title": "Сырные кето-крекеры",
+    "sha256": "8729fe77cf31fea028a23512eecc6f49795c59b6945652d00c10a53d2f12b8df",
+    "source_filename": "exec-19ad4f34-0902-495d-aac4-765ee76b6813.png",
+    "asset": "public/media/food-first/k18.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k19",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photograph for a keto recipe app, k19. Subject: Яйца фаршированные сыром и зеленью: hard boiled egg halves filled with creamy mashed yolk, finely grated hard cheese, sour cream, dill and parsley. No paprika or other garnish. Style: warm home-food editorial photography, natural side window light, matte ivory ceramic plate on light stone with beige linen. Camera 45 degrees, whole plate within frame, centered with margins, landscape 3:2, realistic homemade food. Show only listed ingredients. No text, logos, watermark, hands, packaging or collages.",
+    "provider": "image_gen",
+    "recipe_title": "Яйца, фаршированные сыром и зеленью",
+    "sha256": "77717fb12c92e54791b020927a56cff7ad07e4382ebe01a7e71ed967176dfbf7",
+    "source_filename": "exec-4013bff9-0fbd-4bff-86d4-838ff4e76c58.png",
+    "asset": "public/media/food-first/k19.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k20",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photograph for a keto recipe app, k20. Subject: Кето-брауни на кокосовой муке: three dense moist dark cocoa brownies made from coconut flour, cocoa powder, eggs, butter and erythritol, slightly crackled dark chocolate crust. No nuts, fruit, flour dust or icing. Style: warm home-food editorial photography, natural side window light, matte ivory ceramic plate on light stone with beige linen. Camera 45 degrees, whole plate within frame, centered with margins, landscape 3:2, realistic homemade food. Show only listed ingredients. No text, logos, watermark, hands, packaging or collages.",
+    "provider": "image_gen",
+    "recipe_title": "Кето-брауни на кокосовой муке",
+    "sha256": "b8e4f521449310d55248ca9e1513cef1fc2de33def57a317ada04077115a1bc8",
+    "source_filename": "exec-a41d5252-6598-407b-b30b-925c63f17bba.png",
+    "asset": "public/media/food-first/k20.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k21",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photograph for a keto recipe app, k21. Subject: Кокосовые шарики с какао: small round dark cocoa coconut-flour truffles made of coconut flour, cocoa powder, heavy cream and erythritol, lightly dusted with cocoa. No shredded coconut flakes, nuts or garnish. Style: warm home-food editorial photography, natural side window light, matte ivory ceramic plate on light stone with beige linen. Camera 45 degrees, whole plate within frame, centered with margins, landscape 3:2, realistic homemade food. Show only listed ingredients. No text, logos, watermark, hands, packaging or collages.",
+    "provider": "image_gen",
+    "recipe_title": "Кокосовые шарики с какао",
+    "sha256": "0c6b8b9ca94c5fe358e30f48bc55d0f7d8abfbe1153773e3c02120bcf5edbe2e",
+    "source_filename": "exec-b1ff03d6-e6bf-4a2e-a293-28e5e4d2e43b.png",
+    "asset": "public/media/food-first/k21.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k22",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe photo for keto meal app, k22. Subject: Сливочно-сырный суп с беконом и брокколи: golden cream-cheese and cheddar soup with bright green broccoli florets and crisp bacon bits, chicken broth and heavy cream. No potatoes, carrots or croutons. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate or bowl on beige linen and light stone. 45 degree camera, entire dish centered with margins for square crop, landscape 3:2. Only specified recipe ingredients, realistic home cooking. No words, logos, watermark, hands, packaging, collage or additional side dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Сливочно-сырный суп с беконом и брокколи",
+    "sha256": "895ad01009b03298d1f5cb935232ef611b343c0e0b9c376520a005f97d23de78",
+    "source_filename": "exec-df2e174a-fdba-425e-9e8c-dc154a233cf5.png",
+    "asset": "public/media/food-first/k22.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k23",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe photo for keto meal app, k23. Subject: Кето солянка мясная: reddish clear beef broth with cooked beef pieces, smoked bacon, sausage slices, pickled cucumber and olives. Small lemon slice and dill permitted. No potatoes, carrots or bread. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate or bowl on beige linen and light stone. 45 degree camera, entire dish centered with margins for square crop, landscape 3:2. Only specified recipe ingredients, realistic home cooking. No words, logos, watermark, hands, packaging, collage or additional side dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Кето-солянка мясная сборная",
+    "sha256": "8e5f4d10875babaa3978e857efe0393347f4d2f6c56915593ac24c927032362d",
+    "source_filename": "exec-060a96a1-aa6b-41f0-9d02-e52a98ae3a27.png",
+    "asset": "public/media/food-first/k23.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k24",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe photo for keto meal app, k24. Subject: Том Ям с креветками на кокосовом молоке: coral-orange coconut-milk tom yum soup with peeled shrimp and champignon slices, lime wedge and fresh cilantro. No rice, noodles or other seafood. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate or bowl on beige linen and light stone. 45 degree camera, entire dish centered with margins for square crop, landscape 3:2. Only specified recipe ingredients, realistic home cooking. No words, logos, watermark, hands, packaging, collage or additional side dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Том Ям с морепродуктами на кокосовом молоке",
+    "sha256": "e5bbe27c49d8602494a731853c923537aef9599c5346356d3be879912940fc60",
+    "source_filename": "exec-e2106709-d2c1-414c-aa79-0fe11a504e6e.png",
+    "asset": "public/media/food-first/k24.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k25",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k25. Subject: Кето Цезарь с курицей и пармезаном: romaine lettuce, grilled chicken breast slices, crispy bacon, finely grated parmesan and creamy keto mayonnaise garlic lemon dressing. No bread, no croutons, no tomatoes. Style: warm home-food editorial photography, realistic cooked textures, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no additional garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Кето «Цезарь» с курицей и пармезаном",
+    "sha256": "34d08d32564ed8b098aa9711a629cca877cf4df137e18e1e1bc06c84c22655b3",
+    "source_filename": "exec-05d93dbb-309e-46ff-a035-df51ba822fe6.png",
+    "asset": "public/media/food-first/k25.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k26",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe photo for keto meal app, k26. Subject: Греческий салат: chopped fresh cucumber, white feta cubes, dark Kalamata olives and thin red onion slices, olive oil and dried oregano. IMPORTANT no tomatoes, peppers or lettuce because absent from this exact recipe. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate or bowl on beige linen and light stone. 45 degree camera, entire dish centered with margins for square crop, landscape 3:2. Only specified recipe ingredients, realistic home cooking. No words, logos, watermark, hands, packaging, collage or additional side dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Греческий салат с оливками и сыром фета",
+    "sha256": "7f5f80dd9d67aa8ce6b17394643064aa22a2db5d372af7fa3bad14621d44e12b",
+    "source_filename": "exec-8226e736-669f-4d43-b1ef-b5aaecf21399.png",
+    "asset": "public/media/food-first/k26.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k27",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe food photograph for a keto meal app, k27. Subject: Индейка со шпинатом на сковороде: thin sauteed turkey breast strips tossed with wilted spinach, olive oil and garlic. No sauce, no cheese, no side dishes. Style: warm home-food editorial photography, realistic cooked textures, natural side window light, ivory ceramic dish on light stone with beige linen. View at 45 degrees. Entire plate fully inside frame, centered, ample margins for square crop. Landscape 3:2. Only recipe ingredients, no additional garnish. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Индейка со шпинатом на сковороде",
+    "sha256": "f6f38ea2c07e7c58dd1766803ab25e58cb412b7d18d50a60568e115bf829c8a3",
+    "source_filename": "exec-5896a0c4-a21b-41f3-b71a-33cf3f193fe4.png",
+    "asset": "public/media/food-first/k27.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k29",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe photo for keto meal app, k29. Subject: Говядина с шампиньонами: browned beef strips sauteed with sliced champignon mushrooms and soft onion in olive oil, natural pan juices. No cream, starch, rice, carrots or garnish. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate or bowl on beige linen and light stone. 45 degree camera, entire dish centered with margins for square crop, landscape 3:2. Only specified recipe ingredients, realistic home cooking. No words, logos, watermark, hands, packaging, collage or additional side dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Говядина с шампиньонами на сковороде",
+    "sha256": "ada7126171f6da0a631c2064719359626d9a6f4b70a3e40e1c4f52d2623b4dca",
+    "source_filename": "exec-0695d146-faa0-4526-830b-0f2819874be4.png",
+    "asset": "public/media/food-first/k29.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k30",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual recipe photo for keto meal app, k30. Subject: Белая рыба с брокколи и лимоном: steamed or baked white cod fillet with bright green cooked broccoli florets and a lemon wedge, olive oil, salt and pepper. No potatoes, sauces or other vegetables. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate or bowl on beige linen and light stone. 45 degree camera, entire dish centered with margins for square crop, landscape 3:2. Only specified recipe ingredients, realistic home cooking. No words, logos, watermark, hands, packaging, collage or additional side dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Белая рыба с брокколи и лимоном",
+    "sha256": "d4aa8d8b97f3e7b13ffe2e1c67efffbeb0f522f36b4bea4345f673ea62b83323",
+    "source_filename": "exec-7798433c-7ac7-4172-a11e-27997c56b276.png",
+    "asset": "public/media/food-first/k30.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k31",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photo for a keto recipe app, k31. Subject: Салат с курицей авокадо и огурцом: cooked chicken breast chunks, ripe avocado chunks, cucumber slices, dill and parsley, olive oil and lemon juice dressing. No lettuce, cheese, tomato or eggs. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate/bowl (clear glass for pudding) on beige linen and light stone, 45 degree close view, entire dish centered with margins for square crop, landscape 3:2. Realistic home cooking, only listed ingredients. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Салат с курицей, авокадо и огурцом",
+    "sha256": "8d73b48ee405781b3a4022b960af81406e5c243877da951f88f26fc857a495b0",
+    "source_filename": "exec-0aaccb00-ef2f-4c44-8f78-af6e26f86415.png",
+    "asset": "public/media/food-first/k31.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k32",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photo for a keto recipe app, k32. Subject: Говяжьи мини-бифштексы с рукколой: several small browned beef mince patties served with fresh arugula and cucumber slices, olive oil. NO buns, breadcrumbs, eggs, cheese or sauces. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate/bowl (clear glass for pudding) on beige linen and light stone, 45 degree close view, entire dish centered with margins for square crop, landscape 3:2. Realistic home cooking, only listed ingredients. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Говяжьи мини-бифштексы с рукколой",
+    "sha256": "1cc0ea53b048693266f536358e6d0c3c012841298baa7fda0750960db4e1a3cc",
+    "source_filename": "exec-c76bd58c-6607-46c8-a034-44c2cab6bb3b.png",
+    "asset": "public/media/food-first/k32.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k33",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photo for a keto recipe app, k33. Subject: Тёплый салат с беконом и авокадо: warm crispy bacon pieces, ripe avocado, fresh lettuce and cucumber, olive oil lemon dressing. No eggs, cheese or tomato. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate/bowl (clear glass for pudding) on beige linen and light stone, 45 degree close view, entire dish centered with margins for square crop, landscape 3:2. Realistic home cooking, only listed ingredients. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Тёплый салат с беконом и авокадо",
+    "sha256": "24fb2a4470c7473e3b650b1fd4e925cb818853b64ac965653a3a28e5e6158690",
+    "source_filename": "exec-945e8b38-1de4-45b9-aaed-9735d402e5df.png",
+    "asset": "public/media/food-first/k33.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k34",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photo for a keto recipe app, k34. Subject: Кокосовый чиа-пудинг с малиной: thick pale coconut chia seed pudding visibly flecked with many tiny dark chia seeds in a clear short glass, fresh raspberries on top. Ingredients only chia, coconut milk, water, raspberries. No mint, nuts, oats or cream. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate/bowl (clear glass for pudding) on beige linen and light stone, 45 degree close view, entire dish centered with margins for square crop, landscape 3:2. Realistic home cooking, only listed ingredients. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Кокосовый чиа-пудинг с малиной",
+    "sha256": "347744f0bb1f64e5d848d3b5cf17912a1a56cc940b8dc3a11963a2e5667442d3",
+    "source_filename": "exec-56fc008a-1060-45a5-81e8-d270d406bc54.png",
+    "asset": "public/media/food-first/k34.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k35",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photo for a keto recipe app, k35. Subject: Запечённая свиная корейка с квашеной капустой и тмином: roast pork loin cut into thick juicy slices with golden edges, sauerkraut and visible caraway seeds, natural juices. No potatoes, onion, carrots or herbs. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate/bowl (clear glass for pudding) on beige linen and light stone, 45 degree close view, entire dish centered with margins for square crop, landscape 3:2. Realistic home cooking, only listed ingredients. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Запечённая свиная корейка с квашеной капустой и тмином",
+    "sha256": "e01d636a087a1e37417c7fd6f3644c617dd21464a13e4de781c046a42298d3ee",
+    "source_filename": "exec-c939cdf1-69b7-461a-badb-5dfb25049b82.png",
+    "asset": "public/media/food-first/k35.webp",
+    "kind": "AI-generated recipe illustration"
+  },
+  {
+    "id": "k36",
+    "prompt": "Use case: photorealistic-natural. Asset type: ONE individual food photo for a keto recipe app, k36. Subject: Сливочный суп-пюре из цветной капусты с копчёным беконом: silky ivory cauliflower cream soup with crisp smoked bacon bits, cream, butter, bone broth and a pinch of nutmeg. No potato, croutons, greens or carrots. Warm home-food editorial photography, natural side window light, matte ivory ceramic plate/bowl (clear glass for pudding) on beige linen and light stone, 45 degree close view, entire dish centered with margins for square crop, landscape 3:2. Realistic home cooking, only listed ingredients. No text, logos, watermark, hands, packaging, collages or other dishes.",
+    "provider": "image_gen",
+    "recipe_title": "Сливочный суп-пюре из цветной капусты с копчёным беконом",
+    "sha256": "64498a550a056876dfc2be98f6b53a42952701526dadc56db44e4b46c773f9c8",
+    "source_filename": "exec-69cfc165-d932-4695-8f62-bdcee0018bf2.png",
+    "asset": "public/media/food-first/k36.webp",
+    "kind": "AI-generated recipe illustration"
+  }
+]

@@ -1,3 +1,4 @@
+import { FoodImage } from './FoodImage';
 import { useId, useState } from 'react';
 import type { PortionVariantFixture, RecipeViewModel } from './contract';
 import { Check } from './Icons';
@@ -16,9 +17,8 @@ export function RecipePlate({ recipe, variant, checkedIngredients, onToggleIngre
   const titleId = useId();
   const detailId = useId();
   const [selection, setSelection] = useState({ recipeId: recipe.id, index: 0 });
-  const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
   const imageUrl = photoForRecipe(recipe.id);
-  const hasPhoto = Boolean(imageUrl && failedPhoto !== imageUrl);
+  const hasPhoto = Boolean(imageUrl);
   // Resolve synchronously on recipe changes: never expose the previous recipe's index.
   const index = selection.recipeId === recipe.id && selection.index < variant.ingredients.length
     ? selection.index : 0;
@@ -37,9 +37,9 @@ export function RecipePlate({ recipe, variant, checkedIngredients, onToggleIngre
       <p className="recipe-plate__intro">Коснись продукта — узнай количество и отметь, что уже подготовлено.</p>
       {hasPhoto && imageUrl && (
         <div className="recipe-plate__photo-wrap">
-          <img className="recipe-plate__photo" src={imageUrl}
+          <FoodImage retryable className="recipe-plate__photo" src={imageUrl}
             alt={`Фотоиллюстрация блюда «${recipe.title}»`} width="320" height="320"
-            onError={() => setFailedPhoto(imageUrl)} decoding="async" />
+            decoding="async" />
           <span className="recipe-plate__photo-label">Фотоиллюстрация</span>
         </div>
       )}
