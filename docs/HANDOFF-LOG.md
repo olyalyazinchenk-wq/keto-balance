@@ -1,6 +1,13 @@
 # Журнал передачи работы
 Новые записи добавлять в начало после заголовка. Это история; актуальный статус хранится только в CURRENT-STATE.md.
 
+## 2026-11-21, утро — новые черновики #47/#48 без установки
+- GPT/Codex, ChatGPT Work; baseline master 7bac76859e6ef6544a2cb57b0a0013a450b823bd; docs/context-sync-20261121. Область — только CURRENT-STATE/HANDOFF-LOG.
+- #47 HEAD/source81432d54: загрузка обучения/учебные черновики/иллюстрация; локальные проверки по отчёту PASS, E2E BLOCKED. #48 docs HEAD2a2e3e1d/source1a3f2ca3: визуальный слой, без новой React-приёмки и deploy.
+- CI точных HEAD #47/#48 отсутствует; зелёные CI родителей не перенесены. 9343f7d доступен; прежние PR/Issues без изменений, Releases нет.
+- Последняя установка только по отчёту20.11 19:39МСК/sourceab443b7/builda8d449bc33583b1d. Verified deployed SHA/собственная прямая проверка/биллинг UNKNOWN. Телефон/суточный результат/редакторский допуск открыты.
+- Продуктовые PR не объединялись. Далее: проверки #47/#48, фактическая версия #45 и телефон до приглашений. Notion — только управляемая сводка после интеграции.
+
 ## 2026-11-20, вечер — Telegram Web по отчёту и цепочка #44/#45
 - GPT/Codex, ChatGPT Work; baseline master b7265d2413c0de21bf8e02ae92d3093d6cf7f62e; docs/context-sync-20261120-evening.
 - #41 docs HEAD3c9b164, source76f2807; отчёт20.11 18:15 сообщает два запуска Telegram Web, не телефон. Новый Draft #44 HEAD1f754184/source106bde89 и open #45 HEADe0d93d22/sourceab443b7f; CI точных HEAD и source success.
