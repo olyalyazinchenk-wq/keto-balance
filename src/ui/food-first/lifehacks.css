@@ -1,0 +1,14 @@
+.lifehacks { max-width:780px; }
+.lifehacks-note { padding:14px; background:var(--kb-surface-muted); border-radius:12px; }
+.lifehacks-search { display:grid; gap:8px; margin:18px 0; font-weight:600; }
+.lifehacks-search input { min-width:0; width:100%; min-height:44px; border:1px solid var(--kb-border); border-radius:12px; padding:10px 12px; background:var(--kb-surface); color:var(--kb-text-1); }
+.lifehacks-categories { display:flex; flex-wrap:wrap; gap:8px; }
+.lifehacks-categories button { min-height:44px; padding:8px 12px; border:1px solid var(--kb-border); border-radius:12px; background:var(--kb-surface); color:var(--kb-text-1); }
+.lifehacks-categories button[aria-pressed="true"] { background:var(--kb-primary); color:var(--kb-on-primary,#fff); }
+.lifehacks-list { display:grid; gap:12px; }
+.lifehack-card { min-width:0; padding:16px; border:1px solid var(--kb-border); border-radius:16px; background:var(--kb-surface); overflow-wrap:anywhere; }
+.lifehack-card h2 { margin:0; }
+.lifehack-card h2 button { display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:left; width:100%; min-height:44px; padding:0; border:0; background:transparent; color:var(--kb-text-1); font:inherit; }
+.lifehack-card h3 { font-size:15px; margin-top:16px; font-weight:700; }
+.editorial-lifehacks-link { margin:0 0 24px; }
+.lifehacks :focus-visible { outline:2px solid var(--kb-primary); outline-offset:3px; }
