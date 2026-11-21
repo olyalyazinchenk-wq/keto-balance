@@ -7,7 +7,7 @@ import './food-image.css';
 import './learning-navigation.css';
 
 export interface FoodTodayProps {
-  onOpenLearning?: (screen: 'rules' | 'education' | 'guides') => void;
+  onOpenLearning?: (screen: 'rules' | 'education' | 'guides' | 'lifehacks') => void;
   onOpenCompass?: () => void;
   onOpenCatalog?: () => void;
   catalogHighlights?: FoodCard[];
@@ -94,6 +94,9 @@ export function FoodToday({
           </button>
         ))}
       </nav>
+      <button type="button" className="ff-more-link editorial-lifehacks-link" data-testid="home-open-lifehacks" onClick={() => onOpenLearning?.('lifehacks')}>
+        <span>Лайфхаки · биодобавки</span><ArrowRight aria-hidden="true" />
+      </button>
       <section aria-labelledby="editorial-home-recipes">
         <div className="editorial-home-recipes-heading">
           <h2 className="editorial-section-title" id="editorial-home-recipes">Домашнее <em>меню</em></h2>
