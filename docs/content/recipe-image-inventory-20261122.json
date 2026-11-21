@@ -1,0 +1,254 @@
+[
+  {
+    "id": "k1",
+    "title": "Сливочная яичница с беконом и шпинатом",
+    "webp": "/media/food-first/eggs-bacon-spinach.webp",
+    "jpeg": "/media/food-first/eggs-bacon-spinach.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k2",
+    "title": "Омлет с сыром и зеленью",
+    "webp": "/media/food-first/omelet-cheese-herbs.webp",
+    "jpeg": "/media/food-first/omelet-cheese-herbs.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k3",
+    "title": "Ленивые сырники в духовке (кето)",
+    "webp": "/media/food-first/baked-cottage-cheese.webp",
+    "jpeg": "/media/food-first/baked-cottage-cheese.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k4",
+    "title": "Авокадо-тосты на кето-хлебе",
+    "webp": "/media/food-first/avocado-flatbread.webp",
+    "jpeg": "/media/food-first/avocado-flatbread.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k5",
+    "title": "Яичные маффины с овощами и сыром",
+    "webp": "/media/food-first/egg-muffins.webp",
+    "jpeg": "/media/food-first/egg-muffins.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k6",
+    "title": "Куриный суп с брокколи и сливками",
+    "webp": "/media/food-first/k6.webp",
+    "jpeg": "/media/food-first/k6.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k7",
+    "title": "Запечённая скумбрия с лимоном и травами",
+    "webp": "/media/food-first/k7.webp",
+    "jpeg": "/media/food-first/k7.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k8",
+    "title": "Салат с тунцом, яйцом и огурцом",
+    "webp": "/media/food-first/tuna-egg-cucumber-salad.webp",
+    "jpeg": "/media/food-first/tuna-egg-cucumber-salad.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k9",
+    "title": "Котлеты из индейки с кабачком",
+    "webp": "/media/food-first/turkey-zucchini-patties.webp",
+    "jpeg": "/media/food-first/turkey-zucchini-patties.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k10",
+    "title": "Лодочки из кабачка с фаршем и сыром",
+    "webp": "/media/food-first/k10.webp",
+    "jpeg": "/media/food-first/k10.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k11",
+    "title": "Грибной крем-суп со сливками",
+    "webp": "/media/food-first/k11.webp",
+    "jpeg": "/media/food-first/k11.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k12",
+    "title": "Курица в сливочно-чесночном соусе",
+    "webp": "/media/food-first/k12.webp",
+    "jpeg": "/media/food-first/k12.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k13",
+    "title": "Запечённая горбуша под сыром",
+    "webp": "/media/food-first/k13.webp",
+    "jpeg": "/media/food-first/k13.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k14",
+    "title": "Говядина, тушённая с капустой",
+    "webp": "/media/food-first/k14.webp",
+    "jpeg": "/media/food-first/k14.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k15",
+    "title": "Свинина с квашеной капустой (один противень)",
+    "webp": "/media/food-first/k15.webp",
+    "jpeg": "/media/food-first/k15.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k16",
+    "title": "Фаршированные перцы «по-кето»",
+    "webp": "/media/food-first/k16.webp",
+    "jpeg": "/media/food-first/k16.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k17",
+    "title": "Запеканка «как лазанья» с кабачком",
+    "webp": "/media/food-first/k17.webp",
+    "jpeg": "/media/food-first/k17.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k25",
+    "title": "Кето «Цезарь» с курицей и пармезаном",
+    "webp": "/media/food-first/k25.webp",
+    "jpeg": "/media/food-first/k25.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k27",
+    "title": "Индейка со шпинатом на сковороде",
+    "webp": "/media/food-first/k27.webp",
+    "jpeg": "/media/food-first/k27.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k28",
+    "title": "Курица с кабачком и зеленью",
+    "webp": "/media/food-first/chicken-zucchini-herbs.webp",
+    "jpeg": "/media/food-first/chicken-zucchini-herbs.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k18",
+    "title": "Сырные кето-крекеры",
+    "webp": "/media/food-first/k18.webp",
+    "jpeg": "/media/food-first/k18.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k19",
+    "title": "Яйца, фаршированные сыром и зеленью",
+    "webp": "/media/food-first/k19.webp",
+    "jpeg": "/media/food-first/k19.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k20",
+    "title": "Кето-брауни на кокосовой муке",
+    "webp": "/media/food-first/k20.webp",
+    "jpeg": "/media/food-first/k20.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k21",
+    "title": "Кокосовые шарики с какао",
+    "webp": "/media/food-first/k21.webp",
+    "jpeg": "/media/food-first/k21.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k22",
+    "title": "Сливочно-сырный суп с беконом и брокколи",
+    "webp": "/media/food-first/k22.webp",
+    "jpeg": "/media/food-first/k22.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k23",
+    "title": "Кето-солянка мясная сборная",
+    "webp": "/media/food-first/k23.webp",
+    "jpeg": "/media/food-first/k23.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k24",
+    "title": "Том Ям с морепродуктами на кокосовом молоке",
+    "webp": "/media/food-first/k24.webp",
+    "jpeg": "/media/food-first/k24.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k26",
+    "title": "Греческий салат с оливками и сыром фета",
+    "webp": "/media/food-first/k26.webp",
+    "jpeg": "/media/food-first/k26.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k29",
+    "title": "Говядина с шампиньонами на сковороде",
+    "webp": "/media/food-first/k29.webp",
+    "jpeg": "/media/food-first/k29.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k30",
+    "title": "Белая рыба с брокколи и лимоном",
+    "webp": "/media/food-first/k30.webp",
+    "jpeg": "/media/food-first/k30.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k31",
+    "title": "Салат с курицей, авокадо и огурцом",
+    "webp": "/media/food-first/k31.webp",
+    "jpeg": "/media/food-first/k31.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k32",
+    "title": "Говяжьи мини-бифштексы с рукколой",
+    "webp": "/media/food-first/k32.webp",
+    "jpeg": "/media/food-first/k32.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k33",
+    "title": "Тёплый салат с беконом и авокадо",
+    "webp": "/media/food-first/k33.webp",
+    "jpeg": "/media/food-first/k33.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k34",
+    "title": "Кокосовый чиа-пудинг с малиной",
+    "webp": "/media/food-first/k34.webp",
+    "jpeg": "/media/food-first/k34.jpg",
+    "recipe_status": "unchanged"
+  },
+  {
+    "id": "k35",
+    "title": "Запечённая свиная корейка с квашеной капустой и тмином",
+    "webp": "/media/food-first/k35.webp",
+    "jpeg": "/media/food-first/k35.jpg",
+    "recipe_status": "candidate"
+  },
+  {
+    "id": "k36",
+    "title": "Сливочный суп-пюре из цветной капусты с копчёным беконом",
+    "webp": "/media/food-first/k36.webp",
+    "jpeg": "/media/food-first/k36.jpg",
+    "recipe_status": "candidate"
+  }
+]

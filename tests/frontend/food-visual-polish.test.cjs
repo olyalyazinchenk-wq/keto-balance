@@ -25,9 +25,8 @@ test('recipe uses the same reviewed photo as the menu; unknown photos retain fal
   }));
   assert.ok(render('k1').includes(`src="${photoForRecipe('k1')}"`));
   assert.ok(!render('k1').includes('Фото блюда готовится'));
-  const missing = render('k7');
-  assert.ok(!missing.includes('<img'));
-  assert.match(missing, /Фото блюда готовится/);
+  assert.ok(render('k7').includes(`src="${photoForRecipe('k7')}"`));
+  assert.equal(photoForRecipe('not-a-recipe'), null);
   const image = photoForRecipe('k28');
   assert.ok(render('k28').includes(`src="${image}"`));
   assert.match(render('k28'), /Иллюстрация создана по рецепту/);

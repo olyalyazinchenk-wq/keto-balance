@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { FoodImage } from './FoodImage';
 import type { RecipeViewModel, VisualDirection } from './contract';
 
 interface RecipeArtworkProps {
@@ -13,10 +13,9 @@ interface RecipeArtworkProps {
 }
 
 export function RecipeArtwork({ caption, imageUrl, prepMinutes, className = '' }: RecipeArtworkProps) {
-  const [failed, setFailed] = useState(false);
-  return <figure className={`food-artwork ${imageUrl && !failed ? 'food-artwork--photo' : 'food-artwork--missing'} ${className}`}>
-    {imageUrl && !failed ? (
-      <img src={imageUrl} alt={`Фотоиллюстрация: ${caption}`} width="640" height="440" onError={() => setFailed(true)} />
+  return <figure className={`food-artwork ${imageUrl ? 'food-artwork--photo' : 'food-artwork--missing'} ${className}`}>
+    {imageUrl ? (
+      <FoodImage src={imageUrl} alt={`Фотоиллюстрация: ${caption}`} width="640" height="440" />
     ) : (
       <div className="text-sm text-[var(--kb-text-2)]">Фотоиллюстрация недоступна</div>
     )}

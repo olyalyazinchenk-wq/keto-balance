@@ -1,3 +1,4 @@
+import { FoodImage } from './FoodImage';
 import { useState, useEffect, useRef } from 'react';
 import {
   RefreshCw,
@@ -278,8 +279,8 @@ export function MenuScreen({
             return (
               <article className="fm-card" key={slotKey} data-testid={`menu-slot-${slotKey}`}>
                 {recipe && photo && (
-                  <img
-                    className="fm-card__photo"
+                  <FoodImage
+                    className="fm-card__photo" loading="lazy" width="640" height="440"
                     src={photo}
                     alt={`Фотоиллюстрация: ${recipe.title}`}
                   />
