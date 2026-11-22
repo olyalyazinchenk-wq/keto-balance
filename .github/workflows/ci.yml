@@ -13,6 +13,7 @@ on:
       - 'feat/**'
       - 'release/**'
       - 'docs/**'
+      - fix/closed-pilot-access-20261120
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -111,7 +112,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           npx playwright install --with-deps chromium
-          npx playwright test --config=playwright.full.config.ts --reporter=line tests/e2e/editorial.spec.ts tests/e2e/persistence.spec.ts tests/e2e/shopping-range-e2e.spec.ts
+          npx playwright test --config=playwright.full.config.ts --reporter=line tests/e2e/editorial.spec.ts tests/e2e/persistence.spec.ts tests/e2e/shopping-range-e2e.spec.ts tests/e2e/education-recovery.spec.ts tests/e2e/client-navigation.spec.ts
 
   deploy-spec-checks:
     name: Docker Compose Production Deployment Specs

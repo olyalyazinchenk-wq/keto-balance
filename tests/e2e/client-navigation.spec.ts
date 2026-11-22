@@ -1,5 +1,4 @@
 import { test, expect, passNewUserStartGate, activateSyntheticPremium } from './pilot.fixture';
-import fs from 'node:fs';
 
 for (const width of [320, 390]) {
   test(`Home learning cards, Back and settings return at ${width}px`, async ({ createSession }) => {
@@ -21,6 +20,7 @@ for (const width of [320, 390]) {
     await page.getByTestId('submit-settings-btn').click();
     for (const name of ['rules', 'education', 'guides']) {
       const link = page.getByTestId(`home-open-${name}`);
+      await link.scrollIntoViewIfNeeded();
       await expect(link).toBeInViewport();
       await link.click();
       const screen = page.getByTestId(`${name}-screen`);
@@ -42,8 +42,17 @@ for (const width of [320, 390]) {
       await page.getByTestId('app-back-button').click();
       await expect(page.getByTestId('food-today')).toBeVisible();
     }
-    fs.mkdirSync('docs/evidence/screenshots/client-navigation-20261115', { recursive: true });
-    await page.screenshot({ path: `docs/evidence/screenshots/client-navigation-20261115/home-${width}.png` });
+    await page.getByTestId('home-open-lifehacks').click();
+    const lifehacks = page.getByTestId('lifehacks-screen');
+    await expect(lifehacks.locator('[data-testid^="lifehack-"]')).toHaveCount(13);
+    await lifehacks.getByTestId('lifehacks-search').fill('биотин');
+    const biotin = lifehacks.getByTestId('lifehack-biotin');
+    await biotin.getByRole('button').click();
+    await expect(biotin.getByText(/тропонина/)).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByTestId('app-back-button').click();
+    await expect(page.getByTestId('food-today')).toBeVisible();
+    await page.screenshot({ path: test.info().outputPath(`home-${width}.png`) });
     await page.getByTestId('bottom-nav-menu').click();
     const menu = page.getByTestId('food-menu-screen');
     await expect(menu).toBeVisible();

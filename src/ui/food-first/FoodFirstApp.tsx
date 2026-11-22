@@ -28,6 +28,7 @@ import { isRecipeAllowed } from '../../domain/eligibility';
 import { PREVIEW_RECIPE_IDS } from '../../data/releasedRecipeIds';
 import PrivateSupportPage from '../../pages/PrivateSupportPage';
 import { EducationGuides } from './EducationGuides';
+import { createEducationGuideLoader } from '../../api/loadEducationGuides';
 import { KetoRules, PrivacyInfo } from './ClientInfo';
 
 export interface FoodFirstAppProps {
@@ -111,6 +112,7 @@ export function FoodFirstApp({
 }: FoodFirstAppProps) {
   const isLegacyPlan = Boolean(state.menu && (state.menu.mode !== 'keto' || profile.settings?.approach !== 'keto'));
   const [initialRoute] = useState(() => getInitialRoute());
+  const loadEducationForSession = useMemo(() => createEducationGuideLoader(sessionToken), [sessionToken]);
   const { entries: navEntries, current: currentRoute, navigateTo, navigateBack, saveScroll } = useAppNavigation(initialRoute, navigationMemory);
   const currentScreen = currentRoute.screen;
   const [learningBack, setLearningBack] = useState<(() => void) | null>(null);
@@ -720,7 +722,7 @@ export function FoodFirstApp({
           <section><h2>Дневник появится позже</h2><p>Личные записи пока недоступны. Сейчас здесь можно найти материалы о питании.</p></section>
           <KetoRules />
           <PrivacyInfo />
-          <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />
+          <EducationGuides key={sessionToken ?? 'anonymous'} sessionToken={sessionToken} loadForSession={loadEducationForSession} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />
         </div>
       )}
 
@@ -740,7 +742,7 @@ export function FoodFirstApp({
                 <button type="button" className="ff-proof__help-btn" onClick={() => navigateTo('rules')}>Посмотреть правила кето</button>
               </section>
             )}
-            {screen === 'rules' ? <KetoRules initiallyOpen /> : <EducationGuides kind={screen} active={currentScreen === screen} onDetailChange={registerLearningBack} sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />}
+            {screen === 'rules' ? <KetoRules initiallyOpen /> : <EducationGuides key={sessionToken ?? 'anonymous'} loadForSession={loadEducationForSession} kind={screen} active={currentScreen === screen} onDetailChange={registerLearningBack} sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />}
           </div>
         )
       )}

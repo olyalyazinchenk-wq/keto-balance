@@ -1,7 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadTs } = require('../helpers/load-ts.cjs');
-const { loadEducationGuides } = loadTs('src/api/loadEducationGuides.ts');
+const { loadEducationGuides, createEducationGuideLoader } = loadTs('src/api/loadEducationGuides.ts');
+const { fetchWithTimeout } = loadTs('src/api/fetchWithTimeout.ts');
 const response = (status = 200) => new Response(JSON.stringify({ guides: [{ id: 'test' }] }), { status });
 
 test('learning accepts a response slower than the former five-second deadline', async () => {
@@ -11,7 +12,13 @@ test('learning accepts a response slower than the former five-second deadline', 
       const timer = setTimeout(() => resolve(response()), 5200);
       options.signal.addEventListener('abort', () => { clearTimeout(timer); reject(new Error('aborted')); }, { once: true });
     });
-    assert.deepEqual(await loadEducationGuides(new AbortController().signal), [{ id: 'test' }]);
+    const [previous, candidate] = await Promise.allSettled([
+      fetchWithTimeout('/api/education/guides', {}, 5000),
+      loadEducationGuides(new AbortController().signal),
+    ]);
+    assert.equal(previous.status, 'rejected');
+    assert.match(previous.reason.message, /не ответил вовремя/);
+    assert.deepEqual(candidate, { status: 'fulfilled', value: [{ id: 'test' }] });
   } finally { global.fetch = original; }
 });
 
@@ -54,4 +61,31 @@ test('cancellation stops retries; malformed payloads cannot appear as successful
     global.fetch = async () => new Response('{"guides":null}');
     await assert.rejects(loadEducationGuides(new AbortController().signal), /неверный список/);
   } finally { global.fetch = original; }
+});
+
+test('learning and microguides reuse a recent response within one session only', async () => {
+  const original = global.fetch;
+  const originalNow = Date.now;
+  const sessions = [];
+  let now = 100_000;
+  Date.now = () => now;
+  global.fetch = async (_url, options) => {
+    const session = options.headers.Authorization;
+    sessions.push(session);
+    return new Response(JSON.stringify({ guides: [{ id: session }] }));
+  };
+  try {
+    const first = createEducationGuideLoader('first');
+    const second = createEducationGuideLoader('second');
+    const controller = new AbortController();
+    const initial = await first(controller.signal);
+    assert.deepEqual(await first(controller.signal), initial);
+    assert.deepEqual(await second(controller.signal), [{ id: 'Bearer second' }]);
+    assert.deepEqual(sessions, ['Bearer first', 'Bearer second']);
+    now += 60_000;
+    await first(controller.signal);
+    controller.abort();
+    await assert.rejects(first(controller.signal), /отменена/);
+    assert.deepEqual(sessions, ['Bearer first', 'Bearer second', 'Bearer first']);
+  } finally { global.fetch = original; Date.now = originalNow; }
 });

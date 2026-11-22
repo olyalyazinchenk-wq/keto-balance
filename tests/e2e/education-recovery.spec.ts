@@ -11,7 +11,7 @@ test('learning and microguides recover a transient failure and render slow respo
   let calls = 0;
   await page.route('**/api/education/guides', async route => {
     calls++;
-    if (calls % 2 === 1) return route.fulfill({ status: 503, json: {} });
+    if (calls === 1) return route.fulfill({ status: 503, json: {} });
     await new Promise(resolve => setTimeout(resolve, 5200));
     await route.fulfill({ json: { guides } });
   });
@@ -33,7 +33,7 @@ test('learning and microguides recover a transient failure and render slow respo
     }
     await page.getByTestId('app-back-button').click();
   }
-  expect(calls).toBe(4);
+  expect(calls).toBe(2);
   await page.goto('/?screen=recipe&recipe=k9');
   const photo = page.getByTestId('food-recipe-screen').locator('img').first();
   await expect(photo).toHaveAttribute('src', '/media/food-first/turkey-zucchini-patties.webp');
