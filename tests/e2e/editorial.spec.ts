@@ -172,7 +172,7 @@ test('Short dinner journey keeps focus, ingredient checks and recipe shopping in
   await expect(page.getByTestId('pilot-sync-banner')).toContainText('Не удалось сохранить');
   await expect(shopping.getByText(/Добавлено в покупки/)).toHaveCount(0);
 
-  // In a fresh context the browser cannot display the previously decoded image.
+  // In a fresh context WebP fails and the same recipe must load its JPEG.
   const { page: reopened } = await createSession({ id: 970840, first_name: 'Editorial' });
   await reopened.route('**/tuna-egg-cucumber-salad.webp', route => route.fulfill({ status: 404 }));
   await reopened.goto('/');
@@ -182,5 +182,7 @@ test('Short dinner journey keeps focus, ingredient checks and recipe shopping in
   await reopened.getByRole('button', { name: 'Подобрать блюдо' }).click();
   await reopened.getByRole('button', { name: 'Хочу красивый ужин' }).click();
   await reopened.getByRole('button', { name: /Салат с тунцом, яйцом и огурцом/ }).click();
-  await expect(reopened.getByTestId('food-recipe-screen').getByText('Фото блюда готовится')).toBeVisible();
+  const fallback = reopened.getByTestId('food-recipe-screen').locator('.editorial-detail-photo');
+  await expect(fallback).toHaveAttribute('src', '/media/food-first/tuna-egg-cucumber-salad.jpg');
+  await expect.poll(() => fallback.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
 });
