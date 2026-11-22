@@ -5,7 +5,7 @@ export interface NavigationEntry { screen: ScreenId; recipeId?: string; scrollY:
 export interface NavigationMemory { current: NavigationEntry[] | null }
 export function parentScreen(screen: ScreenId): ScreenId {
   if (screen === 'recipe') return 'menu';
-  if (['support', 'access', 'diary'].includes(screen)) return 'more';
+  if (['support', 'access', 'diary', 'progress'].includes(screen)) return 'more';
   return 'today';
 }
 export function backEntries(entries: NavigationEntry[]): NavigationEntry[] {

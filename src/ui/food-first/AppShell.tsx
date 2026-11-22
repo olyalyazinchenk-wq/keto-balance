@@ -29,7 +29,7 @@ export function AppShell({ activeScreen, canGoBack, onGoBack, onNavigate, onOpen
     (id === 'catalog' && activeScreen === 'recipe') ||
     (id === 'today' && activeScreen === 'compass') ||
     (id === 'menu' && activeScreen === 'shopping') ||
-    (id === 'more' && ['settings', 'start', 'access', 'support', 'diary', 'rules', 'education', 'guides', 'lifehacks'].includes(activeScreen));
+    (id === 'more' && ['settings', 'start', 'access', 'support', 'diary', 'rules', 'education', 'guides', 'lifehacks', 'progress'].includes(activeScreen));
   return <div className={`ff-proof${hasFloatingTimer ? ' ff-proof--with-timer' : ''}`} data-testid="food-app-shell">
     <header className="ff-proof__header">
       <span className="ff-proof__brand">Кето Баланс</span>

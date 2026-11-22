@@ -234,6 +234,9 @@ def create_app(
 
         return session_user_id
 
+    from bot.progress import register_progress_routes
+    register_progress_routes(app, active_db, extract_authenticated_user_id)
+
     @app.get("/api/health")
     def health_check():
         return {"status": "ok", "app": "Кето Баланс", "version": "0.1.0"}
