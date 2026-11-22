@@ -1,0 +1,3 @@
+.food-image-retry { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:78px; padding:12px; border-radius:12px; background:var(--kb-surface-muted); color:var(--kb-text-2); font-size:12px; text-align:center; }
+.food-image-retry button { text-decoration:underline; cursor:pointer; min-height:44px; display:inline-flex; align-items:center; padding:6px; }
+.food-image-retry button:focus-visible { outline:2px solid var(--kb-primary); }

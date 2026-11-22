@@ -1096,7 +1096,9 @@ def create_app(
     # --- EDUCATIONAL GUIDES API ---
 
     @app.get("/api/education/guides")
-    def get_educational_guides(authorization: Optional[str] = Header(None)):
+    def get_educational_guides(response: Response, authorization: Optional[str] = Header(None)):
+        response.headers["Cache-Control"] = "private, no-store"
+        response.headers["Vary"] = "Authorization"
         guides_path = Path(__file__).resolve().parent.parent / "docs" / "content" / "educational-guides.json"
         if not guides_path.is_file():
             return {"guides": [], "count": 0}

@@ -222,6 +222,7 @@ function runStep(cmd, stepArgs) {
 }
 
 // Validation -> Typecheck -> Vite Build -> Catalog Export -> Release Stamp
+runStep(process.execPath, ['scripts/validate-recipe-images.mjs']);
 runStep(process.execPath, ['scripts/validate-catalog.mjs']);
 runStep(process.execPath, ['node_modules/typescript/bin/tsc', '--noEmit', '--incremental', 'false', '--pretty', 'false']);
 runStep(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', 'dist']);

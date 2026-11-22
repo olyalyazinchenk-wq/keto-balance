@@ -1,3 +1,4 @@
+import { FoodImage } from './FoodImage';
 import './recipe-shopping-food.css';
 import './menu-food.css';
 import { useEffect, useState, useRef } from 'react';
@@ -183,18 +184,17 @@ export function RecipeScreen({
     Boolean(checkedIngredients[`${recipe.id}:ing:${idx}`])
   ).length;
 
-  const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
   const editorialPhoto = photoForRecipe(recipe.id);
   return (
     <article className="food-recipe editorial-detail" data-testid="food-recipe-screen">
       {/* Секция 01: Обложечная шапка рецепта */}
       <header className="border-b border-[var(--kb-border)] pb-6 sm:pb-10 space-y-4 sm:space-y-6">
-        {editorialPhoto && failedPhoto !== editorialPhoto
+        {editorialPhoto
           ? <figure>
-              <img className="editorial-detail-photo" src={editorialPhoto} alt={`Фотоиллюстрация блюда «${recipe.title}»`} width="640" height="440" decoding="async" onError={() => setFailedPhoto(editorialPhoto)} />
-              {recipe.id === 'k28' && <figcaption className="text-xs text-[var(--kb-text-3)] mt-1">Иллюстрация создана по рецепту</figcaption>}
+              <FoodImage retryable className="editorial-detail-photo" src={editorialPhoto} alt={`Фотоиллюстрация блюда «${recipe.title}»`} width="640" height="440" decoding="async" />
+              {<figcaption className="text-xs text-[var(--kb-text-3)] mt-1">Иллюстрация создана по рецепту</figcaption>}
             </figure>
-          : <p className="editorial-detail-no-photo">Фото блюда готовится</p>}
+          : <p className="editorial-detail-no-photo">Изображение этого рецепта недоступно</p>}
         <div className="food-grid items-start">
           <div className="col-span-3 md:col-span-5 space-y-3 sm:space-y-4 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">

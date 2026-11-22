@@ -4,6 +4,7 @@ import type { ScreenId, VisualDirection } from './contract';
 import { setupTelegramApp, bindBackButton, hideBackButton, triggerHaptic } from '../../tma/telegram';
 import './today.css';
 import './editorial.css';
+import './mobbin-premium.css';
 export interface AppShellProps {
   activeScreen: ScreenId; canGoBack: boolean; onGoBack: () => void;
   onNavigate: (screen: ScreenId) => void; onOpenSupport?: () => void;
@@ -28,7 +29,7 @@ export function AppShell({ activeScreen, canGoBack, onGoBack, onNavigate, onOpen
     (id === 'catalog' && activeScreen === 'recipe') ||
     (id === 'today' && activeScreen === 'compass') ||
     (id === 'menu' && activeScreen === 'shopping') ||
-    (id === 'more' && ['settings', 'start', 'access', 'support', 'diary', 'rules', 'education', 'guides'].includes(activeScreen));
+    (id === 'more' && ['settings', 'start', 'access', 'support', 'diary', 'rules', 'education', 'guides', 'lifehacks'].includes(activeScreen));
   return <div className={`ff-proof${hasFloatingTimer ? ' ff-proof--with-timer' : ''}`} data-testid="food-app-shell">
     <header className="ff-proof__header">
       <span className="ff-proof__brand">Кето Баланс</span>

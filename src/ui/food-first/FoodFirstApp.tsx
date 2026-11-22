@@ -1,4 +1,5 @@
 import { useAppNavigation, type NavigationMemory } from './navigation';
+import { Lifehacks } from './Lifehacks';
 import { DailyTip } from './DailyTip';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ScreenId, UserSettingsDraft, RecipeViewModel } from './contract';
@@ -27,6 +28,7 @@ import { isRecipeAllowed } from '../../domain/eligibility';
 import { PREVIEW_RECIPE_IDS } from '../../data/releasedRecipeIds';
 import PrivateSupportPage from '../../pages/PrivateSupportPage';
 import { EducationGuides } from './EducationGuides';
+import { createEducationGuideLoader } from '../../api/loadEducationGuides';
 import { KetoRules, PrivacyInfo } from './ClientInfo';
 
 export interface FoodFirstAppProps {
@@ -64,7 +66,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
       const params = new URLSearchParams(window.location.search);
       const qScreen = params.get('screen')?.toLowerCase();
       const qRecipe = params.get('recipe');
-      if (qScreen && ['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(qScreen)) {
+      if (qScreen && ['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides', 'lifehacks'].includes(qScreen)) {
         return { screen: qScreen as ScreenId, recipeId: qRecipe || undefined };
       }
       const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
@@ -72,7 +74,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
         const parts = hash.split('/');
         return { screen: 'recipe', recipeId: parts[1] || undefined };
       }
-      if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(hash)) {
+      if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides', 'lifehacks'].includes(hash)) {
         return { screen: hash as ScreenId };
       }
     }
@@ -110,6 +112,7 @@ export function FoodFirstApp({
 }: FoodFirstAppProps) {
   const isLegacyPlan = Boolean(state.menu && (state.menu.mode !== 'keto' || profile.settings?.approach !== 'keto'));
   const [initialRoute] = useState(() => getInitialRoute());
+  const loadEducationForSession = useMemo(() => createEducationGuideLoader(sessionToken), [sessionToken]);
   const { entries: navEntries, current: currentRoute, navigateTo, navigateBack, saveScroll } = useAppNavigation(initialRoute, navigationMemory);
   const currentScreen = currentRoute.screen;
   const [learningBack, setLearningBack] = useState<(() => void) | null>(null);
@@ -331,7 +334,7 @@ export function FoodFirstApp({
         const parts = raw.split('/');
         if (parts[1]) setActiveRecipeId(parts[1]);
         navigateTo('recipe', parts[1]);
-      } else if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides'].includes(raw)) {
+      } else if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides', 'lifehacks'].includes(raw)) {
         const scr = raw as ScreenId;
         navigateTo(scr);
       }
@@ -707,6 +710,7 @@ export function FoodFirstApp({
             <h2>Твоё питание</h2>
             {onOpenSettings && <button type="button" className="ff-more-link" data-testid="more-open-settings-btn" onClick={() => onOpenSettings()}>Настройки питания<span aria-hidden="true">→</span></button>}
             <DailyTip showButton={true} />
+            <button type="button" className="ff-more-link" data-testid="more-open-lifehacks" onClick={() => navigateTo('lifehacks')}>Лайфхаки · биодобавки<span aria-hidden="true">→</span></button>
             <button type="button" className="ff-more-link" onClick={() => navigateTo('support')}>Помощь и личный вопрос Ольге<span aria-hidden="true">→</span></button>
           </section>
           <section className="ff-access" aria-label="Аккаунт и доступ">
@@ -718,7 +722,7 @@ export function FoodFirstApp({
           <section><h2>Дневник появится позже</h2><p>Личные записи пока недоступны. Сейчас здесь можно найти материалы о питании.</p></section>
           <KetoRules />
           <PrivacyInfo />
-          <EducationGuides sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />
+          <EducationGuides key={sessionToken ?? 'anonymous'} sessionToken={sessionToken} loadForSession={loadEducationForSession} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />
         </div>
       )}
 
@@ -738,10 +742,12 @@ export function FoodFirstApp({
                 <button type="button" className="ff-proof__help-btn" onClick={() => navigateTo('rules')}>Посмотреть правила кето</button>
               </section>
             )}
-            {screen === 'rules' ? <KetoRules initiallyOpen /> : <EducationGuides kind={screen} active={currentScreen === screen} onDetailChange={registerLearningBack} sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />}
+            {screen === 'rules' ? <KetoRules initiallyOpen /> : <EducationGuides key={sessionToken ?? 'anonymous'} loadForSession={loadEducationForSession} kind={screen} active={currentScreen === screen} onDetailChange={registerLearningBack} sessionToken={sessionToken} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />}
           </div>
         )
       )}
+
+      {(currentScreen === 'lifehacks' || visited.has('lifehacks')) && <div hidden={currentScreen !== 'lifehacks'}><Lifehacks /></div>}
 
       <PaywallModal
         isOpen={isPaywallOpen}

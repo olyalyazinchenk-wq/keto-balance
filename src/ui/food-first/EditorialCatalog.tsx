@@ -1,3 +1,4 @@
+import { FoodImage } from './FoodImage';
 import { useId, useRef, useState } from 'react';
 import type { RecipeViewModel } from './contract';
 import { ArrowRight, Sparkles } from './Icons';
@@ -14,7 +15,7 @@ function RecipeRows({ recipes, onOpenRecipe }: RecipePickerProps) {
       const photo = photoForRecipe(recipe.id);
       return <li key={recipe.id}>
         <button type="button" className="editorial-recipe-row" onClick={() => onOpenRecipe(recipe.id)}>
-          {photo && <img src={photo} alt="" loading="lazy" width="86" height="78" />}
+          {photo && <FoodImage src={photo} alt="" loading="lazy" width="86" height="78" />}
           <span>
             <small>{recipe.slotLabel} · {recipe.prepMinutes} мин</small>
             <strong>{recipe.title}</strong>

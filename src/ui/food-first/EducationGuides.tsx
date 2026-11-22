@@ -1,32 +1,17 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { fetchWithTimeout } from '../../api/fetchWithTimeout';
-
-export interface EducationGuide {
-  id: string;
-  title: string;
-  category: string;
-  read_time_minutes: number;
-  summary: string;
-  content: string;
-  sources: string[];
-  verified_date: string;
-  editorial_review: string;
-  disclaimer: string;
-  editorial_status?: string;
-  kind?: 'education' | 'guides';
-  actions?: { label: string; screen: 'settings' | 'menu' | 'shopping' | 'support' }[];
-}
+import { loadEducationGuides, type EducationGuide } from '../../api/loadEducationGuides';
 
 interface EducationGuidesProps {
   kind?: 'education' | 'guides';
   active?: boolean;
   onDetailChange?: (back: (() => void) | null) => void;
   sessionToken?: string;
+  loadForSession?: (signal: AbortSignal) => Promise<EducationGuide[]>;
   onOpenSettings?: () => void;
   onNavigate?: (screen: 'menu' | 'shopping' | 'support') => void;
 }
 
-export function EducationGuides({ kind, active = true, onDetailChange, sessionToken, onOpenSettings, onNavigate }: EducationGuidesProps = {}) {
+export function EducationGuides({ kind, active = true, onDetailChange, sessionToken, loadForSession, onOpenSettings, onNavigate }: EducationGuidesProps = {}) {
   const [guides, setGuides] = useState<EducationGuide[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,18 +40,14 @@ export function EducationGuides({ kind, active = true, onDetailChange, sessionTo
     const controller = new AbortController();
     activeRequest.current = controller;
 
-    fetchWithTimeout('/api/education/guides', { signal: controller.signal, headers: sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {} }, 5000)
-      .then((res) => {
-        if (res.status === 401) throw new Error('Сеанс закончился. Откройте КетоБаланс заново через бота.');
-        if (res.status === 403) throw new Error('Материалы недоступны для текущего аккаунта.');
-        if (!res.ok) throw new Error('Не удалось загрузить руководства');
-        return res.json();
-      })
-      .then((data) => {
+    const request = loadForSession
+      ? loadForSession(controller.signal)
+      : loadEducationGuides(controller.signal, sessionToken);
+    request
+      .then((guides: EducationGuide[]) => {
         if (generation !== requestGeneration.current) return;
         const lessons = ['intro_approaches', 'reading_labels', 'allergens_limits'];
-        if (!Array.isArray(data.guides)) throw new Error('Сервер вернул неверный список материалов.');
-        setGuides(data.guides.filter((guide: EducationGuide) =>
+        setGuides(guides.filter((guide: EducationGuide) =>
           !kind || kind === (guide.kind ?? (lessons.includes(guide.id) ? 'education' : 'guides'))
         ));
         setLoading(false);
@@ -79,7 +60,7 @@ export function EducationGuides({ kind, active = true, onDetailChange, sessionTo
       .finally(() => {
         if (activeRequest.current === controller) activeRequest.current = null;
       });
-  }, [sessionToken, kind]);
+  }, [sessionToken, kind, loadForSession]);
 
   useEffect(() => {
     setGuides([]);
