@@ -234,6 +234,8 @@ html.dark .ff-proof .ff-proof__nav-btn[aria-current='page'],
   .ff-proof .editorial-compass-card { min-height: 0; padding: 12px 14px; margin-top: 8px; }
   .ff-proof .editorial-compass-card h2 { font-size: 22px; margin: 3px 0 5px; }
   .ff-proof .editorial-compass-card button { min-height: 44px; }
+  .ff-proof .editorial-compass .editorial-occasion-summary { margin-block: 8px 4px; }
+  .ff-proof .editorial-compass h2 { margin-block: 10px 6px; }
 }
 @media (max-width: 360px) {
   .ff-proof .ff-today { padding-inline: 14px; }

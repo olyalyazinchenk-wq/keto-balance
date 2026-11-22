@@ -34,9 +34,10 @@ test('learning and microguides recover a transient failure and render slow respo
     await page.getByTestId('app-back-button').click();
   }
   expect(calls).toBe(2);
-  await page.goto('/?screen=recipe&recipe=k9');
+  // Only open a recipe admitted by the isolated browser catalog.
+  await page.goto('/?screen=recipe&recipe=k1');
   const photo = page.getByTestId('food-recipe-screen').locator('img').first();
-  await expect(photo).toHaveAttribute('src', '/media/food-first/turkey-zucchini-patties.webp');
+  await expect(photo).toHaveAttribute('src', '/media/food-first/eggs-bacon-spinach.webp');
   await expect.poll(() => photo.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
   await expect(page.getByText('Иллюстрация создана по рецепту')).toBeVisible();
 });
