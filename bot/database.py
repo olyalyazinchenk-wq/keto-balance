@@ -2,12 +2,13 @@
 Keto Balance — База данных пользователей, заказов и расчетов (SQLite).
 """
 import sqlite3
+import os
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-DB_PATH = Path(__file__).resolve().parent / "keto_balance.db"
+DB_PATH = Path(os.environ.get("KETO_DB_PATH", str(Path(__file__).resolve().parent / "keto_balance.db"))).expanduser().resolve()
 
 @contextmanager
 def get_db():

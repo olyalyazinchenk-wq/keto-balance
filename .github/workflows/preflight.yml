@@ -1,0 +1,70 @@
+name: Keto Balance pre-release checks (draft)
+
+# Run only against the isolated deployment-preparation branch.
+# No secrets, no server deployments and no Telegram API calls.
+on:
+  push:
+    branches:
+      - ops/stable-vps-telegram-20261104
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keto-balance-preflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend types, build and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check types
+        run: npm run typecheck
+      - name: Verify production build
+        run: npm run build
+      - name: Run frontend tests (must not be hidden if failing)
+        run: npm run test:unit
+
+  backend:
+    name: Backend regression and Telegram URL contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements-p0.txt
+      - name: Backend tests, isolated from real Telegram
+        run: python -m unittest discover -s tests/backend -t .
+
+  compose:
+    name: Compose syntax (synthetic environment only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check stack configuration with example values
+        run: |
+          cp .env.production.example .env.production
+          docker compose --env-file .env.production -f deploy/compose.yml config --quiet
+          rm .env.production
+
+  container:
+    name: Runtime image can be built
+    needs: [frontend, backend, compose]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image only (never deploy)
+        run: docker build --file deploy/Dockerfile --tag keto-balance-preflight:local .
