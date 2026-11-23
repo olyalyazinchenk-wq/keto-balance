@@ -40,8 +40,9 @@ class ProgressEntry(BaseModel):
 
 
 class ProgressWrite(BaseModel):
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
     age: int = Field(..., ge=18, le=120, strict=True)
+    height_cm: Optional[float] = Field(None, ge=80, le=250, strict=True)
     entry: ProgressEntry
     expected_revision: int = Field(..., ge=0, strict=True)
     consent: Literal[True]
@@ -59,9 +60,12 @@ def init_progress_schema(conn):
     conn.execute('''CREATE TABLE IF NOT EXISTS progress_profiles (
         user_id INTEGER PRIMARY KEY,
         age INTEGER CHECK(age BETWEEN 18 AND 120),
+        height_cm REAL CHECK(height_cm BETWEEN 80 AND 250),
         revision INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE
     )''')
+    if not any(row['name'] == 'height_cm' for row in conn.execute('PRAGMA table_info(progress_profiles)')):
+        conn.execute('ALTER TABLE progress_profiles ADD COLUMN height_cm REAL CHECK(height_cm BETWEEN 80 AND 250)')
     conn.execute('''CREATE TABLE IF NOT EXISTS progress_entries (
         user_id INTEGER NOT NULL,
         date TEXT NOT NULL,
@@ -75,9 +79,14 @@ def init_progress_schema(conn):
 
 
 def _snapshot(conn, user_id):
-    profile = conn.execute('SELECT age,revision FROM progress_profiles WHERE user_id=?', (user_id,)).fetchone()
+    profile = conn.execute('SELECT age,height_cm,revision FROM progress_profiles WHERE user_id=?', (user_id,)).fetchone()
     entries = conn.execute('SELECT date,weight,chest,waist,hips FROM progress_entries WHERE user_id=? ORDER BY date ASC', (user_id,)).fetchall()
-    return {'age': profile['age'] if profile else None, 'entries': [dict(row) for row in entries], 'revision': profile['revision'] if profile else 0}
+    return {
+        'age': profile['age'] if profile else None,
+        'height_cm': profile['height_cm'] if profile else None,
+        'entries': [dict(row) for row in entries],
+        'revision': profile['revision'] if profile else 0,
+    }
 
 
 def get_progress(user_id: int, db_path: Optional[Path] = None):
@@ -94,8 +103,10 @@ def save_progress(user_id: int, payload: ProgressWrite, db_path: Path):
         if current['revision'] != payload.expected_revision:
             raise StaleRevisionError('Замеры изменились в другой сессии. Обновите историю перед сохранением.')
         next_revision = current['revision'] + 1
-        conn.execute('''INSERT INTO progress_profiles(user_id,age,revision) VALUES (?,?,?)
-            ON CONFLICT(user_id) DO UPDATE SET age=excluded.age,revision=excluded.revision''', (user_id, payload.age, next_revision))
+        height_cm = payload.height_cm if 'height_cm' in payload.model_fields_set else current['height_cm']
+        conn.execute('''INSERT INTO progress_profiles(user_id,age,height_cm,revision) VALUES (?,?,?,?)
+            ON CONFLICT(user_id) DO UPDATE SET age=excluded.age,height_cm=excluded.height_cm,revision=excluded.revision''',
+            (user_id, payload.age, height_cm, next_revision))
         entry = payload.entry
         conn.execute('''INSERT INTO progress_entries(user_id,date,weight,chest,waist,hips) VALUES (?,?,?,?,?,?)
             ON CONFLICT(user_id,date) DO UPDATE SET weight=excluded.weight,chest=excluded.chest,waist=excluded.waist,hips=excluded.hips''',

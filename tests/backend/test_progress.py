@@ -40,7 +40,7 @@ class ProgressTests(unittest.TestCase):
     def test_auth_and_initial_state(self):
         self.assertEqual(self.client.get('/api/progress').status_code, 401)
         self.assertEqual(self.client.put('/api/progress', json=self.payload()).status_code, 401)
-        self.assertEqual(self.client.get('/api/progress', headers=self.a).json(), {'age': None, 'entries': [], 'revision': 0})
+        self.assertEqual(self.client.get('/api/progress', headers=self.a).json(), {'age': None, 'height_cm': None, 'entries': [], 'revision': 0})
 
     def test_upsert_persistence_isolation_and_conflict(self):
         response = self.client.put('/api/progress', headers=self.a, json=self.payload())
@@ -57,6 +57,27 @@ class ProgressTests(unittest.TestCase):
         spoofed = self.payload(2); spoofed['user_id'] = 102
         self.assertEqual(self.client.put('/api/progress', headers=self.a, json=spoofed).status_code, 422)
         self.assertEqual(self.client.get('/api/progress?user_id=102', headers=self.a).status_code, 403)
+
+    def test_height_roundtrip_and_legacy_writes_preserve_it(self):
+        with get_db_connection(self.db) as conn:
+            conn.execute('ALTER TABLE progress_profiles DROP COLUMN height_cm')
+            conn.execute('INSERT INTO progress_profiles(user_id,age,revision) VALUES (101,40,0)')
+        init_db(self.db, force=True)
+        self.assertEqual(self.client.get('/api/progress', headers=self.a).json()['age'], 40)
+
+        payload = {**self.payload(), 'height_cm': 168.5}
+        saved = self.client.put('/api/progress', headers=self.a, json=payload)
+        self.assertEqual(saved.status_code, 200, saved.text)
+        self.assertEqual(saved.json()['height_cm'], 168.5)
+        self.assertIsNone(self.client.get('/api/progress', headers=self.b).json()['height_cm'])
+
+        legacy = self.client.put('/api/progress', headers=self.a, json=self.payload(revision=1, weight=79))
+        self.assertEqual(legacy.json()['height_cm'], 168.5)
+        for invalid in [True, 79, 251, '168.5']:
+            result = self.client.put('/api/progress', headers=self.a, json={**self.payload(revision=2), 'height_cm': invalid})
+            self.assertEqual(result.status_code, 422)
+        cleared = self.client.put('/api/progress', headers=self.a, json={**self.payload(revision=2), 'height_cm': None})
+        self.assertIsNone(cleared.json()['height_cm'])
 
     def test_validation_and_explicit_consent(self):
         bad = [dict(age=17), dict(age=121), dict(consent=False), dict(expected_revision=-1)]

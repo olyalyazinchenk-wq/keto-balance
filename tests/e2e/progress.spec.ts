@@ -1,0 +1,40 @@
+import { activateSyntheticPremium, expect, passNewUserStartGate, test } from './pilot.fixture';
+
+test('keeps personal measurements and shows waist and weight trends on mobile', async ({ createSession }, testInfo) => {
+  const session = await createSession({ id: 9936, first_name: 'Progress' }, { viewport: { width: 390, height: 844 } });
+  const { page } = session;
+  await activateSyntheticPremium(session);
+  await page.goto('/');
+  await passNewUserStartGate(page);
+  await page.getByTestId('submit-settings-btn').click();
+  await page.getByTestId('bottom-nav-more').click();
+  await page.getByTestId('more-open-progress').click();
+
+  const progress = page.getByTestId('progress-screen');
+  const save = progress.getByRole('button', { name: 'Сохранить замер' });
+  await progress.getByLabel('Возраст, лет').fill('40');
+  await progress.getByLabel('Рост, см').fill('168,5');
+  await progress.getByRole('checkbox').check();
+  await progress.getByLabel('Дата замера').fill('2025-01-01');
+  await progress.getByLabel('Вес, кг').fill('78,5');
+  await progress.getByLabel('Талия, см').fill('86');
+  await save.click();
+  await expect(progress.getByRole('article', { name: 'Замер 01.01.2025' })).toBeVisible();
+  await progress.getByLabel('Дата замера').fill('2025-02-01');
+  await progress.getByLabel('Вес, кг').fill('76,5');
+  await progress.getByLabel('Талия, см').fill('82');
+  await save.click();
+  const summary = progress.getByRole('region', { name: 'Изменения с первого замера' });
+  await expect(summary.getByText('-2 кг', { exact: true })).toBeVisible();
+  await expect(summary.getByText('-4 см', { exact: true })).toBeVisible();
+  await progress.getByLabel('Показатель').selectOption('waist');
+  await expect(progress.getByRole('img', { name: /Динамика: Талия/ })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByTestId('app-back-button').click();
+  await expect(page.getByTestId('more-open-progress')).toBeVisible();
+  await page.goto('/?screen=progress');
+  await expect(progress.getByLabel('Рост, см')).toHaveValue('168.5');
+  await expect(progress.getByRole('article', { name: 'Замер 01.02.2025' })).toBeVisible();
+  await progress.getByLabel('Показатель').selectOption('waist');
+  await page.screenshot({ path: testInfo.outputPath('progress-mobile.png'), fullPage: true });
+});
