@@ -1,5 +1,6 @@
 import { useAppNavigation, type NavigationMemory } from './navigation';
 import { Lifehacks } from './Lifehacks';
+import { Progress } from './Progress';
 import { DailyTip } from './DailyTip';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ScreenId, UserSettingsDraft, RecipeViewModel } from './contract';
@@ -66,7 +67,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
       const params = new URLSearchParams(window.location.search);
       const qScreen = params.get('screen')?.toLowerCase();
       const qRecipe = params.get('recipe');
-      if (qScreen && ['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides', 'lifehacks'].includes(qScreen)) {
+      if (qScreen && ['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides', 'lifehacks', 'progress'].includes(qScreen)) {
         return { screen: qScreen as ScreenId, recipeId: qRecipe || undefined };
       }
       const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
@@ -74,7 +75,7 @@ function getInitialRoute(): { screen: ScreenId; recipeId?: string } {
         const parts = hash.split('/');
         return { screen: 'recipe', recipeId: parts[1] || undefined };
       }
-      if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides', 'lifehacks'].includes(hash)) {
+      if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides', 'lifehacks', 'progress'].includes(hash)) {
         return { screen: hash as ScreenId };
       }
     }
@@ -334,7 +335,7 @@ export function FoodFirstApp({
         const parts = raw.split('/');
         if (parts[1]) setActiveRecipeId(parts[1]);
         navigateTo('recipe', parts[1]);
-      } else if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides', 'lifehacks'].includes(raw)) {
+      } else if (['today', 'catalog', 'compass', 'menu', 'recipe', 'shopping', 'support', 'diary', 'more', 'rules', 'education', 'guides', 'lifehacks', 'progress'].includes(raw)) {
         const scr = raw as ScreenId;
         navigateTo(scr);
       }
@@ -703,11 +704,12 @@ export function FoodFirstApp({
         </div>
       )}
 
-      {(currentScreen === 'more' || currentScreen === 'diary') && (
-        <div className="ff-more" data-testid={currentScreen === 'diary' ? 'diary-screen' : 'more-screen'}>
-          <h1>{currentScreen === 'diary' ? 'Дневник' : 'Ещё'}</h1>
+      {currentScreen === 'more' && (
+        <div className="ff-more" data-testid="more-screen">
+          <h1>Ещё</h1>
           <section aria-label="Настройки и помощь">
             <h2>Твоё питание</h2>
+            <button type="button" className="ff-more-link" data-testid="more-open-progress" onClick={() => navigateTo('progress')}>Мой прогресс · вес и объёмы<span aria-hidden="true">→</span></button>
             {onOpenSettings && <button type="button" className="ff-more-link" data-testid="more-open-settings-btn" onClick={() => onOpenSettings()}>Настройки питания<span aria-hidden="true">→</span></button>}
             <DailyTip showButton={true} />
             <button type="button" className="ff-more-link" data-testid="more-open-lifehacks" onClick={() => navigateTo('lifehacks')}>Лайфхаки · биодобавки<span aria-hidden="true">→</span></button>
@@ -719,8 +721,7 @@ export function FoodFirstApp({
             {isPremium && localSubscription?.expires_at && <p>Действует до {new Date(localSubscription.expires_at).toLocaleDateString('ru-RU')}</p>}
             <button type="button" className="ff-action" data-testid="more-open-paywall-btn" onClick={handleOpenPaywall}>Условия доступа и подписка</button>
           </section>
-          <section><h2>Дневник появится позже</h2><p>Личные записи пока недоступны. Сейчас здесь можно найти материалы о питании.</p></section>
-          <KetoRules />
+                    <KetoRules />
           <PrivacyInfo />
           <EducationGuides key={sessionToken ?? 'anonymous'} sessionToken={sessionToken} loadForSession={loadEducationForSession} onOpenSettings={onOpenSettings} onNavigate={navigateTo} />
         </div>
@@ -747,6 +748,7 @@ export function FoodFirstApp({
         )
       )}
 
+      {(currentScreen === 'progress' || currentScreen === 'diary' || visited.has('progress') || visited.has('diary')) && <div hidden={currentScreen !== 'progress' && currentScreen !== 'diary'}><Progress key={sessionToken || 'anonymous'} sessionToken={sessionToken} active={currentScreen === 'progress' || currentScreen === 'diary'} /></div>}
       {(currentScreen === 'lifehacks' || visited.has('lifehacks')) && <div hidden={currentScreen !== 'lifehacks'}><Lifehacks /></div>}
 
       <PaywallModal

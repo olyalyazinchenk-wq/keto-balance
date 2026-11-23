@@ -7,6 +7,7 @@ export type ScreenId =
   | 'education'
   | 'guides'
   | 'lifehacks'
+  | 'progress'
   | 'catalog'
   | 'compass'
   | 'today'

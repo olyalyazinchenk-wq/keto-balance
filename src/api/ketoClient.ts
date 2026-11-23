@@ -1,3 +1,4 @@
+import type { ProgressSnapshot, ProgressWrite } from './progressTypes';
 import { fetchWithTimeout } from './fetchWithTimeout';
 import type {
   PilotCatalogV1,
@@ -125,6 +126,18 @@ export class KetoClient {
     }
 
     return data as T;
+  }
+
+  getProgress(): Promise<ProgressSnapshot> {
+    return this.request<ProgressSnapshot>('/api/progress');
+  }
+
+  saveProgress(payload: ProgressWrite): Promise<ProgressSnapshot> {
+    return this.request<ProgressSnapshot>('/api/progress', { method: 'PUT', body: JSON.stringify(payload) });
+  }
+
+  deleteProgress(date: string, revision: number): Promise<ProgressSnapshot> {
+    return this.request<ProgressSnapshot>(`/api/progress/${encodeURIComponent(date)}?expected_revision=${revision}`, { method: 'DELETE' });
   }
 
   async createSession(initData: string): Promise<SessionInfo> {
