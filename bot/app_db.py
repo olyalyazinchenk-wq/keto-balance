@@ -341,6 +341,8 @@ def init_db(db_path: Optional[Path] = None, force: bool = False) -> None:
         """)
         cur.execute("CREATE INDEX IF NOT EXISTS idx_user_consents_uid ON user_consents(user_id)")
         _migrate_schema_if_needed(conn)
+        from bot.progress import init_progress_schema
+        init_progress_schema(conn)
         _migrate_support_queue(conn)
         _seed_admin_recipes_if_empty(conn)
     _INITIALIZED_DBS.add(target_key)
@@ -858,6 +860,8 @@ def export_all_user_data(user_id: int, db_path: Optional[Path] = None) -> Dict[s
         tickets = get_support_tickets(user_id, db_path=db_path)
         subscription = get_user_subscription(db_path=db_path, user_id=user_id)
         consents = get_user_consents(user_id, db_path=db_path)
+        from bot.progress import get_progress
+        progress = get_progress(user_id, db_path=db_path)
 
         return {
             "user_id": user_id,
@@ -870,6 +874,7 @@ def export_all_user_data(user_id: int, db_path: Optional[Path] = None) -> Dict[s
             "tickets": tickets,
             "subscription": subscription,
             "consents": consents,
+            "progress": progress,
             "exported_at": datetime.now(timezone.utc).isoformat()
         }
 
